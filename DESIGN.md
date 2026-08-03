@@ -1,191 +1,158 @@
 # DESIGN: NewsFlow
 
-## Product goal
+## Product position
 
-NewsFlow turns high-volume news streams into a focused, reviewable information flow. The product helps a reader answer four questions in order:
+NewsFlow is a GitHub-native autonomous publishing system. It does not merely summarize a high-volume feed. It executes an explicit editorial system over time so that continued reading builds domain expertise.
 
-1. What changed?
-2. Why does it matter?
-3. How strong is the source and evidence?
-4. Where can the original material be inspected?
+The engine and publication are separate concepts:
 
-The frontend is not a general news portal and not an AI cockpit. It is a personal editorial desk for scanning, judging, saving and deep-reading signals.
+- **NewsFlow** supplies the static reader, data contracts, automation and publication runtime;
+- an **Edition** defines the publication's reader promise, editorial view, scope, source policy, materiality rules, Storylines and schedule.
 
-## Current product architecture
+The Edition file is the editor. The interface, Agent and workflow execute it.
 
-### Static frontend
+## Product principles
 
-The production frontend is a dependency-free static application:
+1. **Strong editor, bounded automation.** Automated workflows process evidence but do not silently change the editor's formal position.
+2. **Continuity over novelty.** Every Signal is interpreted against persistent Storylines and prior Issues.
+3. **Fixed rhythm, variable length.** Formal Issues appear on the 1st and 15th, including concise no-material-change issues.
+4. **Traceability over authority theatre.** Git history, source links, cutoffs and method matter more than platform badges.
+5. **GitHub first.** Forks, pull requests, Actions and Pages are the publication infrastructure; no separate certification system is required.
+6. **Editorial restraint.** The system must be willing not to publish a low-value item.
 
-- `index.html` — document shell and metadata;
-- `src/styles.css` — Editorial Signal Desk visual system;
-- `src/editorial-app.js` — state, normalization, rendering, filtering and interaction logic;
-- `public/` — PWA assets and structured data;
-- `scripts/check.mjs` — frontend, data and integrity validation;
-- `scripts/build.mjs` — deterministic `dist/` compiler.
+## Reader questions
 
-The previous incomplete React/Nexus source is not part of the production build. New frontend work must target the static entrypoints above unless a future migration replaces them atomically with an equally complete build and deployment path.
+The product should help readers answer, in order:
 
-### Data layer
+1. What is the current Edition and what does its editor believe?
+2. What changed during the latest publication period?
+3. Did the evidence strengthen, weaken, complicate or leave the current view unchanged?
+4. Which new Signals are appearing after the latest Issue?
+5. How are the long-running Storylines evolving?
+6. Where can every claim and source be inspected?
 
-The frontend reads three compatible payloads:
+## Core objects
 
-- `public/data/news.json`
-- `public/data/ai_digest.json`
-- `public/data/topics.json`
+### Edition
 
-A normalized news item supports:
+The executable editorial constitution. Runtime metadata is read from `public/data/edition.json`; the readable source lives at `editions/reference/edition.yaml`.
 
-- identity: `id`, `title`, `url`;
-- provenance: `source`, `source_tier`, `published_at`;
-- judgment: `quality_index`, `tags`;
-- layered reading: `short_summary`, `long_summary`;
-- evidence: `key_quote`, `supporting_quotes`.
+### Signal
 
-Historical payloads are normalized at runtime. All externally supplied text is escaped before rendering. Direct quotes may be empty and must never be fabricated merely to fill the interface.
+A normalized evidence item with identity, provenance, quality, layered summaries, tags and canonical source URL. A Signal may appear on the Desk without being adopted into an Issue.
 
-### Payload precedence and fallback
+### Editorial Desk
 
-Repository data and fallback data are mutually exclusive:
+The continuous signal surface. It preserves the current search, filter, bookmark, list/grid and evidence-drawer interactions.
 
-1. If `news.json` or `ai_digest.json` contains usable entries, only those repository entries are rendered.
-2. If both repository payloads are unavailable or empty, a small verified fallback snapshot is activated.
-3. Fallback entries must use traceable institutional or author URLs and must never be concatenated with a valid repository payload.
-4. Deduplication occurs only inside the selected source set.
+### Storyline
 
-This rule prevents demonstration content from silently entering a real information stream.
+A persistent editorial question with a current view, evidence count, movement and next-watch items. Storylines replace disposable “trending topic” thinking with accumulated domain memory.
 
-### Freshness semantics
+### Issue
 
-The interface must not infer freshness from the browser clock. It derives a dataset cutoff from the latest valid `published_at` value in the active source set.
+A frozen semi-monthly publication artifact. It records a central judgment, adopted Signals, Storyline movement, next-watch items, coverage window, Edition version and methodology counts.
 
-- Sidebar label: **数据版本**.
-- Masthead metadata: **Data through [dataset date]**.
-- Lead label: **首要信号**, not “今日首要信号”.
+### Archive
 
-A stale dataset can still be browsed, but it must never be presented as current merely because the page was opened today.
-
-### Deployment
-
-`npm run check` validates the product, data and integrity contracts. `npm run build` produces `dist/`. The Pages workflow deploys `dist/` only from `main` and keeps pull-request runs read-only. Versioned frontend filenames and service-worker cache names are used when data or runtime semantics change.
-
-## Visual direction: Editorial Signal Desk
-
-### Design principle
-
-The interface should feel like a modern editorial workspace: calm, literate, precise and highly scannable. Professional quality comes from hierarchy, rhythm, typography and restraint rather than glassmorphism, glow, decorative dashboards or large stock imagery.
-
-### Visual foundations
-
-- **Primary canvas:** warm paper rather than pure white.
-- **Core ink:** near-black with restrained gray hierarchy.
-- **Signal accent:** editorial blue for active filters, evidence and actions.
-- **Live accent:** muted red used only for status and freshness indicators.
-- **Headlines:** `Newsreader`, with compact line height and strong optical hierarchy.
-- **Interface text:** `DM Sans`, optimized for controls and summaries.
-- **Metadata:** `Roboto Mono`, reserved for dates, scores, tiers and keyboard hints.
-- **Corners:** modest radii; round pills only for compact controls and tags.
-- **Shadows:** used only for floating drawers, mobile navigation and elevated dialogs.
-
-Dark mode preserves the same hierarchy and does not become a neon variant.
+A chronological record of Issues. It makes the publication's judgment history visible instead of continuously overwriting the present.
 
 ## Information architecture
 
 ### 1. Persistent top bar
 
-The top bar contains only:
+Contains NewsFlow identity, autonomous-Edition status, global search, theme/help controls and mobile navigation. System configuration stays out of the public reading surface.
 
-- NewsFlow identity and status;
-- global search;
-- theme and keyboard-help controls;
-- mobile navigation trigger.
+### 2. Edition identity rail
 
-Configuration and system operations must not dominate the public reading interface.
+The left rail begins with the active Edition, GitHub-native status and automatic publication cadence. Existing data version, channels, reading queues and date controls remain below it.
 
-### 2. Left navigation rail
+### 3. Edition masthead
 
-The left rail contains:
+The masthead names the Edition rather than a generic daily feed. It states the reader promise, editor, current Issue number and publication cadence.
 
-- data-version summary and source mode;
-- topic channels;
-- reading queues: all, high conviction, primary sources and bookmarks;
-- compact date-density navigation.
+### 4. Latest Edition
 
-On mobile it becomes an off-canvas sheet.
+A prominent formal-publication module appears before the Desk. It contains:
 
-### 3. Main editorial column
+- Issue number and coverage dates;
+- central title and standfirst;
+- current judgment;
+- candidate/adopted counts;
+- whether the formal editorial view changed;
+- direct entry points to adopted Signals.
 
-The main column contains:
+This module must visually feel like a published front page, not another dashboard card.
 
-- a typographic masthead with the dataset cutoff;
-- one lead signal selected by quality, source tier and evidence depth;
-- a list or grid stream of remaining signals;
-- an explicit empty state with a reset action.
+### 5. Editorial Desk
 
-The lead signal is not repeated in the stream.
+The existing lead Signal and stream remain the fast-moving layer. They are explicitly labelled as the Desk so readers understand that not every visible Signal belongs to the formal Issue.
 
-### 4. Brief rail
+### 6. Storyline rail
 
-The right rail is secondary and visually quiet. It contains:
+The right rail prioritizes long-running questions, current views and evidence movement. High-frequency entities and source mix may remain secondary diagnostics.
 
-- three editorial highlights;
-- high-frequency entities;
-- source-tier distribution.
+### 7. Archive
 
-It disappears on narrower desktop layouts rather than compressing the reading column.
+The main column ends with Issue history, publication dates, automatic/manual provenance and concise standfirsts.
 
-### 5. Evidence drawer
+### 8. Evidence drawer
 
-Deep reading opens in a right-side drawer that preserves the user’s place in the stream. It presents:
+Deep reading preserves layered summaries, supporting evidence, metadata, original-source links and bookmarks. Facts and interpretation must remain distinguishable.
 
-- source and publication metadata;
-- layered summaries;
-- direct and supporting quotes when available;
-- tags and source classification;
-- original-source and bookmark actions.
+## Visual direction
 
-## Interaction contract
+Retain the Editorial Signal Desk system:
 
-The frontend supports:
+- warm paper canvas and near-black ink;
+- restrained blue for evidence and active state;
+- muted red only for meaningful movement or freshness;
+- `Newsreader` for publication hierarchy;
+- `DM Sans` for controls and summaries;
+- `Roboto Mono` for dates, issue numbers, scores and method;
+- modest radii, visible rules and editorial spacing;
+- no neon, glassmorphism, decorative telemetry or stock-news imagery.
 
-- topic, source-tier, quality, bookmark, entity and date filters;
-- full-text search across titles, summaries, quotes and tags;
-- local bookmark persistence;
-- list/grid persistence;
-- light/dark theme persistence;
-- keyboard navigation: search, previous/next, open, save, theme, layout and help;
-- mobile bottom navigation and off-canvas filters;
-- installable PWA and offline app shell.
-
-Animations must be short, functional and removed under `prefers-reduced-motion`.
+The Latest Edition uses stronger typographic hierarchy and horizontal rules. It must remain part of the same publication, not a visually unrelated hero banner.
 
 ## Responsive contract
 
-- **Wide desktop:** left rail + main editorial column + brief rail.
-- **Compact desktop/tablet:** left rail + main column; brief rail hidden.
-- **Mobile:** single main column, off-canvas filters, bottom navigation and full-width evidence drawer.
+- **Wide desktop:** Edition rail + main publication column + Storyline rail.
+- **Compact desktop/tablet:** Edition rail + main column; Storyline rail may hide.
+- **Mobile:** single column, full-width Latest Edition, off-canvas filters, bottom navigation and full-width evidence drawer.
 
-No essential function may depend on hover. Tap targets should remain usable at mobile sizes, and focus-visible states must be clearly identifiable.
+No essential action may depend on hover. New buttons require visible focus states and mobile touch targets.
 
-## Quality and trust requirements
+## Automatic publication contract
 
-- The interface may distinguish source tier and quality score without implying independent factual verification.
-- Source links open safely with `noopener noreferrer`.
-- Payload text is escaped before insertion into HTML.
-- Empty or malformed payloads fall back gracefully and exclusively.
-- Dataset freshness is always represented by the payload cutoff date.
-- Legacy terminology such as “Nexus”, “HUD”, “cockpit”, “live synthesis” and “intelligence station” must not return to the primary UI.
-- New decorative modules must justify their value to reading, judgment or traceability.
+The reference workflow runs twice monthly and writes `public/data/issues.json`.
+
+- On the 1st, coverage is the 16th through the final day of the previous month.
+- On the 15th, coverage is the 1st through the 14th.
+- Signals below `materiality.minimum_quality` are rejected.
+- Adopted Signals are capped by `materiality.max_signals_per_issue`.
+- A no-change Issue is valid and required when nothing qualifies.
+- Automation records evidence movement but sets `editorial_view_changed: false` unless a committed Edition-file change explicitly says otherwise.
+
+## Trust and quality requirements
+
+- Repository data and fallback data remain mutually exclusive.
+- Visible freshness comes from payload dates.
+- Source tiers and quality scores do not claim independent verification.
+- Generated Issues expose candidate count, selected count, primary-source count, Edition version and automation provenance.
+- All external text is escaped before insertion into HTML.
+- Original source links remain safely reachable.
+- The Edition layer must fail softly: if Edition payloads are unavailable, the base Signal Desk remains usable.
 
 ## Acceptance criteria
 
 A release is complete only when:
 
 1. `npm run check` passes;
-2. `npm run build` produces a complete `dist/` site;
-3. desktop and mobile layouts preserve the hierarchy above;
-4. search, filters, bookmarks, theme, keyboard navigation and evidence drawer work without a framework runtime;
-5. repository payloads and fallback data cannot be mixed;
-6. the visible cutoff date comes from the active dataset;
-7. the Pages workflow can deploy the artifact from `main`;
-8. README, design and CI documents describe the same implemented architecture.
+2. `npm run build` produces the complete static site;
+3. the Edition masthead, Latest Edition, Desk, Storylines and Archive render from repository payloads;
+4. existing search, filters, bookmarks, theme, keyboard navigation and evidence drawer still work;
+5. the Edition layer remains dependency-free and fails without breaking the base reader;
+6. the semi-monthly workflow can produce both material-change and no-material-change Issues;
+7. service-worker caching includes Edition assets and payloads;
+8. README, Edition protocol, design contract and runtime describe the same implemented product.
