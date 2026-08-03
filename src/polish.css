@@ -1,8 +1,12 @@
-/* Editorial simplification layer — v2.1.3 */
+/* Editorial web app standards layer — v2.2.0 */
 
 :root {
   --header-shadow: 0 8px 24px rgba(42, 35, 25, 0.07);
   --card-hover: color-mix(in srgb, var(--surface) 62%, transparent);
+}
+
+html {
+  scrollbar-gutter: stable;
 }
 
 html[data-theme='dark'] {
@@ -13,6 +17,25 @@ html[data-theme='dark'] {
 body {
   background: var(--paper);
   font-feature-settings: 'kern' 1, 'liga' 1;
+  overscroll-behavior-y: contain;
+}
+
+button,
+a,
+input {
+  touch-action: manipulation;
+}
+
+.visually-hidden {
+  position: fixed;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+  border: 0;
 }
 
 .topbar {
@@ -38,6 +61,18 @@ body.is-scrolled .topbar {
   display: none;
 }
 
+.brand {
+  gap: 10px;
+}
+
+.brand-name {
+  font-family: var(--font-editorial);
+  font-size: 20px;
+  font-weight: 600;
+  line-height: 1;
+  letter-spacing: -0.035em;
+}
+
 .brand-mark {
   box-shadow: none;
   transition: transform 150ms ease;
@@ -45,6 +80,10 @@ body.is-scrolled .topbar {
 
 .brand:hover .brand-mark {
   transform: rotate(-2deg);
+}
+
+.global-search {
+  display: block;
 }
 
 .global-search input {
@@ -234,6 +273,17 @@ body.is-scrolled .topbar {
   transition: none;
 }
 
+@supports (content-visibility: auto) {
+  .article-card {
+    content-visibility: auto;
+    contain-intrinsic-size: 170px;
+  }
+
+  .feed-list.grid .article-card {
+    contain-intrinsic-size: 280px;
+  }
+}
+
 .article-card::before {
   content: '';
   position: absolute;
@@ -369,6 +419,7 @@ body.is-scrolled .topbar {
 
 .article-drawer {
   background: var(--surface);
+  overscroll-behavior: contain;
 }
 
 .drawer-head {
@@ -399,7 +450,7 @@ body.is-scrolled .topbar {
   z-index: 420;
   display: grid;
   align-items: start;
-  padding: max(82px, calc(env(safe-area-inset-top) + 70px)) 16px 24px;
+  padding: max(82px, calc(env(safe-area-inset-top) + 70px)) 16px max(24px, env(safe-area-inset-bottom));
   background: color-mix(in srgb, var(--ink) 28%, transparent);
   backdrop-filter: blur(6px);
   -webkit-backdrop-filter: blur(6px);
@@ -431,7 +482,7 @@ body.is-scrolled .topbar {
 
 .mobile-search-row {
   display: grid;
-  grid-template-columns: 1fr 40px;
+  grid-template-columns: 1fr 44px;
   gap: 8px;
 }
 
@@ -452,7 +503,7 @@ body.is-scrolled .topbar {
 
 .mobile-search-field input {
   width: 100%;
-  height: 42px;
+  height: 44px;
   padding: 0 14px 0 42px;
   border: 1px solid var(--line);
   border-radius: 999px;
@@ -467,8 +518,8 @@ body.is-scrolled .topbar {
 }
 
 .mobile-search-close {
-  width: 40px;
-  height: 40px;
+  width: 44px;
+  height: 44px;
   align-self: center;
   display: grid;
   place-items: center;
@@ -484,7 +535,8 @@ body.is-scrolled .topbar {
   height: 16px;
 }
 
-body.mobile-search-active {
+body.mobile-search-active,
+body.overlay-active {
   overflow: hidden;
 }
 
@@ -531,6 +583,21 @@ body.mobile-search-active {
     grid-template-columns: 1fr auto;
   }
 
+  .icon-button,
+  .mobile-menu-button,
+  .article-action,
+  .drawer-close,
+  .mobile-nav button {
+    min-width: 44px;
+    min-height: 44px;
+  }
+
+  .nav-button,
+  .filter-button,
+  .date-button {
+    min-height: 44px;
+  }
+
   .mobile-nav {
     border-color: color-mix(in srgb, var(--line) 72%, transparent);
     background: color-mix(in srgb, var(--surface) 88%, transparent);
@@ -573,11 +640,27 @@ body.mobile-search-active {
   }
 }
 
+@media (forced-colors: active) {
+  .article-card::before {
+    border: 1px solid CanvasText;
+    background: Canvas;
+  }
+
+  .nav-button.active,
+  .filter-button.active,
+  .segment-button.active,
+  .article-action.saved {
+    outline: 2px solid Highlight;
+    outline-offset: 1px;
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
   .article-card::before,
   .mobile-search-backdrop,
   .mobile-search-panel,
-  .topbar {
+  .topbar,
+  .brand-mark {
     transition: none !important;
   }
 }

@@ -6,6 +6,43 @@ const polishIcon = (name) => {
   return icons[name] || '';
 };
 
+const appRoot = document.querySelector('#app');
+const statusRegion = document.querySelector('#app-status');
+const focusableSelector = 'a[href], button:not([disabled]), input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])';
+
+const announce = (message) => {
+  if (!statusRegion) return;
+  statusRegion.textContent = '';
+  window.requestAnimationFrame(() => {
+    statusRegion.textContent = message;
+  });
+};
+
+const captureFocusReference = (element) => {
+  if (!(element instanceof HTMLElement)) return null;
+  return {
+    action: element.dataset.action || '',
+    id: element.dataset.id || '',
+    value: element.dataset.value || '',
+    ariaLabel: element.getAttribute('aria-label') || ''
+  };
+};
+
+const restoreFocus = (reference) => {
+  if (!reference) return;
+  const candidates = reference.action
+    ? [...document.querySelectorAll(`[data-action="${reference.action}"]`)]
+    : [...document.querySelectorAll(focusableSelector)];
+  const target = candidates.find((element) => {
+    if (!(element instanceof HTMLElement)) return false;
+    if (reference.id && element.dataset.id !== reference.id) return false;
+    if (reference.value && element.dataset.value !== reference.value) return false;
+    if (reference.ariaLabel && element.getAttribute('aria-label') !== reference.ariaLabel) return false;
+    return true;
+  });
+  target?.focus();
+};
+
 const applyScrollState = () => {
   document.body.classList.toggle('is-scrolled', window.scrollY > 18);
 };
@@ -44,8 +81,7 @@ const simplifySidebar = () => {
   document.querySelector('.sidebar .edition-card')?.closest('.sidebar-section')?.remove();
 
   document.querySelectorAll('.sidebar .section-label').forEach((label) => {
-    const text = label.textContent?.trim();
-    if (text === '阅读队列') label.textContent = '阅读';
+    if (label.textContent?.trim() === '阅读队列') label.textContent = '阅读';
   });
 };
 
@@ -96,12 +132,48 @@ const simplifyDrawer = () => {
   });
 };
 
-const decorateInterface = () => {
-  document.querySelectorAll('.nav-button, .filter-button, .date-button, .segment-button').forEach((element) => {
-    if (element.classList.contains('active')) element.setAttribute('aria-current', 'true');
+let previousAppOverlayOpen = false;
+let lastAppOverlayTrigger = null;
+
+const decorateControls = () => {
+  document.querySelector('.global-search')?.setAttribute('role', 'search');
+
+  document.querySelectorAll('button:not([type])').forEach((button) => button.setAttribute('type', 'button'));
+
+  document.querySelectorAll('.nav-button, .filter-button, .date-button').forEach((element) => {
+    if (element.classList.contains('active')) element.setAttribute('aria-current', 'page');
     else element.removeAttribute('aria-current');
   });
 
+  document.querySelectorAll('.segment-button').forEach((button) => {
+    button.setAttribute('aria-pressed', String(button.classList.contains('active')));
+  });
+
+  document.querySelectorAll('.article-action, .text-button').forEach((button) => {
+    if (button.matches('[data-action="bookmark"]')) {
+      button.setAttribute('aria-pressed', String(button.classList.contains('saved')));
+    }
+  });
+
+  const mobileMenu = document.querySelector('[data-action="mobile-menu"]');
+  if (mobileMenu) mobileMenu.setAttribute('aria-expanded', String(Boolean(document.querySelector('.sidebar.open'))));
+
+  const mobileSearch = document.querySelector('[data-action="focus-search"]');
+  if (mobileSearch) mobileSearch.setAttribute('aria-controls', 'mobile-search-sheet');
+};
+
+const updateAppOverlayState = () => {
+  const appOverlayOpen = Boolean(document.querySelector('.article-drawer, .help-dialog, .sidebar.open'));
+  document.body.classList.toggle('overlay-active', appOverlayOpen);
+
+  if (previousAppOverlayOpen && !appOverlayOpen) {
+    window.requestAnimationFrame(() => restoreFocus(lastAppOverlayTrigger));
+  }
+
+  previousAppOverlayOpen = appOverlayOpen;
+};
+
+const decorateInterface = () => {
   document.querySelectorAll('.article-meta .source-verification').forEach((badge) => {
     if (badge.textContent?.trim().toLowerCase() === 'primary') badge.textContent = '机构 / 一手源';
   });
@@ -111,6 +183,8 @@ const decorateInterface = () => {
   simplifyFeed();
   simplifyRail();
   simplifyDrawer();
+  decorateControls();
+  updateAppOverlayState();
   applyScrollState();
 };
 
@@ -124,7 +198,7 @@ const scheduleDecoration = () => {
 };
 
 const observer = new MutationObserver(scheduleDecoration);
-observer.observe(document.querySelector('#app'), { childList: true, subtree: true });
+observer.observe(appRoot, { childList: true });
 decorateInterface();
 
 const searchSheet = document.createElement('div');
@@ -143,13 +217,22 @@ document.body.append(searchSheet);
 const mobileSearchInput = searchSheet.querySelector('input');
 const mobileSearchClose = searchSheet.querySelector('.mobile-search-close');
 let searchWasOpen = false;
+let mobileSearchTrigger = null;
 
-const openMobileSearch = () => {
+const setAppInert = (inert) => {
+  appRoot.inert = inert;
+  if (inert) appRoot.setAttribute('aria-hidden', 'true');
+  else appRoot.removeAttribute('aria-hidden');
+};
+
+const openMobileSearch = (trigger) => {
   const source = document.querySelector('#global-search');
+  mobileSearchTrigger = captureFocusReference(trigger || document.activeElement);
   mobileSearchInput.value = source?.value || '';
   searchSheet.classList.add('open');
   searchSheet.setAttribute('aria-hidden', 'false');
   document.body.classList.add('mobile-search-active');
+  setAppInert(true);
   searchWasOpen = true;
   window.requestAnimationFrame(() => mobileSearchInput.focus());
 };
@@ -159,7 +242,25 @@ const closeMobileSearch = () => {
   searchSheet.classList.remove('open');
   searchSheet.setAttribute('aria-hidden', 'true');
   document.body.classList.remove('mobile-search-active');
+  setAppInert(false);
   searchWasOpen = false;
+  window.requestAnimationFrame(() => restoreFocus(mobileSearchTrigger));
+};
+
+const trapSearchFocus = (event) => {
+  if (!searchWasOpen || event.key !== 'Tab') return;
+  const focusable = [...searchSheet.querySelectorAll(focusableSelector)].filter((element) => !element.hidden);
+  if (!focusable.length) return;
+  const first = focusable[0];
+  const last = focusable.at(-1);
+
+  if (event.shiftKey && document.activeElement === first) {
+    event.preventDefault();
+    last.focus();
+  } else if (!event.shiftKey && document.activeElement === last) {
+    event.preventDefault();
+    first.focus();
+  }
 };
 
 mobileSearchInput.addEventListener('input', () => {
@@ -175,11 +276,17 @@ searchSheet.addEventListener('click', (event) => {
 });
 
 document.addEventListener('click', (event) => {
-  const action = event.target.closest('[data-action]')?.dataset.action;
+  const target = event.target instanceof Element ? event.target.closest('[data-action]') : null;
+  const action = target?.dataset.action;
+
+  if (['open', 'help', 'mobile-menu', 'mobile-filter'].includes(action)) {
+    lastAppOverlayTrigger = captureFocusReference(target);
+  }
+
   if (action === 'focus-search') {
     event.preventDefault();
     event.stopPropagation();
-    openMobileSearch();
+    openMobileSearch(target);
     return;
   }
 
@@ -189,9 +296,13 @@ document.addEventListener('click', (event) => {
 }, true);
 
 document.addEventListener('keydown', (event) => {
+  trapSearchFocus(event);
   if (event.key === 'Escape' && searchWasOpen) {
     event.preventDefault();
     event.stopPropagation();
     closeMobileSearch();
   }
 }, true);
+
+window.addEventListener('offline', () => announce('网络连接已中断，NewsFlow 将继续使用已缓存内容。'));
+window.addEventListener('online', () => announce('网络连接已恢复。'));
