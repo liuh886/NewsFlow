@@ -1,0 +1,111 @@
+{
+  "schema_version": "1.0",
+  "id": "frontier-systems-review",
+  "name": "Frontier Systems Review",
+  "short_name": "Frontier Systems",
+  "strapline": "AI、能源与产业系统的持续认知刊物",
+  "language": "zh-CN",
+  "owner": {
+    "type": "github",
+    "repository": "liuh886/NewsFlow",
+    "editor": "liuh886"
+  },
+  "reader_promise": "持续阅读这份 Edition，读者应能理解 AI 扩张、能源系统与产业基础设施如何相互塑造，并识别真正改变领域判断的证据。",
+  "editorial_view": "技术扩张的关键约束越来越位于产品与模型之外：电力、网络、供应链、制度接口和系统可靠性共同决定落地速度。",
+  "core_questions": [
+    "电力与网络是否正在成为 AI 基础设施扩张的首要约束？",
+    "效率提升能否抵消总算力与总能源需求的增长？",
+    "哪些制度、证据和工程接口决定产业系统能否规模化？",
+    "生产级 AI 的主要瓶颈正在从模型能力转向系统工程吗？"
+  ],
+  "scope": {
+    "include": [
+      "AI infrastructure",
+      "data-center power and grid constraints",
+      "hardware and systems engineering",
+      "industrial decarbonization infrastructure",
+      "evidence, governance and operational reliability"
+    ],
+    "exclude": [
+      "generic consumer AI launches",
+      "celebrity or lifestyle technology coverage",
+      "unattributed aggregation",
+      "announcements without new evidence"
+    ]
+  },
+  "source_policy": {
+    "primary": [
+      "regulators and governments",
+      "system operators and standards bodies",
+      "company filings and technical disclosures",
+      "peer-reviewed or institutional research"
+    ],
+    "specialist": [
+      "named engineers",
+      "domain analysts",
+      "specialist publications with traceable authorship"
+    ],
+    "reject": [
+      "content farms",
+      "unattributed summaries",
+      "keyword-only relevance",
+      "duplicated announcements"
+    ]
+  },
+  "materiality": {
+    "minimum_quality": 7.8,
+    "max_signals_per_issue": 5,
+    "rules": [
+      "prefer new primary evidence over repeated commentary",
+      "prefer structural change over announcement volume",
+      "state explicitly when evidence does not change the editorial view",
+      "never fill an issue to a fixed length"
+    ]
+  },
+  "publishing": {
+    "desk": {
+      "enabled": true,
+      "cadence": "continuous"
+    },
+    "edition": {
+      "enabled": true,
+      "cadence": "twice_monthly",
+      "days": [1, 15],
+      "timezone": "Asia/Shanghai",
+      "automatic": true,
+      "manual_review_required": false,
+      "fixed_length": false
+    }
+  },
+  "storylines": [
+    {
+      "id": "compute-power-coupling",
+      "title": "算力与电力耦合",
+      "question": "电力与并网周期是否正在成为 AI 扩张的显性约束？",
+      "keywords": ["data center", "数据中心", "electricity", "电力", "grid", "能源"]
+    },
+    {
+      "id": "deployment-bottlenecks",
+      "title": "部署瓶颈",
+      "question": "资本、供应链、网络和项目周期中，哪一项正在决定落地速度？",
+      "keywords": ["infrastructure", "基础设施", "capex", "deployment", "hardware", "硬件"]
+    },
+    {
+      "id": "evidence-governance",
+      "title": "证据与制度接口",
+      "question": "哪些可追溯证据与治理安排能够把技术能力转化为可执行制度？",
+      "keywords": ["CBAM", "CCUS", "carbon", "碳", "governance", "regulation", "监管"]
+    },
+    {
+      "id": "production-ai-engineering",
+      "title": "生产级 AI 工程",
+      "question": "生产级 AI 的瓶颈是否正在从模型能力转向可靠性、评估与维护？",
+      "keywords": ["LLM", "prompt", "提示词", "engineering", "software", "安全", "cyber"]
+    }
+  ],
+  "writing": {
+    "tone": "analytical and direct",
+    "distinguish_fact_and_interpretation": true,
+    "avoid": ["hype", "generic significance claims", "artificial balance"]
+  }
+}
