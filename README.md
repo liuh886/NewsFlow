@@ -1,23 +1,91 @@
 # NewsFlow
 
-NewsFlow turns high-volume news streams into a focused, reviewable information flow. It is designed for people who need to identify material changes, understand why they matter, and retain a traceable path back to the source.
+NewsFlow is a GitHub-native autonomous publishing system for high-quality domain Editions.
+
+An editor defines a publication once through an Edition file: its reader promise, editorial view, scope, source policy, materiality rules and long-running questions. NewsFlow then keeps a continuous Editorial Desk and automatically publishes a formal issue on the 1st and 15th of each month.
+
+> Define the editorial system once. Let the publication keep observing.
 
 ## Product status
 
-NewsFlow 2.1.1 is an implemented, installable static web product. The frontend is dependency-free, builds deterministically, works on GitHub Pages, and retains an exclusive verified fallback only when repository payloads are completely unavailable.
+NewsFlow 2.3.0 is an implemented, installable static web product. It now combines the mature signal-reading frontend with an Edition-native publication layer, persistent Storylines, formal Issue artifacts and a scheduled semi-monthly compiler. The frontend remains dependency-free, builds deterministically and deploys through GitHub Pages.
+
+## Product model
+
+NewsFlow is the engine. An **Edition** is the reader-facing publication.
+
+The reference product uses a strong-editor model:
+
+- the Edition file is the formal editorial authority;
+- Signals record traceable new evidence;
+- the Editorial Desk runs continuously;
+- Storylines accumulate evidence across publication cycles;
+- a semi-monthly Issue settles what changed, what did not change and what to watch next;
+- automated workflows may describe evidence movement but may not silently rewrite the editor's position.
+
+The first-stage platform remains GitHub-first. There is no separate account, certification or Edition marketplace. Anyone may fork the protocol, while the official interface stays a small, editor-selected publication shelf.
 
 ## Editorial Signal Desk
 
-The frontend uses the **Editorial Signal Desk** visual system rather than a generic AI dashboard:
+The reader now exposes four distinct layers while retaining the established Editorial Signal Desk visual system:
 
-- warm paper surfaces and restrained blue/red signal accents;
-- editorial serif headlines with compact sans-serif interface text;
-- a lead story, fast-scanning stream, light editorial brief rail, and evidence drawer;
-- source-tier, quality, topic, date, search, bookmark, and entity filters;
-- list/grid layouts, dark mode, keyboard navigation, mobile navigation, and PWA installation;
-- escaped content rendering and safe external-link handling.
+1. **Latest Edition** — the most recent formal semi-monthly issue and its central judgment;
+2. **Editorial Desk** — continuously updated material Signals;
+3. **Storylines** — persistent questions and current evidence movement;
+4. **Archive** — frozen Issue artifacts and publication history.
 
-The product keeps information density high without turning the reading experience into a glowing cockpit or an image-heavy news portal.
+The visual system remains a calm editorial workspace: warm paper surfaces, restrained signal accents, serif headlines, compact metadata, evidence drawers, keyboard navigation, mobile navigation, dark mode and PWA installation.
+
+## Automatic publication
+
+`.github/workflows/publish-edition.yml` runs at 09:15 Asia/Shanghai on the 1st and 15th of each month.
+
+The deterministic reference compiler:
+
+- calculates the correct half-month coverage window;
+- applies the Edition's quality threshold and maximum Signal count;
+- records Storyline evidence movement;
+- publishes a no-material-change Issue when no Signal reaches the threshold;
+- never changes the Edition file or claims that the editor's formal view changed;
+- commits the generated Issue artifact and triggers the normal Pages deployment path.
+
+Run it locally with:
+
+```bash
+npm run publish:edition:dry-run
+node scripts/publish-edition.mjs --date=2026-08-15 --force --dry-run
+```
+
+## Repository contracts
+
+### Human-maintained editorial authority
+
+- `editions/reference/edition.yaml` — readable Edition source;
+- `public/data/edition.json` — runtime projection used by the frontend;
+- `docs/edition-protocol.md` — product and governance contract.
+
+### Continuously updated evidence
+
+- `public/data/news.json`
+- `public/data/ai_digest.json`
+- `public/data/topics.json`
+- `public/data/storylines.json`
+
+### Formal publication artifacts
+
+- `public/data/issues.json`
+- `scripts/publish-edition.mjs`
+- `.github/workflows/publish-edition.yml`
+
+### Frontend
+
+- `index.html`
+- `src/editorial-app.js`
+- `src/polish.js`
+- `src/edition-layer.js`
+- `src/styles.css`
+- `src/polish.css`
+- `src/edition-layer.css`
 
 ## Local development
 
@@ -30,48 +98,22 @@ python -m http.server 4173 --directory dist
 
 Open `http://localhost:4173` after the build completes.
 
-## Data contract
-
-The static frontend reads:
-
-- `public/data/news.json`
-- `public/data/ai_digest.json`
-- `public/data/topics.json`
-
-A news item supports layered summaries, direct quotes, source tier, quality score, tags, publication time, and a canonical source URL. Historical payloads continue to render through runtime normalization.
-
-Data handling follows two strict rules:
-
-1. A valid repository payload is rendered by itself and is never mixed with embedded fallback stories.
-2. The interface reports the latest publication date in the active dataset as the data cutoff; it does not label an older snapshot as “today”.
-
-If both repository news payloads are missing or empty, the frontend activates a small fallback snapshot whose entries link directly to traceable institutional or author sources.
-
-## Production entrypoints
-
-- `index.html` — document shell and metadata
-- `src/editorial-app.js` — state, normalization, filtering, rendering and interactions
-- `src/styles.css` — Editorial Signal Desk visual system
-- `public/` — structured data and PWA assets
-- `scripts/check.mjs` — product, data and integrity validation
-- `scripts/build.mjs` — deterministic static compiler
-
 ## CI and deployment
 
-Two progressive workflows protect the repository:
+- `NewsFlow Repository Contract` protects the repository and documentation boundary.
+- `NewsFlow Frontend` validates data, JavaScript, Edition contracts and the deterministic build.
+- `CI Governance` enforces workflow authority and package-manager policy.
+- `Publish autonomous edition` runs only on schedule or manual dispatch and has the minimum write authority needed to commit a generated Issue.
+- `NewsFlow Frontend` deploys the built artifact to GitHub Pages only from `main`.
 
-1. `NewsFlow Repository Contract` verifies the implemented product boundary, package-manager contract, and required files.
-2. `NewsFlow Frontend` runs the frontend/data checks, builds `dist/`, and deploys the artifact to GitHub Pages from `main`.
+## Data and trust boundaries
 
-Deployment permissions are isolated to the Pages workflow. Pull requests run validation and build steps without deploying.
+- A valid repository news payload is never mixed with embedded fallback stories.
+- The visible data cutoff comes from the active dataset, not the browser clock.
+- Facts, source metadata and editorial interpretation remain distinguishable.
+- Direct quotes are rendered only when present in the payload.
+- External text is escaped and external links use safe target attributes.
+- Source tiers and quality scores do not imply independent factual verification.
+- Fixed publication rhythm does not imply fixed issue length.
 
-## Development boundary
-
-- Changes are proposed through pull requests.
-- Exactly one recognized lockfile is committed.
-- `check` and `build` remain deterministic and repository-local.
-- Generated or external news data must preserve provenance fields and must not be treated as verified merely because it renders successfully.
-- Fallback data must remain exclusive, traceable and secondary to repository payloads.
-- `node_modules/`, `dist/`, Python caches, secrets, and local environment files are not committed.
-
-See `docs/ci-governance.md` and `docs/editorial-signal-desk.md` for the enforceable engineering and design contracts.
+See `DESIGN.md`, `docs/edition-protocol.md`, `docs/editorial-signal-desk.md` and `docs/ci-governance.md` for the enforceable product, design and engineering contracts.

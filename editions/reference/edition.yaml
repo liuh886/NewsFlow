@@ -1,0 +1,54 @@
+schema_version: '1.0'
+id: frontier-systems-review
+name: Frontier Systems Review
+short_name: Frontier Systems
+strapline: AI、能源与产业系统的持续认知刊物
+language: zh-CN
+
+owner:
+  type: github
+  repository: liuh886/NewsFlow
+  editor: liuh886
+
+reader_promise: >-
+  持续阅读这份 Edition，读者应能理解 AI 扩张、能源系统与产业基础设施如何相互塑造，
+  并识别真正改变领域判断的证据。
+
+editorial_view: >-
+  技术扩张的关键约束越来越位于产品与模型之外：电力、网络、供应链、制度接口和系统可靠性
+  共同决定落地速度。
+
+scope:
+  include:
+    - AI infrastructure
+    - data-center power and grid constraints
+    - hardware and systems engineering
+    - industrial decarbonization infrastructure
+    - evidence, governance and operational reliability
+  exclude:
+    - generic consumer AI launches
+    - celebrity or lifestyle technology coverage
+    - unattributed aggregation
+    - announcements without new evidence
+
+materiality:
+  minimum_quality: 7.8
+  max_signals_per_issue: 5
+  rules:
+    - prefer new primary evidence over repeated commentary
+    - prefer structural change over announcement volume
+    - state explicitly when evidence does not change the editorial view
+    - never fill an issue to a fixed length
+
+publishing:
+  desk:
+    enabled: true
+    cadence: continuous
+  edition:
+    enabled: true
+    cadence: twice_monthly
+    days: [1, 15]
+    timezone: Asia/Shanghai
+    automatic: true
+    manual_review_required: false
+    fixed_length: false

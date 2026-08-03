@@ -1,0 +1,42 @@
+[
+  {
+    "id": "compute-power-coupling",
+    "title": "算力与电力耦合",
+    "question": "电力与并网周期是否正在成为 AI 扩张的显性约束？",
+    "current_view": "算力增长正越来越直接地转化为区域电力、并网和调峰压力，能源条件开始反向塑造基础设施布局。",
+    "movement": "strengthened",
+    "last_updated": "2026-08-01",
+    "evidence_count": 2,
+    "watch_for": ["电网接入周期", "数据中心长期购电协议", "推理能效改善速度"]
+  },
+  {
+    "id": "deployment-bottlenecks",
+    "title": "部署瓶颈",
+    "question": "资本、供应链、网络和项目周期中，哪一项正在决定落地速度？",
+    "current_view": "真正影响扩张速度的往往不是单项技术指标，而是电力容量、设备供应、建设周期和运维边界的组合。",
+    "movement": "strengthened",
+    "last_updated": "2026-08-01",
+    "evidence_count": 3,
+    "watch_for": ["设备交付周期", "基础设施资本开支", "项目延期与选址变化"]
+  },
+  {
+    "id": "evidence-governance",
+    "title": "证据与制度接口",
+    "question": "哪些可追溯证据与治理安排能够把技术能力转化为可执行制度？",
+    "current_view": "设施级数据、可追溯方法和责任接口正在从合规附属项变成贸易、融资与基础设施协同的前置条件。",
+    "movement": "complicated",
+    "last_updated": "2026-08-01",
+    "evidence_count": 2,
+    "watch_for": ["设施级核算要求", "长期责任安排", "跨主体数据接口"]
+  },
+  {
+    "id": "production-ai-engineering",
+    "title": "生产级 AI 工程",
+    "question": "生产级 AI 的瓶颈是否正在从模型能力转向可靠性、评估与维护？",
+    "current_view": "提示词、评估、权限和可维护性已成为生产系统的一部分，但现有样本尚不足以改变主编判断。",
+    "movement": "unchanged",
+    "last_updated": "2026-08-01",
+    "evidence_count": 2,
+    "watch_for": ["提示词回归测试", "生产故障与评估基准", "安全和权限边界"]
+  }
+]
