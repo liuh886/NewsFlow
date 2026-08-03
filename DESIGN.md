@@ -19,12 +19,12 @@ The production frontend is a dependency-free static application:
 
 - `index.html` — document shell and metadata;
 - `src/styles.css` — Editorial Signal Desk visual system;
-- `src/app.js` — state, rendering, filtering and interaction logic;
+- `src/editorial-app.js` — state, normalization, rendering, filtering and interaction logic;
 - `public/` — PWA assets and structured data;
-- `scripts/check.mjs` — frontend and data contract validation;
+- `scripts/check.mjs` — frontend, data and integrity validation;
 - `scripts/build.mjs` — deterministic `dist/` compiler.
 
-The previous incomplete React/Nexus source remains historical and is not part of the production build. New frontend work must target the static entrypoints above unless a future migration replaces them atomically with an equally complete build and deployment path.
+The previous incomplete React/Nexus source is not part of the production build. New frontend work must target the static entrypoints above unless a future migration replaces them atomically with an equally complete build and deployment path.
 
 ### Data layer
 
@@ -44,9 +44,30 @@ A normalized news item supports:
 
 Historical payloads are normalized at runtime. All externally supplied text is escaped before rendering. Direct quotes may be empty and must never be fabricated merely to fill the interface.
 
+### Payload precedence and fallback
+
+Repository data and fallback data are mutually exclusive:
+
+1. If `news.json` or `ai_digest.json` contains usable entries, only those repository entries are rendered.
+2. If both repository payloads are unavailable or empty, a small verified fallback snapshot is activated.
+3. Fallback entries must use traceable institutional or author URLs and must never be concatenated with a valid repository payload.
+4. Deduplication occurs only inside the selected source set.
+
+This rule prevents demonstration content from silently entering a real information stream.
+
+### Freshness semantics
+
+The interface must not infer freshness from the browser clock. It derives a dataset cutoff from the latest valid `published_at` value in the active source set.
+
+- Sidebar label: **数据版本**.
+- Masthead metadata: **Data through [dataset date]**.
+- Lead label: **首要信号**, not “今日首要信号”.
+
+A stale dataset can still be browsed, but it must never be presented as current merely because the page was opened today.
+
 ### Deployment
 
-`npm run check` validates the product and data contract. `npm run build` produces `dist/`. The Pages workflow deploys `dist/` only from `main` and keeps pull-request runs read-only.
+`npm run check` validates the product, data and integrity contracts. `npm run build` produces `dist/`. The Pages workflow deploys `dist/` only from `main` and keeps pull-request runs read-only. Versioned frontend filenames and service-worker cache names are used when data or runtime semantics change.
 
 ## Visual direction: Editorial Signal Desk
 
@@ -59,7 +80,7 @@ The interface should feel like a modern editorial workspace: calm, literate, pre
 - **Primary canvas:** warm paper rather than pure white.
 - **Core ink:** near-black with restrained gray hierarchy.
 - **Signal accent:** editorial blue for active filters, evidence and actions.
-- **Live accent:** muted red used only for freshness and status.
+- **Live accent:** muted red used only for status and freshness indicators.
 - **Headlines:** `Newsreader`, with compact line height and strong optical hierarchy.
 - **Interface text:** `DM Sans`, optimized for controls and summaries.
 - **Metadata:** `Roboto Mono`, reserved for dates, scores, tiers and keyboard hints.
@@ -85,7 +106,7 @@ Configuration and system operations must not dominate the public reading interfa
 
 The left rail contains:
 
-- current edition summary;
+- data-version summary and source mode;
 - topic channels;
 - reading queues: all, high conviction, primary sources and bookmarks;
 - compact date-density navigation.
@@ -96,7 +117,7 @@ On mobile it becomes an off-canvas sheet.
 
 The main column contains:
 
-- a typographic masthead;
+- a typographic masthead with the dataset cutoff;
 - one lead signal selected by quality, source tier and evidence depth;
 - a list or grid stream of remaining signals;
 - an explicit empty state with a reset action.
@@ -148,10 +169,11 @@ No essential function may depend on hover. Tap targets should remain usable at m
 
 ## Quality and trust requirements
 
-- The interface must distinguish source quality without implying that a displayed item is factually verified.
+- The interface may distinguish source tier and quality score without implying independent factual verification.
 - Source links open safely with `noopener noreferrer`.
 - Payload text is escaped before insertion into HTML.
-- Empty or malformed payloads fall back gracefully.
+- Empty or malformed payloads fall back gracefully and exclusively.
+- Dataset freshness is always represented by the payload cutoff date.
 - Legacy terminology such as “Nexus”, “HUD”, “cockpit”, “live synthesis” and “intelligence station” must not return to the primary UI.
 - New decorative modules must justify their value to reading, judgment or traceability.
 
@@ -163,5 +185,7 @@ A release is complete only when:
 2. `npm run build` produces a complete `dist/` site;
 3. desktop and mobile layouts preserve the hierarchy above;
 4. search, filters, bookmarks, theme, keyboard navigation and evidence drawer work without a framework runtime;
-5. the Pages workflow can deploy the artifact from `main`;
-6. README, design and CI documents describe the same implemented architecture.
+5. repository payloads and fallback data cannot be mixed;
+6. the visible cutoff date comes from the active dataset;
+7. the Pages workflow can deploy the artifact from `main`;
+8. README, design and CI documents describe the same implemented architecture.
