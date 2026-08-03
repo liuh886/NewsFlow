@@ -1,0 +1,5 @@
+[
+  { "id": "all", "name": "全部信号" },
+  { "id": "ai-tech", "name": "AI 与科技" },
+  { "id": "energy", "name": "能源与转型" }
+]
