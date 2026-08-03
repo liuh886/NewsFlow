@@ -1,16 +1,21 @@
-const CACHE_NAME = 'newsflow-editorial-v2.2.0';
+const CACHE_NAME = 'newsflow-editorial-v2.3.0';
 const APP_SHELL = [
   './',
   './index.html',
   './styles.css',
   './polish.css',
+  './edition-layer.css',
   './editorial-app.js',
   './polish.js',
+  './edition-layer.js',
   './icon.svg',
   './manifest.webmanifest',
   './data/topics.json',
   './data/news.json',
-  './data/ai_digest.json'
+  './data/ai_digest.json',
+  './data/edition.json',
+  './data/issues.json',
+  './data/storylines.json'
 ];
 
 const cacheResponse = async (cache, request, response) => {
