@@ -1,0 +1,40 @@
+[
+  {
+    "id": "frontier-systems-review-2026-15",
+    "issue_number": 15,
+    "published_at": "2026-08-01T09:15:00+08:00",
+    "coverage_start": "2026-07-16",
+    "coverage_end": "2026-07-31",
+    "status": "published",
+    "auto_generated": true,
+    "edition_version": "1.0",
+    "title": "电力系统正在成为算力扩张的显性约束",
+    "standfirst": "本期只有一项达到正式出版阈值。固定节奏不意味着固定篇幅；证据不足时，刊物应保持克制。",
+    "judgment": "新增证据强化了算力增长与电力系统约束之间的联系，但尚不足以改写 Edition 文件中的主编判断。",
+    "signal_ids": ["signal-iea-electricity-2026"],
+    "storyline_updates": [
+      {
+        "storyline_id": "compute-power-coupling",
+        "movement": "strengthened",
+        "note": "IEA 对 2026—2027 年电力需求的判断，使数据中心负荷与电网约束之间的联系更加明确。"
+      },
+      {
+        "storyline_id": "deployment-bottlenecks",
+        "movement": "unchanged",
+        "note": "本期没有足够的新证据改变对项目周期和供应链瓶颈的判断。"
+      }
+    ],
+    "what_to_watch": [
+      "主要市场的数据中心并网等待时间是否继续拉长",
+      "运营商是否扩大长期购电、核电或自备电源安排",
+      "模型与芯片效率改善能否显著降低单位任务能耗"
+    ],
+    "methodology": {
+      "candidate_count": 1,
+      "selected_count": 1,
+      "primary_source_count": 1,
+      "fixed_length": false,
+      "editorial_view_changed": false
+    }
+  }
+]
