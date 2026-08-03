@@ -1,28 +1,46 @@
 # CI governance
 
-NewsFlow begins with a repository contract, not a guessed production architecture.
+NewsFlow uses progressive, capability-aware gates. The repository now contains an implemented static product, structured data payloads, a PWA shell and a GitHub Pages runtime, so validation has advanced beyond the original pre-implementation boundary.
 
-## Current required check
+## Required workflows
 
-`NewsFlow Repository Contract` is the only blocking workflow. It uses no project dependencies and verifies documentation and package-manager boundaries.
+### NewsFlow Repository Contract
 
-## Progressive gates
+The baseline workflow verifies that the product boundary is coherent:
 
-Add a gate only when the corresponding capability exists:
+- required product, documentation, workflow and build files exist;
+- exactly one recognized lockfile is committed;
+- `check` and `build` scripts are present;
+- the README identifies the implemented product, design system and deployment path.
 
-1. **Repository contract** — required now.
-2. **Static/type checks and production build** — required when an application stack is committed.
-3. **Unit and browser acceptance** — required when user-facing behavior exists.
-4. **Data/provider evidence** — required when ingestion or persistence exists.
-5. **Deployment and live-origin verification** — required only after a public runtime is selected.
+This workflow remains read-only and repository-local.
+
+### NewsFlow Frontend
+
+The frontend workflow runs on pull requests and `main`:
+
+1. install from the committed lockfile with `npm ci`;
+2. validate JavaScript syntax, HTML references, structured news data, topic data, PWA metadata and critical responsive selectors;
+3. produce a deterministic `dist/` artifact;
+4. upload and deploy that artifact only for non-pull-request runs on `main`.
+
+## Permission boundary
+
+Pull-request validation does not deploy. Pages deployment is isolated to the dedicated workflow and uses only:
+
+- `contents: read`
+- `pages: write`
+- `id-token: write`
+
+No ingestion API key, model credential or external-service secret is required to validate or build the frontend.
 
 ## Package contract
 
-When `package.json` is introduced:
-
 - exactly one of `package-lock.json`, `pnpm-lock.yaml`, `yarn.lock`, `bun.lock` or `bun.lockb` must be committed;
-- scripts named `check` and `build` must be present and non-empty;
-- CI should use the package manager implied by the committed lockfile;
-- deployment permissions must remain outside pull-request validation.
+- scripts named `check` and `build` must remain non-empty and deterministic;
+- `node_modules/` and `dist/` are generated locally or in CI and are never committed;
+- source data used for acceptance checks must remain small, structured and provenance-aware.
 
-No secret, external API or scheduled-ingestion dependency belongs in the baseline repository check.
+## Next progressive gates
+
+Browser screenshot regression and live-origin smoke tests may be added when they can run reliably without turning visual iteration into a brittle blocking gate. News ingestion and model-quality checks remain separate from the frontend deployment contract.
