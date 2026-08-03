@@ -1,0 +1,93 @@
+[
+  {
+    "title": "微软与布鲁克菲尔德签署300亿美元历史性协议：为AI计算构建10.5吉瓦专属可再生能源",
+    "url": "https://www.reuters.com/business/energy/microsoft-brookfield-mega-deal-ai-power-2026",
+    "source": "David Lin",
+    "published_at": "2026-03-03",
+    "quality_index": "9.0",
+    "summary": "标准并网购电协议无法满足AI类似基荷、90%以上容量因数的需求。'能源换计算'模式将电网平衡的成本和复杂性内部化，为AI运营商提供兆瓦时交付的确定性，而不仅仅是兆瓦时发电。这体现了将电力视为关键原材料而非普通商品的战略思维转变。",
+    "tags": [
+      "能源转型",
+      "企业购电协议",
+      "人工智能基础设施"
+    ]
+  },
+  {
+    "title": "初创公司Terrawatt推出首个商用'AI专用核裂变'微型反应堆，与Scale AI签署核心租户协议",
+    "url": "https://www.techcrunch.com/terrawatt-microreactor-scale-ai-deal-2026",
+    "source": "Anika Singh",
+    "published_at": "2026-03-10",
+    "quality_index": "8.0",
+    "summary": "对于AI运营商而言，计算逻辑正在从每兆瓦时成本转向特定地点、24/7保障、零碳的每兆瓦成本。微型反应堆提供了独特的价值主张：超高功率密度、场地独立性以及对天气或燃料供应链的免疫性。高昂的资本成本通过消除电网依赖风险和确保数十年成本确定性而得到合理补偿。",
+    "tags": [
+      "能源",
+      "AIDC",
+      "ESG"
+    ]
+  },
+  {
+    "title": "CSRD第二年数据揭示普遍性'绿色沉默'现象：30%欧盟企业降低公开气候目标",
+    "url": "https://www.reuters.com/sustainability/eu-csrd-year-two-data-greenhushing-2026-03-10/",
+    "source": "Claire Dubois",
+    "published_at": "2026-03-10",
+    "quality_index": "8",
+    "summary": "这一现象的根本逻辑在于法律责任和竞争恐惧。CSRD要求有限保证（未来将过渡到合理保证），使报表具有可审计性和法律约束力。企业担心具体的、前瞻性目标（如'2040年实现净零排放'）若未能实现可能引发诉讼，或向竞争对手暴露战略脆弱性。因此，理性的企业应对策略是披露强制要求的历史数据，但减少对雄心勃勃、具体未来承诺的公开表述。数据显示，这并非实际减排努力的减少，而是对这些努力公开沟通的减少，形成了透明度悖论。",
+    "tags": [
+      "ESG",
+      "监管合规",
+      "企业披露"
+    ]
+  },
+  {
+    "title": "欧盟CBAM第二阶段数据揭示：企业利用ISSB报告进行碳成本计算",
+    "url": "https://www.energypost.eu/eu-cbam-phase-two-issb-reports-carbon-cost-calculation-2026-04-05/",
+    "source": "Elena Schmidt",
+    "published_at": "2026-04-05",
+    "quality_index": "7",
+    "summary": "其底层逻辑在于效率和数据效用。ISSB的IFRS S2要求详细的、基于位置的范畴1和2排放披露，这一数据集可直接转移到CBAM报告模板中，后者要求相同的核心数据（每吨产品的二氧化碳当量吨数，按生产设施划分）。投资于稳健ISSB合规的企业发现了一个切实的次要效益：显著降低了CBAM合规的行政负担和成本。这为提升可持续发展数据质量创造了强有力的商业案例，使其从合规成本转变为管理跨境贸易费用的工具。",
+    "tags": [
+      "CBAM",
+      "ISSB",
+      "碳定价"
+    ]
+  },
+  {
+    "title": "地热'超热岩石'项目单井发电50兆瓦，成本低至20美元/兆瓦时",
+    "url": "https://www.pnas.org/doi/10.1073/pnas.2400156123",
+    "source": "Quaise Energy & MIT Geothermal Initiative",
+    "published_at": "2026-03-10",
+    "quality_index": "8.8",
+    "summary": "单井产能达到传统地热发电的10倍，容量因子高达90%。无需水力压裂或注水作业，有效解决了地震风险问题。模块化设计使其能够就近需求中心部署，突破了传统地热的地理限制。斯伦贝谢公司的第三方验证确认了储层30年寿命期的可持续性。",
+    "tags": [
+      "地热能源",
+      "清洁技术突破",
+      "基荷电力"
+    ]
+  },
+  {
+    "title": "美国墨西哥湾沿岸碳捕集与封存枢纽项目集中进入最终投资决策阶段",
+    "url": "https://www.bloomberg.com/news/articles/2026-03-10/gulf-coast-carbon-capture-hubs-fid-louisiana-texas",
+    "source": "Jennifer A. Dlouhy",
+    "published_at": "2026-03-10",
+    "quality_index": "8",
+    "summary": "这些决策的加速主要得益于2025年《气候基础设施法案》下增强的45Q税收抵免政策，以及企业对碳清除信用额日益增长的需求。这些项目形成了互联网络，允许多个工业设施共享运输和封存基础设施，从而提高了经济性和效率。",
+    "tags": [
+      "CCUS",
+      "碳捕集与封存",
+      "能源转型"
+    ]
+  },
+  {
+    "title": "澳大利亚西南枢纽项目获最终投资决定，亚洲合作伙伴助力商业化CCUS启动",
+    "url": "https://www.afr.com/companies/energy/south-west-hub-fid-japan-korea-20260305-p5f9w1",
+    "source": "Angela Macdonald-Smith",
+    "published_at": "2026-03-05",
+    "quality_index": "7",
+    "summary": "该项目受益于澳大利亚适宜的地质构造和靠近亚洲市场的地理优势。日本和韩国合作伙伴不仅提供股权投资，还保证购买封存的碳信用额度，以满足其国家气候目标。",
+    "tags": [
+      "CCUS",
+      "澳大利亚",
+      "亚洲合作"
+    ]
+  }
+]

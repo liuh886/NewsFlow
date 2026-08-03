@@ -1,0 +1,452 @@
+[
+  {
+    "id": "https://idiallo.com/blog/have-you-seen-the-new-xl-ai-parody?src=feed",
+    "title": "你见过新版Excel吗？",
+    "content": "当科技界痴迷于大语言模型和神经网络时，真正的颠覆者其实是微软Excel。它自1992年问世以来，如今正迎来企业能力自公司诞生以来最重大的飞跃。",
+    "url": "https://idiallo.com/blog/have-you-seen-the-new-xl-ai-parody?src=feed",
+    "source": "idiallo.com",
+    "date": "2026-05-01",
+    "published_at": "Wed, 29 Apr 2026 23:40:00 GMT"
+  },
+  {
+    "id": "https://www.jeffgeerling.com/blog/2026/raspberry-pi-connect-may-control-windows-soon/",
+    "title": "树莓派连接服务或将很快支持控制Windows系统",
+    "content": "树莓派免费远程访问服务Pi Connect可能即将增加对Windows PC的远程控制支持。该服务最初于2024年推出，旨在解决树莓派用户在Wayland系统下的远程访问需求。",
+    "url": "https://www.jeffgeerling.com/blog/2026/raspberry-pi-connect-may-control-windows-soon/",
+    "source": "jeffgeerling.com",
+    "date": "2026-04-30",
+    "published_at": "Wed, 29 Apr 2026 12:00:00 -0500"
+  },
+  {
+    "id": "https://pluralistic.net/2026/05/27/unnecessariat/",
+    "title": "多元视角：人工智能与无移民的世界（2026年5月27日）",
+    "content": "文章探讨了人工智能与移民减少的世界之间的关系，指出这种设想本质上是唯我论的。",
+    "url": "https://pluralistic.net/2026/05/27/unnecessariat/",
+    "source": "pluralistic.net",
+    "date": "2026-05-28",
+    "published_at": "Wed, 27 May 2026 07:57:41 +0000"
+  },
+  {
+    "id": "https://idiallo.com/blog/how-many-tokens-did-you-burn-today?src=feed",
+    "title": "你今天烧掉了多少Token",
+    "content": "作者回忆早年一位经理要求按开发者每周代码行数制作饼图，因其荒谬而令人发笑，并暗示经理当时可能神志不清。",
+    "url": "https://idiallo.com/blog/how-many-tokens-did-you-burn-today?src=feed",
+    "source": "idiallo.com",
+    "date": "2026-05-28",
+    "published_at": "Wed, 27 May 2026 00:31:22 GMT"
+  },
+  {
+    "id": "https://maurycyz.com/misc/battery/",
+    "title": "优化电池寿命的笔记",
+    "content": "本文以CR2023纽扣电池为例，介绍了延长电池寿命的关键在于关注电流和电荷而非功率和能量，因为大多数电路的功耗更接近恒定电流而非恒定功率。",
+    "url": "https://maurycyz.com/misc/battery/",
+    "source": "maurycyz.com",
+    "date": "2026-05-29",
+    "published_at": "Wed, 27 May 2026 00:00:00 +0000"
+  },
+  {
+    "id": "https://pluralistic.net/2026/04/22/uber-for-nurses/",
+    "title": "多元主义：用应用程序对护士做就不算犯罪（2026年4月22日）",
+    "content": "文章探讨了通过应用程序对护士进行不当行为是否构成犯罪的问题，并包含一系列杂项链接和作者活动信息。",
+    "url": "https://pluralistic.net/2026/04/22/uber-for-nurses/",
+    "source": "pluralistic.net",
+    "date": "2026-04-23",
+    "published_at": "Wed, 22 Apr 2026 15:24:00 +0000"
+  },
+  {
+    "id": "https://idiallo.com/blog/how-to-come-up-with-great-ideas?src=feed",
+    "title": "如何想出好点子",
+    "content": "艺术老师将学生分为两组：一组精心设计一个完美陶罐，另一组尽可能多地制作陶罐。结果发现，通过大量实践和尝试，即使作品粗糙，也能激发更多创意。",
+    "url": "https://idiallo.com/blog/how-to-come-up-with-great-ideas?src=feed",
+    "source": "idiallo.com",
+    "date": "2026-04-23",
+    "published_at": "Wed, 22 Apr 2026 12:00:00 GMT"
+  },
+  {
+    "id": "https://seangoedecke.com/luddites-and-ai-datacenters/",
+    "title": "卢德分子与人工智能数据中心",
+    "content": "近期针对数据中心支持者的暴力事件频发，引发人们对类似19世纪卢德运动的担忧。各方警告可能爆发针对AI基础设施的破坏行为。",
+    "url": "https://seangoedecke.com/luddites-and-ai-datacenters/",
+    "source": "seangoedecke.com",
+    "date": "2026-04-23",
+    "published_at": "Wed, 22 Apr 2026 00:00:00 GMT"
+  },
+  {
+    "id": "https://seangoedecke.com/prompts-are-technical-debt-too/",
+    "title": "提示词也是技术债务",
+    "content": "代码是技术债务，提示词同样如此。添加提示词会增加系统的复杂性和维护负担，未来修改系统时必须考虑现有提示词，避免破坏其功能。",
+    "url": "https://seangoedecke.com/prompts-are-technical-debt-too/",
+    "source": "seangoedecke.com",
+    "date": "2026-05-22",
+    "published_at": "Wed, 20 May 2026 00:00:00 GMT"
+  },
+  {
+    "id": "https://repebble.com/blog/february-pebble-production-and-software-updates",
+    "title": "二月Pebble生产与软件更新",
+    "content": "Pebble Time 2、Pebble Round 2和Index 01迎来重大更新，Pebbleland正忙于准备三款新硬件的发货工作。",
+    "url": "https://repebble.com/blog/february-pebble-production-and-software-updates",
+    "source": "ericmigi.com",
+    "date": "2026-03-16",
+    "published_at": "Wed, 18 Feb 2026 00:00:00 GMT"
+  },
+  {
+    "id": "https://www.jeffgeerling.com/blog/2026/arm-mainboard-for-framework-laptop/",
+    "title": "适用于Framework笔记本电脑的Arm主板",
+    "content": "作者在Framework 13笔记本电脑上测试了x86、RISC-V和Arm三种架构的主板，最新测试的Arm主板采用12核Arm SoC和最高32GB焊接内存，使这台电脑成为技术上的'忒修斯之船'。",
+    "url": "https://www.jeffgeerling.com/blog/2026/arm-mainboard-for-framework-laptop/",
+    "source": "jeffgeerling.com",
+    "date": "2026-04-16",
+    "published_at": "Wed, 15 Apr 2026 09:49:00 -0500"
+  },
+  {
+    "id": "https://pluralistic.net/2026/04/15/artificial-lifeforms/",
+    "title": "多元视角：机器人权利（2026年4月15日）",
+    "content": "文章探讨机器人是否应享有权利，指出并非所有事物都值得道德考量。同时汇总了多个社会议题链接，包括数字版权、政治事件和企业游说等。",
+    "url": "https://pluralistic.net/2026/04/15/artificial-lifeforms/",
+    "source": "pluralistic.net",
+    "date": "2026-04-16",
+    "published_at": "Wed, 15 Apr 2026 07:06:28 +0000"
+  },
+  {
+    "id": "https://idiallo.com/blog/everyone-is-better-than-you?src=feed",
+    "title": "软件工程师已过时",
+    "content": "作者通过分享自己从零搭建编程学习网站的经历，指出当前软件工程师的角色正在被自动化工具和AI取代，传统开发技能不再稀缺。",
+    "url": "https://idiallo.com/blog/everyone-is-better-than-you?src=feed",
+    "source": "idiallo.com",
+    "date": "2026-05-15",
+    "published_at": "Wed, 13 May 2026 22:40:00 GMT"
+  },
+  {
+    "id": "https://pluralistic.net/2026/05/13/vibe-governance/",
+    "title": "多元视角：亿万富翁的唯我论、独裁者的唯我论、人工智能与法西斯范式（2026年5月13日）",
+    "content": "文章探讨了亿万富翁和独裁者的唯我论如何与人工智能结合，形成一种新的法西斯范式。作者认为，通用人工智能在“K-hole”状态下表现最佳，暗示其与极端自我中心的意识形态存在关联。",
+    "url": "https://pluralistic.net/2026/05/13/vibe-governance/",
+    "source": "pluralistic.net",
+    "date": "2026-05-15",
+    "published_at": "Wed, 13 May 2026 15:47:35 +0000"
+  },
+  {
+    "id": "https://seangoedecke.com/space-ai-datacenters-do-not-have-a-cooling-problem/",
+    "title": "太空中的AI数据中心没有散热问题",
+    "content": "埃隆·马斯克提议在太空建设AI数据中心，认为太空散热并非难题。但这一想法是否切实可行仍存争议。",
+    "url": "https://seangoedecke.com/space-ai-datacenters-do-not-have-a-cooling-problem/",
+    "source": "seangoedecke.com",
+    "date": "2026-05-15",
+    "published_at": "Wed, 13 May 2026 00:00:00 GMT"
+  },
+  {
+    "id": "https://krebsonsecurity.com/2026/03/iran-backed-hackers-claim-wiper-attack-on-medtech-firm-stryker/",
+    "title": "伊朗支持的黑客声称对医疗技术公司史赛克发动数据擦除攻击",
+    "content": "与伊朗情报机构有关联的黑客组织声称对全球医疗技术公司史赛克发动数据擦除攻击，导致该公司在爱尔兰的5000多名员工被遣返，美国总部也报告建筑紧急情况。",
+    "url": "https://krebsonsecurity.com/2026/03/iran-backed-hackers-claim-wiper-attack-on-medtech-firm-stryker/",
+    "source": "krebsonsecurity.com",
+    "date": "2026-03-16",
+    "published_at": "Wed, 11 Mar 2026 16:20:13 +0000"
+  },
+  {
+    "id": "https://krebsonsecurity.com/2026/03/microsoft-patch-tuesday-march-2026-edition/",
+    "title": "微软2026年3月补丁星期二更新",
+    "content": "微软本月发布安全更新修复至少77个漏洞，虽无紧急零日漏洞，但部分补丁仍需Windows用户优先处理。",
+    "url": "https://krebsonsecurity.com/2026/03/microsoft-patch-tuesday-march-2026-edition/",
+    "source": "krebsonsecurity.com",
+    "date": "2026-03-16",
+    "published_at": "Wed, 11 Mar 2026 00:32:51 +0000"
+  },
+  {
+    "id": "https://idiallo.com/blog/use-a-link-please",
+    "title": "拜托，用个链接吧！",
+    "content": "作者在使用内部工具时，点击浏览器后退按钮却意外退出了应用，导致工作丢失，因此强烈建议使用链接而非后退按钮导航。",
+    "url": "https://idiallo.com/blog/use-a-link-please",
+    "source": "idiallo.com",
+    "date": "2026-06-14",
+    "published_at": "Wed, 10 Jun 2026 20:30:00 GMT"
+  },
+  {
+    "id": "https://krebsonsecurity.com/2026/06/who-runs-the-ransomware-group-the-gentlemen/",
+    "title": "谁在运营勒索软件组织‘绅士们’？",
+    "content": "一个名为‘绅士们’的网络犯罪团伙已成为按受害者数量计第二活跃的勒索软件组织，通过承诺向附属机构支付90%赎金的激进招募策略迅速吸引黑客人才。本文探究了指向该组织管理员真实身份的线索。",
+    "url": "https://krebsonsecurity.com/2026/06/who-runs-the-ransomware-group-the-gentlemen/",
+    "source": "krebsonsecurity.com",
+    "date": "2026-06-14",
+    "published_at": "Wed, 10 Jun 2026 14:03:44 +0000"
+  },
+  {
+    "id": "https://pluralistic.net/2026/04/08/process-knowledge-vs-bosses/",
+    "title": "多元性：过程知识（2026年4月8日）",
+    "content": "本文探讨过程知识的重要性，并分享作者近期的活动安排、书籍出版计划及各类推荐内容。",
+    "url": "https://pluralistic.net/2026/04/08/process-knowledge-vs-bosses/",
+    "source": "pluralistic.net",
+    "date": "2026-04-09",
+    "published_at": "Wed, 08 Apr 2026 13:39:44 +0000"
+  },
+  {
+    "id": "https://idiallo.com/blog/asimov-three-laws-dont-work-with-ai?src=feed",
+    "title": "阿西莫夫三定律不过是建议而已",
+    "content": "阿西莫夫的机器人三定律旨在约束可能伤害人类的智能机器，但现实中这些定律可能无法完全适用，只是建议而非绝对规则。",
+    "url": "https://idiallo.com/blog/asimov-three-laws-dont-work-with-ai?src=feed",
+    "source": "idiallo.com",
+    "date": "2026-05-07",
+    "published_at": "Wed, 06 May 2026 12:00:00 GMT"
+  },
+  {
+    "id": "https://pluralistic.net/2026/05/06/champerty-loves-company/",
+    "title": "多元主义：赞美秃鹫（2026年5月6日）",
+    "content": "文章以秃鹫为喻，批评那些利用权力或信息不对称肆意剥削他人的行为，并列举了多个相关案例。",
+    "url": "https://pluralistic.net/2026/05/06/champerty-loves-company/",
+    "source": "pluralistic.net",
+    "date": "2026-05-07",
+    "published_at": "Wed, 06 May 2026 10:15:36 +0000"
+  },
+  {
+    "id": "https://idiallo.com/blog/unsubscribed-from-ai-generated-newsletters?src=feed",
+    "title": "既然你的通讯是AI生成的，我选择退订",
+    "content": "一位订阅了20多年通讯的用户，在作者改用AI生成内容且未告知后选择退订。作者赢得了信任，却最终将自己排除在外。",
+    "url": "https://idiallo.com/blog/unsubscribed-from-ai-generated-newsletters?src=feed",
+    "source": "idiallo.com",
+    "date": "2026-06-05",
+    "published_at": "Wed, 03 Jun 2026 21:10:00 GMT"
+  },
+  {
+    "id": "https://idiallo.com/blog/unsubscribed-from-ai-generated-newsletters",
+    "title": "既然你的通讯是AI生成的，我退订了",
+    "content": "一位订阅了20多年通讯的用户，因作者未经通知改用AI生成内容而退订。作者通过长期建立信任，却最终选择用AI取代自己，导致用户流失。",
+    "url": "https://idiallo.com/blog/unsubscribed-from-ai-generated-newsletters",
+    "source": "idiallo.com",
+    "date": "2026-06-07",
+    "published_at": "Wed, 03 Jun 2026 21:10:00 GMT"
+  },
+  {
+    "id": "https://idiallo.com/byte-size/blogging-year-13?src=feed",
+    "title": "博客写作第十三年",
+    "content": "作者在愚人节开始写博客，未考虑长期影响，坚持写作和服务器维护带来意想不到的挑战，尤其是首次爆红时的压力。",
+    "url": "https://idiallo.com/byte-size/blogging-year-13?src=feed",
+    "source": "idiallo.com",
+    "date": "2026-04-03",
+    "published_at": "Wed, 01 Apr 2026 22:15:39 GMT"
+  },
+  {
+    "id": "https://www.jeffgeerling.com/blog/2026/dram-pricing-is-killing-the-hobbyist-sbc-market/",
+    "title": "DRAM价格飙升正扼杀业余爱好者单板计算机市场",
+    "content": "树莓派宣布所有配备LPDDR4内存的型号再次涨价，其中16GB版Pi 5价格已达299.99美元。DRAM成本上涨正严重冲击业余爱好者级高性能单板计算机市场。",
+    "url": "https://www.jeffgeerling.com/blog/2026/dram-pricing-is-killing-the-hobbyist-sbc-market/",
+    "source": "jeffgeerling.com",
+    "date": "2026-04-03",
+    "published_at": "Wed, 01 Apr 2026 16:00:00 -0500"
+  },
+  {
+    "id": "https://idiallo.com/blog/what-is-copilot-exactly?src=feed",
+    "title": "Copilot到底是什么？",
+    "content": "作者原本对微软Copilot持怀疑态度，但在得知一位高效同事依赖它后，决定抛开偏见尝试使用，认识到AI是未来趋势。",
+    "url": "https://idiallo.com/blog/what-is-copilot-exactly?src=feed",
+    "source": "idiallo.com",
+    "date": "2026-04-03",
+    "published_at": "Wed, 01 Apr 2026 12:00:00 GMT"
+  },
+  {
+    "id": "https://pluralistic.net/2026/04/01/minilateralism/",
+    "title": "多元视角：特朗普主义与小型多边主义（2026年4月1日）",
+    "content": "文章探讨特朗普主义与小型多边主义的对立关系，强调国际政治中对手的影响力不容忽视。同时提及网络未来、文化创作及作者近期活动等多方面内容。",
+    "url": "https://pluralistic.net/2026/04/01/minilateralism/",
+    "source": "pluralistic.net",
+    "date": "2026-04-03",
+    "published_at": "Wed, 01 Apr 2026 10:59:24 +0000"
+  },
+  {
+    "id": "https://maurycyz.com/misc/gopher/",
+    "title": "我的闲言碎语可通过Gopher协议访问",
+    "content": "作者发现用户需要上千行C代码才能访问其网站，认为这不可接受，因此为简化客户端访问，其服务器现已支持Gopher协议。",
+    "url": "https://maurycyz.com/misc/gopher/",
+    "source": "maurycyz.com",
+    "date": "2026-04-03",
+    "published_at": "Wed, 01 Apr 2026 00:00:00 +0000"
+  },
+  {
+    "id": "https://maurycyz.com/projects/gopher/",
+    "title": "GopherTree",
+    "content": "Gopher协议本质更接近FTP而非网页，采用无标记的层级文件结构，但当前客户端普遍将其菜单渲染得像糟糕的网站，未能发挥其创意显示潜力。",
+    "url": "https://maurycyz.com/projects/gopher/",
+    "source": "maurycyz.com",
+    "date": "2026-04-03",
+    "published_at": "Wed, 01 Apr 2026 00:00:00 +0000"
+  },
+  {
+    "id": "https://pluralistic.net/2026/04/27/mouseketeers/",
+    "title": "多元视角：Vicky Osterweil的《扩展宇宙》",
+    "content": "本文探讨迪士尼如何通过收购和扩张，从电影公司演变为主宰全球娱乐的巨头，并分析了这一过程对电影产业和文化的影响。",
+    "url": "https://pluralistic.net/2026/04/27/mouseketeers/",
+    "source": "pluralistic.net",
+    "date": "2026-04-29",
+    "published_at": "Tue, 28 Apr 2026 05:57:01 +0000"
+  },
+  {
+    "id": "https://repebble.com/blog/spring-2026-dev-contest-results",
+    "title": "2026年春季开发者大赛结果揭晓！",
+    "content": "超过500款新的Pebble应用和表盘参赛，感谢所有开发者的热情参与，比赛过程精彩纷呈。",
+    "url": "https://repebble.com/blog/spring-2026-dev-contest-results",
+    "source": "ericmigi.com",
+    "date": "2026-04-30",
+    "published_at": "Tue, 28 Apr 2026 00:00:00 GMT"
+  },
+  {
+    "id": "https://www.jeffgeerling.com/blog/2026/i-patched-iozone-for-better-disk-benchmarks-on-modern-macos/",
+    "title": "我为iozone打补丁，以在最新macOS上获得更好的磁盘基准测试",
+    "content": "作者为iozone工具打补丁，使其能在现代macOS上正常运行，以便继续使用这个跨平台、易用的磁盘性能测试工具。",
+    "url": "https://www.jeffgeerling.com/blog/2026/i-patched-iozone-for-better-disk-benchmarks-on-modern-macos/",
+    "source": "jeffgeerling.com",
+    "date": "2026-05-28",
+    "published_at": "Tue, 26 May 2026 20:32:00 -0500"
+  },
+  {
+    "id": "https://pluralistic.net/2026/05/26/the-ai-will-continue/",
+    "title": "多元视角：AI泡沫与互联网泡沫不同",
+    "content": "作者指出AI泡沫与互联网泡沫的本质区别在于，互联网时代工人自愿拥抱新技术，而AI则被强行推广。文章还包含其他链接和作者动态。",
+    "url": "https://pluralistic.net/2026/05/26/the-ai-will-continue/",
+    "source": "pluralistic.net",
+    "date": "2026-05-27",
+    "published_at": "Tue, 26 May 2026 09:45:37 +0000"
+  },
+  {
+    "id": "https://idiallo.com/byte-size/amber-alert-with-spam-link?src=feed",
+    "title": "安珀警报竟含垃圾网址？",
+    "content": "用户收到安珀警报，但其中的链接指向一个可疑的3gp文件转换网站，疑似因警报字符数超限导致链接错误。",
+    "url": "https://idiallo.com/byte-size/amber-alert-with-spam-link?src=feed",
+    "source": "idiallo.com",
+    "date": "2026-05-27",
+    "published_at": "Tue, 26 May 2026 03:25:17 GMT"
+  },
+  {
+    "id": "https://repebble.com/blog/pebble-time-2-is-in-mass-production",
+    "title": "Pebble Time 2 已进入大规模生产阶段！",
+    "content": "Pebble Time 2 已正式投入生产，具备30米防水功能，用户需关注地址确认邮件。",
+    "url": "https://repebble.com/blog/pebble-time-2-is-in-mass-production",
+    "source": "ericmigi.com",
+    "date": "2026-04-03",
+    "published_at": "Tue, 24 Mar 2026 00:00:00 GMT"
+  },
+  {
+    "id": "https://krebsonsecurity.com/2026/04/scattered-spider-member-tylerb-pleads-guilty/",
+    "title": "‘散乱蜘蛛’成员‘泰勒B’认罪",
+    "content": "24岁英国籍网络犯罪组织‘散乱蜘蛛’高级成员承认串谋电信诈骗和加重身份盗窃罪，其参与的2022年夏季短信钓鱼攻击导致至少十几家大型科技公司被入侵，投资者数千万美元加密货币被盗。",
+    "url": "https://krebsonsecurity.com/2026/04/scattered-spider-member-tylerb-pleads-guilty/",
+    "source": "krebsonsecurity.com",
+    "date": "2026-04-22",
+    "published_at": "Tue, 21 Apr 2026 14:53:59 +0000"
+  },
+  {
+    "id": "https://pluralistic.net/2026/04/21/torment-nexusism/",
+    "title": "多元视角：奎因·斯洛博迪安与本·塔诺夫的《马斯克主义：困惑者指南》（2026年4月21日）",
+    "content": "本文介绍了奎因·斯洛博迪安与本·塔诺夫合著的《马斯克主义：困惑者指南》，探讨了埃隆·马斯克现象及其引发的社会文化反思。",
+    "url": "https://pluralistic.net/2026/04/21/torment-nexusism/",
+    "source": "pluralistic.net",
+    "date": "2026-04-22",
+    "published_at": "Tue, 21 Apr 2026 13:18:50 +0000"
+  },
+  {
+    "id": "http://antirez.com/news/166",
+    "title": "LLM代理的EDIT工具替代方案",
+    "content": "当前广泛使用的EDIT工具要求LLM输出旧版本内容，导致token浪费。文章探讨了CRC32校验等替代方案的权衡，强调在资源受限的本地推理环境中优化的重要性。",
+    "url": "http://antirez.com/news/166",
+    "source": "antirez.com",
+    "date": "2026-05-20",
+    "published_at": "Tue, 19 May 2026 09:26:03 +0200"
+  },
+  {
+    "id": "https://www.jeffgeerling.com/blog/2026/wi-wi-is-wireless-time-sync-less-than-5ns/",
+    "title": "Wi-Wi：1纳秒级无线时间同步技术",
+    "content": "Wi-Wi是一种基于900 MHz频段的无线时间同步协议，可实现皮秒级相位同步和30纳秒级时间同步，未来版本有望达到5纳秒精度。",
+    "url": "https://www.jeffgeerling.com/blog/2026/wi-wi-is-wireless-time-sync-less-than-5ns/",
+    "source": "jeffgeerling.com",
+    "date": "2026-05-20",
+    "published_at": "Tue, 19 May 2026 09:00:00 -0500"
+  },
+  {
+    "id": "https://pluralistic.net/2026/05/19/shes-dead-of-course/",
+    "title": "多元论：根本不存在所谓的“年龄验证”（2026年5月19日）",
+    "content": "文章指出“年龄验证”技术无法真正实现，并批评了“必须做点什么”/“好了，我做了点什么”这种政策制定方式带来的可预见且已预见的后果。",
+    "url": "https://pluralistic.net/2026/05/19/shes-dead-of-course/",
+    "source": "pluralistic.net",
+    "date": "2026-05-20",
+    "published_at": "Tue, 19 May 2026 07:17:09 +0000"
+  },
+  {
+    "id": "https://idiallo.com/blog/debugging-on-prod",
+    "title": "在生产环境上调试",
+    "content": "最糟糕的bug是只出现在生产环境中的bug。作者在重构博客时删除了大量旧代码，导致生产环境出现500错误。",
+    "url": "https://idiallo.com/blog/debugging-on-prod",
+    "source": "idiallo.com",
+    "date": "2026-06-17",
+    "published_at": "Tue, 16 Jun 2026 20:18:00 GMT"
+  },
+  {
+    "id": "https://krebsonsecurity.com/2026/04/patch-tuesday-april-2026-edition/",
+    "title": "2026年4月补丁星期二版本",
+    "content": "微软修复了Windows系统及相关软件中的167个安全漏洞，包括SharePoint Server零日漏洞和Windows Defender的公开弱点。同时，谷歌Chrome修复了2026年第四个零日漏洞，Adobe Reader紧急更新修复了可导致远程代码执行的活跃漏洞。",
+    "url": "https://krebsonsecurity.com/2026/04/patch-tuesday-april-2026-edition/",
+    "source": "krebsonsecurity.com",
+    "date": "2026-04-16",
+    "published_at": "Tue, 14 Apr 2026 21:47:59 +0000"
+  },
+  {
+    "id": "https://idiallo.com/blog/back-button-hijacking-is-going-away-seo?src=feed",
+    "title": "返回按钮劫持现象正在消失",
+    "content": "网站若过于恶意，用户会直接关闭不再访问。但有些恶意软件设计巧妙，用户如温水煮青蛙般逐渐适应，最终仍在使用。",
+    "url": "https://idiallo.com/blog/back-button-hijacking-is-going-away-seo?src=feed",
+    "source": "idiallo.com",
+    "date": "2026-04-15",
+    "published_at": "Tue, 14 Apr 2026 12:00:00 GMT"
+  },
+  {
+    "id": "https://pluralistic.net/2026/04/14/compartment/",
+    "title": "多元视角：赞颂（某些）区隔化（2026年4月14日）",
+    "content": "本文主张适度的区隔化有助于专注与效率，同时列举了当日精选链接、作者近期行程及著作动态。",
+    "url": "https://pluralistic.net/2026/04/14/compartment/",
+    "source": "pluralistic.net",
+    "date": "2026-04-15",
+    "published_at": "Tue, 14 Apr 2026 08:32:55 +0000"
+  },
+  {
+    "id": "https://krebsonsecurity.com/2026/05/patch-tuesday-may-2026-edition/",
+    "title": "2026年5月补丁星期二特别版",
+    "content": "人工智能平台虽易受社会工程攻击，但在发现人类编写的代码漏洞方面表现出色。本月，苹果、谷歌、微软等多家软件厂商修复了接近创纪录数量的安全漏洞，并加快了补丁发布节奏。",
+    "url": "https://krebsonsecurity.com/2026/05/patch-tuesday-may-2026-edition/",
+    "source": "krebsonsecurity.com",
+    "date": "2026-05-15",
+    "published_at": "Tue, 12 May 2026 21:46:45 +0000"
+  },
+  {
+    "id": "https://www.jeffgeerling.com/blog/2026/bambu-lab-abusing-open-source-social-contract/",
+    "title": "Bambu Lab滥用开源社会契约",
+    "content": "用户因Bambu Lab强制推行云端连接而失去对打印机的控制，不得不采取防火墙屏蔽、停止固件更新、锁定开发者模式等措施来夺回控制权。",
+    "url": "https://www.jeffgeerling.com/blog/2026/bambu-lab-abusing-open-source-social-contract/",
+    "source": "jeffgeerling.com",
+    "date": "2026-05-15",
+    "published_at": "Tue, 12 May 2026 09:00:00 -0500"
+  },
+  {
+    "id": "https://seangoedecke.com/interaction-models/",
+    "title": "Thinking Machines与交互模型",
+    "content": "Thinking Machines发布了首个AI模型“交互模型”，专注于改进与模型的实时交互，而非与OpenAI等公司竞争前沿模型。",
+    "url": "https://seangoedecke.com/interaction-models/",
+    "source": "seangoedecke.com",
+    "date": "2026-05-12",
+    "published_at": "Tue, 12 May 2026 00:00:00 GMT"
+  },
+  {
+    "id": "https://krebsonsecurity.com/2026/06/a-record-breaking-patch-tuesday-for-june-2026/",
+    "title": "2026年6月创纪录的补丁星期二",
+    "content": "微软发布了近200个安全更新，创下月度补丁星期二的新纪录，其中约36个漏洞被评为“严重”，至少3个漏洞的利用代码已公开。",
+    "url": "https://krebsonsecurity.com/2026/06/a-record-breaking-patch-tuesday-for-june-2026/",
+    "source": "krebsonsecurity.com",
+    "date": "2026-06-14",
+    "published_at": "Tue, 09 Jun 2026 22:07:28 +0000"
+  },
+  {
+    "id": "https://pluralistic.net/2026/06/09/deliver-us/",
+    "title": "多元视角：娜奥米·克里策的《产科医生》",
+    "content": "当强制生育的邪教分子变成强制产科激进分子。本文探讨了极端生育政策下的社会冲突。",
+    "url": "https://pluralistic.net/2026/06/09/deliver-us/",
+    "source": "pluralistic.net",
+    "date": "2026-06-10",
+    "published_at": "Tue, 09 Jun 2026 13:30:12 +0000"
+  }
+]

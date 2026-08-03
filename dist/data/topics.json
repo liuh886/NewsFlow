@@ -1,0 +1,12 @@
+[
+  {
+    "id": "ai-digest",
+    "name": "AI Daily Digest",
+    "query": "tech"
+  },
+  {
+    "id": "energy",
+    "name": "Energy & ESG",
+    "query": "energy"
+  }
+]

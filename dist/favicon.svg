@@ -1,0 +1,44 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="100%" height="100%">
+  <defs>
+    <linearGradient id="bgGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#141414"/>
+      <stop offset="100%" stop-color="#070707"/>
+    </linearGradient>
+    <linearGradient id="goldGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#FFE259"/>
+      <stop offset="100%" stop-color="#FFA751"/>
+    </linearGradient>
+    <linearGradient id="goldGrad2" x1="0%" y1="100%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#D4AF37"/>
+      <stop offset="100%" stop-color="#FFF2A1"/>
+    </linearGradient>
+    <filter id="glow" x="-20%" y="-20%" width="140%" height="140%">
+      <feGaussianBlur stdDeviation="12" result="blur" />
+      <feComposite in="SourceGraphic" in2="blur" operator="over" />
+    </filter>
+  </defs>
+
+  <!-- Background Rounded Base -->
+  <rect width="512" height="512" rx="112" fill="url(#bgGrad)"/>
+  <rect width="504" height="504" x="4" y="4" rx="108" fill="none" stroke="rgba(255, 215, 0, 0.15)" stroke-width="2"/>
+
+  <!-- Signal Pulse Waves (Subtle Background) -->
+  <circle cx="256" cy="256" r="180" fill="none" stroke="rgba(255, 215, 0, 0.05)" stroke-width="1.5" stroke-dasharray="8 6"/>
+  <circle cx="256" cy="256" r="130" fill="none" stroke="rgba(255, 215, 0, 0.08)" stroke-width="1.5"/>
+
+  <!-- Central High Signal 'N' Monogram + Stream -->
+  <g filter="url(#glow)">
+    <!-- Left Pillar -->
+    <path d="M 156 360 L 156 152 C 156 145 162 140 169 140 L 195 140 C 202 140 208 145 208 152 L 208 360 C 208 367 202 372 195 372 L 169 372 C 162 372 156 367 156 360 Z" fill="url(#goldGrad)"/>
+    
+    <!-- Diagonal Dynamic Flow -->
+    <path d="M 195 146 L 317 338 C 321 344 329 344 333 338 L 350 312 L 205 140 Z" fill="url(#goldGrad2)" opacity="0.95"/>
+    
+    <!-- Right Pillar -->
+    <path d="M 304 360 L 304 152 C 304 145 310 140 317 140 L 343 140 C 350 140 356 145 356 152 L 356 360 C 356 367 350 372 343 372 L 317 372 C 310 372 304 367 304 360 Z" fill="url(#goldGrad)"/>
+
+    <!-- Pulse Signal Radar Dot -->
+    <circle cx="356" cy="144" r="16" fill="#FFE259"/>
+    <circle cx="356" cy="144" r="28" fill="none" stroke="#FFE259" stroke-width="2" opacity="0.6"/>
+  </g>
+</svg>
