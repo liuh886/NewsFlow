@@ -1,0 +1,65 @@
+name: Publish autonomous edition
+
+on:
+  schedule:
+    - cron: '15 1 1,15 * *'
+  workflow_dispatch:
+    inputs:
+      publication_date:
+        description: 'Optional publication date in YYYY-MM-DD format'
+        required: false
+        type: string
+
+permissions:
+  contents: write
+
+concurrency:
+  group: newsflow-edition-publication
+  cancel-in-progress: false
+
+jobs:
+  publish:
+    name: Compile and publish
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+
+      - name: Set up Node
+        uses: actions/setup-node@v6
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Install
+        run: npm ci
+
+      - name: Compile semi-monthly edition
+        shell: bash
+        run: |
+          if [ -n "${{ inputs.publication_date }}" ]; then
+            node scripts/publish-edition.mjs --date="${{ inputs.publication_date }}" --force
+          else
+            npm run publish:edition
+          fi
+
+      - name: Validate publication
+        run: |
+          npm run check
+          npm run build
+
+      - name: Commit published issue
+        shell: bash
+        run: |
+          if git diff --quiet -- public/data/issues.json; then
+            echo "No new issue was generated."
+            exit 0
+          fi
+          git config user.name "newsflow-edition-bot"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add public/data/issues.json
+          git commit -m "publish: autonomous semi-monthly edition"
+          git push
