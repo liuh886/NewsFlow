@@ -1,11 +1,13 @@
 {
   "name": "newsflow",
-  "version": "2.2.0",
+  "version": "2.3.0",
   "private": true,
   "type": "module",
   "scripts": {
     "check": "node scripts/check.mjs",
-    "build": "node scripts/build.mjs"
+    "build": "node scripts/build.mjs",
+    "publish:edition": "node scripts/publish-edition.mjs",
+    "publish:edition:dry-run": "node scripts/publish-edition.mjs --dry-run --force"
   },
   "engines": {
     "node": ">=20"
