@@ -6,6 +6,10 @@ An editor defines a publication once through an Edition file: its reader promise
 
 > Define the editorial system once. Let the publication keep observing.
 
+## Product status
+
+NewsFlow 2.3.0 is an implemented, installable static web product. It now combines the mature signal-reading frontend with an Edition-native publication layer, persistent Storylines, formal Issue artifacts and a scheduled semi-monthly compiler. The frontend remains dependency-free, builds deterministically and deploys through GitHub Pages.
+
 ## Product model
 
 NewsFlow is the engine. An **Edition** is the reader-facing publication.
@@ -21,16 +25,16 @@ The reference product uses a strong-editor model:
 
 The first-stage platform remains GitHub-first. There is no separate account, certification or Edition marketplace. Anyone may fork the protocol, while the official interface stays a small, editor-selected publication shelf.
 
-## Implemented reader experience
+## Editorial Signal Desk
 
-The current static product now exposes four distinct reading layers:
+The reader now exposes four distinct layers while retaining the established Editorial Signal Desk visual system:
 
 1. **Latest Edition** — the most recent formal semi-monthly issue and its central judgment;
 2. **Editorial Desk** — continuously updated material Signals;
 3. **Storylines** — persistent questions and current evidence movement;
 4. **Archive** — frozen Issue artifacts and publication history.
 
-The visual system remains an editorial workspace: warm paper surfaces, restrained signal accents, serif headlines, compact metadata, evidence drawers, keyboard navigation, mobile navigation, dark mode and PWA installation.
+The visual system remains a calm editorial workspace: warm paper surfaces, restrained signal accents, serif headlines, compact metadata, evidence drawers, keyboard navigation, mobile navigation, dark mode and PWA installation.
 
 ## Automatic publication
 
@@ -93,6 +97,14 @@ python -m http.server 4173 --directory dist
 ```
 
 Open `http://localhost:4173` after the build completes.
+
+## CI and deployment
+
+- `NewsFlow Repository Contract` protects the repository and documentation boundary.
+- `NewsFlow Frontend` validates data, JavaScript, Edition contracts and the deterministic build.
+- `CI Governance` enforces workflow authority and package-manager policy.
+- `Publish autonomous edition` runs only on schedule or manual dispatch and has the minimum write authority needed to commit a generated Issue.
+- `NewsFlow Frontend` deploys the built artifact to GitHub Pages only from `main`.
 
 ## Data and trust boundaries
 
