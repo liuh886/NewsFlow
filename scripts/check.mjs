@@ -5,10 +5,13 @@ import { fileURLToPath } from 'node:url';
 
 const root = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 const appPath = 'src/editorial-app.js';
+const polishPath = 'src/polish.js';
 const requiredFiles = [
   'index.html',
   appPath,
+  polishPath,
   'src/styles.css',
+  'src/polish.css',
   'public/icon.svg',
   'public/manifest.webmanifest',
   'public/sw.js',
@@ -21,13 +24,15 @@ for (const file of requiredFiles) {
   await access(resolve(root, file));
 }
 
-const syntax = spawnSync(process.execPath, ['--check', resolve(root, appPath)], { encoding: 'utf8' });
-if (syntax.status !== 0) {
-  throw new Error(`JavaScript syntax check failed:\n${syntax.stderr}`);
+for (const scriptPath of [appPath, polishPath]) {
+  const syntax = spawnSync(process.execPath, ['--check', resolve(root, scriptPath)], { encoding: 'utf8' });
+  if (syntax.status !== 0) {
+    throw new Error(`${scriptPath} syntax check failed:\n${syntax.stderr}`);
+  }
 }
 
 const index = await readFile(resolve(root, 'index.html'), 'utf8');
-for (const reference of ['./styles.css', './editorial-app.js', './manifest.webmanifest']) {
+for (const reference of ['./styles.css', './polish.css', './editorial-app.js', './polish.js', './manifest.webmanifest']) {
   if (!index.includes(reference)) throw new Error(`index.html is missing ${reference}`);
 }
 if (index.includes('./app.js')) throw new Error('index.html still loads the legacy frontend asset');
@@ -62,6 +67,12 @@ for (const selector of ['.topbar', '.lead-story', '.article-card', '.article-dra
   if (!css.includes(selector)) throw new Error(`styles.css is missing ${selector}`);
 }
 
+const polishCss = await readFile(resolve(root, 'src/polish.css'), 'utf8');
+for (const contract of ['body.is-scrolled .topbar', 'var(--paper) 50%', '.article-card::before', '.mobile-search-backdrop']) {
+  if (!polishCss.includes(contract)) throw new Error(`polish.css is missing ${contract}`);
+}
+if (polishCss.includes('margin-inline: -14px')) throw new Error('polish layer must not reintroduce hover layout shift');
+
 const appSource = await readFile(resolve(root, appPath), 'utf8');
 if (appSource.includes('NEXUS INTELLIGENCE ONLINE')) throw new Error('legacy Nexus visual language remains in the new frontend');
 if (!appSource.includes('escapeHtml')) throw new Error('rendered news content must be escaped');
@@ -75,8 +86,15 @@ if (appSource.includes('今日首要信号') || appSource.includes('今日版本
   throw new Error('freshness labels must come from the data snapshot rather than the current date');
 }
 
+const polishSource = await readFile(resolve(root, polishPath), 'utf8');
+for (const contract of ["window.scrollY > 18", "classList.toggle('is-scrolled'", "data-action]')?.dataset.action", 'mobile-search-backdrop']) {
+  if (!polishSource.includes(contract)) throw new Error(`polish.js is missing ${contract}`);
+}
+
 const serviceWorker = await readFile(resolve(root, 'public/sw.js'), 'utf8');
-if (!serviceWorker.includes('./editorial-app.js')) throw new Error('service worker is missing the versioned frontend asset');
+for (const asset of ['./editorial-app.js', './polish.js', './styles.css', './polish.css']) {
+  if (!serviceWorker.includes(asset)) throw new Error(`service worker is missing ${asset}`);
+}
 if (serviceWorker.includes("'./app.js'")) throw new Error('service worker still caches the legacy frontend asset');
 
-console.log(`NewsFlow checks passed: ${news.length} repository items, ${topics.length} channels, exclusive verified fallback, snapshot-aware UI.`);
+console.log(`NewsFlow checks passed: ${news.length} repository items, ${topics.length} channels, scroll transparency, stable cards, mobile search, and valid PWA shell.`);
