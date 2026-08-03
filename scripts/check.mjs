@@ -68,10 +68,20 @@ for (const selector of ['.topbar', '.lead-story', '.article-card', '.article-dra
 }
 
 const polishCss = await readFile(resolve(root, 'src/polish.css'), 'utf8');
-for (const contract of ['body.is-scrolled .topbar', 'var(--paper) 50%', '.article-card::before', '.mobile-search-backdrop']) {
+for (const contract of [
+  'body.is-scrolled .topbar',
+  'var(--paper) 50%',
+  '.article-card::before',
+  '.mobile-search-backdrop',
+  '.brand-status,',
+  '.signal-score',
+  '.feed-list.list .article-tags',
+  '.rail-card.prominent'
+]) {
   if (!polishCss.includes(contract)) throw new Error(`polish.css is missing ${contract}`);
 }
 if (polishCss.includes('margin-inline: -14px')) throw new Error('polish layer must not reintroduce hover layout shift');
+if (polishCss.includes('linear-gradient(155deg, #18283e')) throw new Error('simplified rail must not restore the heavy dashboard card');
 
 const appSource = await readFile(resolve(root, appPath), 'utf8');
 if (appSource.includes('NEXUS INTELLIGENCE ONLINE')) throw new Error('legacy Nexus visual language remains in the new frontend');
@@ -87,7 +97,19 @@ if (appSource.includes('今日首要信号') || appSource.includes('今日版本
 }
 
 const polishSource = await readFile(resolve(root, polishPath), 'utf8');
-for (const contract of ["window.scrollY > 18", "classList.toggle('is-scrolled'", "data-action]')?.dataset.action", 'mobile-search-backdrop']) {
+for (const contract of [
+  "window.scrollY > 18",
+  "classList.toggle('is-scrolled'",
+  "data-action]')?.dataset.action",
+  'mobile-search-backdrop',
+  'simplifyMasthead',
+  'simplifySidebar',
+  'simplifyFeed',
+  'simplifyRail',
+  'simplifyDrawer',
+  "Score\\s*[\\d.]+",
+  "source-bars"
+]) {
   if (!polishSource.includes(contract)) throw new Error(`polish.js is missing ${contract}`);
 }
 
@@ -95,6 +117,7 @@ const serviceWorker = await readFile(resolve(root, 'public/sw.js'), 'utf8');
 for (const asset of ['./editorial-app.js', './polish.js', './styles.css', './polish.css']) {
   if (!serviceWorker.includes(asset)) throw new Error(`service worker is missing ${asset}`);
 }
+if (!serviceWorker.includes('newsflow-editorial-v2.1.3')) throw new Error('service worker cache version is stale');
 if (serviceWorker.includes("'./app.js'")) throw new Error('service worker still caches the legacy frontend asset');
 
-console.log(`NewsFlow checks passed: ${news.length} repository items, ${topics.length} channels, scroll transparency, stable cards, mobile search, and valid PWA shell.`);
+console.log(`NewsFlow checks passed: ${news.length} repository items, ${topics.length} channels, simpler copy hierarchy, quieter cards, scroll transparency, mobile search, and valid PWA shell.`);
