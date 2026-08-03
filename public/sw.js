@@ -21,10 +21,23 @@ const cacheResponse = async (cache, request, response) => {
 const networkFirst = async (request, fallbackRequest = request) => {
   const cache = await caches.open(CACHE_NAME);
   try {
-    return await cacheResponse(cache, request, await fetch(request));
+    const response = await fetch(request);
+    if (!response.ok) throw new Error(`Network response: ${response.status}`);
+    return await cacheResponse(cache, request, response);
   } catch {
     return (await cache.match(request)) || (await cache.match(fallbackRequest)) || Response.error();
   }
+};
+
+const staleWhileRevalidate = (event) => {
+  const request = event.request;
+  const networkUpdate = caches.open(CACHE_NAME)
+    .then((cache) => fetch(request).then((response) => cacheResponse(cache, request, response)))
+    .catch(() => null);
+
+  event.waitUntil(networkUpdate.then(() => undefined));
+
+  return caches.match(request).then(async (cached) => cached || (await networkUpdate) || Response.error());
 };
 
 self.addEventListener('install', (event) => {
@@ -55,19 +68,5 @@ self.addEventListener('fetch', (event) => {
     return;
   }
 
-  event.respondWith(
-    caches.open(CACHE_NAME).then(async (cache) => {
-      const cached = await cache.match(event.request);
-      const networkUpdate = fetch(event.request)
-        .then((response) => cacheResponse(cache, event.request, response))
-        .catch(() => null);
-
-      if (cached) {
-        event.waitUntil(networkUpdate.then(() => undefined));
-        return cached;
-      }
-
-      return (await networkUpdate) || Response.error();
-    })
-  );
+  event.respondWith(staleWhileRevalidate(event));
 });
