@@ -6,6 +6,10 @@
     <meta name="theme-color" content="#f4f1ea" />
     <meta name="description" content="NewsFlow 将高频新闻整理为可筛选、可追溯、可深读的个人信号流。" />
     <meta name="color-scheme" content="light dark" />
+    <meta name="mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+    <meta name="format-detection" content="telephone=no" />
     <link rel="icon" href="./icon.svg" type="image/svg+xml" />
     <link rel="manifest" href="./manifest.webmanifest" />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
@@ -17,7 +21,8 @@
   </head>
   <body>
     <a class="skip-link" href="#main-content">跳到主要内容</a>
-    <div id="app" aria-live="polite"></div>
+    <div id="app"></div>
+    <div id="app-status" class="visually-hidden" role="status" aria-live="polite" aria-atomic="true"></div>
     <noscript>NewsFlow 需要 JavaScript 才能加载新闻流。</noscript>
     <script type="module" src="./editorial-app.js"></script>
     <script type="module" src="./polish.js"></script>
