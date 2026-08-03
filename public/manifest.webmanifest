@@ -1,12 +1,18 @@
 {
+  "id": "./",
   "name": "NewsFlow — Editorial Signal Desk",
   "short_name": "NewsFlow",
   "description": "将高频新闻整理为可筛选、可追溯、可深读的个人信号流。",
+  "lang": "zh-CN",
+  "dir": "ltr",
   "start_url": "./",
   "scope": "./",
   "display": "standalone",
+  "orientation": "any",
   "background_color": "#f4f1ea",
   "theme_color": "#f4f1ea",
+  "categories": ["news", "productivity"],
+  "prefer_related_applications": false,
   "icons": [
     {
       "src": "./icon.svg",
