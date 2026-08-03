@@ -6,7 +6,8 @@
   "governed_workflows": [
     ".github/workflows/ci-governance.yml",
     ".github/workflows/ci.yml",
-    ".github/workflows/pages.yml"
+    ".github/workflows/pages.yml",
+    ".github/workflows/publish-edition.yml"
   ],
   "required_pr_workflows": [
     ".github/workflows/ci-governance.yml",
@@ -14,7 +15,8 @@
     ".github/workflows/pages.yml"
   ],
   "release_workflows": [
-    ".github/workflows/pages.yml"
+    ".github/workflows/pages.yml",
+    ".github/workflows/publish-edition.yml"
   ],
   "advisory_workflows": [],
   "artifact_retention_days": {
