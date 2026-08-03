@@ -1,9 +1,0 @@
-[
-  {"id": 1, "date": "2026-03-06", "title": "AI Agent Swarms in CCUS", "content": "Recent developments in multi-agent systems show promising results for carbon capture optimization. This study focuses on cluster-based deployment.", "score": 9, "tags": ["AI", "CCUS"]},
-  {"id": 2, "date": "2026-03-05", "title": "Digital Carbon Monitoring", "content": "New sensor arrays providing real-time data for ESG reporting. Implementation starting in major industrial hubs.", "score": 7, "tags": ["ESG", "IoT"]},
-  {"id": 3, "date": "2026-03-04", "title": "Tesla's New Energy Strategy", "content": "A pivot towards industrial-scale carbon storage solutions. Master Plan Part 4 details.", "score": 8, "tags": ["Energy", "Storage"]},
-  {"id": 4, "date": "2026-03-03", "title": "Global Carbon Market Trends", "content": "Price signals reaching record highs in EU markets. Policy shifts expected in Q2.", "score": 6, "tags": ["Policy", "Economics"]},
-  {"id": 5, "date": "2026-03-02", "title": "Physics-Informed AI", "content": "Bridging the gap between simulation and real-world carbon flow models. Critical for subsurface modeling.", "score": 10, "tags": ["AI", "Physics"]},
-  {"id": 6, "date": "2026-03-01", "title": "Offshore Wind Expansion", "content": "New leasing areas in the North Sea opened for CCUS-linked projects.", "score": 5, "tags": ["Renewables", "Offshore"]},
-  {"id": 7, "date": "2026-02-28", "title": "Methane Leak Detection", "content": "Satellite-based monitoring reveals hidden emission points in aging infrastructure.", "score": 9, "tags": ["Emissions", "Satellite"]}
-]
