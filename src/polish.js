@@ -18,6 +18,31 @@ const announce = (message) => {
   });
 };
 
+const captureFocusReference = (element) => {
+  if (!(element instanceof HTMLElement)) return null;
+  return {
+    action: element.dataset.action || '',
+    id: element.dataset.id || '',
+    value: element.dataset.value || '',
+    ariaLabel: element.getAttribute('aria-label') || ''
+  };
+};
+
+const restoreFocus = (reference) => {
+  if (!reference) return;
+  const candidates = reference.action
+    ? [...document.querySelectorAll(`[data-action="${reference.action}"]`)]
+    : [...document.querySelectorAll(focusableSelector)];
+  const target = candidates.find((element) => {
+    if (!(element instanceof HTMLElement)) return false;
+    if (reference.id && element.dataset.id !== reference.id) return false;
+    if (reference.value && element.dataset.value !== reference.value) return false;
+    if (reference.ariaLabel && element.getAttribute('aria-label') !== reference.ariaLabel) return false;
+    return true;
+  });
+  target?.focus();
+};
+
 const applyScrollState = () => {
   document.body.classList.toggle('is-scrolled', window.scrollY > 18);
 };
@@ -141,8 +166,8 @@ const updateAppOverlayState = () => {
   const appOverlayOpen = Boolean(document.querySelector('.article-drawer, .help-dialog, .sidebar.open'));
   document.body.classList.toggle('overlay-active', appOverlayOpen);
 
-  if (previousAppOverlayOpen && !appOverlayOpen && lastAppOverlayTrigger?.isConnected) {
-    window.requestAnimationFrame(() => lastAppOverlayTrigger?.focus());
+  if (previousAppOverlayOpen && !appOverlayOpen) {
+    window.requestAnimationFrame(() => restoreFocus(lastAppOverlayTrigger));
   }
 
   previousAppOverlayOpen = appOverlayOpen;
@@ -202,7 +227,7 @@ const setAppInert = (inert) => {
 
 const openMobileSearch = (trigger) => {
   const source = document.querySelector('#global-search');
-  mobileSearchTrigger = trigger || (document.activeElement instanceof HTMLElement ? document.activeElement : null);
+  mobileSearchTrigger = captureFocusReference(trigger || document.activeElement);
   mobileSearchInput.value = source?.value || '';
   searchSheet.classList.add('open');
   searchSheet.setAttribute('aria-hidden', 'false');
@@ -219,7 +244,7 @@ const closeMobileSearch = () => {
   document.body.classList.remove('mobile-search-active');
   setAppInert(false);
   searchWasOpen = false;
-  window.requestAnimationFrame(() => mobileSearchTrigger?.isConnected && mobileSearchTrigger.focus());
+  window.requestAnimationFrame(() => restoreFocus(mobileSearchTrigger));
 };
 
 const trapSearchFocus = (event) => {
@@ -251,11 +276,11 @@ searchSheet.addEventListener('click', (event) => {
 });
 
 document.addEventListener('click', (event) => {
-  const target = event.target.closest('[data-action]');
+  const target = event.target instanceof Element ? event.target.closest('[data-action]') : null;
   const action = target?.dataset.action;
 
   if (['open', 'help', 'mobile-menu', 'mobile-filter'].includes(action)) {
-    lastAppOverlayTrigger = target;
+    lastAppOverlayTrigger = captureFocusReference(target);
   }
 
   if (action === 'focus-search') {
