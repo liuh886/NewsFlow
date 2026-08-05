@@ -7,7 +7,8 @@
     ".github/workflows/ci-governance.yml",
     ".github/workflows/ci.yml",
     ".github/workflows/pages.yml",
-    ".github/workflows/publish-edition.yml"
+    ".github/workflows/publish-edition.yml",
+    ".github/workflows/supabase-activity.yml"
   ],
   "required_pr_workflows": [
     ".github/workflows/ci-governance.yml",
@@ -18,7 +19,9 @@
     ".github/workflows/pages.yml",
     ".github/workflows/publish-edition.yml"
   ],
-  "advisory_workflows": [],
+  "advisory_workflows": [
+    ".github/workflows/supabase-activity.yml"
+  ],
   "artifact_retention_days": {
     "pr_diagnostics": 14,
     "deployable_build": 7,
