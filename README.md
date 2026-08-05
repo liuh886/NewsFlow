@@ -8,7 +8,7 @@ An editor defines a publication once through an Edition file: its reader promise
 
 ## Product status
 
-NewsFlow 2.4 introduces a magazine-first reader for the Edition-native publication model. The product remains an installable, dependency-light static web application, but its public hierarchy is no longer shaped like an editorial dashboard.
+NewsFlow 2.4 introduces a magazine-first reader for the Edition-native publication model. The product remains an installable, dependency-free static web application, but its public hierarchy is no longer shaped like an editorial dashboard.
 
 The default reading order is now:
 
@@ -18,7 +18,7 @@ The default reading order is now:
 4. the continuous Editorial Desk;
 5. compact publication history.
 
-Search, filters, bookmarks, feedback, evidence drawers, dark mode, keyboard navigation, Supabase-backed preference sync and PWA installation remain available.
+Search, filters, bookmarks, local feedback, evidence drawers, dark mode, keyboard navigation, the optional shared membership widget and PWA installation remain available.
 
 ## Product model
 
@@ -33,7 +33,7 @@ The reference product uses a strong-editor model:
 - a semi-monthly Issue settles what changed, what did not change and what to watch next;
 - automated workflows may describe evidence movement but may not silently rewrite the editor's position.
 
-The first-stage platform remains GitHub-first. There is no separate account, certification or Edition marketplace. Anyone may fork the protocol, while the official interface stays a small, editor-selected publication shelf.
+The first-stage platform remains GitHub-first. There is no separate certification or Edition marketplace. Anyone may fork the protocol, while the official interface stays a small, editor-selected publication shelf. The optional shared membership widget is separate from the Edition, Signal and Issue data model.
 
 ## Editorial Signal Desk
 
@@ -120,6 +120,8 @@ Open `http://localhost:4173` after the build completes.
 - `Publish autonomous edition` runs only on schedule or manual dispatch and has the minimum write authority needed to commit a generated Issue.
 - `Supabase activity heartbeat` performs bounded public reads to keep the shared free project active.
 - `NewsFlow Frontend` deploys the built artifact to GitHub Pages only from `main`.
+
+The repository does not claim an uncommitted cloud preference-sync client. Local reader feedback remains browser-local; the shared membership widget and the Supabase activity heartbeat are separate, explicitly bounded integrations.
 
 ## Data and trust boundaries
 
