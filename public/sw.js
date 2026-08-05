@@ -1,4 +1,4 @@
-const CACHE_NAME = 'newsflow-editorial-v2.3.0';
+const CACHE_NAME = 'newsflow-editorial-v2.3.1';
 const APP_SHELL = [
   './',
   './index.html',
@@ -8,6 +8,7 @@ const APP_SHELL = [
   './editorial-app.js',
   './polish.js',
   './edition-layer.js',
+  './language-polish.js',
   './icon.svg',
   './manifest.webmanifest',
   './data/topics.json',
