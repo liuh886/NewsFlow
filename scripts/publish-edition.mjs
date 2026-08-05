@@ -42,15 +42,26 @@ if (day === 15) {
 
 const minimumQuality = Number(edition.materiality?.minimum_quality || 0);
 const maxSignals = Number(edition.materiality?.max_signals_per_issue || 5);
+const maxSignalsPerChannel = Number(edition.materiality?.max_signals_per_channel || maxSignals);
 const coverageEndExclusive = new Date(coverageEnd.getTime() + 86_400_000);
 const candidates = news.filter((item) => {
+  if (item.status === 'archived') return false;
   const published = new Date(item.published_at);
   return !Number.isNaN(published.getTime()) && published >= coverageStart && published < coverageEndExclusive;
 });
-const selected = candidates
+const eligible = candidates
   .filter((item) => Number(item.quality_index || 0) >= minimumQuality)
-  .sort((a, b) => Number(b.quality_index || 0) - Number(a.quality_index || 0))
-  .slice(0, maxSignals);
+  .sort((a, b) => Number(b.quality_index || 0) - Number(a.quality_index || 0));
+const selected = [];
+const selectedByChannel = new Map();
+for (const item of eligible) {
+  if (selected.length >= maxSignals) break;
+  const channelId = item.channel_id || 'unassigned';
+  const channelCount = selectedByChannel.get(channelId) || 0;
+  if (channelCount >= maxSignalsPerChannel) continue;
+  selected.push(item);
+  selectedByChannel.set(channelId, channelCount + 1);
+}
 
 const issueNumber = monthIndex * 2 + (day === 1 ? 1 : 2);
 const issueId = `${edition.id}-${year}-${String(issueNumber).padStart(2, '0')}`;
@@ -59,14 +70,19 @@ if (issues.some((issue) => issue.id === issueId) && !force) {
   process.exit(0);
 }
 
-const selectedText = selected.map((item) => `${item.title} ${item.short_summary || ''} ${(item.tags || []).join(' ')}`).join(' ').toLowerCase();
 const storylineUpdates = (edition.storylines || []).map((definition) => {
-  const matches = (definition.keywords || []).filter((keyword) => selectedText.includes(String(keyword).toLowerCase()));
+  const explicitMatches = selected.filter((item) => (item.storyline_ids || []).includes(definition.id));
+  const keywordMatches = selected.filter((item) => {
+    if (Array.isArray(item.storyline_ids) && item.storyline_ids.length) return false;
+    const itemText = `${item.title} ${item.short_summary || ''} ${(item.tags || []).join(' ')}`.toLowerCase();
+    return (definition.keywords || []).some((keyword) => itemText.includes(String(keyword).toLowerCase()));
+  });
+  const evidenceCount = explicitMatches.length + keywordMatches.length;
   return {
     storyline_id: definition.id,
-    movement: matches.length ? 'evidence_added' : 'unchanged',
-    note: matches.length
-      ? `本期有 ${matches.length} 个关键词维度出现新增证据；自动流程记录变化，但不改写 Edition 文件中的主编判断。`
+    movement: evidenceCount ? 'evidence_added' : 'unchanged',
+    note: evidenceCount
+      ? `本期有 ${evidenceCount} 条明确信号进入该长期议题；自动流程记录变化，但不改写 Edition 文件中的主编判断。`
       : '本期未发现足以改变现有判断的新证据。'
   };
 });
@@ -102,6 +118,7 @@ const issue = {
   methodology: {
     candidate_count: candidates.length,
     selected_count: selected.length,
+    selected_by_channel: Object.fromEntries(selectedByChannel),
     primary_source_count: selected.filter((item) => /tier\s*a/i.test(String(item.source_tier || ''))).length,
     fixed_length: false,
     editorial_view_changed: false

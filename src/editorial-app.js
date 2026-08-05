@@ -8,6 +8,10 @@ const icon = (name) => {
     close: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="m6 6 12 12M18 6 6 18" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>',
     bookmark: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 4.5A1.5 1.5 0 0 1 8.5 3h7A1.5 1.5 0 0 1 17 4.5V21l-5-3-5 3V4.5Z" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"/></svg>',
     bookmarkFill: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 4.5A1.5 1.5 0 0 1 8.5 3h7A1.5 1.5 0 0 1 17 4.5V21l-5-3-5 3V4.5Z" fill="currentColor"/></svg>',
+    useful: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="m5 12 4 4L19 6" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>',
+    hide: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 3l18 18M10.6 10.7a2 2 0 0 0 2.7 2.7M9.9 4.2A10.5 10.5 0 0 1 12 4c5.5 0 9 5 9 5a15.7 15.7 0 0 1-2.2 2.8M6.2 6.2C4.1 7.5 3 9 3 9s3.5 5 9 5c.7 0 1.4-.1 2-.2" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></svg>',
+    feedback: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 5h14v10H9l-4 4V5Z" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"/><path d="M8 9h8m-8 3h5" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/></svg>',
+    download: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3v12m-4-4 4 4 4-4M5 20h14" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></svg>',
     arrow: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 17 17 7m-7 0h7v7" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>',
     reader: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 5.5A2.5 2.5 0 0 1 7.5 3H20v16H7.5A2.5 2.5 0 0 0 5 21.5v-16Z" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"/><path d="M8.5 8H16m-7.5 4H16" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/></svg>',
     home: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="m4 10 8-6 8 6v9a1 1 0 0 1-1 1h-5v-6h-4v6H5a1 1 0 0 1-1-1v-9Z" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"/></svg>',
@@ -148,12 +152,29 @@ const readStoredJson = (key, fallback) => {
   }
 };
 
+const FEEDBACK_STORAGE_KEY = 'newsflow_feedback_v1';
+const HIDDEN_STORAGE_KEY = 'newsflow_hidden_signals_v1';
+const BOOKMARK_STORAGE_KEY = 'newsflow_bookmarks';
+const LOCAL_SCOPE_ADOPTED_KEY = 'newsflow_local_feedback_adopted_by_v1';
+const FEEDBACK_EXPORT_VERSION = '1.0';
+const RECOMMENDATION_POLICY_VERSION = '1.0.0';
+const MAX_LOCAL_FEEDBACK_EVENTS = 500;
+const PREFERENCE_WEIGHTS = {
+  useful: 1.5,
+  bookmark: 1,
+  unbookmark: -0.25,
+  not_interested: -1.5,
+  already_known: -0.6,
+  too_shallow: -0.8,
+  too_late: -0.8
+};
+
 const state = {
   items: [],
   topics: [
     { id: 'all', name: '全部信号' },
-    { id: 'ai-tech', name: 'AI 与科技' },
-    { id: 'energy', name: '能源与转型' }
+    { id: 'ai-tech', name: 'AI 基建' },
+    { id: 'energy', name: 'CCUS 与能源转型' }
   ],
   topic: 'all',
   filter: 'all',
@@ -162,14 +183,31 @@ const state = {
   date: 'all',
   view: localStorage.getItem('newsflow_view') || 'list',
   theme: localStorage.getItem('newsflow_theme') || (matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light'),
-  bookmarks: new Set(readStoredJson('newsflow_bookmarks', [])),
+  bookmarks: new Set(readStoredJson(BOOKMARK_STORAGE_KEY, [])),
+  feedbackEvents: (() => {
+    const events = readStoredJson(FEEDBACK_STORAGE_KEY, []);
+    return Array.isArray(events) ? events : [];
+  })(),
+  hiddenSignals: new Set(readStoredJson(HIDDEN_STORAGE_KEY, [])),
   activeArticle: null,
   focusedIndex: -1,
   helpOpen: false,
+  feedbackOpen: false,
   mobileOpen: false,
   loading: true,
-  toast: '',
-  dataMode: 'repository'
+  toast: null,
+  dataMode: 'repository',
+  editionId: 'frontier-systems-review',
+  cloudFeedback: new Map(),
+  feedbackScope: 'local',
+  cloudSnapshotRequested: false,
+  cloudSync: {
+    enabled: false,
+    state: 'loading',
+    message: '正在检查云同步配置',
+    user: null,
+    pending_count: 0
+  }
 };
 
 const app = document.querySelector('#app');
@@ -196,6 +234,62 @@ const getLongSummary = (item) => item.long_summary || item.full_translation || i
 const getQuality = (item) => Number.parseFloat(String(item.quality_index || 0)) || 0;
 const isPrimary = (item) => /tier\s*a/i.test(String(item.source_tier || ''));
 
+const activeFeedbackEvents = () => {
+  const reversed = new Set(state.feedbackEvents.filter((event) => event.action === 'restore' && event.target_event_id).map((event) => event.target_event_id));
+  return state.feedbackEvents.filter((event) => !reversed.has(event.event_id) && event.action !== 'restore');
+};
+
+const preferenceFeedbackEvents = () => {
+  const localEvents = activeFeedbackEvents().filter((event) => Number.isFinite(PREFERENCE_WEIGHTS[event.action]));
+  const localPreferenceSignalIds = new Set(localEvents
+    .filter((event) => !['bookmark', 'unbookmark'].includes(event.action))
+    .map((event) => event.signal_id));
+  const localSavedSignalIds = new Set(localEvents
+    .filter((event) => ['bookmark', 'unbookmark'].includes(event.action))
+    .map((event) => event.signal_id));
+  const cloudEvents = [...state.cloudFeedback.values()]
+    .flatMap((row) => {
+      const item = state.items.find((entry) => getId(entry) === row.signal_id) || {};
+      const base = {
+        signal_id: String(row.signal_id),
+        channel_id: String(item.channel_id || ''),
+        storyline_ids: [...new Set(item.storyline_ids || [])],
+        tags: [...new Set(item.tags || [])],
+        source: String(item.source || '')
+      };
+      const events = [];
+      if (row.preference !== 0 && !localPreferenceSignalIds.has(base.signal_id)) {
+        events.push({ ...base, action: row.preference > 0 ? 'useful' : (row.reason_code || 'not_interested') });
+      }
+      if (row.saved && !localSavedSignalIds.has(base.signal_id)) events.push({ ...base, action: 'bookmark' });
+      return events;
+    });
+  return [...localEvents, ...cloudEvents];
+};
+
+const localPreferenceScore = (item) => {
+  const preferenceEvents = preferenceFeedbackEvents();
+  if (preferenceEvents.length < 3) return 0;
+  let weightedSum = 0;
+  let matchCount = 0;
+  for (const event of preferenceEvents) {
+    if (event.signal_id === getId(item)) continue;
+    const matches = [
+      event.channel_id && event.channel_id === item.channel_id,
+      event.source && event.source === item.source,
+      ...(event.storyline_ids || []).map((value) => (item.storyline_ids || []).includes(value)),
+      ...(event.tags || []).map((value) => (item.tags || []).includes(value))
+    ].filter(Boolean).length;
+    if (!matches) continue;
+    weightedSum += PREFERENCE_WEIGHTS[event.action] * Math.min(2, matches);
+    matchCount += Math.min(2, matches);
+  }
+  if (!matchCount) return 0;
+  return Math.tanh(weightedSum / (3 * Math.sqrt(matchCount))) * 0.8;
+};
+
+const recommendationScore = (item) => getQuality(item) + localPreferenceScore(item);
+
 const normalizeItem = (item, index) => ({
   ...item,
   id: item.id || item.url || `signal-${index}`,
@@ -214,6 +308,10 @@ const normalizeItem = (item, index) => ({
 
 const matchesTopic = (item, topic) => {
   if (topic === 'all') return true;
+  if (item.channel_id) {
+    if (topic === 'energy') return item.channel_id === 'ccus-energy-transition';
+    if (topic === 'ai-tech') return item.channel_id === 'ai-infrastructure';
+  }
   const haystack = `${item.title} ${getSummary(item)} ${(item.tags || []).join(' ')}`.toLowerCase();
   if (topic === 'energy') return /(energy|能源|esg|ccus|carbon|碳|power|电力|geothermal|地热|climate|气候|cbam)/i.test(haystack);
   if (topic === 'ai-tech') return /(ai|tech|人工智能|科技|llm|gpu|software|软件|hardware|硬件|data center|数据中心|engineering|cyber)/i.test(haystack);
@@ -254,6 +352,7 @@ const formatDate = (value, options = { month: 'short', day: 'numeric' }) => {
 const filteredItems = () => {
   const query = state.query.trim().toLowerCase();
   return state.items.filter((item) => {
+    if (state.hiddenSignals.has(getId(item))) return false;
     if (!matchesTopic(item, state.topic)) return false;
     if (state.date !== 'all' && dateKey(item) !== state.date) return false;
     if (state.filter === 'primary' && !isPrimary(item)) return false;
@@ -263,12 +362,13 @@ const filteredItems = () => {
     if (query && !text.includes(query)) return false;
     if (state.entity && !text.includes(state.entity.toLowerCase())) return false;
     return true;
-  });
+  }).sort((a, b) => recommendationScore(b) - recommendationScore(a)
+    || (validDate(b.published_at)?.getTime() || 0) - (validDate(a.published_at)?.getTime() || 0));
 };
 
 const leadItem = (items) => [...items].sort((a, b) => {
-  const aScore = getQuality(a) + (a.key_quote ? 0.6 : 0) + (isPrimary(a) ? 0.3 : 0);
-  const bScore = getQuality(b) + (b.key_quote ? 0.6 : 0) + (isPrimary(b) ? 0.3 : 0);
+  const aScore = recommendationScore(a) + (a.key_quote ? 0.6 : 0) + (isPrimary(a) ? 0.3 : 0);
+  const bScore = recommendationScore(b) + (b.key_quote ? 0.6 : 0) + (isPrimary(b) ? 0.3 : 0);
   return bScore - aScore;
 })[0] || null;
 
@@ -306,16 +406,166 @@ const setTheme = (theme) => {
   if (themeMeta) themeMeta.content = theme === 'dark' ? '#161715' : '#f4f1ea';
 };
 
-const saveBookmarks = () => localStorage.setItem('newsflow_bookmarks', JSON.stringify([...state.bookmarks]));
+const scopedStorageKey = (base, scope = state.feedbackScope) => scope === 'local' ? base : `${base}:user:${scope}`;
+const saveBookmarks = () => localStorage.setItem(scopedStorageKey(BOOKMARK_STORAGE_KEY), JSON.stringify([...state.bookmarks]));
+const saveFeedback = () => {
+  localStorage.setItem(scopedStorageKey(FEEDBACK_STORAGE_KEY), JSON.stringify(state.feedbackEvents.slice(-MAX_LOCAL_FEEDBACK_EVENTS)));
+  localStorage.setItem(scopedStorageKey(HIDDEN_STORAGE_KEY), JSON.stringify([...state.hiddenSignals]));
+};
 
-const showToast = (message) => {
-  state.toast = message;
+const switchFeedbackScope = (nextScope) => {
+  const normalizedScope = nextScope || 'local';
+  if (normalizedScope === state.feedbackScope) return;
+  saveBookmarks();
+  saveFeedback();
+  const targetHasState = [BOOKMARK_STORAGE_KEY, FEEDBACK_STORAGE_KEY, HIDDEN_STORAGE_KEY]
+    .some((base) => localStorage.getItem(scopedStorageKey(base, normalizedScope)) !== null);
+  const canAdoptAnonymous = state.feedbackScope === 'local'
+    && normalizedScope !== 'local'
+    && !targetHasState
+    && !localStorage.getItem(LOCAL_SCOPE_ADOPTED_KEY);
+  state.feedbackScope = normalizedScope;
+  state.cloudFeedback = new Map();
+  if (canAdoptAnonymous) {
+    localStorage.setItem(LOCAL_SCOPE_ADOPTED_KEY, normalizedScope);
+    saveBookmarks();
+    saveFeedback();
+    return;
+  }
+  state.bookmarks = new Set(readStoredJson(scopedStorageKey(BOOKMARK_STORAGE_KEY), []));
+  const events = readStoredJson(scopedStorageKey(FEEDBACK_STORAGE_KEY), []);
+  state.feedbackEvents = Array.isArray(events) ? events : [];
+  state.hiddenSignals = new Set(readStoredJson(scopedStorageKey(HIDDEN_STORAGE_KEY), []));
+};
+
+const showToast = (message, action = null) => {
+  state.toast = { message, action };
   render();
   window.clearTimeout(showToast.timer);
   showToast.timer = window.setTimeout(() => {
-    state.toast = '';
+    state.toast = null;
     render();
-  }, 1900);
+  }, action ? 5000 : 1900);
+};
+
+const createEventId = () => globalThis.crypto?.randomUUID?.()
+  || `feedback-${Date.now()}-${Math.random().toString(16).slice(2)}`;
+
+const appendFeedback = (item, action, surface, extra = {}) => {
+  const event = {
+    event_id: createEventId(),
+    occurred_at: new Date().toISOString(),
+    signal_id: getId(item),
+    action,
+    surface,
+    channel_id: String(item.channel_id || ''),
+    storyline_ids: [...new Set(item.storyline_ids || [])],
+    tags: [...new Set(item.tags || [])],
+    source: String(item.source || ''),
+    ...extra
+  };
+  state.feedbackEvents = [...state.feedbackEvents, event].slice(-MAX_LOCAL_FEEDBACK_EVENTS);
+  return event;
+};
+
+const cloudRowFor = (item) => {
+  const signalId = getId(item);
+  const events = activeFeedbackEvents().filter((event) => event.signal_id === signalId);
+  const preferenceEvent = [...events].reverse().find((event) => [
+    'useful', 'not_interested', 'already_known', 'too_shallow', 'too_late'
+  ].includes(event.action));
+  const updatedAt = events.reduce(
+    (latest, event) => String(event.occurred_at) > latest ? String(event.occurred_at) : latest,
+    ''
+  ) || new Date().toISOString();
+  return {
+    edition_id: state.editionId,
+    signal_id: signalId,
+    saved: state.bookmarks.has(signalId),
+    preference: preferenceEvent?.action === 'useful' ? 1 : (preferenceEvent ? -1 : 0),
+    hidden: state.hiddenSignals.has(signalId),
+    reason_code: preferenceEvent && preferenceEvent.action !== 'useful' ? preferenceEvent.action : null,
+    evidence_flag: events.some((event) => event.action === 'evidence_issue'),
+    updated_at: updatedAt
+  };
+};
+
+const queueCloudFeedback = (item, origin = 'action') => {
+  window.dispatchEvent(new CustomEvent('newsflow:feedback-changed', {
+    detail: { ...cloudRowFor(item), _origin: origin }
+  }));
+};
+
+const broadcastFeedbackSnapshot = () => {
+  if (state.loading) {
+    state.cloudSnapshotRequested = true;
+    return;
+  }
+  const activeSignalIds = new Set(activeFeedbackEvents().map((event) => event.signal_id));
+  for (const item of state.items) {
+    const signalId = getId(item);
+    if (activeSignalIds.has(signalId) || state.bookmarks.has(signalId) || state.hiddenSignals.has(signalId)) {
+      queueCloudFeedback(item, 'snapshot');
+    }
+  }
+  state.cloudSnapshotRequested = false;
+};
+
+const recordFeedback = (id, action, surface) => {
+  const item = state.items.find((entry) => getId(entry) === id);
+  if (!item) return;
+  const latest = activeFeedbackEvents().findLast((event) => event.signal_id === id && event.action === action);
+  if (latest && action === 'useful') {
+    showToast('已记录这条信息有价值');
+    return;
+  }
+  const event = appendFeedback(item, action, surface);
+  if (['hide', 'not_interested'].includes(action)) {
+    state.hiddenSignals.add(id);
+    state.activeArticle = null;
+    state.focusedIndex = -1;
+  }
+  saveFeedback();
+  queueCloudFeedback(item);
+  const messages = {
+    useful: '已记录：这条信息有价值',
+    not_interested: '已记录偏好，并从本机推荐中隐藏',
+    hide: '已从本机推荐中隐藏；公共记录未删除'
+  };
+  showToast(messages[action] || '反馈已记录', ['hide', 'not_interested'].includes(action) ? {
+    label: '撤销',
+    type: 'undo-feedback',
+    signalId: id,
+    eventId: event.event_id
+  } : null);
+};
+
+const restoreFeedback = (signalId, targetEventId, surface = 'toast', notify = true) => {
+  const item = state.items.find((entry) => getId(entry) === signalId);
+  if (!item) return;
+  appendFeedback(item, 'restore', surface, { target_event_id: targetEventId });
+  state.hiddenSignals.delete(signalId);
+  saveFeedback();
+  queueCloudFeedback(item);
+  if (notify) showToast('已恢复到本机推荐流');
+};
+
+const exportFeedback = () => {
+  const payload = {
+    schema_version: FEEDBACK_EXPORT_VERSION,
+    app_id: 'newsflow-pwa',
+    policy_version: RECOMMENDATION_POLICY_VERSION,
+    edition_id: state.editionId,
+    exported_at: new Date().toISOString(),
+    events: state.feedbackEvents
+  };
+  const url = URL.createObjectURL(new Blob([`${JSON.stringify(payload, null, 2)}\n`], { type: 'application/json' }));
+  const anchor = document.createElement('a');
+  anchor.href = url;
+  anchor.download = `newsflow-feedback-${payload.exported_at.slice(0, 10)}.json`;
+  anchor.click();
+  URL.revokeObjectURL(url);
+  showToast(`已导出 ${state.feedbackEvents.length} 条本机反馈`);
 };
 
 const resetFilters = () => {
@@ -392,6 +642,7 @@ const renderLead = (item) => {
       <div class="lead-actions">
         <button class="text-button primary" data-action="open" data-id="${escapeHtml(id)}">${icon('reader')} 深读</button>
         <button class="text-button ${saved ? 'saved' : ''}" data-action="bookmark" data-id="${escapeHtml(id)}">${saved ? icon('bookmarkFill') : icon('bookmark')} ${saved ? '已收藏' : '收藏'}</button>
+        <button class="text-button" data-action="feedback-hide" data-id="${escapeHtml(id)}">${icon('hide')} 本机隐藏</button>
         <a class="text-button" href="${safeUrl(item.url)}" target="_blank" rel="noopener noreferrer">${icon('arrow')} 原文</a>
       </div>
     </div>
@@ -413,7 +664,7 @@ const renderCard = (item, index) => {
       <p class="article-summary">${escapeHtml(getSummary(item))}</p>
       <div class="article-tags">${(item.tags || []).slice(0, 3).map((tag) => `<span class="article-tag">${escapeHtml(tag)}</span>`).join('')}</div>
     </div>
-    <div class="card-actions"><button class="article-action" data-action="open" data-id="${escapeHtml(id)}" aria-label="深读 ${escapeHtml(item.title)}">${icon('reader')}</button><button class="article-action ${saved ? 'saved' : ''}" data-action="bookmark" data-id="${escapeHtml(id)}" aria-label="${saved ? '取消收藏' : '收藏'} ${escapeHtml(item.title)}">${saved ? icon('bookmarkFill') : icon('bookmark')}</button></div>
+    <div class="card-actions"><button class="article-action" data-action="open" data-id="${escapeHtml(id)}" aria-label="深读 ${escapeHtml(item.title)}">${icon('reader')}</button><button class="article-action ${saved ? 'saved' : ''}" data-action="bookmark" data-id="${escapeHtml(id)}" aria-label="${saved ? '取消收藏' : '收藏'} ${escapeHtml(item.title)}">${saved ? icon('bookmarkFill') : icon('bookmark')}</button><button class="article-action" data-action="feedback-hide" data-id="${escapeHtml(id)}" aria-label="从本机推荐中隐藏 ${escapeHtml(item.title)}">${icon('hide')}</button></div>
   </article>`;
 };
 
@@ -442,11 +693,35 @@ const renderDrawer = () => {
     <section class="drawer-section"><h3>发生了什么 / 为什么重要</h3><p>${escapeHtml(getLongSummary(item))}</p></section>
     ${quotes.length ? `<section class="drawer-section"><h3>支持证据</h3><ul>${quotes.map((quote) => `<li>${escapeHtml(quote)}</li>`).join('')}</ul></section>` : ''}
     <section class="drawer-section"><h3>信号元数据</h3><p>${isPrimary(item) ? '机构或一手来源' : '专家或独立来源'} · ${(item.tags || []).map(escapeHtml).join(' · ') || '未分类'}</p></section>
+    <section class="drawer-section feedback-prompt"><h3>这条信息对你有用吗？</h3><p>反馈只用于调整后续发现与排序，不会改变事实记录。</p><div class="feedback-actions"><button class="text-button" data-action="feedback-useful" data-id="${escapeHtml(id)}">${icon('useful')} 有价值</button><button class="text-button" data-action="feedback-not-interested" data-id="${escapeHtml(id)}">不感兴趣</button><button class="text-button" data-action="feedback-hide" data-id="${escapeHtml(id)}">${icon('hide')} 仅隐藏</button></div></section>
     <div class="drawer-footer"><a class="text-button primary" href="${safeUrl(item.url)}" target="_blank" rel="noopener noreferrer">${icon('arrow')} 打开原文</a><button class="text-button ${saved ? 'saved' : ''}" data-action="bookmark" data-id="${escapeHtml(id)}">${saved ? icon('bookmarkFill') : icon('bookmark')} ${saved ? '已收藏' : '收藏'}</button></div>
   </article>`;
 };
 
 const renderHelp = () => state.helpOpen ? `<div class="help-backdrop" data-action="close-help"></div><section class="help-dialog" role="dialog" aria-modal="true" aria-labelledby="help-title"><div class="drawer-head" style="margin-bottom:0"><h2 class="help-title" id="help-title">键盘阅读</h2><button class="drawer-close" data-action="close-help" aria-label="关闭">${icon('close')}</button></div><div class="shortcut-grid"><span>搜索全文</span><kbd>/</kbd><span>上一条 / 下一条</span><kbd>J K</kbd><span>打开当前信号</span><kbd>Enter</kbd><span>收藏当前信号</span><kbd>S</kbd><span>切换主题</span><kbd>T</kbd><span>切换列表 / 网格</span><kbd>L</kbd><span>关闭面板</span><kbd>Esc</kbd></div></section>` : '';
+
+const renderFeedbackCenter = () => {
+  if (!state.feedbackOpen) return '';
+  const counts = state.feedbackEvents.reduce((result, event) => ({ ...result, [event.action]: (result[event.action] || 0) + 1 }), {});
+  const ready = activeFeedbackEvents().filter((event) => Number.isFinite(PREFERENCE_WEIGHTS[event.action])).length >= 3;
+  const cloud = state.cloudSync;
+  const cloudMessage = cloud.enabled
+    ? (cloud.user ? `${cloud.user.label} · ${cloud.message}` : cloud.message)
+    : '云同步默认关闭；本机反馈和导出始终可用。';
+  const cloudActions = !cloud.enabled
+    ? '<span class="cloud-sync-note">在公开配置中启用后，可使用 GitHub 账户同步。</span>'
+    : cloud.user
+      ? `<button class="text-button" data-action="cloud-sync" ${cloud.state === 'syncing' ? 'disabled' : ''}>立即同步${cloud.pending_count ? ` (${cloud.pending_count})` : ''}</button><button class="text-button" data-action="cloud-sign-out">退出云同步</button><button class="text-button danger" data-action="cloud-clear">清除云端副本</button>`
+      : '<button class="text-button primary" data-action="cloud-sign-in">使用 GitHub 登录</button>';
+  return `<div class="help-backdrop" data-action="close-feedback"></div><section class="feedback-dialog" role="dialog" aria-modal="true" aria-labelledby="feedback-title">
+    <div class="drawer-head"><div><p class="section-label">Local feedback</p><h2 class="help-title" id="feedback-title">推荐反馈</h2></div><button class="drawer-close" data-action="close-feedback" aria-label="关闭推荐反馈">${icon('close')}</button></div>
+    <p class="feedback-privacy">详细反馈事件只留在当前浏览器，导出后才会交给本地 Agent 学习。启用账户后，云端只保存每条信息的收藏、偏好和隐藏状态。</p>
+    <div class="feedback-stats"><div><strong>${state.feedbackEvents.length}</strong><span>反馈事件</span></div><div><strong>${state.hiddenSignals.size}</strong><span>本机隐藏</span></div><div><strong>${counts.useful || 0}</strong><span>有价值</span></div></div>
+    <p class="feedback-state">${ready ? '已达到本机个性化的最低反馈量。' : '再提供一些明确反馈后，系统才会调整相似内容的排序。'}</p>
+    <div class="feedback-center-actions"><button class="text-button primary" data-action="export-feedback" ${state.feedbackEvents.length ? '' : 'disabled'}>${icon('download')} 导出给 Agent</button><button class="text-button" data-action="restore-hidden" ${state.hiddenSignals.size ? '' : 'disabled'}>恢复全部隐藏</button></div>
+    <section class="cloud-sync-card" aria-label="账户同步"><div><strong>账户同步</strong><span class="cloud-state" data-state="${escapeHtml(cloud.state)}">${escapeHtml(cloudMessage)}</span></div><div class="cloud-sync-actions">${cloudActions}</div></section>
+  </section>`;
+};
 
 const renderMobileNav = () => `<nav class="mobile-nav" aria-label="移动端主导航"><button class="${state.topic === 'all' && state.filter === 'all' ? 'active' : ''}" data-action="mobile-home">${icon('home')}<span>首页</span></button><button data-action="mobile-filter">${icon('filter')}<span>筛选</span></button><button class="${state.filter === 'saved' ? 'active' : ''}" data-action="mobile-saved">${icon('bookmark')}<span>收藏</span></button><button data-action="focus-search">${icon('search')}<span>搜索</span></button></nav>`;
 
@@ -462,13 +737,13 @@ const render = () => {
   const snapshot = latestDate();
 
   app.innerHTML = `<div class="app-shell">
-    <header class="topbar"><div class="topbar-inner"><button class="brand" data-action="reset" aria-label="重置 NewsFlow"><span class="brand-mark">NF</span><span class="brand-copy"><span class="brand-name">NewsFlow</span><span class="brand-status"><span class="status-dot"></span>Editorial signal desk</span></span></button><label class="global-search">${icon('search')}<input id="global-search" type="search" value="${escapeHtml(state.query)}" placeholder="搜索标题、摘要、证据或主题…" autocomplete="off"><span class="search-kbd">⌘ K</span></label><div class="top-actions"><button class="icon-button" data-action="theme" aria-label="切换明暗主题">${state.theme === 'dark' ? icon('sun') : icon('moon')}</button><button class="icon-button" data-action="help" data-desktop-only="true" aria-label="查看键盘快捷键">${icon('help')}</button><button class="mobile-menu-button" data-action="mobile-menu" aria-label="打开筛选菜单">${icon('menu')}</button></div></div></header>
+    <header class="topbar"><div class="topbar-inner"><button class="brand" data-action="reset" aria-label="重置 NewsFlow"><span class="brand-mark">NF</span><span class="brand-copy"><span class="brand-name">NewsFlow</span><span class="brand-status"><span class="status-dot"></span>Editorial signal desk</span></span></button><label class="global-search">${icon('search')}<input id="global-search" type="search" value="${escapeHtml(state.query)}" placeholder="搜索标题、摘要、证据或主题…" autocomplete="off"><span class="search-kbd">⌘ K</span></label><div class="top-actions"><button class="icon-button" data-action="feedback-center" aria-label="查看推荐反馈">${icon('feedback')}</button><button class="icon-button" data-action="theme" aria-label="切换明暗主题">${state.theme === 'dark' ? icon('sun') : icon('moon')}</button><button class="icon-button" data-action="help" data-desktop-only="true" aria-label="查看键盘快捷键">${icon('help')}</button><button class="mobile-menu-button" data-action="mobile-menu" aria-label="打开筛选菜单">${icon('menu')}</button></div></div></header>
     <div class="workspace">${renderSidebar(items)}<main class="main-column" id="main-content">
       <section class="masthead"><div><div class="masthead-kicker">Curated intelligence · 以数据快照为准</div><h1 class="masthead-title">The Daily Signal</h1><p class="masthead-deck">把高频新闻压缩为真正需要判断的变化。先看结论，再追溯来源；需要时展开背景与证据。</p></div><div class="masthead-meta">Data through<br>${escapeHtml(formatDate(snapshot, { year: 'numeric', month: 'long', day: 'numeric' }))}<br>${escapeHtml(topicName)}<br>${items.length} signals</div></section>
       ${renderLead(lead)}
       <div class="feed-toolbar"><div class="feed-heading"><h2>${state.filter === 'saved' ? '已收藏' : state.entity ? `主题：${escapeHtml(state.entity)}` : '最新信号'}</h2><span>${stream.length} 条可继续阅读</span></div><div class="view-segment" aria-label="布局选择"><button class="segment-button ${state.view === 'list' ? 'active' : ''}" data-action="view" data-value="list">List</button><button class="segment-button ${state.view === 'grid' ? 'active' : ''}" data-action="view" data-value="grid">Grid</button></div></div>
       ${items.length ? `<section class="feed-list ${state.view}" aria-label="新闻信号列表">${stream.map(renderCard).join('')}</section>` : '<section class="empty-state"><h3>没有匹配的信号</h3><p>当前频道、时间或筛选条件过窄。重置后可以回到完整信息流。</p><button class="text-button primary" data-action="reset">重置筛选</button></section>'}
-    </main>${renderBriefRail(items)}</div>${renderMobileNav()}${state.mobileOpen ? '<div class="mobile-backdrop" data-action="mobile-close"></div>' : ''}${renderDrawer()}${renderHelp()}${state.toast ? `<div class="toast" role="status">${escapeHtml(state.toast)}</div>` : ''}</div>`;
+    </main>${renderBriefRail(items)}</div>${renderMobileNav()}${state.mobileOpen ? '<div class="mobile-backdrop" data-action="mobile-close"></div>' : ''}${renderDrawer()}${renderHelp()}${renderFeedbackCenter()}${state.toast ? `<div class="toast" role="status"><span>${escapeHtml(state.toast.message)}</span>${state.toast.action ? `<button data-action="${escapeHtml(state.toast.action.type)}" data-id="${escapeHtml(state.toast.action.signalId)}" data-event-id="${escapeHtml(state.toast.action.eventId)}">${escapeHtml(state.toast.action.label)}</button>` : ''}</div>` : ''}</div>`;
 };
 
 const openArticle = (id) => {
@@ -483,6 +758,12 @@ const toggleBookmark = (id) => {
   if (removed) state.bookmarks.delete(id);
   else state.bookmarks.add(id);
   saveBookmarks();
+  const item = state.items.find((entry) => getId(entry) === id);
+  if (item) {
+    appendFeedback(item, removed ? 'unbookmark' : 'bookmark', state.activeArticle ? 'drawer' : 'feed');
+    saveFeedback();
+    queueCloudFeedback(item);
+  }
   showToast(removed ? '已从收藏中移除' : '已收藏，可在阅读队列中查看');
 };
 
@@ -507,6 +788,43 @@ app.addEventListener('click', (event) => {
     state.theme = state.theme === 'dark' ? 'light' : 'dark';
   } else if (action === 'bookmark') {
     toggleBookmark(id); return;
+  } else if (action === 'feedback-useful') {
+    recordFeedback(id, 'useful', state.activeArticle ? 'drawer' : 'feed'); return;
+  } else if (action === 'feedback-not-interested') {
+    recordFeedback(id, 'not_interested', state.activeArticle ? 'drawer' : 'feed'); return;
+  } else if (action === 'feedback-hide') {
+    recordFeedback(id, 'hide', state.activeArticle ? 'drawer' : 'feed'); return;
+  } else if (action === 'undo-feedback') {
+    restoreFeedback(id, target.dataset.eventId || ''); return;
+  } else if (action === 'feedback-center') {
+    state.feedbackOpen = true;
+    render();
+    requestAnimationFrame(() => document.querySelector('.feedback-dialog .drawer-close')?.focus());
+    return;
+  } else if (action === 'close-feedback') {
+    state.feedbackOpen = false;
+  } else if (action === 'export-feedback') {
+    exportFeedback(); return;
+  } else if (action === 'restore-hidden') {
+    for (const signalId of [...state.hiddenSignals]) {
+      const targetEvent = activeFeedbackEvents().findLast((event) => event.signal_id === signalId && ['hide', 'not_interested'].includes(event.action));
+      if (targetEvent) restoreFeedback(signalId, targetEvent.event_id, 'feedback-center', false);
+      else state.hiddenSignals.delete(signalId);
+    }
+    state.feedbackOpen = false;
+    saveFeedback();
+    showToast('已恢复全部本机隐藏内容'); return;
+  } else if (action === 'cloud-sign-in') {
+    window.dispatchEvent(new CustomEvent('newsflow:cloud-action', { detail: { action: 'sign-in' } })); return;
+  } else if (action === 'cloud-sign-out') {
+    window.dispatchEvent(new CustomEvent('newsflow:cloud-action', { detail: { action: 'sign-out' } })); return;
+  } else if (action === 'cloud-sync') {
+    window.dispatchEvent(new CustomEvent('newsflow:cloud-action', { detail: { action: 'sync' } })); return;
+  } else if (action === 'cloud-clear') {
+    if (window.confirm('清除账户中的云端反馈副本？本机反馈与导出记录会保留。')) {
+      window.dispatchEvent(new CustomEvent('newsflow:cloud-action', { detail: { action: 'clear' } }));
+    }
+    return;
   } else if (action === 'open') {
     openArticle(id); return;
   } else if (action === 'close-drawer') {
@@ -560,11 +878,12 @@ window.addEventListener('keydown', (event) => {
   if (event.key === 'Escape') {
     if (state.activeArticle) state.activeArticle = null;
     else if (state.helpOpen) state.helpOpen = false;
+    else if (state.feedbackOpen) state.feedbackOpen = false;
     else if (state.mobileOpen) state.mobileOpen = false;
     else if (state.query) state.query = '';
     render(); return;
   }
-  if (typing || state.activeArticle || state.helpOpen) return;
+  if (typing || state.activeArticle || state.helpOpen || state.feedbackOpen) return;
 
   const items = filteredItems();
   const lead = leadItem(items);
@@ -589,6 +908,40 @@ window.addEventListener('keydown', (event) => {
   if (state.focusedIndex >= 0) document.querySelector(`[data-card-index="${state.focusedIndex}"]`)?.scrollIntoView({ behavior: 'smooth', block: 'center' });
 });
 
+window.addEventListener('newsflow:request-feedback-snapshot', broadcastFeedbackSnapshot);
+
+const renderAfterCloudUpdate = () => {
+  const focusedAction = document.activeElement?.closest?.('button[data-action]')?.dataset.action || '';
+  render();
+  if (!state.feedbackOpen) return;
+  requestAnimationFrame(() => {
+    const matchingButton = [...document.querySelectorAll('.feedback-dialog button[data-action]')]
+      .find((button) => button.dataset.action === focusedAction);
+    (matchingButton || document.querySelector('.feedback-dialog .drawer-close'))?.focus();
+  });
+};
+
+window.addEventListener('newsflow:sync-status', (event) => {
+  state.cloudSync = { ...state.cloudSync, ...event.detail };
+  switchFeedbackScope(state.cloudSync.user?.id || 'local');
+  if (state.feedbackOpen) renderAfterCloudUpdate();
+});
+
+window.addEventListener('newsflow:remote-feedback', (event) => {
+  const rows = Array.isArray(event.detail?.rows) ? event.detail.rows : [];
+  state.cloudFeedback = new Map(rows.map((row) => [String(row.signal_id), row]));
+  for (const row of rows) {
+    const signalId = String(row.signal_id);
+    if (row.saved) state.bookmarks.add(signalId);
+    else state.bookmarks.delete(signalId);
+    if (row.hidden) state.hiddenSignals.add(signalId);
+    else state.hiddenSignals.delete(signalId);
+  }
+  saveBookmarks();
+  saveFeedback();
+  renderAfterCloudUpdate();
+});
+
 const loadJson = async (path) => {
   const response = await fetch(path, { cache: 'no-store' });
   if (!response.ok) throw new Error(`${path}: ${response.status}`);
@@ -599,17 +952,18 @@ const initialize = async () => {
   renderLoading();
   setTheme(state.theme);
   try {
-    const [newsResult, digestResult, topicResult] = await Promise.allSettled([
+    const [newsResult, digestResult, topicResult, editionResult] = await Promise.allSettled([
       loadJson('./data/news.json'),
       loadJson('./data/ai_digest.json'),
-      loadJson('./data/topics.json')
+      loadJson('./data/topics.json'),
+      loadJson('./data/edition.json')
     ]);
 
     const repositoryPayload = [newsResult, digestResult]
       .filter((result) => result.status === 'fulfilled' && Array.isArray(result.value))
       .flatMap((result) => result.value)
       .map(normalizeItem)
-      .filter((item) => item.url !== '#' && item.title && getSummary(item));
+      .filter((item) => item.status !== 'archived' && item.url !== '#' && item.title && getSummary(item));
 
     const sourceItems = repositoryPayload.length ? repositoryPayload : verifiedFallbackItems.map(normalizeItem);
     state.dataMode = repositoryPayload.length ? 'repository' : 'fallback';
@@ -625,12 +979,14 @@ const initialize = async () => {
     if (topicResult.status === 'fulfilled' && Array.isArray(topicResult.value) && topicResult.value.length) {
       state.topics = topicResult.value;
     }
+    if (editionResult.status === 'fulfilled' && editionResult.value?.id) state.editionId = String(editionResult.value.id);
   } catch (error) {
     console.warn('NewsFlow verified fallback activated:', error);
     state.items = verifiedFallbackItems.map(normalizeItem).sort((a, b) => (validDate(b.published_at)?.getTime() || 0) - (validDate(a.published_at)?.getTime() || 0));
     state.dataMode = 'fallback';
   } finally {
     state.loading = false;
+    if (state.cloudSnapshotRequested) broadcastFeedbackSnapshot();
     render();
   }
 

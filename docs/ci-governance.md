@@ -34,6 +34,10 @@ Pull-request validation does not deploy. Pages deployment is isolated to the ded
 
 No ingestion API key, model credential or external-service secret is required to validate or build the frontend.
 
+## Agent content-update gates
+
+Local content agents write temporary candidate packs rather than editing the public dataset. Repository checks validate the two Edition channels, Storyline routing, source registry, discovery plan, company-disclosure restrictions, duplicate rejection fixture and channel-aware Signal metadata. Formal application remains an explicit `content:update --apply` operation and writes an auditable run artifact.
+
 ## Package contract
 
 - exactly one of `package-lock.json`, `pnpm-lock.yaml`, `yarn.lock`, `bun.lock` or `bun.lockb` must be committed;

@@ -163,7 +163,7 @@ const decorateControls = () => {
 };
 
 const updateAppOverlayState = () => {
-  const appOverlayOpen = Boolean(document.querySelector('.article-drawer, .help-dialog, .sidebar.open'));
+  const appOverlayOpen = Boolean(document.querySelector('.article-drawer, .help-dialog, .feedback-dialog, .sidebar.open'));
   document.body.classList.toggle('overlay-active', appOverlayOpen);
 
   if (previousAppOverlayOpen && !appOverlayOpen) {
@@ -279,7 +279,7 @@ document.addEventListener('click', (event) => {
   const target = event.target instanceof Element ? event.target.closest('[data-action]') : null;
   const action = target?.dataset.action;
 
-  if (['open', 'help', 'mobile-menu', 'mobile-filter'].includes(action)) {
+  if (['open', 'help', 'feedback-center', 'mobile-menu', 'mobile-filter'].includes(action)) {
     lastAppOverlayTrigger = captureFocusReference(target);
   }
 

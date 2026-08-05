@@ -1,5 +1,5 @@
 [
   { "id": "all", "name": "全部信号" },
-  { "id": "ai-tech", "name": "AI 与科技" },
-  { "id": "energy", "name": "能源与转型" }
+  { "id": "ai-tech", "name": "AI 基建" },
+  { "id": "energy", "name": "CCUS 与能源转型" }
 ]

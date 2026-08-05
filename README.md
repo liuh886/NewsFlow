@@ -71,6 +71,23 @@ The heartbeat:
 
 The daily cadence provides a wider safety margin than waiting until the sixth day of Supabase's seven-day inactivity window. It is an operational safeguard, not a paid availability guarantee. See `docs/supabase-activity.md` for the security boundary and runbook.
 
+## Agent-assisted content updates
+
+Local agents research into a temporary candidate evidence pack; they do not edit the public Signal dataset directly. A deterministic promotion command enforces the run cutoff, trusted-source registry, claim-level evidence, novelty, independent evidence/editorial thresholds and duplicate review before writing accepted Signals and a durable audit trail.
+
+The workflow is agent-neutral. Start Codex, Antigravity or another repository-capable agent at the project root and ask it to read `WORKFLOW.md`. Every runtime writes the same schema-valid candidate pack, records its identity and workflow version, and submits to the same validator. Antigravity can invoke the repository adapter with `/update-content`.
+
+The repository-local `newsflow-recommender` Skill adds an adaptive layer without weakening evidence gates. The PWA can record anonymous local feedback, hide a Signal only on the current device, export events for a local Agent, regenerate a reader profile and rank verified Signals. See `docs/feedback-loop.md` for the GitHub Pages boundary and feedback bridge.
+
+Optional Supabase account sync is implemented and remains Free-plan conscious: current-state upserts only, no high-frequency analytics, no Realtime dependency and strict owner-based RLS. It is disabled by default and activates during deployment only when both public repository variables are configured. See `docs/supabase-feedback-design.md` for setup and verification.
+
+```bash
+node scripts/update-content.mjs --input=content/inbox/2026-08-03.json
+node scripts/update-content.mjs --input=content/inbox/2026-08-03.json --apply
+```
+
+Dry-run is the default. See `WORKFLOW.md` for the portable procedure, `docs/agent-handoff.md` for reusable launch requests, `docs/content-update.md` for the candidate contract, `docs/attention-policy.md` for the scarce-attention gate, `config/content-discovery.json` for the two-channel search plan, `docs/ai-five-layer-watchlist.md` for the Energy → Chips → Infrastructure → Models → Applications framework, `docs/x-scout-watchlist.md` for discovery-only X accounts, `docs/domain-watchlist.md` for current leader-company coverage, `docs/ccus-report-watchlist.md` for CCUS institutions and recurring reports, and `AGENTS.md` for the generic content-agent boundary.
+
 ## Repository contracts
 
 ### Human-maintained editorial authority
@@ -85,6 +102,9 @@ The daily cadence provides a wider safety margin than waiting until the sixth da
 - `public/data/ai_digest.json`
 - `public/data/topics.json`
 - `public/data/storylines.json`
+- `config/content-sources.json`
+- `config/content-discovery.json`
+- `content/runs/`
 
 ### Formal publication artifacts
 

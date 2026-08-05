@@ -6,6 +6,7 @@ const APP_SHELL = [
   './polish.css',
   './edition-layer.css',
   './editorial-app.js',
+  './supabase-feedback.js',
   './polish.js',
   './edition-layer.js',
   './language-polish.js',
@@ -16,7 +17,8 @@ const APP_SHELL = [
   './data/ai_digest.json',
   './data/edition.json',
   './data/issues.json',
-  './data/storylines.json'
+  './data/storylines.json',
+  './data/supabase-config.json'
 ];
 
 const cacheResponse = async (cache, request, response) => {

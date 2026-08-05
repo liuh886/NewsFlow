@@ -178,7 +178,9 @@ const initializeEditionLayer = async () => {
     ]);
     editionState.edition = edition;
     editionState.issues = Array.isArray(issues) ? issues : [];
-    editionState.storylines = Array.isArray(storylines) ? storylines : [];
+    editionState.storylines = Array.isArray(storylines)
+      ? storylines.filter((storyline) => storyline.status !== 'retired')
+      : [];
     applyEditionLayer();
   } catch (error) {
     console.warn('NewsFlow Edition layer unavailable:', error);

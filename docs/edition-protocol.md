@@ -82,8 +82,17 @@ An Edition file must define:
 6. `storylines` — persistent questions with stable identifiers and matching vocabulary;
 7. `publishing` — Desk and Issue cadence;
 8. `writing` — tone and evidence/interpretation separation.
+9. `channels` — distinct subject lanes that share one reader promise and editorial view.
 
 Keywords are discovery aids, not the editorial model.
+
+The reference Edition has two channels: AI infrastructure and CCUS/energy transition. Each Signal carries an explicit `channel_id`, `storyline_ids`, `event_type` and `event_date`; keyword matching is retained only as a legacy fallback.
+
+## 6.1 Content discovery and company disclosures
+
+`config/content-discovery.json` defines the operational search plan for each Storyline: cadence, lookback window, approved sources, material event types, normal queries and counter-evidence queries. It may change without changing the Edition's formal view.
+
+Company filings, earnings materials and project releases are primary evidence for attributable facts about that company. They are not independent proof of wider market impact. Planned, contracted, under-construction, commissioned and operating capacity must remain distinct, and a corporate claim scored above 4.5 for evidence confidence requires independent non-corporate evidence.
 
 ## 7. Issue contract
 
