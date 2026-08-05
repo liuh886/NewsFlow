@@ -9,6 +9,7 @@ const polishIcon = (name) => {
 const appRoot = document.querySelector('#app');
 const statusRegion = document.querySelector('#app-status');
 const focusableSelector = 'a[href], button:not([disabled]), input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])';
+const isMagazineMode = () => appRoot?.querySelector('.app-shell')?.dataset.productModel === 'magazine-edition';
 
 const announce = (message) => {
   if (!statusRegion) return;
@@ -62,6 +63,7 @@ const setText = (element, value) => {
 };
 
 const simplifyMasthead = () => {
+  if (isMagazineMode()) return;
   setText(document.querySelector('.masthead-deck'), '筛出值得判断的变化，并保留来源与证据。');
 
   const meta = document.querySelector('.masthead-meta');
@@ -83,6 +85,10 @@ const simplifySidebar = () => {
   document.querySelectorAll('.sidebar .section-label').forEach((label) => {
     if (label.textContent?.trim() === '阅读队列') label.textContent = '阅读';
   });
+
+  if (isMagazineMode()) {
+    document.querySelector('.sidebar')?.style.setProperty('z-index', '230');
+  }
 };
 
 const simplifyFeed = () => {
@@ -92,9 +98,11 @@ const simplifyFeed = () => {
 
   document.querySelectorAll('.signal-score').forEach((element) => element.remove());
 
-  const feedCount = document.querySelector('.feed-heading span');
-  const count = feedCount?.textContent?.match(/\d+/)?.[0];
-  if (feedCount && count) feedCount.textContent = `${count} 条`;
+  if (!isMagazineMode()) {
+    const feedCount = document.querySelector('.feed-heading span');
+    const count = feedCount?.textContent?.match(/\d+/)?.[0];
+    if (feedCount && count) feedCount.textContent = `${count} 条`;
+  }
 
   document.querySelectorAll('.segment-button').forEach((button) => {
     if (button.dataset.value === 'list') button.textContent = '列表';
@@ -103,6 +111,7 @@ const simplifyFeed = () => {
 };
 
 const simplifyRail = () => {
+  if (isMagazineMode()) return;
   document.querySelector('.brief-rail .source-bars')?.closest('.rail-card')?.remove();
 
   document.querySelectorAll('.brief-rail .rail-card').forEach((card) => {
@@ -164,7 +173,7 @@ const decorateControls = () => {
 
 const updateAppOverlayState = () => {
   const appOverlayOpen = Boolean(document.querySelector('.article-drawer, .help-dialog, .feedback-dialog, .sidebar.open'));
-  document.body.classList.toggle('overlay-active', appOverlayOpen);
+  document.body.classList.toggle('overlay-active', appOverlayOpen || Boolean(document.querySelector('.edition-panel')));
 
   if (previousAppOverlayOpen && !appOverlayOpen) {
     window.requestAnimationFrame(() => restoreFocus(lastAppOverlayTrigger));
