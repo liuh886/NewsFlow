@@ -1,0 +1,70 @@
+name: Supabase activity heartbeat
+
+on:
+  schedule:
+    # Daily at 11:17 Asia/Shanghai (03:17 UTC). A daily margin is safer than
+    # relying on a single request near Supabase's seven-day inactivity window.
+    - cron: '17 3 * * *'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: newsflow-supabase-activity
+  cancel-in-progress: false
+
+jobs:
+  heartbeat:
+    name: Read public membership metadata
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    env:
+      SUPABASE_URL: https://blgwlycfcwvsupmqyqwn.supabase.co
+      # Publishable keys are intentionally safe for public clients and remain
+      # constrained by Postgres grants and Row Level Security.
+      SUPABASE_PUBLISHABLE_KEY: sb_publishable_n1Va-c_alpkQ0zNuJYUaxA_J0u68RVW
+    steps:
+      - name: Send lightweight database queries
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          endpoints=(
+            '/rest/v1/billing_products?select=product_code,name&product_code=eq.newsflow&active=eq.true&limit=1'
+            '/rest/v1/billing_prices?select=price_id,product_code&product_code=eq.newsflow&active=eq.true&limit=1'
+            '/rest/v1/billing_product_entitlements?select=entitlement_code&product_code=eq.newsflow&limit=1'
+          )
+
+          request_count=0
+          for endpoint in "${endpoints[@]}"; do
+            body="$(curl \
+              --fail-with-body \
+              --silent \
+              --show-error \
+              --retry 3 \
+              --retry-all-errors \
+              --connect-timeout 15 \
+              --max-time 30 \
+              -H "apikey: ${SUPABASE_PUBLISHABLE_KEY}" \
+              -H "Authorization: Bearer ${SUPABASE_PUBLISHABLE_KEY}" \
+              -H 'Accept: application/json' \
+              "${SUPABASE_URL}${endpoint}")"
+
+            if [[ "${body}" != \[*\] ]]; then
+              echo "Unexpected Supabase response for ${endpoint}: ${body}" >&2
+              exit 1
+            fi
+
+            request_count=$((request_count + 1))
+          done
+
+          {
+            echo '### Supabase activity heartbeat'
+            echo
+            echo '- Status: successful'
+            echo "- Project: \`blgwlycfcwvsupmqyqwn\`"
+            echo "- Read-only database requests: ${request_count}"
+            echo "- Completed at: $(date -u +'%Y-%m-%dT%H:%M:%SZ')"
+            echo '- Credentials: publishable key only; no secret or service-role key'
+          } >> "${GITHUB_STEP_SUMMARY}"
