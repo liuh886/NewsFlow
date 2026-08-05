@@ -7,12 +7,14 @@ const root = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 const appPath = 'src/editorial-app.js';
 const polishPath = 'src/polish.js';
 const editionLayerPath = 'src/edition-layer.js';
+const languagePolishPath = 'src/language-polish.js';
 const publisherPath = 'scripts/publish-edition.mjs';
 const requiredFiles = [
   'index.html',
   appPath,
   polishPath,
   editionLayerPath,
+  languagePolishPath,
   publisherPath,
   'src/styles.css',
   'src/polish.css',
@@ -33,14 +35,14 @@ const requiredFiles = [
 
 for (const file of requiredFiles) await access(resolve(root, file));
 
-for (const scriptPath of [appPath, polishPath, editionLayerPath, publisherPath, 'public/sw.js']) {
+for (const scriptPath of [appPath, polishPath, editionLayerPath, languagePolishPath, publisherPath, 'public/sw.js']) {
   const syntax = spawnSync(process.execPath, ['--check', resolve(root, scriptPath)], { encoding: 'utf8' });
   if (syntax.status !== 0) throw new Error(`${scriptPath} syntax check failed:\n${syntax.stderr}`);
 }
 
 const index = await readFile(resolve(root, 'index.html'), 'utf8');
 for (const reference of [
-  './styles.css', './polish.css', './edition-layer.css', './editorial-app.js', './polish.js', './edition-layer.js', './manifest.webmanifest'
+  './styles.css', './polish.css', './edition-layer.css', './editorial-app.js', './polish.js', './edition-layer.js', './language-polish.js', './manifest.webmanifest'
 ]) {
   if (!index.includes(reference)) throw new Error(`index.html is missing ${reference}`);
 }
@@ -142,10 +144,16 @@ for (const contract of ["window.scrollY > 18", "classList.toggle('is-scrolled'",
 if (polishSource.includes('subtree: true')) throw new Error('root rendering observer must not scan the entire application subtree');
 
 const editionSource = await readFile(resolve(root, editionLayerPath), 'utf8');
-for (const contract of ['Autonomous edition', 'Latest Edition', 'Editorial Desk', '长期议题', '刊期与判断记录', "observer.observe(appRoot, { childList: true })", 'escapeEditionHtml']) {
+for (const contract of ['自动出版', '最新刊期', '编辑台', '长期议题', '刊期与判断记录', "observer.observe(appRoot, { childList: true })", 'escapeEditionHtml']) {
   if (!editionSource.includes(contract)) throw new Error(`edition-layer.js is missing ${contract}`);
 }
 if (editionSource.includes('subtree: true')) throw new Error('Edition observer must stay on root child replacement only');
+
+const languagePolishSource = await readFile(resolve(root, languagePolishPath), 'utf8');
+for (const contract of ['信号评分', '机构 / 一手源', 'NewsFlow · 证据视图', "replaceAll('Score ', '评分 ')"]) {
+  if (!languagePolishSource.includes(contract)) throw new Error(`language-polish.js is missing ${contract}`);
+}
+if (languagePolishSource.includes('subtree: true')) throw new Error('language observer must stay on root child replacement only');
 
 const publisherSource = await readFile(resolve(root, publisherPath), 'utf8');
 for (const contract of ['[1, 15]', 'editorial_view_changed: false', '本期未发现足以改变现有判断的重大信息']) {
@@ -153,10 +161,10 @@ for (const contract of ['[1, 15]', 'editorial_view_changed: false', '本期未�
 }
 
 const serviceWorker = await readFile(resolve(root, 'public/sw.js'), 'utf8');
-for (const asset of ['./editorial-app.js', './polish.js', './edition-layer.js', './styles.css', './polish.css', './edition-layer.css', './data/edition.json', './data/issues.json', './data/storylines.json']) {
+for (const asset of ['./editorial-app.js', './polish.js', './edition-layer.js', './language-polish.js', './styles.css', './polish.css', './edition-layer.css', './data/edition.json', './data/issues.json', './data/storylines.json']) {
   if (!serviceWorker.includes(asset)) throw new Error(`service worker is missing ${asset}`);
 }
-for (const contract of ['newsflow-editorial-v2.3.0', "event.request.mode === 'navigate'", 'networkFirst', "url.origin !== self.location.origin", 'event.waitUntil(networkUpdate']) {
+for (const contract of ['newsflow-editorial-v2.3.1', "event.request.mode === 'navigate'", 'networkFirst', "url.origin !== self.location.origin", 'event.waitUntil(networkUpdate']) {
   if (!serviceWorker.includes(contract)) throw new Error(`service worker is missing ${contract}`);
 }
 if (serviceWorker.includes("'./app.js'")) throw new Error('service worker still caches the legacy frontend asset');

@@ -1,8 +1,8 @@
 {
   "id": "./",
-  "name": "NewsFlow — Editorial Signal Desk",
+  "name": "NewsFlow — 编辑信号台",
   "short_name": "NewsFlow",
-  "description": "将高频新闻整理为可筛选、可追溯、可深读的个人信号流。",
+  "description": "将高频新闻整理为可筛选、可追溯、可深读的专业信号流与自动半月刊。",
   "lang": "zh-CN",
   "dir": "ltr",
   "start_url": "./",
