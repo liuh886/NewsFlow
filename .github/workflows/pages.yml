@@ -38,23 +38,6 @@ jobs:
 
       - name: Build static site
         run: npm run build
-        env:
-          NEWSFLOW_SUPABASE_URL: ${{ vars.NEWSFLOW_SUPABASE_URL }}
-          NEWSFLOW_SUPABASE_PUBLISHABLE_KEY: ${{ vars.NEWSFLOW_SUPABASE_PUBLISHABLE_KEY }}
-
-      - name: Synchronize bounded Signal catalog
-        if: github.event_name != 'pull_request'
-        continue-on-error: true
-        shell: bash
-        env:
-          SUPABASE_URL: ${{ vars.NEWSFLOW_SUPABASE_URL }}
-          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
-        run: |
-          if [ -n "$SUPABASE_URL" ] && [ -n "$SUPABASE_SERVICE_ROLE_KEY" ]; then
-            npm run supabase:catalog
-          else
-            echo "Supabase catalog sync skipped: deployment credentials are not configured."
-          fi
 
       - name: Configure GitHub Pages
         if: github.event_name != 'pull_request'
