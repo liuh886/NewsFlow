@@ -56,6 +56,21 @@ npm run publish:edition:dry-run
 node scripts/publish-edition.mjs --date=2026-08-15 --force --dry-run
 ```
 
+## Supabase activity heartbeat
+
+NewsFlow shares the portfolio membership database hosted on Supabase. `.github/workflows/supabase-activity.yml` performs three minimal, read-only database queries every day at 11:17 Asia/Shanghai.
+
+The heartbeat:
+
+- uses only the public Supabase publishable key;
+- remains constrained by existing grants and Row Level Security;
+- reads the active NewsFlow product, price and entitlement metadata;
+- never inserts synthetic rows or touches customer, subscription or payment records;
+- fails visibly when any request is unsuccessful;
+- records each successful run in the GitHub Actions history and step summary.
+
+The daily cadence provides a wider safety margin than waiting until the sixth day of Supabase's seven-day inactivity window. It is an operational safeguard, not a paid availability guarantee. See `docs/supabase-activity.md` for the security boundary and runbook.
+
 ## Repository contracts
 
 ### Human-maintained editorial authority
@@ -76,6 +91,11 @@ node scripts/publish-edition.mjs --date=2026-08-15 --force --dry-run
 - `public/data/issues.json`
 - `scripts/publish-edition.mjs`
 - `.github/workflows/publish-edition.yml`
+
+### Operational automation
+
+- `.github/workflows/supabase-activity.yml`
+- `docs/supabase-activity.md`
 
 ### Frontend
 
@@ -104,6 +124,7 @@ Open `http://localhost:4173` after the build completes.
 - `NewsFlow Frontend` validates data, JavaScript, Edition contracts and the deterministic build.
 - `CI Governance` enforces workflow authority and package-manager policy.
 - `Publish autonomous edition` runs only on schedule or manual dispatch and has the minimum write authority needed to commit a generated Issue.
+- `Supabase activity heartbeat` performs read-only database health queries with `contents: read` repository permissions.
 - `NewsFlow Frontend` deploys the built artifact to GitHub Pages only from `main`.
 
 ## Data and trust boundaries
@@ -115,5 +136,6 @@ Open `http://localhost:4173` after the build completes.
 - External text is escaped and external links use safe target attributes.
 - Source tiers and quality scores do not imply independent factual verification.
 - Fixed publication rhythm does not imply fixed issue length.
+- Supabase publishable credentials never replace RLS as the data-access boundary.
 
-See `DESIGN.md`, `docs/edition-protocol.md`, `docs/editorial-signal-desk.md` and `docs/ci-governance.md` for the enforceable product, design and engineering contracts.
+See `DESIGN.md`, `docs/edition-protocol.md`, `docs/editorial-signal-desk.md`, `docs/supabase-activity.md` and `docs/ci-governance.md` for the enforceable product, design and engineering contracts.
