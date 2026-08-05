@@ -1,0 +1,363 @@
+/* NewsFlow 2.4.1 — final magazine-reader refinements.
+   Loaded after the Edition layer so it can resolve typography, accessibility
+   and responsive details without altering the publication runtime. */
+
+.app-shell[data-product-model='magazine-edition'] #latest-change,
+.app-shell[data-product-model='magazine-edition'] #current-issue,
+.app-shell[data-product-model='magazine-edition'] #editorial-desk,
+.app-shell[data-product-model='magazine-edition'] .edition-archive {
+  scroll-margin-top: calc(var(--header-height) + 24px);
+}
+
+.app-shell[data-product-model='magazine-edition'] .masthead-title,
+.app-shell[data-product-model='magazine-edition'] .lead-title,
+.app-shell[data-product-model='magazine-edition'] .issue-header h2,
+.app-shell[data-product-model='magazine-edition'] .archive-heading h2,
+.edition-panel-body > h2,
+.storyline-index-item strong {
+  overflow-wrap: anywhere;
+  text-wrap: balance;
+}
+
+.app-shell[data-product-model='magazine-edition'] .masthead-deck,
+.app-shell[data-product-model='magazine-edition'] .lead-summary,
+.app-shell[data-product-model='magazine-edition'] .issue-standfirst,
+.app-shell[data-product-model='magazine-edition'] .article-summary,
+.panel-question {
+  text-wrap: pretty;
+}
+
+.app-shell[data-product-model='magazine-edition'] .masthead-meta[data-magazine-polished='true'] {
+  display: grid;
+  gap: 2px;
+}
+
+.app-shell[data-product-model='magazine-edition'] .masthead-meta[data-magazine-polished='true'] span {
+  display: block;
+}
+
+.post-issue-intro[data-empty='true'] {
+  border-bottom-style: dashed;
+}
+
+.post-issue-intro[data-empty='true'] .section-label,
+.post-issue-intro[data-empty='true'] .movement {
+  color: var(--ink-faint);
+}
+
+.publication-nav a,
+.publication-nav button,
+.issue-footer button,
+.archive-heading button,
+.storyline-all {
+  text-underline-offset: 5px;
+}
+
+.publication-nav a:hover,
+.publication-nav a:focus-visible,
+.publication-nav button:hover,
+.publication-nav button:focus-visible,
+.issue-footer button:hover,
+.issue-footer button:focus-visible,
+.archive-heading button:hover,
+.archive-heading button:focus-visible,
+.storyline-all:hover,
+.storyline-all:focus-visible {
+  text-decoration: underline;
+}
+
+.app-shell[data-product-model='magazine-edition'] .sidebar,
+.edition-panel {
+  overscroll-behavior: contain;
+}
+
+.edition-overlay {
+  animation: magazine-overlay-in 150ms ease both;
+}
+
+.edition-panel {
+  animation: magazine-panel-in 220ms cubic-bezier(0.2, 0.8, 0.2, 1) both;
+}
+
+.storyline-index-panel {
+  width: min(680px, 100%);
+}
+
+.storyline-index-list {
+  margin-top: 34px;
+  border-top: 3px solid var(--ink);
+}
+
+.storyline-index-item {
+  width: 100%;
+  display: grid;
+  grid-template-columns: 42px minmax(0, 1fr) 24px;
+  align-items: start;
+  gap: 18px;
+  padding: 24px 0;
+  border: 0;
+  border-bottom: 1px solid var(--line);
+  color: var(--ink);
+  background: transparent;
+  text-align: left;
+  cursor: pointer;
+  transition: color 150ms ease, background 150ms ease;
+}
+
+.storyline-index-item:hover,
+.storyline-index-item:focus-visible {
+  color: var(--signal-strong);
+  background: color-mix(in srgb, var(--signal-soft) 26%, transparent);
+}
+
+.storyline-index-number,
+.storyline-index-meta,
+.storyline-index-arrow {
+  color: var(--ink-faint);
+  font-family: var(--font-mono);
+  font-size: 9px;
+  line-height: 1.6;
+}
+
+.storyline-index-copy {
+  min-width: 0;
+  display: grid;
+  gap: 7px;
+}
+
+.storyline-index-copy strong {
+  font-family: var(--font-editorial);
+  font-size: clamp(23px, 3vw, 30px);
+  font-weight: 600;
+  line-height: 1.08;
+  letter-spacing: -0.03em;
+}
+
+.storyline-index-copy > span:last-child {
+  color: var(--ink-soft);
+  font-size: 13px;
+  line-height: 1.62;
+}
+
+.storyline-index-arrow {
+  padding-top: 24px;
+  text-align: right;
+  transition: transform 150ms ease, color 150ms ease;
+}
+
+.storyline-index-item:hover .storyline-index-arrow,
+.storyline-index-item:focus-visible .storyline-index-arrow {
+  color: currentColor;
+  transform: translateX(3px);
+}
+
+.storyline-index-empty {
+  padding: 28px 0;
+  color: var(--ink-soft);
+}
+
+html[data-theme='dark'] .edition-overlay {
+  background: rgba(0, 0, 0, 0.58);
+}
+
+@media (hover: none) {
+  .app-shell[data-product-model='magazine-edition'] .card-actions,
+  .app-shell[data-product-model='magazine-edition'] .feed-list.grid .card-actions {
+    opacity: 1;
+  }
+}
+
+@media (max-width: 920px) {
+  .app-shell[data-product-model='magazine-edition'] .masthead-meta[data-magazine-polished='true'] {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 5px 16px;
+    padding-top: 15px;
+    border-top: 1px solid var(--line);
+  }
+}
+
+@media (max-width: 720px) {
+  .app-shell[data-product-model='magazine-edition'] .workspace {
+    padding-top: 20px;
+  }
+
+  .app-shell[data-product-model='magazine-edition'] .masthead {
+    gap: 17px;
+    padding: 16px 0 23px;
+  }
+
+  .app-shell[data-product-model='magazine-edition'] .masthead-kicker {
+    margin-bottom: 10px;
+  }
+
+  .app-shell[data-product-model='magazine-edition'] .masthead-title {
+    font-size: clamp(43px, 13vw, 60px);
+    line-height: 0.92;
+  }
+
+  .app-shell[data-product-model='magazine-edition'] .masthead-deck {
+    margin-top: 15px;
+    font-size: 17px;
+    line-height: 1.48;
+  }
+
+  .post-issue-intro {
+    gap: 14px;
+    padding: 25px 0 14px;
+  }
+
+  .post-issue-status {
+    width: 100%;
+    flex-wrap: wrap;
+    justify-content: space-between;
+  }
+
+  .app-shell[data-product-model='magazine-edition'] .lead-story {
+    gap: 25px;
+    padding: 27px 0 44px;
+  }
+
+  .app-shell[data-product-model='magazine-edition'] .lead-title {
+    font-size: clamp(35px, 10.8vw, 49px);
+    line-height: 1;
+  }
+
+  .app-shell[data-product-model='magazine-edition'] .lead-summary {
+    margin-top: 18px;
+    font-size: 18px;
+    line-height: 1.5;
+  }
+
+  .app-shell[data-product-model='magazine-edition'] .lead-aside {
+    gap: 18px;
+    padding-top: 18px;
+  }
+
+  .latest-edition-panel {
+    margin-bottom: 44px;
+    padding: 30px 0;
+  }
+
+  .issue-header h2 {
+    font-size: clamp(34px, 10vw, 42px);
+  }
+
+  .issue-standfirst {
+    margin: 20px 0 27px;
+    font-size: 19px;
+  }
+
+  .app-shell[data-product-model='magazine-edition'] .feed-toolbar {
+    min-height: 68px;
+    padding-top: 14px;
+  }
+
+  .app-shell[data-product-model='magazine-edition'] .article-card,
+  .app-shell[data-product-model='magazine-edition'] .feed-list.grid .article-card {
+    padding: 21px 0 23px;
+  }
+
+  .edition-panel-head {
+    min-height: 60px;
+    padding: 0 max(18px, env(safe-area-inset-right)) 0 20px;
+  }
+
+  .edition-panel-body {
+    padding: 31px 20px calc(70px + env(safe-area-inset-bottom));
+  }
+
+  .edition-panel-body > h2 {
+    font-size: clamp(35px, 11vw, 48px);
+  }
+
+  .storyline-index-item {
+    grid-template-columns: 30px minmax(0, 1fr) 18px;
+    gap: 12px;
+    padding: 21px 0;
+  }
+
+  .storyline-index-copy strong {
+    font-size: 23px;
+  }
+
+  .storyline-index-arrow {
+    padding-top: 22px;
+  }
+}
+
+@media (max-width: 430px) {
+  .app-shell[data-product-model='magazine-edition'] .brand-status {
+    display: none;
+  }
+
+  .app-shell[data-product-model='magazine-edition'] .masthead-meta[data-magazine-polished='true'] {
+    gap: 4px 10px;
+    font-size: 8px;
+  }
+
+  .app-shell[data-product-model='magazine-edition'] .article-title,
+  .app-shell[data-product-model='magazine-edition'] .feed-list.grid .article-title {
+    font-size: 23px;
+  }
+}
+
+@media print {
+  .topbar,
+  .sidebar,
+  .brief-rail,
+  .mobile-nav,
+  .lead-actions,
+  .card-actions,
+  .membership-widget,
+  .edition-overlay,
+  .edition-panel {
+    display: none !important;
+  }
+
+  body,
+  .app-shell,
+  .workspace,
+  .main-column {
+    width: auto !important;
+    max-width: none !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    color: #000 !important;
+    background: #fff !important;
+  }
+
+  .masthead,
+  .lead-story,
+  .latest-edition-panel,
+  .article-card,
+  .edition-archive {
+    break-inside: avoid;
+  }
+}
+
+@media (forced-colors: active) {
+  .storyline-index-item:hover,
+  .storyline-index-item:focus-visible {
+    outline: 2px solid CanvasText;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .edition-overlay,
+  .edition-panel,
+  .storyline-index-arrow {
+    animation: none;
+    transition: none;
+  }
+}
+
+@keyframes magazine-overlay-in {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes magazine-panel-in {
+  from { opacity: 0; transform: translateX(18px); }
+  to { opacity: 1; transform: translateX(0); }
+}
