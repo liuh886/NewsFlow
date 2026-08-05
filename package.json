@@ -1,10 +1,10 @@
 {
   "name": "newsflow",
-  "version": "2.4.0",
+  "version": "2.4.1",
   "private": true,
   "type": "module",
   "scripts": {
-    "check": "node scripts/check.mjs && node scripts/check-language.mjs && node scripts/check-membership.mjs",
+    "check": "node scripts/check.mjs && node scripts/check-language.mjs && node scripts/check-membership.mjs && node scripts/check-magazine-polish.mjs",
     "build": "node scripts/build.mjs",
     "publish:edition": "node scripts/publish-edition.mjs",
     "publish:edition:dry-run": "node scripts/publish-edition.mjs --dry-run --force"
