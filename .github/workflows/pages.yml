@@ -44,10 +44,16 @@ jobs:
 
       - name: Sync signal catalog to Supabase
         if: github.event_name != 'pull_request'
+        shell: bash
         env:
+          SUPABASE_URL: ${{ vars.SUPABASE_URL || '' }}
           SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY || '' }}
-        run: npm run supabase:catalog
-        continue-on-error: true
+        run: |
+          if [ -z "$SUPABASE_URL" ] || [ -z "$SUPABASE_SERVICE_ROLE_KEY" ]; then
+            echo "Supabase catalog sync skipped: credentials are not configured."
+            exit 0
+          fi
+          npm run supabase:catalog
 
       - name: Configure GitHub Pages
         if: github.event_name != 'pull_request'
