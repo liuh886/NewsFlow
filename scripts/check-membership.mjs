@@ -5,46 +5,42 @@ import { fileURLToPath } from 'node:url';
 
 const root = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 const configPath = resolve(root, 'public/membership-config.js');
-const clientPath = resolve(root, 'public/membership-widget.js');
-const cssPath = resolve(root, 'public/membership-widget.css');
+await access(configPath);
 
-for (const path of [configPath, clientPath, cssPath]) await access(path);
-for (const path of [configPath, clientPath]) {
-  const syntax = spawnSync(process.execPath, ['--check', path], { encoding: 'utf8' });
-  if (syntax.status !== 0) throw new Error(`${path} syntax check failed:\n${syntax.stderr}`);
-}
+const syntax = spawnSync(process.execPath, ['--check', configPath], { encoding: 'utf8' });
+if (syntax.status !== 0) throw new Error(`${configPath} syntax check failed:\n${syntax.stderr}`);
 
-const [index, config, client] = await Promise.all([
+const [index, config] = await Promise.all([
   readFile(resolve(root, 'index.html'), 'utf8'),
   readFile(configPath, 'utf8'),
-  readFile(clientPath, 'utf8'),
 ]);
 
-for (const reference of ['./membership-widget.css', './membership-config.js', './membership-widget.js']) {
+for (const reference of [
+  'https://liuh886.github.io/admin/shared/account-shell.css?v=1',
+  './membership-config.js',
+  'https://liuh886.github.io/admin/shared/account-shell.js?v=1',
+]) {
   if (!index.includes(reference)) throw new Error(`index.html is missing ${reference}`);
 }
 for (const contract of [
+  'window.HaoAccountConfig',
   "productCode: 'newsflow'",
   "entitlementCode: 'newsflow.pro'",
   'billingEnabled: false',
+  'feedbackEnabled: true',
   'sb_publishable_',
   '/functions/v1/create-checkout-session',
   '/functions/v1/create-portal-session',
 ]) {
-  if (!config.includes(contract)) throw new Error(`membership config is missing ${contract}`);
-}
-for (const contract of [
-  "from('entitlements')",
-  "Authorization: `Bearer ${token}`",
-  'apikey: config.supabasePublishableKey',
-  "window.dispatchEvent(new CustomEvent('hao:membership-changed'",
-]) {
-  if (!client.includes(contract)) throw new Error(`membership client is missing ${contract}`);
+  if (!config.includes(contract)) throw new Error(`NewsFlow account config is missing ${contract}`);
 }
 
-const combined = `${config}\n${client}`;
+const combined = `${index}\n${config}`;
 for (const forbidden of [/sk_(live|test)_/, /whsec_/, /sb_secret_/, /service_role/]) {
-  if (forbidden.test(combined)) throw new Error(`membership browser assets contain forbidden secret material: ${forbidden}`);
+  if (forbidden.test(combined)) throw new Error(`NewsFlow browser assets contain forbidden secret material: ${forbidden}`);
+}
+if (combined.includes('membership-widget.js') || combined.includes('membership-widget.css')) {
+  throw new Error('NewsFlow must not load the retired local membership widget');
 }
 
-console.log('NewsFlow shared membership contract passed.');
+console.log('NewsFlow shared account contract passed.');
