@@ -19,6 +19,7 @@ for (const reference of [
   'https://liuh886.github.io/admin/shared/account-shell.css?v=1',
   './membership-config.js',
   'https://liuh886.github.io/admin/shared/account-shell.js?v=1',
+  'class="header-account-mount"',
 ]) {
   if (!index.includes(reference)) throw new Error(`index.html is missing ${reference}`);
 }
@@ -28,7 +29,7 @@ for (const contract of [
   "entitlementCode: 'newsflow.pro'",
   'billingEnabled: false',
   'feedbackEnabled: true',
-  "mountSelectors: ['.top-actions'",
+  "mountSelectors: ['.header-account-mount'",
   'compactTrigger: true',
   'sb_publishable_',
   '/functions/v1/create-checkout-session',
@@ -45,4 +46,4 @@ if (combined.includes('membership-widget.js') || combined.includes('membership-w
   throw new Error('NewsFlow must not load the retired local membership widget');
 }
 
-console.log('NewsFlow shared account contract passed: embedded compact trigger and no retired widget assets.');
+console.log('NewsFlow shared account contract passed: dedicated header mount, compact trigger and no retired widget assets.');
