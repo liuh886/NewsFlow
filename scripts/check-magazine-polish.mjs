@@ -66,7 +66,7 @@ if (packageManifest.version !== '2.4.1') throw new Error('magazine polish releas
 if (!packageManifest.scripts?.check?.includes('check-magazine-polish.mjs')) {
   throw new Error('npm check must include the magazine polish contract');
 }
-if (!serviceWorker.includes('newsflow-editorial-v2.5-serious-play-v1')) {
+if (!serviceWorker.includes('newsflow-editorial-v2.3.1-magazine-v2.4.1-serious-play-v2.5.0')) {
   throw new Error('service worker cache must include the serious-play editorial release');
 }
 
