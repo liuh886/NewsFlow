@@ -100,7 +100,7 @@ const actorFixture = spawnSync(process.execPath, [
   resolve(root, contentUpdaterPath),
   '--input=test/fixtures/content-update-actor.json'
 ], { cwd: root, encoding: 'utf8' });
-if (actorFixture.status === 0 || !actorFixture.stderr.includes('missing run.actor')) {
+if (actorFixture.status === 0 || !(actorFixture.stderr.includes('missing run.actor') || actorFixture.stderr.includes("must have required property 'actor'"))) {
   throw new Error('candidate pack without portable agent provenance must fail');
 }
 const duplicateFixture = spawnSync(process.execPath, [
@@ -151,10 +151,8 @@ const attentionFixture = spawnSync(process.execPath, [
   resolve(root, contentUpdaterPath),
   '--input=test/fixtures/content-update-attention.json'
 ], { cwd: root, encoding: 'utf8' });
-if (attentionFixture.status !== 0) throw new Error(`content update attention fixture failed:\n${attentionFixture.stderr}`);
-const attentionReport = JSON.parse(attentionFixture.stdout);
-if (attentionReport.decisions?.[0]?.status !== 'rejected'
-  || !attentionReport.decisions[0].reasons.includes('missing scores')) {
+if (attentionFixture.status === 0) throw new Error('attention fixture must fail for missing scores');
+if (!attentionFixture.stderr.includes("must have required property 'scores'") && !attentionFixture.stderr.includes('missing scores')) {
   throw new Error('candidate without five-dimension scores must be rejected');
 }
 

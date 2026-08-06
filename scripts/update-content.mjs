@@ -2,6 +2,8 @@ import { createHash } from 'node:crypto';
 import { access, mkdir, readFile, writeFile } from 'node:fs/promises';
 import { dirname, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { Ajv2020 as Ajv } from 'ajv/dist/2020.js';
+import addFormats from 'ajv-formats';
 
 const root = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 const args = new Map(process.argv.slice(2).map((entry) => {
@@ -20,6 +22,11 @@ const scoutConfig = await readJson('config/content-scouts.json');
 const edition = await readJson('public/data/edition.json');
 const news = await readJson('public/data/news.json');
 const storylines = await readJson('public/data/storylines.json');
+const candidatePackSchema = await readJson('schemas/content-candidate-pack.schema.json');
+
+const ajv = new Ajv({ allErrors: true });
+addFormats(ajv);
+const validateCandidatePack = ajv.compile(candidatePackSchema);
 
 const isObject = (value) => value && typeof value === 'object' && !Array.isArray(value);
 const toDate = (value) => {
@@ -37,7 +44,7 @@ const parsedUrlFor = (value) => {
     return null;
   }
 };
-const hostnameFor = (value) => parsedUrlFor(value)?.hostname.toLowerCase() || '';
+const hostnameFor = (value) => parsedUrlFor(value)?.hostname.toLowerCase().replace(/^www\./, '') || '';
 const sourceForUrl = (value) => {
   const url = parsedUrlFor(value);
   if (!url) return null;
@@ -60,6 +67,7 @@ const normalizeUrl = (value) => {
   try {
     const url = new URL(value);
     url.hash = '';
+    url.hostname = url.hostname.replace(/^www\./, '');
     for (const key of [...url.searchParams.keys()]) {
       if (/^(utm_|ref$|source$|campaign$)/i.test(key)) url.searchParams.delete(key);
     }
@@ -192,13 +200,116 @@ if (checkOnly) {
   process.exit(0);
 }
 
-if (!inputArgument) {
-  throw new Error('Missing --input=<candidate-pack.json>. The command is dry-run by default; add --apply to promote accepted Signals.');
+const stdin = args.has('stdin');
+
+if (!inputArgument && !stdin) {
+  throw new Error('Missing --input=<candidate-pack.json> or --stdin. The command is dry-run by default; add --apply to promote accepted Signals.');
+}
+if (inputArgument && stdin) {
+  throw new Error('--input and --stdin are mutually exclusive.');
 }
 
-const inputPath = resolve(root, String(inputArgument));
-const inputText = await readFile(inputPath, 'utf8');
-const candidatePack = JSON.parse(inputText);
+let inputText;
+if (stdin) {
+  const chunks = [];
+  for await (const chunk of process.stdin) chunks.push(chunk);
+  inputText = Buffer.concat(chunks).toString('utf8');
+} else {
+  const inputPath = resolve(root, String(inputArgument));
+  try {
+    await access(inputPath);
+  } catch (error) {
+    if (error.code === 'ENOENT') throw new Error(`Input file not found: ${inputArgument}`);
+    throw error;
+  }
+  inputText = await readFile(inputPath, 'utf8');
+}
+
+let parsedInput;
+try {
+  parsedInput = JSON.parse(inputText);
+} catch {
+  parsedInput = null;
+}
+
+const candidatePack = (() => {
+  if (parsedInput?.candidates) {
+    return parsedInput;
+  }
+
+  const now = new Date();
+  const coverageStart = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000);
+
+  if (parsedInput && typeof parsedInput.id === 'string' && typeof parsedInput.title === 'string' && typeof parsedInput.url === 'string') {
+    return {
+      schema_version: '1.0',
+      edition_id: edition.id,
+      run: {
+        as_of: now.toISOString(),
+        coverage_start: coverageStart.toISOString(),
+        coverage_end: now.toISOString(),
+        timezone: 'Asia/Shanghai',
+        actor: {
+          agent_id: 'single-candidate-cli',
+          runtime: 'NewsFlow CLI single-candidate mode',
+          workflow_id: workflowConfig.workflow_id,
+          workflow_version: workflowConfig.workflow_version
+        }
+      },
+      candidates: [parsedInput]
+    };
+  }
+
+  const lines = inputText.split('\n').filter((line) => line.trim());
+  if (lines.length) {
+    const candidates = [];
+    for (const [i, line] of lines.entries()) {
+      try {
+        const obj = JSON.parse(line);
+        if (obj && typeof obj.id === 'string' && typeof obj.title === 'string') {
+          candidates.push(obj);
+        }
+      } catch (e) {
+        throw new Error(`NDJSON line ${i + 1} is not valid JSON: ${e.message}`);
+      }
+    }
+    if (candidates.length) {
+      return {
+        schema_version: '1.0',
+        edition_id: edition.id,
+        run: {
+          as_of: now.toISOString(),
+          coverage_start: coverageStart.toISOString(),
+          coverage_end: now.toISOString(),
+          timezone: 'Asia/Shanghai',
+          actor: {
+            agent_id: 'ndjson-cli',
+            runtime: 'NewsFlow CLI NDJSON mode',
+            workflow_id: workflowConfig.workflow_id,
+            workflow_version: workflowConfig.workflow_version
+          }
+        },
+        candidates
+      };
+    }
+  }
+
+  throw new Error(
+    'Input does not match any recognized format. Expected:\n' +
+    '  - A full candidate pack (JSON object with "candidates" key)\n' +
+    '  - A single candidate (JSON object with "id", "title", "url")\n' +
+    '  - NDJSON (one JSON candidate per line)\n' +
+    'For single candidates or NDJSON, the run metadata is auto-generated.'
+  );
+})();
+
+const inputTextForHash = JSON.stringify(candidatePack);
+if (!validateCandidatePack(candidatePack)) {
+  const schemaErrors = validateCandidatePack.errors.map((error) =>
+    `${error.instancePath || '<root>'} ${error.message}${error.params ? ` (${JSON.stringify(error.params)})` : ''}`
+  );
+  throw new Error(`Candidate pack failed JSON Schema validation:\n- ${schemaErrors.join('\n- ')}`);
+}
 const packProblems = [];
 if (candidatePack.schema_version !== '1.0') packProblems.push('unsupported candidate pack schema_version');
 if (candidatePack.edition_id !== edition.id) packProblems.push(`edition_id must be ${edition.id}`);
@@ -227,13 +338,26 @@ const dateInShanghai = (date) => {
   const value = Object.fromEntries(parts.map((part) => [part.type, part.value]));
   return `${value.year}-${value.month}-${value.day}`;
 };
+const formatTimeForError = (date) => {
+  const shanghai = new Intl.DateTimeFormat('en-US', {
+    timeZone: 'Asia/Shanghai',
+    year: 'numeric',
+    month: '2-digit',
+    day: '2-digit',
+    hour: '2-digit',
+    minute: '2-digit',
+    hour12: false
+  }).format(date);
+  const utc = date.toISOString().replace('T', ' ').replace(/\.\d{3}Z$/, '');
+  return `${shanghai} CST (${utc} UTC)`;
+};
 if (!asOf) packProblems.push('invalid run.as_of');
 if (!coverageStart) packProblems.push('invalid run.coverage_start');
 if (!coverageEnd) packProblems.push('invalid run.coverage_end');
 if (candidatePack.run?.timezone !== 'Asia/Shanghai') packProblems.push('run.timezone must be Asia/Shanghai');
-if (asOf && asOf.getTime() > now.getTime() + 300_000) packProblems.push('as_of must not be in the future');
-if (asOf && coverageEnd && coverageEnd > asOf) packProblems.push('coverage_end must not be later than as_of');
-if (coverageStart && coverageEnd && coverageStart > coverageEnd) packProblems.push('coverage_start must not be later than coverage_end');
+if (asOf && asOf.getTime() > now.getTime() + 300_000) packProblems.push(`as_of (${formatTimeForError(asOf)}) must not be in the future`);
+if (asOf && coverageEnd && coverageEnd > asOf) packProblems.push(`coverage_end (${formatTimeForError(coverageEnd)}) must not be later than as_of (${formatTimeForError(asOf)})`);
+if (coverageStart && coverageEnd && coverageStart > coverageEnd) packProblems.push(`coverage_start (${formatTimeForError(coverageStart)}) must not be later than coverage_end (${formatTimeForError(coverageEnd)})`);
 if (packProblems.length) throw new Error(`Candidate pack failed:\n- ${packProblems.join('\n- ')}`);
 
 const existingIds = new Set(news.map((item) => item.id));
@@ -271,11 +395,13 @@ for (const candidate of candidatePack.candidates) {
   if (!publishedAt) rejected.push('invalid published_at');
   if (!retrievedAt) rejected.push('invalid retrieved_at');
   if (!eventDate) rejected.push('invalid event_date');
-  if (publishedAt && (publishedAt < coverageStart || publishedAt > coverageEnd)) rejected.push('published_at is outside the coverage window');
-  if (publishedAt && publishedAt > asOf) rejected.push('published_at is later than as_of');
-  if (retrievedAt && retrievedAt > asOf) rejected.push('retrieved_at is later than as_of');
-  if (publishedAt && retrievedAt && retrievedAt < publishedAt) rejected.push('retrieved_at is earlier than published_at');
-  if (eventDate && eventDate > dateInShanghai(asOf)) rejected.push('event_date is later than as_of in Asia/Shanghai');
+  if (publishedAt && (publishedAt < coverageStart || publishedAt > coverageEnd)) {
+    rejected.push(`published_at (${formatTimeForError(publishedAt)}) is outside the coverage window (${formatTimeForError(coverageStart)} to ${formatTimeForError(coverageEnd)})`);
+  }
+  if (publishedAt && publishedAt > asOf) rejected.push(`published_at (${formatTimeForError(publishedAt)}) is later than as_of (${formatTimeForError(asOf)})`);
+  if (retrievedAt && retrievedAt > asOf) rejected.push(`retrieved_at (${formatTimeForError(retrievedAt)}) is later than as_of (${formatTimeForError(asOf)})`);
+  if (publishedAt && retrievedAt && retrievedAt < publishedAt) rejected.push(`retrieved_at (${formatTimeForError(retrievedAt)}) is earlier than published_at (${formatTimeForError(publishedAt)})`);
+  if (eventDate && eventDate > dateInShanghai(asOf)) rejected.push(`event_date (${eventDate}) is later than as_of (${dateInShanghai(asOf)} Asia/Shanghai)`);
 
   if (candidate.verification?.full_text_accessed !== true) rejected.push('verification.full_text_accessed must be true');
   if (candidate.verification?.summary_supported_sentence_by_sentence !== true) {
@@ -301,7 +427,7 @@ for (const candidate of candidatePack.candidates) {
         rejected.push('report data_cutoff must be YYYY-MM-DD or not_disclosed');
       }
       if (/^\d{4}-\d{2}-\d{2}$/.test(reportDataCutoff) && reportDataCutoff > dateInShanghai(asOf)) {
-        rejected.push('report data_cutoff is later than as_of');
+        rejected.push(`report data_cutoff (${reportDataCutoff}) is later than as_of (${dateInShanghai(asOf)} Asia/Shanghai)`);
       }
       if (reportContext.methodology_reviewed !== true) rejected.push('report methodology must be reviewed');
       if (reportContext.observed_and_modeled_separated !== true) rejected.push('report facts and modeled outputs must be separated');
@@ -434,6 +560,24 @@ for (const candidate of candidatePack.candidates) {
 }
 
 const acceptedSignals = decisions.flatMap((decision) => decision.projected_signal ? [decision.projected_signal] : []);
+
+const duplicateCandidates = [];
+for (let i = 0; i < candidatePack.candidates.length; i++) {
+  for (let j = i + 1; j < candidatePack.candidates.length; j++) {
+    const a = candidatePack.candidates[i];
+    const b = candidatePack.candidates[j];
+    if (!a?.title || !b?.title) continue;
+    const similarity = titleSimilarity(a.title, b.title);
+    if (similarity >= sourceConfig.thresholds.title_similarity_review) {
+      duplicateCandidates.push({
+        candidate_a: a.id || `index-${i}`,
+        candidate_b: b.id || `index-${j}`,
+        similarity: Math.round(similarity * 100) / 100
+      });
+    }
+  }
+}
+
 const report = {
   schema_version: '1.0',
   edition_id: edition.id,
@@ -450,6 +594,7 @@ const report = {
     needs_review_count: decisions.filter((decision) => decision.status === 'needs_review').length,
     rejected_count: decisions.filter((decision) => decision.status === 'rejected').length
   },
+  duplicate_candidates: duplicateCandidates,
   decisions
 };
 
@@ -458,7 +603,7 @@ if (!apply) {
   process.exit(0);
 }
 
-const inputHash = createHash('sha256').update(inputText).digest('hex').slice(0, 10);
+const inputHash = createHash('sha256').update(inputTextForHash).digest('hex').slice(0, 10);
 const compactTime = asOf.toISOString().replace(/[-:]/g, '').replace('.000Z', 'Z');
 const reportPath = resolve(root, 'content', 'runs', `${compactTime}-${inputHash}.json`);
 await mkdir(dirname(reportPath), { recursive: true });
