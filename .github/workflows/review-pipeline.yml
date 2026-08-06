@@ -18,6 +18,9 @@ jobs:
     name: Process reviews and apply accepted candidates
     runs-on: ubuntu-24.04
     timeout-minutes: 10
+    env:
+      SUPABASE_URL: ${{ vars.NEWSFLOW_SUPABASE_URL || '' }}
+      SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY || '' }}
     steps:
       - name: Checkout
         uses: actions/checkout@v6
@@ -27,19 +30,15 @@ jobs:
       - name: Set up Node
         uses: actions/setup-node@v6
         with:
-          node-version: 22
+          node-version: 24
           cache: npm
 
       - name: Install
         run: npm ci
 
       - name: Process reviews from Supabase
-        if: env.SUPABASE_URL != ''
-        env:
-          SUPABASE_URL: ${{ vars.SUPABASE_URL || '' }}
-          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY || '' }}
+        if: env.SUPABASE_URL != '' && env.SUPABASE_SERVICE_ROLE_KEY != ''
         run: node scripts/process-reviews.mjs --supabase --apply
-        continue-on-error: true
 
       - name: Apply auto-accepted candidates
         shell: bash
@@ -48,7 +47,6 @@ jobs:
           for pack in content/inbox/review-processed-*.json; do
             echo "Applying $pack..."
             node scripts/update-content.mjs --input="$pack" --apply
-            # Clean up processed pack
             rm "$pack"
           done
           shopt -u nullglob

@@ -1,4 +1,4 @@
-const CACHE_NAME = 'newsflow-editorial-v2.3.1-magazine-v2.4.1';
+const CACHE_NAME = 'newsflow-editorial-v2.3.1-magazine-v2.4.1-mobile-reader-fix-1';
 const APP_SHELL = [
   './',
   './index.html',

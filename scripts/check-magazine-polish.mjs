@@ -52,7 +52,12 @@ for (const selector of [
   "[data-empty='true']",
   '@media (max-width: 720px)',
   '@media print',
-  '@media (prefers-reduced-motion: reduce)'
+  '@media (prefers-reduced-motion: reduce)',
+  'overflow-x: clip',
+  'grid-template-columns: 28px minmax(0, 1fr)',
+  '.article-body',
+  '.article-meta',
+  'grid-column: 2'
 ]) {
   if (!css.includes(selector)) throw new Error(`magazine polish CSS is missing ${selector}`);
 }
@@ -61,8 +66,8 @@ if (packageManifest.version !== '2.4.1') throw new Error('magazine polish releas
 if (!packageManifest.scripts?.check?.includes('check-magazine-polish.mjs')) {
   throw new Error('npm check must include the magazine polish contract');
 }
-if (!serviceWorker.includes('newsflow-editorial-v2.3.1-magazine-v2.4.1')) {
-  throw new Error('service worker cache must advance for the magazine polish release');
+if (!serviceWorker.includes('newsflow-editorial-v2.3.1-magazine-v2.4.1-mobile-reader-fix-1')) {
+  throw new Error('service worker cache must advance for the mobile reader fix');
 }
 
-console.log('NewsFlow magazine polish contract passed: storyline index, modal focus loop, responsive typography and refreshed PWA cache.');
+console.log('NewsFlow magazine polish contract passed: storyline panels, focus loop, stable mobile editorial rows and refreshed PWA cache.');

@@ -28,6 +28,8 @@ for (const contract of [
   "entitlementCode: 'newsflow.pro'",
   'billingEnabled: false',
   'feedbackEnabled: true',
+  "mountSelectors: ['.top-actions'",
+  'compactTrigger: true',
   'sb_publishable_',
   '/functions/v1/create-checkout-session',
   '/functions/v1/create-portal-session',
@@ -43,4 +45,4 @@ if (combined.includes('membership-widget.js') || combined.includes('membership-w
   throw new Error('NewsFlow must not load the retired local membership widget');
 }
 
-console.log('NewsFlow shared account contract passed.');
+console.log('NewsFlow shared account contract passed: embedded compact trigger and no retired widget assets.');
