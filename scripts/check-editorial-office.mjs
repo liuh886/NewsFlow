@@ -80,7 +80,7 @@ for (const phrase of [
 if (!packageManifest.scripts?.check?.includes('check-editorial-office.mjs')) {
   throw new Error('npm check must include the editorial office contract');
 }
-if (!serviceWorker.includes('newsflow-editorial-office-v1')) {
+if (!serviceWorker.includes('newsflow-editorial-v2.3.1-magazine-v2.4.1-editorial-office-v1')) {
   throw new Error('service worker cache must advance for the editorial office');
 }
 
