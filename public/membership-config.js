@@ -19,23 +19,23 @@
       en: 'NewsFlow account',
     },
     description: {
-      zh: '登录用于收集你的反馈、保存轻量偏好，并为未来的个性化 Edition 与高级阅读能力建立统一身份。',
-      en: 'Sign in to send feedback, keep lightweight preferences, and establish one identity for future personalized editions and advanced reading tools.',
+      zh: '登录后选择读者或主编身份：读者进入正式期刊，主编进入编辑部、征稿启事与评审档案。',
+      en: 'Sign in as a Reader or Editor-in-Chief: readers enter the journal, while editors enter the editorial office, calls for papers, and decision archive.',
     },
     privacyNote: {
-      zh: '公开 Edition、信号流与 GitHub 出版流程保持开放；账户不会改变主编制和现有阅读权限。',
-      en: 'Public editions, signal feeds, and the GitHub publishing workflow remain open. An account does not change editorial control or current reading access.',
+      zh: '公开 Edition、信号流与 GitHub 出版流程保持开放；身份仅决定产品工作区，不改变事实记录。',
+      en: 'Public editions, signal feeds, and the GitHub publishing workflow remain open. Roles only select a workspace and never alter the factual record.',
     },
     features: [
-      { zh: '提交内容反馈、问题与选题建议', en: 'Send content feedback, bug reports, and topic ideas' },
-      { zh: '未来保存主题、阅读与 Edition 偏好', en: 'Prepare for future topic, reading, and edition preferences' },
+      { zh: '选择读者或主编身份', en: 'Choose Reader or Editor-in-Chief' },
+      { zh: '保存阅读偏好与编辑部身份', en: 'Save reading preferences and editorial identity' },
       { zh: '与其他 Hao Apps 共用同一登录身份', en: 'Use the same identity across Hao Apps' },
     ],
     feedbackEnabled: true,
     feedbackTitle: { zh: '给主编的反馈', en: 'Feedback for the editor' },
     feedbackPrompt: {
-      zh: '反馈会进入私有运营台，不会公开显示在 Edition 中。',
-      en: 'Feedback enters the private operations console and is not published in an edition.',
+      zh: '反馈会进入私有运营台，不会自动成为正式 Issue 内容。',
+      en: 'Feedback enters the private operations console and never becomes formal Issue content automatically.',
     },
   });
 })();
