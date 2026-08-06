@@ -1,0 +1,4 @@
+interface:
+  display_name: "NewsFlow Recommender"
+  short_description: "基于证据门槛与读者反馈，持续研究、筛选、排序并更新 NewsFlow 推荐"
+  default_prompt: "Use $newsflow-recommender to research, rank, and update the current NewsFlow Edition from auditable evidence and reader feedback."

@@ -1,0 +1,65 @@
+{
+  "schema_version": "1.0",
+  "app_id": "newsflow-pwa",
+  "policy_version": "1.0.0",
+  "edition_id": "frontier-systems-review",
+  "exported_at": "2026-08-04T01:00:00.000Z",
+  "events": [
+    {
+      "event_id": "feedback-fixture-useful",
+      "occurred_at": "2026-08-03T00:10:00.000Z",
+      "signal_id": "signal-iea-electricity-2026",
+      "action": "useful",
+      "surface": "drawer",
+      "channel_id": "ai-infrastructure",
+      "storyline_ids": ["ai-energy-foundation"],
+      "tags": ["Energy & Transition", "Electricity", "Data Center"],
+      "source": "International Energy Agency"
+    },
+    {
+      "event_id": "feedback-fixture-bookmark",
+      "occurred_at": "2026-08-03T00:20:00.000Z",
+      "signal_id": "signal-iea-datacentres-2026",
+      "action": "bookmark",
+      "surface": "feed",
+      "channel_id": "ai-infrastructure",
+      "storyline_ids": ["ai-energy-foundation", "ai-infrastructure-layer"],
+      "tags": ["AI & Tech", "Energy & Transition", "Data Center"],
+      "source": "International Energy Agency"
+    },
+    {
+      "event_id": "feedback-fixture-known",
+      "occurred_at": "2026-08-03T00:30:00.000Z",
+      "signal_id": "signal-cbam-definitive-regime",
+      "action": "already_known",
+      "surface": "drawer",
+      "channel_id": "ccus-energy-transition",
+      "storyline_ids": ["evidence-governance"],
+      "tags": ["Energy & Transition", "CBAM", "Carbon Accounting"],
+      "source": "European Commission"
+    },
+    {
+      "event_id": "feedback-fixture-negative",
+      "occurred_at": "2026-08-03T00:40:00.000Z",
+      "signal_id": "signal-global-ccs-forum-2026",
+      "action": "not_interested",
+      "surface": "drawer",
+      "channel_id": "ccus-energy-transition",
+      "storyline_ids": ["ccus-network-economics", "evidence-governance"],
+      "tags": ["Energy & Transition", "CCUS", "Infrastructure"],
+      "source": "Global CCS Institute"
+    },
+    {
+      "event_id": "feedback-fixture-restore",
+      "occurred_at": "2026-08-03T00:41:00.000Z",
+      "signal_id": "signal-global-ccs-forum-2026",
+      "action": "restore",
+      "surface": "toast",
+      "channel_id": "ccus-energy-transition",
+      "storyline_ids": ["ccus-network-economics", "evidence-governance"],
+      "tags": ["Energy & Transition", "CCUS", "Infrastructure"],
+      "source": "Global CCS Institute",
+      "target_event_id": "feedback-fixture-negative"
+    }
+  ]
+}

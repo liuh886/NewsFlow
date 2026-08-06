@@ -1,0 +1,10 @@
+{
+  "schema_version": "1.0",
+  "enabled": false,
+  "url": "",
+  "publishable_key": "",
+  "auth_provider": "github",
+  "edition_id": "frontier-systems-review",
+  "maximum_batch_rows": 20,
+  "debounce_seconds": 5
+}

@@ -1,0 +1,16 @@
+{
+  "schema_version": "1.0",
+  "policy_version": "1.0.0",
+  "generated_as_of": null,
+  "event_count": 0,
+  "signal_count": 0,
+  "personalization_ready": false,
+  "action_counts": {},
+  "affinities": {
+    "channels": [],
+    "storylines": [],
+    "tags": [],
+    "sources": []
+  },
+  "quality_flags": []
+}

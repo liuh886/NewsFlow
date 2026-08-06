@@ -37,7 +37,17 @@ jobs:
         run: npm run check
 
       - name: Build static site
+        env:
+          NEWSFLOW_SUPABASE_URL: ${{ vars.NEWSFLOW_SUPABASE_URL || '' }}
+          NEWSFLOW_SUPABASE_PUBLISHABLE_KEY: ${{ vars.NEWSFLOW_SUPABASE_PUBLISHABLE_KEY || '' }}
         run: npm run build
+
+      - name: Sync signal catalog to Supabase
+        if: github.event_name != 'pull_request'
+        env:
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY || '' }}
+        run: npm run supabase:catalog
+        continue-on-error: true
 
       - name: Configure GitHub Pages
         if: github.event_name != 'pull_request'
