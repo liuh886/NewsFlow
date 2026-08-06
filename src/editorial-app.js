@@ -587,7 +587,7 @@ const resetFilters = () => {
 };
 
 const renderLoading = () => {
-  app.innerHTML = '<main class="loading-screen"><div class="loading-lockup"><div class="loading-mark">NF</div><span>正在整理信号流</span></div></main>';
+  app.innerHTML = '<main class="loading-screen"><div class="loading-lockup"><div class="loading-mark">N</div><span>正在整理信号流</span></div></main>';
 };
 
 const renderSidebar = (items) => {
@@ -979,7 +979,7 @@ const render = () => {
   const snapshot = latestDate();
 
   app.innerHTML = `<div class="app-shell">
-    <header class="topbar"><div class="topbar-inner"><button class="brand" data-action="reset" aria-label="重置 NewsFlow"><span class="brand-mark">NF</span><span class="brand-copy"><span class="brand-name">NewsFlow</span><span class="brand-status"><span class="status-dot"></span>Editorial signal desk</span></span></button><label class="global-search">${icon('search')}<input id="global-search" type="search" value="${escapeHtml(state.query)}" placeholder="搜索标题、摘要、证据或主题…" autocomplete="off"><span class="search-kbd">⌘ K</span></label><div class="top-actions"><button class="icon-button" data-action="feedback-center" aria-label="查看推荐反馈">${icon('feedback')}</button><button class="icon-button" data-action="theme" aria-label="切换明暗主题">${state.theme === 'dark' ? icon('sun') : icon('moon')}</button><button class="icon-button" data-action="open-review" aria-label="信号审核">${icon('review')}</button><button class="icon-button" data-action="help" data-desktop-only="true" aria-label="查看键盘快捷键">${icon('help')}</button><button class="mobile-menu-button" data-action="mobile-menu" aria-label="打开筛选菜单">${icon('menu')}</button></div></div></header>
+    <header class="topbar"><div class="topbar-inner"><button class="brand" data-action="reset" aria-label="重置 NewsFlow"><span class="brand-copy"><span class="brand-name">NewsFlow</span><span class="brand-status"><span class="status-dot"></span>Editorial signal desk</span></span></button><label class="global-search">${icon('search')}<input id="global-search" type="search" value="${escapeHtml(state.query)}" placeholder="搜索标题、摘要、证据或主题…" autocomplete="off"><span class="search-kbd">⌘ K</span></label><div class="top-actions"><button class="icon-button" data-action="feedback-center" aria-label="查看推荐反馈">${icon('feedback')}</button><button class="icon-button" data-action="theme" aria-label="切换明暗主题">${state.theme === 'dark' ? icon('sun') : icon('moon')}</button><button class="icon-button" data-action="open-review" aria-label="信号审核">${icon('review')}</button><button class="icon-button" data-action="help" data-desktop-only="true" aria-label="查看键盘快捷键">${icon('help')}</button><button class="mobile-menu-button" data-action="mobile-menu" aria-label="打开筛选菜单">${icon('menu')}</button></div></div></header>
     <div class="workspace">${renderSidebar(items)}<main class="main-column" id="main-content">
       <section class="masthead"><div><div class="masthead-kicker">Curated intelligence · 以数据快照为准</div><h1 class="masthead-title">The Daily Signal</h1><p class="masthead-deck">把高频新闻压缩为真正需要判断的变化。先看结论，再追溯来源；需要时展开背景与证据。</p></div><div class="masthead-meta">Data through<br>${escapeHtml(formatDate(snapshot, { year: 'numeric', month: 'long', day: 'numeric' }))}<br>${escapeHtml(topicName)}<br>${items.length} signals</div></section>
       ${renderLead(lead)}

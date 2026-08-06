@@ -252,6 +252,17 @@ button {
   display: flex;
   align-items: center;
   gap: 6px;
+  padding-right: 54px;
+}
+
+.header-account-mount {
+  position: fixed;
+  top: max(14px, env(safe-area-inset-top));
+  right: max(26px, env(safe-area-inset-right));
+  z-index: 81;
+  display: inline-flex;
+  align-items: center;
+  height: 40px;
 }
 
 .icon-button,
@@ -1458,6 +1469,11 @@ button {
   .global-search,
   .top-actions .icon-button[data-desktop-only='true'] {
     display: none;
+  }
+
+  .header-account-mount {
+    top: max(11px, env(safe-area-inset-top));
+    right: max(16px, env(safe-area-inset-right));
   }
 
   .mobile-menu-button {
