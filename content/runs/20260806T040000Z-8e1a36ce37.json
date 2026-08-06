@@ -1,0 +1,153 @@
+{
+  "schema_version": "1.0",
+  "edition_id": "frontier-systems-review",
+  "workflow": {
+    "id": "newsflow-content-update",
+    "version": "1.0.0",
+    "actor": {
+      "agent_id": "claude-sonnet",
+      "runtime": "Claude Code",
+      "workflow_id": "newsflow-content-update",
+      "workflow_version": "1.0.0"
+    }
+  },
+  "run": {
+    "as_of": "2026-08-06T12:00:00+08:00",
+    "coverage_start": "2026-07-24T00:00:00+08:00",
+    "coverage_end": "2026-08-06T12:00:00+08:00",
+    "timezone": "Asia/Shanghai",
+    "actor": {
+      "agent_id": "claude-sonnet",
+      "runtime": "Claude Code",
+      "workflow_id": "newsflow-content-update",
+      "workflow_version": "1.0.0"
+    }
+  },
+  "applied": true,
+  "summary": {
+    "candidate_count": 2,
+    "accepted_count": 1,
+    "needs_review_count": 1,
+    "rejected_count": 0
+  },
+  "duplicate_candidates": [],
+  "decisions": [
+    {
+      "id": "doe-paducah-ai-energy-campus-2026",
+      "status": "accepted",
+      "source_id": "us-doe",
+      "reasons": [],
+      "scores": {
+        "facts": 4.5,
+        "source": 5,
+        "timeliness": 4.5,
+        "news_quality": 4.5,
+        "industry_impact": 5
+      },
+      "score_mean": 4.7,
+      "storyline_ids": [
+        "ai-energy-foundation",
+        "ai-infrastructure-layer"
+      ],
+      "verification": {
+        "full_text_accessed": true,
+        "summary_supported_sentence_by_sentence": true
+      },
+      "evidence": [
+        {
+          "claim": "DOE 选定 Paducah 场址建设 1.8GW AI/HPC 创新园区。",
+          "source_excerpt": "The U.S. Department of Energy announced a partnership to redevelop portions of the Paducah Site into an AI and high-performance computing innovation campus.",
+          "source_url": "https://www.energy.gov/articles/energy-department-announces-partnership-expand-reliable-affordable-energy-access-and-power"
+        },
+        {
+          "claim": "配套 2GW 天然气发电与最高 2.6GW 电池储能，私人投资超过 1000 亿美元。",
+          "source_excerpt": "2 GW of new grid-connected, natural gas-fired generation… up to 2.6 GW of battery energy storage… more than $100 billion in private investment.",
+          "source_url": "https://www.energy.gov/articles/energy-department-announces-partnership-expand-reliable-affordable-energy-access-and-power"
+        },
+        {
+          "claim": "发电与储能容量将超过园区自身需求，余量输送区域电网。",
+          "source_excerpt": "Generation and storage would exceed the campus's needs, with excess electricity delivered to the regional grid.",
+          "source_url": "https://www.energy.gov/articles/energy-department-announces-partnership-expand-reliable-affordable-energy-access-and-power"
+        }
+      ],
+      "projected_signal": {
+        "id": "doe-paducah-ai-energy-campus-2026",
+        "channel_id": "ai-infrastructure",
+        "storyline_ids": [
+          "ai-energy-foundation",
+          "ai-infrastructure-layer"
+        ],
+        "event_type": "power_agreement",
+        "event_date": "2026-07-29",
+        "title": "美国能源部选定 Paducah 场址建设 1.8GW AI 算力园区，配套 2GW 燃气发电与 2.6GW 储能，私人投资超过 1000 亿美元",
+        "url": "https://energy.gov/articles/energy-department-announces-partnership-expand-reliable-affordable-energy-access-and-power",
+        "source": "U.S. Department of Energy",
+        "published_at": "2026-07-29T00:00:00.000Z",
+        "quality_index": 9.4,
+        "source_tier": "Tier A",
+        "short_summary": "DOE 宣布在肯塔基州 Paducah 原联邦场址建设 1.8GW AI/HPC 创新园区，配套 2GW 天然气发电与最高 2.6GW 电池储能，由 Brookfield 和 NextEra Energy 主导，私人投资超过 1000 亿美元，预计 2031 年完工。",
+        "long_summary": "该项目是 DOE American Energy Hubs 计划的第二个落地案例。Brookfield 负责数据中心园区开发运营，NextEra Energy 建设天然气发电和电池储能设施。发电与储能容量超过园区自身需求，余量将输送区域电网。场址拥有现成输电容量、水资源、光纤和可用土地，无需新建主干网。项目预计创造约 8000 个建设岗位和 600 个永久岗位，需经肯塔基州公共服务委员会审批。这是美国联邦土地再利用与 AI 能源基础设施结合的标志性案例，规模远超此前 Portsmouth 场址的类似安排。",
+        "key_quote": "",
+        "supporting_quotes": [],
+        "tags": [
+          "AI & Tech",
+          "Energy & Transition",
+          "Data Center",
+          "Natural Gas"
+        ]
+      }
+    },
+    {
+      "id": "uk-ccs-east-coast-cluster-8bn-financing-2026",
+      "status": "needs_review",
+      "source_id": "global-ccs-institute",
+      "reasons": [
+        "report data cutoff is not disclosed"
+      ],
+      "scores": {
+        "facts": 4,
+        "source": 4,
+        "timeliness": 4.5,
+        "news_quality": 4,
+        "industry_impact": 5
+      },
+      "score_mean": 4.3,
+      "storyline_ids": [
+        "ccus-project-delivery",
+        "ccus-network-economics"
+      ],
+      "verification": {
+        "full_text_accessed": true,
+        "summary_supported_sentence_by_sentence": true,
+        "attributed_to_source": true,
+        "stakeholder_position_attributed": true,
+        "report_context": {
+          "report_title": "London Climate Action Week 2026 | Scaling Carbon Management for Climate Action – Event Recap",
+          "report_version": "2026 Edition",
+          "publication_date_verified": true,
+          "data_cutoff": "not_disclosed",
+          "methodology_reviewed": true,
+          "observed_and_modeled_separated": true
+        }
+      },
+      "evidence": [
+        {
+          "claim": "Northern Endurance Partnership 与 Net Zero Teesside Power 获得约 80 亿英镑项目融资。",
+          "source_excerpt": "These mechanisms underpinned ~£8 billion in project financing for NEP and Net Zero Teesside Power.",
+          "source_url": "https://www.globalccsinstitute.com/lcaw2026recap/"
+        },
+        {
+          "claim": "英国 CCS 商业模式包括受监管的运输封存安排和 Carbon Capture Contracts for Difference。",
+          "source_excerpt": "UK's CCS business models include regulated transport/storage arrangements and Carbon Capture Contracts for Difference.",
+          "source_url": "https://www.globalccsinstitute.com/lcaw2026recap/"
+        },
+        {
+          "claim": "CCS 银行可融资性取决于稳定政策、清晰责任边界和可预测收入模型。",
+          "source_excerpt": "CCS bankability depends on stable policy, clear long-term storage obligations, and predictable revenue models — less on the technology itself than on stable policy and regulatory frameworks.",
+          "source_url": "https://www.globalccsinstitute.com/lcaw2026recap/"
+        }
+      ],
+      "projected_signal": null
+    }
+  ]
+}

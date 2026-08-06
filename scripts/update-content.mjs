@@ -71,7 +71,8 @@ const normalizeUrl = (value) => {
     for (const key of [...url.searchParams.keys()]) {
       if (/^(utm_|ref$|source$|campaign$)/i.test(key)) url.searchParams.delete(key);
     }
-    return url.toString().replace(/\/$/, '');
+    const result = url.toString();
+    return result.endsWith('/') && url.pathname === '/' ? result.slice(0, -1) : result;
   } catch {
     return String(value || '').trim();
   }

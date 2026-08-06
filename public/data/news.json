@@ -8,7 +8,7 @@
     "event_type": "foundry_capacity",
     "event_date": "2026-08-03",
     "title": "台积电 3nm 产能利用率突破 90%，AI 加速器订单推动下半年满载",
-    "url": "https://investor.tsmc.com/english",
+    "url": "https://investor.tsmc.com/english/",
     "source": "TSMC Investor Relations",
     "published_at": "2026-08-03T00:00:00.000Z",
     "quality_index": 8.8,
@@ -45,6 +45,32 @@
       "Energy & Transition",
       "CCUS",
       "Project Pipeline"
+    ]
+  },
+  {
+    "id": "doe-paducah-ai-energy-campus-2026",
+    "channel_id": "ai-infrastructure",
+    "storyline_ids": [
+      "ai-energy-foundation",
+      "ai-infrastructure-layer"
+    ],
+    "event_type": "power_agreement",
+    "event_date": "2026-07-29",
+    "title": "美国能源部选定 Paducah 场址建设 1.8GW AI 算力园区，配套 2GW 燃气发电与 2.6GW 储能，私人投资超过 1000 亿美元",
+    "url": "https://energy.gov/articles/energy-department-announces-partnership-expand-reliable-affordable-energy-access-and-power",
+    "source": "U.S. Department of Energy",
+    "published_at": "2026-07-29T00:00:00.000Z",
+    "quality_index": 9.4,
+    "source_tier": "Tier A",
+    "short_summary": "DOE 宣布在肯塔基州 Paducah 原联邦场址建设 1.8GW AI/HPC 创新园区，配套 2GW 天然气发电与最高 2.6GW 电池储能，由 Brookfield 和 NextEra Energy 主导，私人投资超过 1000 亿美元，预计 2031 年完工。",
+    "long_summary": "该项目是 DOE American Energy Hubs 计划的第二个落地案例。Brookfield 负责数据中心园区开发运营，NextEra Energy 建设天然气发电和电池储能设施。发电与储能容量超过园区自身需求，余量将输送区域电网。场址拥有现成输电容量、水资源、光纤和可用土地，无需新建主干网。项目预计创造约 8000 个建设岗位和 600 个永久岗位，需经肯塔基州公共服务委员会审批。这是美国联邦土地再利用与 AI 能源基础设施结合的标志性案例，规模远超此前 Portsmouth 场址的类似安排。",
+    "key_quote": "",
+    "supporting_quotes": [],
+    "tags": [
+      "AI & Tech",
+      "Energy & Transition",
+      "Data Center",
+      "Natural Gas"
     ]
   },
   {
