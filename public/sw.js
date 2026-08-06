@@ -1,4 +1,4 @@
-const CACHE_NAME = 'newsflow-editorial-v2.5-serious-play-v1';
+const CACHE_NAME = 'newsflow-editorial-v2.3.1-magazine-v2.4.1-serious-play-v2.5.0';
 const APP_SHELL = [
   './',
   './index.html',
