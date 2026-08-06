@@ -6,14 +6,10 @@
   function syncAccountMount() {
     const target = document.querySelector('.top-actions');
     const host = document.getElementById(hostId);
-    if (!target || !host) return;
+    if (!target || !host || host.parentElement === target) return;
 
-    host.classList.remove('is-floating');
-    host.classList.add('is-embedded');
-    if (host.parentElement !== target) {
-      const mobileMenu = target.querySelector('.mobile-menu-button');
-      target.insertBefore(host, mobileMenu || null);
-    }
+    const mobileMenu = target.querySelector('.mobile-menu-button');
+    target.insertBefore(host, mobileMenu || null);
   }
 
   const observer = new MutationObserver(syncAccountMount);
