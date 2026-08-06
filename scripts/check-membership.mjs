@@ -5,23 +5,33 @@ import { fileURLToPath } from 'node:url';
 
 const root = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 const configPath = resolve(root, 'public/membership-config.js');
-await access(configPath);
+const integrationPath = resolve(root, 'public/account-integration.js');
+const integrationStylePath = resolve(root, 'public/account-integration.css');
+await Promise.all([access(configPath), access(integrationPath), access(integrationStylePath)]);
 
-const syntax = spawnSync(process.execPath, ['--check', configPath], { encoding: 'utf8' });
-if (syntax.status !== 0) throw new Error(`${configPath} syntax check failed:\n${syntax.stderr}`);
+for (const path of [configPath, integrationPath]) {
+  const syntax = spawnSync(process.execPath, ['--check', path], { encoding: 'utf8' });
+  if (syntax.status !== 0) throw new Error(`${path} syntax check failed:\n${syntax.stderr}`);
+}
 
-const [index, config] = await Promise.all([
+const [index, config, integration, styles] = await Promise.all([
   readFile(resolve(root, 'index.html'), 'utf8'),
   readFile(configPath, 'utf8'),
+  readFile(integrationPath, 'utf8'),
+  readFile(integrationStylePath, 'utf8'),
 ]);
 
 for (const reference of [
   'https://liuh886.github.io/admin/shared/account-shell.css?v=1',
+  './account-integration.css',
   './membership-config.js',
   'https://liuh886.github.io/admin/shared/account-shell.js?v=1',
-  'class="header-account-mount"',
+  './account-integration.js',
 ]) {
   if (!index.includes(reference)) throw new Error(`index.html is missing ${reference}`);
+}
+if (index.includes('<div class="header-account-mount"')) {
+  throw new Error('NewsFlow must not own a fixed account mount outside the rendered topbar.');
 }
 for (const contract of [
   'window.HaoAccountConfig',
@@ -29,16 +39,20 @@ for (const contract of [
   "entitlementCode: 'newsflow.pro'",
   'billingEnabled: false',
   'feedbackEnabled: true',
-  "mountSelectors: ['.header-account-mount'",
+  "mountSelectors: ['.top-actions']",
   'compactTrigger: true',
   'sb_publishable_',
-  '/functions/v1/create-checkout-session',
-  '/functions/v1/create-portal-session',
 ]) {
   if (!config.includes(contract)) throw new Error(`NewsFlow account config is missing ${contract}`);
 }
+for (const contract of ['hao-account-newsflow', "document.querySelector('.top-actions')", "classList.remove('is-floating')", 'MutationObserver']) {
+  if (!integration.includes(contract)) throw new Error(`NewsFlow account integration is missing ${contract}`);
+}
+for (const contract of ['.top-actions .hao-account-trigger', 'box-shadow: none', 'backdrop-filter: none', '.hao-account-mount.is-floating']) {
+  if (!styles.includes(contract)) throw new Error(`NewsFlow account styles are missing ${contract}`);
+}
 
-const combined = `${index}\n${config}`;
+const combined = `${index}\n${config}\n${integration}\n${styles}`;
 for (const forbidden of [/sk_(live|test)_/, /whsec_/, /sb_secret_/, /service_role/]) {
   if (forbidden.test(combined)) throw new Error(`NewsFlow browser assets contain forbidden secret material: ${forbidden}`);
 }
@@ -46,4 +60,4 @@ if (combined.includes('membership-widget.js') || combined.includes('membership-w
   throw new Error('NewsFlow must not load the retired local membership widget');
 }
 
-console.log('NewsFlow shared account contract passed: dedicated header mount, compact trigger and no retired widget assets.');
+console.log('NewsFlow account is embedded in the native topbar, survives dynamic renders, and exposes no privileged secret.');
