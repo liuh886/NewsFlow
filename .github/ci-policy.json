@@ -8,6 +8,7 @@
     ".github/workflows/ci.yml",
     ".github/workflows/pages.yml",
     ".github/workflows/publish-edition.yml",
+    ".github/workflows/review-pipeline.yml",
     ".github/workflows/supabase-activity.yml"
   ],
   "required_pr_workflows": [
@@ -17,7 +18,8 @@
   ],
   "release_workflows": [
     ".github/workflows/pages.yml",
-    ".github/workflows/publish-edition.yml"
+    ".github/workflows/publish-edition.yml",
+    ".github/workflows/review-pipeline.yml"
   ],
   "advisory_workflows": [
     ".github/workflows/supabase-activity.yml"
