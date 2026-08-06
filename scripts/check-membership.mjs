@@ -45,11 +45,14 @@ for (const contract of [
 ]) {
   if (!config.includes(contract)) throw new Error(`NewsFlow account config is missing ${contract}`);
 }
-for (const contract of ['hao-account-newsflow', "document.querySelector('.top-actions')", "classList.remove('is-floating')", 'MutationObserver']) {
+for (const contract of ['hao-account-newsflow', "document.querySelector('.top-actions')", 'MutationObserver']) {
   if (!integration.includes(contract)) throw new Error(`NewsFlow account integration is missing ${contract}`);
 }
-for (const contract of ['.top-actions .hao-account-trigger', 'box-shadow: none', 'backdrop-filter: none', '.hao-account-mount.is-floating']) {
+for (const contract of ['.top-actions .hao-account-trigger', 'box-shadow: none', 'backdrop-filter: none']) {
   if (!styles.includes(contract)) throw new Error(`NewsFlow account styles are missing ${contract}`);
+}
+if (integration.includes('is-floating') || styles.includes('is-floating')) {
+  throw new Error('NewsFlow must not retain compatibility with the retired floating account state.');
 }
 
 const combined = `${index}\n${config}\n${integration}\n${styles}`;
@@ -60,4 +63,4 @@ if (combined.includes('membership-widget.js') || combined.includes('membership-w
   throw new Error('NewsFlow must not load the retired local membership widget');
 }
 
-console.log('NewsFlow account is embedded in the native topbar, survives dynamic renders, and loads Account Shell v2.');
+console.log('NewsFlow account uses only the native topbar mount and Account Shell v2.');
