@@ -2,7 +2,9 @@
   {
     "id": "signal-iea-electricity-2026",
     "channel_id": "ai-infrastructure",
-    "storyline_ids": ["ai-energy-foundation"],
+    "storyline_ids": [
+      "ai-energy-foundation"
+    ],
     "event_type": "load_forecast",
     "event_date": "2026-07-23",
     "title": "全球电力需求增速将继续加快，数据中心与工业负荷成为新增压力源",
@@ -15,30 +17,43 @@
     "long_summary": "这组预测说明，电力系统面对的不只是可再生能源装机扩张，而是负荷结构也在快速变化。数据中心等高密度、持续性需求会放大并网、调峰和区域输电瓶颈；判断能源转型进度，需要同时观察发电投资、网络能力与需求响应。",
     "key_quote": "",
     "supporting_quotes": [],
-    "tags": ["Energy & Transition", "Electricity", "Data Center"]
+    "tags": [
+      "Energy & Transition",
+      "Electricity",
+      "Data Center"
+    ]
   },
   {
     "id": "signal-iea-datacentres-2026",
     "channel_id": "ai-infrastructure",
-    "storyline_ids": ["ai-energy-foundation", "ai-infrastructure-layer"],
+    "storyline_ids": [
+      "ai-energy-foundation",
+      "ai-infrastructure-layer"
+    ],
     "event_type": "load_forecast",
     "event_date": "2026-04-16",
     "title": "数据中心用电在 2025 年显著跃升，电力瓶颈正反向塑造 AI 基础设施布局",
     "url": "https://www.iea.org/news/data-centre-electricity-use-surged-in-2025-even-with-tightening-bottlenecks-driving-a-scramble-for-solutions",
     "source": "International Energy Agency",
     "published_at": "2026-04-16T00:00:00Z",
-    "quality_index": 9.0,
+    "quality_index": 9,
     "source_tier": "Tier A",
     "short_summary": "IEA 指出数据中心用电继续快速增长，而并网与设备供应瓶颈迫使运营商同时寻找更快的电源、网络和效率方案。AI 资本开支正在与电力基础设施形成更直接的耦合。",
     "long_summary": "数据中心扩张不再只是算力设备采购问题。可获得的电力容量、项目投产时间、网络约束和能源组合会决定设施选址与建设节奏。对投资者和政策制定者而言，算力增长需要被视作电力系统规划的一部分，而不是孤立的科技周期。",
     "key_quote": "",
     "supporting_quotes": [],
-    "tags": ["AI & Tech", "Energy & Transition", "Data Center"]
+    "tags": [
+      "AI & Tech",
+      "Energy & Transition",
+      "Data Center"
+    ]
   },
   {
     "id": "signal-cbam-definitive-regime",
     "channel_id": "ccus-energy-transition",
-    "storyline_ids": ["evidence-governance"],
+    "storyline_ids": [
+      "evidence-governance"
+    ],
     "event_type": "regulatory_revision",
     "event_date": "2026-01-01",
     "title": "欧盟 CBAM 进入正式实施阶段，设施级排放数据从披露要求变成贸易成本输入",
@@ -51,12 +66,19 @@
     "long_summary": "正式实施把碳核算从年度报告扩展到交易执行。企业需要将供应商数据、设施边界、核算方法和验证记录连接起来，减少重复口径与无法追溯的数据。高质量碳数据因而从合规成本转化为贸易与采购决策的基础设施。",
     "key_quote": "",
     "supporting_quotes": [],
-    "tags": ["Energy & Transition", "CBAM", "Carbon Accounting"]
+    "tags": [
+      "Energy & Transition",
+      "CBAM",
+      "Carbon Accounting"
+    ]
   },
   {
     "id": "signal-global-ccs-forum-2026",
     "channel_id": "ccus-energy-transition",
-    "storyline_ids": ["ccus-network-economics", "evidence-governance"],
+    "storyline_ids": [
+      "ccus-network-economics",
+      "evidence-governance"
+    ],
     "event_type": "tariff_or_business_model",
     "event_date": "2026-06-11",
     "title": "CCS 商业化讨论从单一项目转向网络、长期责任与跨主体接口",
@@ -69,12 +91,18 @@
     "long_summary": "当项目进入集群化阶段，价值链中的每一个接口都会影响投资决策：排放源是否按期交付、管网容量如何分配、注入与封存风险如何计价、长期责任如何移交。治理与证据接口因此成为规模化部署的一部分。",
     "key_quote": "",
     "supporting_quotes": [],
-    "tags": ["Energy & Transition", "CCUS", "Infrastructure"]
+    "tags": [
+      "Energy & Transition",
+      "CCUS",
+      "Infrastructure"
+    ]
   },
   {
     "id": "signal-prompts-technical-debt",
     "channel_id": "ai-infrastructure",
-    "storyline_ids": ["ai-model-layer"],
+    "storyline_ids": [
+      "ai-model-layer"
+    ],
     "event_type": "legacy_signal",
     "event_date": "2026-05-20",
     "title": "提示词也是技术债务",
@@ -87,12 +115,18 @@
     "long_summary": "文章把提示词视为软件系统的一部分，而不是模型调用之外的临时文本。每增加约束、例外或示例，都会扩大后续修改的影响面。生产级 AI 产品应为提示词建立版本、评估集、回归测试与清晰责任边界。",
     "key_quote": "",
     "supporting_quotes": [],
-    "tags": ["AI & Tech", "Engineering", "LLM"]
+    "tags": [
+      "AI & Tech",
+      "Engineering",
+      "LLM"
+    ]
   },
   {
     "id": "signal-framework-arm",
     "channel_id": "ai-infrastructure",
-    "storyline_ids": ["deployment-bottlenecks"],
+    "storyline_ids": [
+      "deployment-bottlenecks"
+    ],
     "status": "archived",
     "event_type": "legacy_signal",
     "event_date": "2026-04-15",
@@ -106,12 +140,18 @@
     "long_summary": "这项测试的价值不只在性能比较，也在于验证可替换主板能否延长设备生命周期。Arm 主板带来功耗、兼容性和软件生态之间的新取舍，同时为可维修硬件提供更清晰的架构升级路径。",
     "key_quote": "",
     "supporting_quotes": [],
-    "tags": ["AI & Tech", "Hardware", "Arm"]
+    "tags": [
+      "AI & Tech",
+      "Hardware",
+      "Arm"
+    ]
   },
   {
     "id": "signal-raspberry-connect-windows",
     "channel_id": "ai-infrastructure",
-    "storyline_ids": ["production-ai-engineering"],
+    "storyline_ids": [
+      "production-ai-engineering"
+    ],
     "status": "archived",
     "event_type": "legacy_signal",
     "event_date": "2026-04-29",
@@ -125,12 +165,18 @@
     "long_summary": "跨平台扩张会提高服务价值，也会把身份验证、设备授权、端到端安全与企业管理推到更重要的位置。真正的产品升级不只是增加一个客户端，而是建立可信的跨设备控制边界。",
     "key_quote": "",
     "supporting_quotes": [],
-    "tags": ["AI & Tech", "Raspberry Pi", "Remote Access"]
+    "tags": [
+      "AI & Tech",
+      "Raspberry Pi",
+      "Remote Access"
+    ]
   },
   {
     "id": "signal-token-burn",
     "channel_id": "ai-infrastructure",
-    "storyline_ids": ["ai-application-layer"],
+    "storyline_ids": [
+      "ai-application-layer"
+    ],
     "event_type": "legacy_signal",
     "event_date": "2026-05-27",
     "title": "你今天烧掉了多少 Token？别让易计算指标替代真实生产力",
@@ -143,12 +189,19 @@
     "long_summary": "文章借用管理者统计代码行数的案例，提醒团队不要把模型调用量直接当作 AI 生产力。更有效的衡量方式应关注任务完成、缺陷率、复用程度、维护成本和对用户结果的影响。",
     "key_quote": "",
     "supporting_quotes": [],
-    "tags": ["AI & Tech", "Productivity", "Metrics"]
+    "tags": [
+      "AI & Tech",
+      "Productivity",
+      "Metrics"
+    ]
   },
   {
     "id": "signal-space-datacentres",
     "channel_id": "ai-infrastructure",
-    "storyline_ids": ["ai-energy-foundation", "ai-infrastructure-layer"],
+    "storyline_ids": [
+      "ai-energy-foundation",
+      "ai-infrastructure-layer"
+    ],
     "event_type": "technical_reference_design",
     "event_date": "2026-05-13",
     "title": "太空 AI 数据中心的散热并非直觉问题，真正门槛在系统级经济性",
@@ -161,12 +214,18 @@
     "long_summary": "讨论把一个看似直觉的问题拆成工程系统：散热依赖辐射面积和工作温度，太阳能供电与轨道环境改变能源条件。即使热管理可解，发射、通信、升级和维修仍可能构成更大的经济门槛。",
     "key_quote": "",
     "supporting_quotes": [],
-    "tags": ["AI & Tech", "Energy & Transition", "Data Center"]
+    "tags": [
+      "AI & Tech",
+      "Energy & Transition",
+      "Data Center"
+    ]
   },
   {
     "id": "signal-patch-tuesday-2026-03",
     "channel_id": "ai-infrastructure",
-    "storyline_ids": ["production-ai-engineering"],
+    "storyline_ids": [
+      "production-ai-engineering"
+    ],
     "status": "archived",
     "event_type": "reliability_event",
     "event_date": "2026-03-10",
@@ -180,6 +239,10 @@
     "long_summary": "补丁数量本身不是风险排序。更可靠的处置方式是把漏洞类型、可利用性、资产暴露、业务影响和可用缓解措施结合起来，并在发布后持续观察兼容性与攻击活动变化。",
     "key_quote": "",
     "supporting_quotes": [],
-    "tags": ["AI & Tech", "Cybersecurity", "Windows"]
+    "tags": [
+      "AI & Tech",
+      "Cybersecurity",
+      "Windows"
+    ]
   }
 ]

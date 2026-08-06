@@ -1,0 +1,116 @@
+{
+  "schema_version": "1.0",
+  "edition_id": "frontier-systems-review",
+  "run": {
+    "as_of": "2026-08-03T00:00:00+08:00",
+    "coverage_start": "2026-04-01T00:00:00+08:00",
+    "coverage_end": "2026-08-03T00:00:00+08:00",
+    "timezone": "Asia/Shanghai",
+    "actor": {
+      "agent_id": "fixture-runner",
+      "runtime": "NewsFlow test suite",
+      "workflow_id": "newsflow-content-update",
+      "workflow_version": "1.0.0"
+    }
+  },
+  "candidates": [
+    {
+      "id": "fixture-meta-el-paso-financing",
+      "channel_id": "ai-infrastructure",
+      "event_type": "financing",
+      "event_date": "2026-07-28",
+      "title": "Meta 以合资结构为 El Paso AI 数据中心引入长期基础设施资本",
+      "url": "https://about.fb.com/news/2026/07/meta-announces-new-venture-with-blackrock-to-develop-data-center-in-el-paso/",
+      "published_at": "2026-07-28T00:00:00Z",
+      "retrieved_at": "2026-08-02T15:00:00Z",
+      "short_summary": "Meta 披露与 BlackRock 设立合资结构，为 El Paso 数据中心园区的长期设施建设融资。",
+      "long_summary": "该披露展示了大型 AI 园区如何把设施所有权、债务融资、租赁和运营责任拆分，但尚未投运的容量不能计作现有供给。",
+      "tags": ["AI 基建", "Data Center", "Financing"],
+      "storyline_ids": ["ai-infrastructure-layer"],
+      "scores": {
+        "facts": 4.5,
+        "source": 4.0,
+        "timeliness": 4.2,
+        "news_quality": 4.0,
+        "industry_impact": 4.4
+      },
+      "verification": {
+        "full_text_accessed": true,
+        "summary_supported_sentence_by_sentence": true,
+        "attributed_to_source": true
+      },
+      "evidence": [
+        {
+          "claim": "Meta 与 BlackRock 宣布合资开发 El Paso 数据中心。",
+          "source_excerpt": "Meta and BlackRock announce a venture to develop and own a data center campus in El Paso, Texas.",
+          "source_url": "https://about.fb.com/news/2026/07/meta-announces-new-venture-with-blackrock-to-develop-data-center-in-el-paso/"
+        }
+      ]
+    },
+    {
+      "id": "fixture-microsoft-capacity",
+      "channel_id": "ai-infrastructure",
+      "event_type": "capacity_commissioned",
+      "event_date": "2026-04-30",
+      "title": "Microsoft 披露单季新增一吉瓦容量，但供应约束仍将持续",
+      "url": "https://www.microsoft.com/en-us/investor/events/fy-2026/earnings-fy-2026-q3",
+      "published_at": "2026-04-30T00:00:00Z",
+      "retrieved_at": "2026-08-02T15:00:00Z",
+      "short_summary": "Microsoft 在财报电话会中称单季新增一吉瓦容量，并预计 2026 年内仍面临容量约束。",
+      "long_summary": "这是公司对自身容量交付与需求约束的正式披露；若要获得最高证据置信度，仍需非企业来源确认区域项目和实际投运情况。",
+      "tags": ["AI 基建", "Capacity", "Microsoft"],
+      "storyline_ids": ["ai-infrastructure-layer"],
+      "scores": {
+        "facts": 5,
+        "source": 4.0,
+        "timeliness": 4.4,
+        "news_quality": 4.0,
+        "industry_impact": 4.5
+      },
+      "verification": {
+        "full_text_accessed": true,
+        "summary_supported_sentence_by_sentence": true,
+        "attributed_to_source": true
+      },
+      "evidence": [
+        {
+          "claim": "Microsoft 称该季度新增了一吉瓦容量。",
+          "source_excerpt": "All up, we added another gigawatt of capacity this quarter.",
+          "source_url": "https://www.microsoft.com/en-us/investor/events/fy-2026/earnings-fy-2026-q3"
+        }
+      ]
+    },
+    {
+      "id": "fixture-nvidia-dsx",
+      "channel_id": "ai-infrastructure",
+      "event_type": "technical_reference_design",
+      "event_date": "2026-05-31",
+      "title": "NVIDIA DSX 将 AI 工厂设计范围扩展到电力、冷却与设施控制",
+      "url": "https://nvidianews.nvidia.com/news/dsx-infrastructure-ai-factory",
+      "published_at": "2026-05-31T00:00:00Z",
+      "retrieved_at": "2026-08-02T15:00:00Z",
+      "short_summary": "NVIDIA 发布覆盖计算、网络、存储、电力、冷却和设施控制的 AI 工厂参考架构。",
+      "long_summary": "参考架构说明芯片厂商正在进入设施级协同设计，但供应商声明不能直接证明实际部署效果。",
+      "tags": ["AI 基建", "NVIDIA", "Reference Design"],
+      "storyline_ids": ["ai-infrastructure-layer"],
+      "scores": {
+        "facts": 4.5,
+        "source": 4.0,
+        "timeliness": 4.0,
+        "news_quality": 4.0,
+        "industry_impact": 4.0
+      },
+      "verification": {
+        "full_text_accessed": true,
+        "summary_supported_sentence_by_sentence": true
+      },
+      "evidence": [
+        {
+          "claim": "DSX 参考架构覆盖电力、冷却、控制与设施设计。",
+          "source_excerpt": "facilities infrastructure — including power, cooling and controls",
+          "source_url": "https://nvidianews.nvidia.com/news/dsx-infrastructure-ai-factory"
+        }
+      ]
+    }
+  ]
+}

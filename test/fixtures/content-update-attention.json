@@ -1,0 +1,44 @@
+{
+  "schema_version": "1.0",
+  "edition_id": "frontier-systems-review",
+  "run": {
+    "as_of": "2026-08-03T00:00:00+08:00",
+    "coverage_start": "2026-07-01T00:00:00+08:00",
+    "coverage_end": "2026-08-03T00:00:00+08:00",
+    "timezone": "Asia/Shanghai",
+    "actor": {
+      "agent_id": "fixture-runner",
+      "runtime": "NewsFlow test suite",
+      "workflow_id": "newsflow-content-update",
+      "workflow_version": "1.0.0"
+    }
+  },
+  "candidates": [
+    {
+      "id": "fixture-missing-scores",
+      "channel_id": "ai-infrastructure",
+      "event_type": "financing",
+      "event_date": "2026-07-28",
+      "title": "可信且新颖的披露仍必须提供五维评分",
+      "url": "https://about.fb.com/news/2026/07/meta-announces-new-venture-with-blackrock-to-develop-data-center-in-el-paso/",
+      "published_at": "2026-07-28T00:00:00Z",
+      "retrieved_at": "2026-08-02T15:00:00Z",
+      "short_summary": "该测试候选拥有注册信源和逐项证据，但故意缺少五维评分。",
+      "long_summary": "系统必须拒绝没有 facts、source、timeliness、news_quality 和 industry_impact 评分的候选。",
+      "tags": ["AI 基建", "Financing"],
+      "storyline_ids": ["ai-infrastructure-layer"],
+      "verification": {
+        "full_text_accessed": true,
+        "summary_supported_sentence_by_sentence": true,
+        "attributed_to_source": true
+      },
+      "evidence": [
+        {
+          "claim": "Meta 与 BlackRock 宣布合资开发 El Paso 数据中心。",
+          "source_excerpt": "Meta and BlackRock announce a venture to develop and own a data center campus in El Paso, Texas.",
+          "source_url": "https://about.fb.com/news/2026/07/meta-announces-new-venture-with-blackrock-to-develop-data-center-in-el-paso/"
+        }
+      ]
+    }
+  ]
+}

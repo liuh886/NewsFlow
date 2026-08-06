@@ -1,0 +1,51 @@
+{
+  "schema_version": "1.0",
+  "edition_id": "frontier-systems-review",
+  "run": {
+    "as_of": "2026-08-04T00:00:00+08:00",
+    "coverage_start": "2026-07-01T00:00:00+08:00",
+    "coverage_end": "2026-08-04T00:00:00+08:00",
+    "timezone": "Asia/Shanghai",
+    "actor": {
+      "agent_id": "fixture-runner",
+      "runtime": "NewsFlow test suite",
+      "workflow_id": "newsflow-content-update",
+      "workflow_version": "1.0.0"
+    }
+  },
+  "candidates": [
+    {
+      "id": "fixture-ieaghg-report-without-context",
+      "channel_id": "ccus-energy-transition",
+      "event_type": "technical_report",
+      "event_date": "2026-07-15",
+      "title": "IEAGHG 发布水泥深度脱碳技术与经济评估",
+      "url": "https://ieaghg.org/publications/",
+      "published_at": "2026-07-15T00:00:00Z",
+      "retrieved_at": "2026-08-03T12:00:00Z",
+      "short_summary": "该候选故意缺少报告的数据截止日和方法论核验记录。",
+      "long_summary": "这是验证报告门槛的测试候选；即使来源已注册、全文访问和逐句核验字段为真，缺少 report_context 仍必须被拒绝。",
+      "tags": ["CCUS", "Cement", "Technical Report"],
+      "storyline_ids": ["ccus-project-delivery"],
+      "scores": {
+        "facts": 4.0,
+        "source": 4.0,
+        "timeliness": 4.0,
+        "news_quality": 4.0,
+        "industry_impact": 4.0
+      },
+      "verification": {
+        "full_text_accessed": true,
+        "summary_supported_sentence_by_sentence": true,
+        "attributed_to_source": true
+      },
+      "evidence": [
+        {
+          "claim": "IEAGHG 的技术报告库在候选覆盖期内列出了新的水泥脱碳报告。",
+          "source_excerpt": "Clean Cement: Environmental & Techno-Economic Outlook of Transformative Decarbonisation Pathways",
+          "source_url": "https://ieaghg.org/publications/"
+        }
+      ]
+    }
+  ]
+}

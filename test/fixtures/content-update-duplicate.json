@@ -1,0 +1,50 @@
+{
+  "schema_version": "1.0",
+  "edition_id": "frontier-systems-review",
+  "run": {
+    "as_of": "2026-08-03T00:00:00+08:00",
+    "coverage_start": "2026-07-16T00:00:00+08:00",
+    "coverage_end": "2026-08-03T00:00:00+08:00",
+    "timezone": "Asia/Shanghai",
+    "actor": {
+      "agent_id": "fixture-runner",
+      "runtime": "NewsFlow test suite",
+      "workflow_id": "newsflow-content-update",
+      "workflow_version": "1.0.0"
+    }
+  },
+  "candidates": [
+    {
+      "id": "signal-iea-electricity-2026",
+      "channel_id": "ai-infrastructure",
+      "event_type": "load_forecast",
+      "event_date": "2026-07-23",
+      "title": "全球电力需求增速将继续加快，数据中心与工业负荷成为新增压力源",
+      "url": "https://www.iea.org/news/global-electricity-demand-growth-set-to-accelerate-as-power-systems-adjust-to-recent-shocks",
+      "published_at": "2026-07-23T00:00:00Z",
+      "retrieved_at": "2026-08-02T15:30:00Z",
+      "short_summary": "IEA 预计全球电力需求仍将快速增长，数据中心与工业负荷增加了电力系统压力。",
+      "long_summary": "这项预测将负荷增长与电网灵活性问题联系起来，但该来源已经存在于正式 Signal 数据中，因此必须被去重门槛拒绝。",
+      "tags": ["Energy & Transition", "Electricity", "Data Center"],
+      "storyline_ids": ["ai-energy-foundation"],
+      "scores": {
+        "facts": 5,
+        "source": 5,
+        "timeliness": 4.0,
+        "news_quality": 5,
+        "industry_impact": 4.5
+      },
+      "verification": {
+        "full_text_accessed": true,
+        "summary_supported_sentence_by_sentence": true
+      },
+      "evidence": [
+        {
+          "claim": "IEA 发布了新的全球电力需求预测。",
+          "source_excerpt": "Global electricity demand growth set to accelerate as power systems adjust to recent shocks",
+          "source_url": "https://www.iea.org/news/global-electricity-demand-growth-set-to-accelerate-as-power-systems-adjust-to-recent-shocks"
+        }
+      ]
+    }
+  ]
+}

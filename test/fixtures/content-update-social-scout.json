@@ -1,0 +1,50 @@
+{
+  "schema_version": "1.0",
+  "edition_id": "frontier-systems-review",
+  "run": {
+    "as_of": "2026-08-04T00:00:00+08:00",
+    "coverage_start": "2023-10-01T00:00:00Z",
+    "coverage_end": "2023-10-31T23:59:59Z",
+    "timezone": "Asia/Shanghai",
+    "actor": {
+      "agent_id": "fixture-runner",
+      "runtime": "NewsFlow test suite",
+      "workflow_id": "newsflow-content-update",
+      "workflow_version": "1.0.0"
+    }
+  },
+  "candidates": [
+    {
+      "id": "fixture-x-scout-cannot-promote",
+      "channel_id": "ai-infrastructure",
+      "event_type": "model_opening",
+      "event_date": "2023-10-08",
+      "title": "X 帖子不能直接成为模型开放性 Signal",
+      "url": "https://x.com/simonw/status/1711150813832487411",
+      "published_at": "2023-10-08T17:45:00Z",
+      "retrieved_at": "2026-08-03T12:00:00Z",
+      "short_summary": "该测试候选使用 X 帖子作为来源，因此必须被拒绝。",
+      "long_summary": "即使账号位于高质量发现名单，Agent 仍必须继续找到完整博客、许可证、模型卡或其他可审计的规范来源。",
+      "tags": ["AI", "Models", "Open Licensing"],
+      "storyline_ids": ["ai-model-layer"],
+      "scores": {
+        "facts": 4.0,
+        "source": 4.0,
+        "timeliness": 4.0,
+        "news_quality": 4.0,
+        "industry_impact": 4.0
+      },
+      "verification": {
+        "full_text_accessed": true,
+        "summary_supported_sentence_by_sentence": true
+      },
+      "evidence": [
+        {
+          "claim": "帖子讨论了模型许可证与开放性的术语问题。",
+          "source_excerpt": "The post distinguishes openly licensed models from models described as open source.",
+          "source_url": "https://x.com/simonw/status/1711150813832487411"
+        }
+      ]
+    }
+  ]
+}

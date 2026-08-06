@@ -1,0 +1,71 @@
+[
+  {
+    "id": "fixture-review-candidate-1",
+    "title": "台积电 3nm 产能利用率突破 90%，AI 加速器订单推动下半年满载",
+    "url": "https://investor.tsmc.com/english/",
+    "channel_id": "ai-infrastructure",
+    "event_type": "foundry_capacity",
+    "event_date": "2026-08-03",
+    "published_at": "2026-08-03T00:00:00Z",
+    "short_summary": "台积电披露先进制程产能利用率持续上升，AI/HPC 订单成为主要驱动力。",
+    "tags": ["AI & Tech", "Chip", "Manufacturing"],
+    "storyline_ids": ["ai-chip-layer"],
+    "scores": {
+      "facts": 4.5,
+      "source": 4.5,
+      "timeliness": 4.2,
+      "news_quality": 4.0,
+      "industry_impact": 4.8
+    },
+    "source": "TSMC Investor Relations",
+    "edition_id": "frontier-systems-review",
+    "coverage_start": "2026-07-20T00:00:00+08:00",
+    "coverage_end": "2026-08-06T00:00:00+08:00"
+  },
+  {
+    "id": "fixture-review-candidate-2",
+    "title": "全球 CCUS 项目管道突破 600 个，但运营率不足 15%",
+    "url": "https://www.globalccsinstitute.com/",
+    "channel_id": "ccus-energy-transition",
+    "event_type": "industry_status_report",
+    "event_date": "2026-08-01",
+    "published_at": "2026-08-01T00:00:00Z",
+    "short_summary": "新报告显示宣布的 CCUS 项目数继续快速增长，但进入运营阶段的比例仍然很低。",
+    "tags": ["Energy & Transition", "CCUS", "Project Pipeline"],
+    "storyline_ids": ["ccus-project-delivery"],
+    "scores": {
+      "facts": 4.2,
+      "source": 4.0,
+      "timeliness": 4.0,
+      "news_quality": 3.8,
+      "industry_impact": 4.2
+    },
+    "source": "Global CCS Institute",
+    "edition_id": "frontier-systems-review",
+    "coverage_start": "2026-07-15T00:00:00+08:00",
+    "coverage_end": "2026-08-06T00:00:00+08:00"
+  },
+  {
+    "id": "fixture-review-candidate-3",
+    "title": "微软与 OpenAI 重新谈判算力供应协议，推理需求增速超出训练",
+    "url": "https://www.microsoft.com/en-us/investor/",
+    "channel_id": "ai-infrastructure",
+    "event_type": "supply_agreement",
+    "event_date": "2026-08-04",
+    "published_at": "2026-08-04T00:00:00Z",
+    "short_summary": "知情人士称微软与 OpenAI 正在调整长期算力合同条款，推理而非训练正在成为需求增长的主要来源。",
+    "tags": ["AI & Tech", "Cloud", "Partnership"],
+    "storyline_ids": ["ai-infrastructure-layer", "ai-model-layer"],
+    "scores": {
+      "facts": 3.5,
+      "source": 3.8,
+      "timeliness": 4.5,
+      "news_quality": 4.0,
+      "industry_impact": 4.5
+    },
+    "source": "Microsoft Investor Relations",
+    "edition_id": "frontier-systems-review",
+    "coverage_start": "2026-07-20T00:00:00+08:00",
+    "coverage_end": "2026-08-06T00:00:00+08:00"
+  }
+]
