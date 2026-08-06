@@ -12,7 +12,7 @@
     checkoutFunctionUrl: 'https://blgwlycfcwvsupmqyqwn.supabase.co/functions/v1/create-checkout-session',
     portalFunctionUrl: 'https://blgwlycfcwvsupmqyqwn.supabase.co/functions/v1/create-portal-session',
     redirectUrl: 'https://liuh886.github.io/NewsFlow/',
-    mountSelectors: ['.header-account-mount', '.top-actions', '.topbar-actions', '.masthead-actions', 'header nav', 'header'],
+    mountSelectors: ['.top-actions'],
     compactTrigger: true,
     title: {
       zh: 'NewsFlow 账户',
