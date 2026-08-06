@@ -10,6 +10,7 @@ const editionLayerPath = 'src/edition-layer.js';
 const languagePolishPath = 'src/language-polish.js';
 const publisherPath = 'scripts/publish-edition.mjs';
 const contentUpdaterPath = 'scripts/update-content.mjs';
+const processReviewsPath = 'scripts/process-reviews.mjs';
 const feedbackImporterPath = 'skills/newsflow-recommender/scripts/import-feedback.mjs';
 const profileBuilderPath = 'skills/newsflow-recommender/scripts/build-profile.mjs';
 const signalRankerPath = 'skills/newsflow-recommender/scripts/rank-signals.mjs';
@@ -25,6 +26,7 @@ const requiredFiles = [
   supabaseClientPath,
   publisherPath,
   contentUpdaterPath,
+  processReviewsPath,
   supabaseCatalogPath,
   'src/styles.css',
   'src/polish.css',
@@ -47,6 +49,7 @@ const requiredFiles = [
   'schemas/content-candidate-pack.schema.json',
   'content/feedback/events.json',
   'content/state/reader-profile.json',
+  'content/state/review-history.json',
   'skills/newsflow-recommender/SKILL.md',
   'skills/newsflow-recommender/agents/openai.yaml',
   'skills/newsflow-recommender/references/input-map.md',
@@ -71,6 +74,7 @@ const requiredFiles = [
   'docs/feedback-loop.md',
   'docs/supabase-feedback-design.md',
   supabaseMigrationPath,
+  'supabase/migrations/20260806_add_candidate_reviews.sql',
   'supabase/config.toml',
   'supabase/tests/feedback_rls_test.sql',
   '.env.example',
@@ -85,7 +89,7 @@ const requiredFiles = [
 
 for (const file of requiredFiles) await access(resolve(root, file));
 
-for (const scriptPath of [appPath, polishPath, editionLayerPath, languagePolishPath, supabaseClientPath, publisherPath, contentUpdaterPath, supabaseCatalogPath, feedbackImporterPath, profileBuilderPath, signalRankerPath, 'public/sw.js']) {
+for (const scriptPath of [appPath, polishPath, editionLayerPath, languagePolishPath, supabaseClientPath, publisherPath, contentUpdaterPath, processReviewsPath, supabaseCatalogPath, feedbackImporterPath, profileBuilderPath, signalRankerPath, 'public/sw.js']) {
   const syntax = spawnSync(process.execPath, ['--check', resolve(root, scriptPath)], { encoding: 'utf8' });
   if (syntax.status !== 0) throw new Error(`${scriptPath} syntax check failed:\n${syntax.stderr}`);
 }

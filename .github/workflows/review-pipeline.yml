@@ -1,0 +1,72 @@
+name: Process review pipeline
+
+on:
+  workflow_dispatch:
+  push:
+    paths:
+      - 'content/inbox/*.json'
+
+permissions:
+  contents: write
+
+concurrency:
+  group: newsflow-review-pipeline
+  cancel-in-progress: false
+
+jobs:
+  process:
+    name: Process reviews and apply accepted candidates
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+
+      - name: Set up Node
+        uses: actions/setup-node@v6
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Install
+        run: npm ci
+
+      - name: Process reviews from Supabase
+        if: env.SUPABASE_URL != ''
+        env:
+          SUPABASE_URL: ${{ vars.SUPABASE_URL || '' }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY || '' }}
+        run: node scripts/process-reviews.mjs --supabase --apply
+        continue-on-error: true
+
+      - name: Apply auto-accepted candidates
+        shell: bash
+        run: |
+          shopt -s nullglob
+          for pack in content/inbox/review-processed-*.json; do
+            echo "Applying $pack..."
+            node scripts/update-content.mjs --input="$pack" --apply
+            # Clean up processed pack
+            rm "$pack"
+          done
+          shopt -u nullglob
+
+      - name: Validate
+        run: |
+          npm run check
+          npm run build
+
+      - name: Commit applied signals and state
+        shell: bash
+        run: |
+          git config user.name "newsflow-review-bot"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add public/data/news.json content/state/review-history.json content/state/reader-profile.json content/runs/
+          if git diff --staged --quiet; then
+            echo "No review outcomes to commit."
+            exit 0
+          fi
+          git commit -m "chore: apply review outcomes and update state"
+          git push
