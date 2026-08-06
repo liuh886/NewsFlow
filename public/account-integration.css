@@ -44,10 +44,6 @@
   height: 18px;
 }
 
-.hao-account-mount.is-floating {
-  display: none !important;
-}
-
 @media (max-width: 760px) {
   .top-actions .hao-account-mount {
     order: 4;
