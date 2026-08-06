@@ -7,41 +7,11 @@
   const rootId = 'newsflow-editorial-office-root';
 
   const DECISIONS = [
-    {
-      id: 'cover_story',
-      label: '封面文章',
-      code: 'COVER',
-      key: '1',
-      description: '进入本期最高优先级，作为正式 Issue 的封面候选。'
-    },
-    {
-      id: 'accept',
-      label: '接受',
-      code: 'ACCEPT',
-      key: '2',
-      description: '证据、判断与表达达到正式出版标准。'
-    },
-    {
-      id: 'minor_revision',
-      label: '小修',
-      code: 'MINOR',
-      key: '3',
-      description: '核心成立，仅需补充口径、来源或表达细节。'
-    },
-    {
-      id: 'major_revision',
-      label: '大修',
-      code: 'MAJOR',
-      key: '4',
-      description: '议题重要，但证据链、结构或结论仍需实质重做。'
-    },
-    {
-      id: 'reject',
-      label: '拒稿',
-      code: 'REJECT',
-      key: '5',
-      description: '未达到本刊的事实、时效或产业影响门槛。'
-    }
+    { id: 'cover_story', label: '封面文章', code: 'COVER', key: '1', description: '进入本期最高优先级，作为正式 Issue 的封面候选。' },
+    { id: 'accept', label: '接受', code: 'ACCEPT', key: '2', description: '证据、判断与表达达到正式出版标准。' },
+    { id: 'minor_revision', label: '小修', code: 'MINOR', key: '3', description: '核心成立，仅需补充口径、来源或表达细节。' },
+    { id: 'major_revision', label: '大修', code: 'MAJOR', key: '4', description: '议题重要，但证据链、结构或结论仍需实质重做。' },
+    { id: 'reject', label: '拒稿', code: 'REJECT', key: '5', description: '未达到本刊的事实、时效或产业影响门槛。' }
   ];
 
   const state = {
@@ -102,7 +72,6 @@
   };
 
   const roleLabel = () => state.role === 'editor' ? '主编' : state.role === 'reader' ? '读者' : '选择身份';
-
   const activeStorylines = () => state.storylines.filter((storyline) => storyline?.status !== 'retired');
   const ccusStorylines = () => activeStorylines().filter((storyline) => storyline.channel_id === 'ccus-energy-transition');
   const regularStorylines = () => activeStorylines().filter((storyline) => storyline.channel_id !== 'ccus-energy-transition');
@@ -119,9 +88,7 @@
     || state.account?.user?.email
     || 'NewsFlow Member';
 
-  const openAccount = () => {
-    if (window.HaoAccount?.open) window.HaoAccount.open();
-  };
+  const openAccount = () => window.HaoAccount?.open?.();
 
   const syncRole = async (role) => {
     const account = window.HaoAccount?.getState?.();
@@ -149,12 +116,13 @@
     }
     if (!['reader', 'editor'].includes(role)) return;
     state.role = role;
-    localStorage.setItem(roleStorageKey(), role);
     state.roleDialogOpen = false;
-    state.notice = role === 'editor' ? '已进入主编身份。' : '已进入读者身份。';
-    await syncRole(role);
+    state.officeOpen = false;
+    localStorage.setItem(roleStorageKey(), role);
+    state.notice = role === 'editor' ? '已登记为主编。' : '已登记为读者。';
     decorateApp();
     renderOverlay();
+    await syncRole(role);
     if (role === 'editor') openOffice();
   };
 
@@ -218,6 +186,7 @@
       return;
     }
     if (state.role !== 'editor') {
+      state.officeOpen = false;
       state.roleDialogOpen = true;
       renderOverlay();
       return;
@@ -245,7 +214,6 @@
 
   const isSpecialIssue = (candidate) => candidate?.channel_id === 'ccus-energy-transition'
     || (candidate?.tags || []).some((tag) => /ccus|ccs|carbon/i.test(String(tag)));
-
   const currentCandidate = () => pendingCandidates()[0] || null;
 
   const recordDecision = (decisionId) => {
@@ -408,21 +376,24 @@
 
   const renderOverlay = () => {
     const root = ensureRoot();
-    root.innerHTML = `${renderRoleDialog()}${renderOffice()}`;
+    root.innerHTML = `${renderOffice()}${renderRoleDialog()}`;
     document.documentElement.classList.toggle('nf-editorial-modal-open', state.roleDialogOpen || state.officeOpen);
   };
 
   const mountRoleTrigger = () => {
     const target = document.querySelector('.top-actions');
-    if (!target || target.querySelector('[data-editorial-role-trigger]')) return;
-    const trigger = document.createElement('button');
-    trigger.type = 'button';
+    if (!target) return;
+    let trigger = target.querySelector('[data-editorial-role-trigger]');
+    if (!trigger) {
+      trigger = document.createElement('button');
+      trigger.type = 'button';
+      trigger.dataset.editorialRoleTrigger = 'true';
+      target.prepend(trigger);
+    }
     trigger.className = `nf-role-trigger is-${state.role || 'unset'}`;
-    trigger.dataset.editorialRoleTrigger = 'true';
     trigger.dataset.editorialAction = state.role === 'editor' ? 'open-office' : 'open-role-dialog';
     trigger.setAttribute('aria-label', state.role === 'editor' ? '打开主编编辑部' : '选择 NewsFlow 身份');
     trigger.innerHTML = `<span>${state.role === 'editor' ? 'EIC' : state.role === 'reader' ? 'R' : 'ID'}</span><strong>${escapeHtml(roleLabel())}</strong>`;
-    target.prepend(trigger);
   };
 
   const decorateReviewEntrances = () => {
@@ -449,6 +420,7 @@
     if (!state.account?.user) openAccount();
     else if (state.role === 'editor') openOffice();
     else {
+      state.officeOpen = false;
       state.roleDialogOpen = true;
       renderOverlay();
     }
@@ -462,6 +434,7 @@
     else if (action === 'open-role-dialog') {
       if (!state.account?.user) openAccount();
       else {
+        state.officeOpen = false;
         state.roleDialogOpen = true;
         renderOverlay();
       }
