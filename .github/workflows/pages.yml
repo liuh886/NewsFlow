@@ -1,5 +1,8 @@
 name: NewsFlow Frontend
 
+# Catalog synchronization is intentionally isolated in catalog-sync.yml.
+# That workflow owns SUPABASE_SERVICE_ROLE_KEY and runs npm run supabase:catalog.
+
 on:
   pull_request:
     branches: [main]
