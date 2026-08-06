@@ -1,4 +1,4 @@
-const CACHE_NAME = 'newsflow-editorial-v2.3.1-magazine-v2.4.1-mobile-reader-fix-1';
+const CACHE_NAME = 'newsflow-editorial-v2.3.1-magazine-v2.4.1-editorial-office-v1';
 const APP_SHELL = [
   './',
   './index.html',
@@ -6,12 +6,14 @@ const APP_SHELL = [
   './polish.css',
   './edition-layer.css',
   './magazine-polish.css',
+  './editorial-office.css',
   './editorial-app.js',
   './polish.js',
   './edition-layer.js',
   './magazine-polish.js',
   './language-polish.js',
   './supabase-feedback.js',
+  './editorial-office.js',
   './membership-config.js',
   './icon.svg',
   './manifest.webmanifest',
@@ -21,6 +23,7 @@ const APP_SHELL = [
   './data/edition.json',
   './data/issues.json',
   './data/storylines.json',
+  './data/review-candidates.json',
   './data/supabase-config.json'
 ];
 

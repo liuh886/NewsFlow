@@ -66,8 +66,8 @@ if (packageManifest.version !== '2.4.1') throw new Error('magazine polish releas
 if (!packageManifest.scripts?.check?.includes('check-magazine-polish.mjs')) {
   throw new Error('npm check must include the magazine polish contract');
 }
-if (!serviceWorker.includes('newsflow-editorial-v2.3.1-magazine-v2.4.1-mobile-reader-fix-1')) {
-  throw new Error('service worker cache must advance for the mobile reader fix');
+if (!serviceWorker.includes('newsflow-editorial-v2.3.1-magazine-v2.4.1-editorial-office-v1')) {
+  throw new Error('service worker cache must include the editorial office release');
 }
 
-console.log('NewsFlow magazine polish contract passed: storyline panels, focus loop, stable mobile editorial rows and refreshed PWA cache.');
+console.log('NewsFlow magazine polish contract passed: storyline panels, focus loop, stable mobile editorial rows and editorial office cache.');
