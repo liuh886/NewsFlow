@@ -106,8 +106,8 @@ for (const phrase of [
 if (!packageManifest.scripts?.check?.includes('check-editorial-office.mjs')) {
   throw new Error('npm check must include the editorial office contract');
 }
-if (!serviceWorker.includes('newsflow-editorial-v2.3.1-magazine-v2.4.1-editorial-game-v1')) {
-  throw new Error('service worker cache must advance for the editorial game loop');
+if (!serviceWorker.includes('newsflow-editorial-v2.3.1-magazine-v2.4.1-serious-play-v2.5.0')) {
+  throw new Error('service worker cache must advance for the serious-play editorial release');
 }
 
 console.log('NewsFlow editorial game contract passed: roles, four-state review, finite Issue Desk, cover designation, close-issue record and mobile feedback.');
