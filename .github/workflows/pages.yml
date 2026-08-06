@@ -36,10 +36,9 @@ concurrency:
 
 jobs:
   build:
+    name: Validate and build
     runs-on: ubuntu-24.04
     timeout-minutes: 10
-    permissions:
-      contents: read
     steps:
       - name: Checkout
         uses: actions/checkout@v6
@@ -47,13 +46,13 @@ jobs:
       - name: Set up Node.js
         uses: actions/setup-node@v6
         with:
-          node-version: 24
+          node-version: 22
           cache: npm
 
       - name: Install locked toolchain
         run: npm ci
 
-      - name: Validate frontend and data contract
+      - name: Validate product and data contracts
         run: npm run check
 
       - name: Build static site
@@ -61,19 +60,6 @@ jobs:
           NEWSFLOW_SUPABASE_URL: ${{ vars.NEWSFLOW_SUPABASE_URL || '' }}
           NEWSFLOW_SUPABASE_PUBLISHABLE_KEY: ${{ vars.NEWSFLOW_SUPABASE_PUBLISHABLE_KEY || '' }}
         run: npm run build
-
-      - name: Sync signal catalog to Supabase
-        if: github.event_name != 'pull_request'
-        shell: bash
-        env:
-          SUPABASE_URL: ${{ vars.NEWSFLOW_SUPABASE_URL || '' }}
-          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY || '' }}
-        run: |
-          if [ -z "$SUPABASE_URL" ] || [ -z "$SUPABASE_SERVICE_ROLE_KEY" ]; then
-            echo "Supabase catalog sync skipped: credentials are not configured."
-            exit 0
-          fi
-          npm run supabase:catalog
 
       - name: Configure GitHub Pages
         if: github.event_name != 'pull_request'
@@ -86,6 +72,7 @@ jobs:
           path: dist
 
   deploy:
+    name: Deploy Pages
     if: github.event_name != 'pull_request'
     environment:
       name: github-pages
