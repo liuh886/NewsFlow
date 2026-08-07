@@ -11,7 +11,6 @@
     "content:check": "node scripts/update-content.mjs --check",
     "content:update": "node scripts/apply-content.mjs",
     "content:status": "node scripts/update-data-status.mjs && node scripts/aggregate-pipeline-reviews.mjs",
-    "review:process": "node scripts/process-reviews.mjs",
     "supabase:catalog": "node scripts/sync-supabase-catalog.mjs"
   },
   "engines": {
