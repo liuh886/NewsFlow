@@ -1,4 +1,4 @@
-const CACHE_NAME = 'newsflow-editorial-v2.3.1-magazine-v2.4.1-serious-play-v2.5.2';
+const CACHE_NAME = 'newsflow-editorial-v2.3.1-magazine-v2.4.1-serious-play-v2.6.0';
 const NETWORK_TIMEOUT_MS = 5000;
 const APP_SHELL = [
   './',
@@ -16,10 +16,8 @@ const APP_SHELL = [
   './polish.js',
   './edition-layer.js',
   './magazine-polish.js',
-  './language-polish.js',
   './supabase-feedback.js',
   './editorial-office.js',
-  './editorial-preflight.js',
   './editorial-delight.js',
   './membership-config.js',
   './icon.svg',
@@ -53,7 +51,7 @@ const warmAppShell = async () => {
       const response = await fetchWithTimeout(request);
       if (response.ok) await cache.put(request, response);
     } catch {
-      // A missed optional asset must not block activation of the recovery worker.
+      // One unavailable optional asset must not block worker activation.
     }
   }));
 };
