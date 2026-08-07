@@ -11,13 +11,15 @@ const files = [
   'public/editorial-preflight.js',
   'public/editorial-preflight.css',
   'public/data/pipeline-reviews.json',
+  'content/state/pipeline-review-queue.json',
+  'scripts/apply-content.mjs',
   'scripts/aggregate-pipeline-reviews.mjs',
   'docs/editorial-office-design.md',
   'scripts/check-editorial-office.mjs'
 ];
 for (const file of files) await access(resolve(root, file));
 
-const [index, script, officeCss, gameCss, preflightScript, preflightCss, serviceWorker, packageSource, design, buildSource] = await Promise.all([
+const [index, script, officeCss, gameCss, preflightScript, preflightCss, serviceWorker, packageSource, design, buildSource, applySource, queueText] = await Promise.all([
   readFile(resolve(root, 'index.html'), 'utf8'),
   readFile(resolve(root, 'public/editorial-office.js'), 'utf8'),
   readFile(resolve(root, 'public/editorial-office.css'), 'utf8'),
@@ -27,9 +29,12 @@ const [index, script, officeCss, gameCss, preflightScript, preflightCss, service
   readFile(resolve(root, 'public/sw.js'), 'utf8'),
   readFile(resolve(root, 'package.json'), 'utf8'),
   readFile(resolve(root, 'docs/editorial-office-design.md'), 'utf8'),
-  readFile(resolve(root, 'scripts/build.mjs'), 'utf8')
+  readFile(resolve(root, 'scripts/build.mjs'), 'utf8'),
+  readFile(resolve(root, 'scripts/apply-content.mjs'), 'utf8'),
+  readFile(resolve(root, 'content/state/pipeline-review-queue.json'), 'utf8')
 ]);
 const packageManifest = JSON.parse(packageSource);
+const queue = JSON.parse(queueText);
 
 for (const reference of [
   './editorial-office.css',
@@ -62,7 +67,7 @@ if (index.indexOf('./editorial-preflight.js') < index.indexOf('./editorial-offic
   throw new Error('editorial-preflight.js must load after the formal editorial office');
 }
 
-for (const path of ['public/editorial-office.js', 'public/editorial-preflight.js', 'scripts/aggregate-pipeline-reviews.mjs']) {
+for (const path of ['public/editorial-office.js', 'public/editorial-preflight.js', 'scripts/apply-content.mjs', 'scripts/aggregate-pipeline-reviews.mjs']) {
   const syntax = spawnSync(process.execPath, ['--check', resolve(root, path)], { encoding: 'utf8' });
   if (syntax.status !== 0) throw new Error(`${path} syntax check failed:\n${syntax.stderr}`);
 }
@@ -112,6 +117,19 @@ if (preflightScript.includes('localStorage.setItem') || preflightScript.includes
 }
 if (preflightScript.includes('subtree: true')) throw new Error('pipeline preflight must not observe the full subtree');
 
+for (const contract of [
+  "const evaluatorPath = resolve(root, 'scripts/update-content.mjs')",
+  "const queuePath = resolve(root, 'content/state/pipeline-review-queue.json')",
+  "decision.status !== 'needs_review'",
+  'byId.delete(id)',
+  'aggregate-pipeline-reviews.mjs'
+]) {
+  if (!applySource.includes(contract)) throw new Error(`content apply orchestration is missing ${contract}`);
+}
+if (queue.schema_version !== '1.0' || !Array.isArray(queue.items)) {
+  throw new Error('durable pipeline review queue has an invalid contract');
+}
+
 for (const selector of [
   '.nf-role-trigger',
   '.nf-role-dialog',
@@ -125,7 +143,6 @@ for (const selector of [
 ]) {
   if (!officeCss.includes(selector)) throw new Error(`editorial office CSS is missing ${selector}`);
 }
-
 for (const selector of [
   '.nf-reader-receipt',
   '.nf-editorial-toast',
@@ -168,14 +185,20 @@ for (const phrase of [
 if (!packageManifest.scripts?.check?.includes('aggregate-pipeline-reviews.mjs --check')) {
   throw new Error('npm check must reject a stale pipeline preflight snapshot');
 }
+if (!packageManifest.scripts?.['content:update']?.includes('apply-content.mjs')) {
+  throw new Error('content:update must persist the human preflight queue');
+}
 if (!packageManifest.scripts?.['content:status']?.includes('aggregate-pipeline-reviews.mjs')) {
   throw new Error('content:status must refresh pipeline preflight data');
 }
 if (buildSource.includes('aggregate-pipeline-reviews.mjs') || buildSource.includes('spawnSync')) {
   throw new Error('static builds must not mutate content snapshots or start aggregation subprocesses');
 }
+for (const contract of ['pipeline-review-queue.json', 'reviewCandidatesById', 'addReviewCandidate']) {
+  if (!buildSource.includes(contract)) throw new Error(`build must include durable review candidates: ${contract}`);
+}
 if (!serviceWorker.includes('newsflow-editorial-v2.3.1-magazine-v2.4.1-serious-play-v2.5.1')) {
   throw new Error('service worker cache must advance for the unified preflight release');
 }
 
-console.log('NewsFlow editorial contract passed: one four-state decision path, read-only machine preflight, finite Issue Desk and serious-play feedback.');
+console.log('NewsFlow editorial contract passed: one four-state decision path, durable machine preflight, finite Issue Desk and serious-play feedback.');
