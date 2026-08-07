@@ -41,6 +41,10 @@ for (const contract of [
   "const STATUS_PATH = './data/data-status.json'",
   'AbortSignal.timeout(5000)',
   'decorateDataFreshness',
+  "brandName?.closest('.brand-copy')",
+  "brandCopy.querySelectorAll('.nf-brand-row')",
+  "brandCopy.querySelectorAll('.nf-data-date')",
+  'candidate !== badge',
   'nf-data-date',
   "window.addEventListener('newsflow:rendered', decorateMagazine)",
   "window.addEventListener('newsflow:edition-rendered', decorateMagazine)"
@@ -75,4 +79,4 @@ for (const releaseContract of ["const ASSET_VERSION = '2.7.0'", 'reader-editor-m
   }
 }
 
-console.log('NewsFlow magazine polish contract passed: reader lifecycle, data freshness, focus containment and stable mobile editorial rows.');
+console.log('NewsFlow magazine polish contract passed: idempotent branding freshness, reader lifecycle, focus containment and stable mobile rows.');

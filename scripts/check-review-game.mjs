@@ -47,7 +47,11 @@ for (const contract of [
   "const openGuest = async",
   "const renderReview = () =>",
   "const renderDecisionBar = () =>",
-  "const openSettlement = () =>",
+  "client.rpc('newsflow_is_authoritative_editor')",
+  'newsflow:formal-editorial-state',
+  'newsflow_editorial',
+  "state.authoritative ? 'EDITOR-IN-CHIEF' : 'EDITOR'",
+  '封面文章与录用决定已进入下一正式刊期的出版队列',
   'countdown: 3',
   'nf-review-countdown',
   'window.setTimeout(advance, REACTION_HOLD_MS)',
@@ -58,6 +62,9 @@ for (const contract of [
   "newsflow:switch-role"
 ]) {
   if (!game.includes(contract)) throw new Error(`review game missing contract: ${contract}`);
+}
+if (game.includes('openSettlement') || game.includes('closeIssue') || game.includes('issueDraft')) {
+  throw new Error('Formal decisions are the publication queue; retired local Issue settlement must not return.');
 }
 
 for (const [id, key] of [
@@ -80,11 +87,15 @@ if (mode.includes("id: 'accept'") || mode.includes('renderDesk') || mode.include
 }
 for (const contract of [
   "const ROLE_STORAGE_KEY = 'newsflow_role_v2'",
+  "const EDITORIAL_STATE_FIELD = 'newsflow_editorial'",
+  'syncFormalEditorialState',
+  'window.HaoAccount.saveProductData',
   "roleCard('reader'",
   "roleCard('editor'",
   '一屏一稿 · 五档裁决 · 立即反馈。',
   'window.NewsFlowReviewGame?.openFormal?.()',
-  "window.addEventListener('newsflow:switch-role'"
+  "window.addEventListener('newsflow:switch-role'",
+  "window.addEventListener('newsflow:review-game-closed'"
 ]) {
   if (!mode.includes(contract)) throw new Error(`mode controller missing contract: ${contract}`);
 }
@@ -98,12 +109,14 @@ for (const selector of [
   '.nf-review-countdown',
   'zoom: 0.8',
   'overflow: hidden',
-  '.nf-settlement-row',
   '@media (min-width: 761px)',
   '@media (max-width: 760px)',
   '@media (prefers-reduced-motion: reduce)'
 ]) {
   if (!gameCss.includes(selector)) throw new Error(`review game CSS missing ${selector}`);
+}
+if (gameCss.includes('.nf-settlement')) {
+  throw new Error('Retired local Issue settlement CSS must be deleted.');
 }
 for (const selector of ['.nf-mode-trigger', '.nf-mode-dialog', '.nf-mode-grid', '@media (max-width: 720px)']) {
   if (!modeCss.includes(selector)) throw new Error(`mode CSS missing ${selector}`);
@@ -127,4 +140,4 @@ for (const decision of ['cover_story', 'accept', 'minor_revision', 'major_revisi
   }
 }
 
-console.log('NewsFlow review game contract passed: compact 80% desktop manuscript, three-second countdown, one shared five-decision engine and post-game settlement.');
+console.log('NewsFlow review game contract passed: five-state game, three-second feedback, owner authority and direct publication queue semantics.');

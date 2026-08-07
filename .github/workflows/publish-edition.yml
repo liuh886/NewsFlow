@@ -38,6 +38,9 @@ jobs:
         run: npm ci
 
       - name: Compile semi-monthly edition
+        env:
+          NEWSFLOW_SUPABASE_URL: ${{ vars.NEWSFLOW_SUPABASE_URL || '' }}
+          NEWSFLOW_SUPABASE_PUBLISHABLE_KEY: ${{ vars.NEWSFLOW_SUPABASE_PUBLISHABLE_KEY || '' }}
         shell: bash
         run: |
           if [ -n "${{ inputs.publication_date }}" ]; then
@@ -54,13 +57,13 @@ jobs:
       - name: Commit published issue
         shell: bash
         run: |
-          if git diff --quiet -- public/data/issues.json; then
-            echo "No new issue was generated."
+          if git diff --quiet -- public/data/issues.json public/data/news.json; then
+            echo "No publication changes were generated."
             exit 0
           fi
           git config user.name "newsflow-edition-bot"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add public/data/issues.json
-          git commit -m "publish: autonomous semi-monthly edition"
+          git add public/data/issues.json public/data/news.json
+          git commit -m "publish: semi-monthly editor-selected edition"
           git pull --rebase origin main
           git push

@@ -32,7 +32,9 @@ const app = sources['src/editorial-app.js'];
 for (const contract of [
   "new CustomEvent('newsflow:rendered')",
   "new CustomEvent('newsflow:open-editorial-office')",
-  'AbortSignal.timeout(5000)'
+  'AbortSignal.timeout(5000)',
+  '按时间排序',
+  "(validDate(b.published_at)?.getTime() || 0) - (validDate(a.published_at)?.getTime() || 0)"
 ]) {
   if (!app.includes(contract)) throw new Error(`reader app is missing architecture contract: ${contract}`);
 }
@@ -40,7 +42,10 @@ for (const contract of [
 const mode = sources['public/editorial-office.js'];
 for (const contract of [
   "const ROLE_STORAGE_KEY = 'newsflow_role_v2'",
+  "const EDITORIAL_STATE_FIELD = 'newsflow_editorial'",
+  'syncFormalEditorialState',
   "window.NewsFlowReviewGame?.openFormal?.()",
+  "window.addEventListener('newsflow:formal-editorial-state'",
   "window.addEventListener('newsflow:rendered', mountModeTrigger)",
   "window.addEventListener('newsflow:switch-role'"
 ]) {
@@ -56,16 +61,23 @@ for (const contract of [
   'const openGuest = async',
   'const renderReview = () =>',
   'const renderDecisionBar = () =>',
-  'const openSettlement = () =>',
+  "client.rpc('newsflow_is_authoritative_editor')",
+  "new CustomEvent('newsflow:formal-editorial-state'",
   'window.NewsFlowReviewGame'
 ]) {
   if (!game.includes(contract)) throw new Error(`review game missing architecture contract: ${contract}`);
+}
+for (const retired of ['openSettlement', 'closeIssue', 'issueDraft', 'CLOSE ISSUE']) {
+  if (game.includes(retired)) throw new Error(`review game still contains retired local publication step: ${retired}`);
 }
 
 for (const contract of [
   "window.addEventListener('newsflow:rendered', applyEditionLayer)",
   "new CustomEvent('newsflow:edition-rendered')",
-  'AbortSignal.timeout(DATA_TIMEOUT_MS)'
+  'AbortSignal.timeout(DATA_TIMEOUT_MS)',
+  'cover_signal_id',
+  'issue-signal-link ${isCover',
+  '按时间排序'
 ]) {
   if (!sources['src/edition-layer.js'].includes(contract)) throw new Error(`edition layer missing contract: ${contract}`);
 }
@@ -115,4 +127,4 @@ if (!pagesWorkflow.includes("cancel-in-progress: ${{ github.event_name == 'pull_
   throw new Error('Pages may cancel superseded PR runs, but active main deployments must be preserved.');
 }
 
-console.log('NewsFlow frontend architecture contract passed: reader owns publication, one review game owns editor interaction, mode controller owns identity only.');
+console.log('NewsFlow frontend architecture contract passed: chronological reader desk, one review game, secure owner publication queue and cover-focused Issues.');

@@ -48,7 +48,7 @@ html.nf-review-game-open body {
   background: var(--nf-review-paper);
 }
 
-.nf-review-shell:not(.is-review):not(.is-settlement) {
+.nf-review-shell:not(.is-review) {
   place-items: center;
   padding: 18px;
   background:
@@ -165,9 +165,7 @@ html.nf-review-game-open body {
 
 .nf-review-invite-dialog h2,
 .nf-review-paper h1,
-.nf-review-card h1,
-.nf-settlement h1,
-.nf-settlement-row h2 {
+.nf-review-card h1 {
   font-family: var(--font-editorial, Georgia, serif);
   font-weight: 600;
   letter-spacing: -0.045em;
@@ -212,9 +210,7 @@ html.nf-review-game-open body {
 }
 
 .nf-review-actions button,
-.nf-review-next,
-.nf-settlement-status button,
-.nf-settlement-row-actions button {
+.nf-review-next {
   min-height: 44px;
   padding: 0 16px;
   border: 1px solid var(--nf-review-line);
@@ -228,22 +224,17 @@ html.nf-review-game-open body {
 .nf-review-actions button:hover,
 .nf-review-actions button:focus-visible,
 .nf-review-next:hover,
-.nf-review-next:focus-visible,
-.nf-settlement-row-actions button:hover,
-.nf-settlement-row-actions button:focus-visible {
+.nf-review-next:focus-visible {
   border-color: var(--nf-review-ink);
 }
 
-.nf-review-actions .is-primary,
-.nf-settlement-status .is-primary {
+.nf-review-actions .is-primary {
   color: var(--nf-review-paper);
   border-color: var(--nf-review-ink);
   background: var(--nf-review-ink);
 }
 
-.nf-review-actions button:disabled,
-.nf-settlement-status button:disabled,
-.nf-settlement-row-actions button:disabled {
+.nf-review-actions button:disabled {
   opacity: 0.38;
   cursor: default;
 }
@@ -322,8 +313,7 @@ html.nf-review-game-open body {
   text-transform: uppercase;
 }
 
-.nf-review-shell.is-review,
-.nf-review-shell.is-settlement {
+.nf-review-shell.is-review {
   grid-template-rows: auto minmax(0, 1fr) auto;
 }
 
@@ -707,90 +697,6 @@ html.nf-review-game-open body {
   box-shadow: 0 16px 44px rgba(0,0,0,.25);
 }
 
-.nf-settlement {
-  width: min(980px, calc(100% - 32px));
-  margin: 0 auto;
-  padding: clamp(34px, 5vw, 70px) 0 80px;
-}
-
-.nf-settlement-heading {
-  display: flex;
-  align-items: flex-end;
-  justify-content: space-between;
-  gap: 40px;
-  padding-bottom: 22px;
-  border-bottom: 4px double var(--nf-review-ink);
-}
-
-.nf-settlement-heading h1 {
-  margin: 6px 0 0;
-  font-size: clamp(42px, 7vw, 70px);
-  line-height: .95;
-}
-
-.nf-settlement-heading p {
-  max-width: 430px;
-  margin: 0;
-  color: var(--nf-review-muted);
-  font: 500 16px/1.55 var(--font-editorial, Georgia, serif);
-}
-
-.nf-settlement-status {
-  display: flex;
-  align-items: center;
-  gap: 18px;
-  padding: 16px 0;
-  border-bottom: 1px solid var(--nf-review-line);
-  color: var(--nf-review-muted);
-  font: 700 9px/1 var(--font-mono, monospace);
-}
-
-.nf-settlement-status .is-primary {
-  margin-left: auto;
-}
-
-.nf-settlement-list {
-  margin-top: 8px;
-}
-
-.nf-settlement-row {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) auto;
-  gap: 24px;
-  align-items: center;
-  padding: 20px 0;
-  border-bottom: 1px solid var(--nf-review-line);
-}
-
-.nf-settlement-row.is-selected {
-  border-left: 4px solid var(--nf-review-red);
-  padding-left: 16px;
-}
-
-.nf-settlement-row span {
-  color: var(--nf-review-red);
-  font: 700 8px/1.2 var(--font-mono, monospace);
-  letter-spacing: .08em;
-}
-
-.nf-settlement-row h2 {
-  margin: 8px 0 0;
-  font-size: clamp(21px, 3vw, 30px);
-  line-height: 1.05;
-}
-
-.nf-settlement-row-actions {
-  display: flex;
-  gap: 8px;
-}
-
-.nf-settlement-empty {
-  padding: 60px 0;
-  color: var(--nf-review-muted);
-  font: 500 18px/1.5 var(--font-editorial, Georgia, serif);
-  text-align: center;
-}
-
 @keyframes nf-review-stamp-in {
   from { opacity: 0; transform: scale(1.5) rotate(-12deg); }
   to { opacity: 1; transform: scale(1) rotate(-5deg); }
@@ -818,10 +724,6 @@ html.nf-review-game-open body {
 
   .nf-review-header-actions > button:not(.nf-review-close) {
     padding: 0 5px;
-  }
-
-  .nf-review-header-actions > button[data-review-action='open-invite'] {
-    display: none;
   }
 
   .nf-review-stage {
@@ -912,35 +814,6 @@ html.nf-review-game-open body {
   .nf-review-invite-dialog {
     width: calc(100vw - 20px);
     padding: 34px 22px;
-  }
-
-  .nf-settlement {
-    width: calc(100% - 28px);
-    padding-top: 28px;
-  }
-
-  .nf-settlement-heading {
-    align-items: flex-start;
-    flex-direction: column;
-    gap: 14px;
-  }
-
-  .nf-settlement-status {
-    flex-wrap: wrap;
-  }
-
-  .nf-settlement-status .is-primary {
-    width: 100%;
-    margin-left: 0;
-  }
-
-  .nf-settlement-row {
-    grid-template-columns: 1fr;
-    gap: 14px;
-  }
-
-  .nf-settlement-row-actions {
-    flex-wrap: wrap;
   }
 }
 

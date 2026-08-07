@@ -35,7 +35,6 @@ const requiredFiles = [
   'scripts/update-content.mjs',
   'scripts/apply-content.mjs',
   'scripts/publish-edition.mjs',
-  'scripts/process-reviews.mjs',
   'scripts/sync-supabase-catalog.mjs',
   'schemas/content-candidate-pack.schema.json',
   'config/content-workflow.json',
@@ -44,7 +43,7 @@ const requiredFiles = [
   'content/state/reader-profile.json',
   'content/feedback/events.json',
   'supabase/migrations/20260803232713_create_newsflow_feedback.sql',
-  'supabase/migrations/20260806_add_candidate_reviews.sql',
+  'supabase/newsflow-editorial.sql',
   '.github/workflows/pages.yml',
   '.github/workflows/publish-edition.yml',
   'WORKFLOW.md',
@@ -67,7 +66,6 @@ const syntaxFiles = [
   'scripts/update-content.mjs',
   'scripts/apply-content.mjs',
   'scripts/publish-edition.mjs',
-  'scripts/process-reviews.mjs',
   'scripts/sync-supabase-catalog.mjs'
 ];
 for (const file of syntaxFiles) {
@@ -109,6 +107,9 @@ if (packageManifest.dependencies?.['@supabase/supabase-js'] !== '2.112.0'
   || packageManifest.devDependencies?.supabase !== '2.111.0'
   || packageManifest.devDependencies?.esbuild !== '0.28.1') {
   throw new Error('Supabase client, CLI and esbuild must remain exactly pinned.');
+}
+if (packageManifest.scripts?.['review:process']) {
+  throw new Error('Retired candidate-review aggregation must not return.');
 }
 
 const index = await readFile(resolve(root, 'index.html'), 'utf8');
@@ -167,13 +168,64 @@ for (const contract of [
   if (!migration.includes(contract)) throw new Error(`Supabase RLS contract is missing: ${contract}`);
 }
 
+const editorialSql = await readFile(resolve(root, 'supabase/newsflow-editorial.sql'), 'utf8');
+for (const contract of [
+  'create table if not exists public.newsflow_editorial_adoptions',
+  'alter table public.newsflow_editorial_adoptions enable row level security',
+  'Public can read NewsFlow editorial adoptions',
+  'newsflow_is_authoritative_editor',
+  'security invoker',
+  'newsflow_sync_editorial_adoptions',
+  'security definer',
+  "set search_path = ''",
+  "role = 'owner'",
+  "new.product_code <> 'newsflow'",
+  "entry.value ->> 'decision' in ('cover_story', 'accept')",
+  'after insert or update of state on public.product_accounts',
+  'revoke all on function public.newsflow_sync_editorial_adoptions() from public, anon, authenticated, service_role'
+]) {
+  if (!editorialSql.toLowerCase().includes(contract.toLowerCase())) {
+    throw new Error(`NewsFlow editorial SQL is missing contract: ${contract}`);
+  }
+}
+if (editorialSql.includes('newsflow_public_editorial_adoptions')) {
+  throw new Error('Public SECURITY DEFINER adoption RPC must not return; use the read-only projection table.');
+}
+
 const buildSource = await readFile(resolve(root, 'scripts/build.mjs'), 'utf8');
 if (buildSource.includes('spawnSync') || buildSource.includes('aggregate-pipeline-reviews.mjs')) {
   throw new Error('Static build must remain deterministic and non-mutating.');
 }
+
+const publisher = await readFile(resolve(root, 'scripts/publish-edition.mjs'), 'utf8');
+for (const contract of [
+  ".from('newsflow_editorial_adoptions')",
+  ".select('candidate_id,decision,decided_at')",
+  "selection_mode: 'owner_editorial_decisions'",
+  'cover_signal_id:',
+  "writeFile(resolve(root, 'public/data/news.json')",
+  "writeFile(resolve(root, 'public/data/issues.json')"
+]) {
+  if (!publisher.includes(contract)) throw new Error(`Formal publisher is missing contract: ${contract}`);
+}
+if (publisher.includes('newsflow_public_editorial_adoptions')) {
+  throw new Error('Formal publisher must read the public adoption projection, not a privileged public RPC.');
+}
+if (publisher.includes('minimum_quality') || publisher.includes('minimumQuality')) {
+  throw new Error('Formal Issue selection must not silently fall back to quality-only autonomous adoption.');
+}
+
 const pagesWorkflow = await readFile(resolve(root, '.github/workflows/pages.yml'), 'utf8');
 if (!pagesWorkflow.includes('npm run check') || !pagesWorkflow.includes('npm run build')) {
   throw new Error('Pages workflow must validate contracts before building.');
 }
+const publishWorkflow = await readFile(resolve(root, '.github/workflows/publish-edition.yml'), 'utf8');
+for (const contract of [
+  'NEWSFLOW_SUPABASE_URL:',
+  'NEWSFLOW_SUPABASE_PUBLISHABLE_KEY:',
+  'git add public/data/issues.json public/data/news.json'
+]) {
+  if (!publishWorkflow.includes(contract)) throw new Error(`Publish workflow is missing contract: ${contract}`);
+}
 
-console.log(`NewsFlow repository contract passed: ${news.length} signals, ${storylines.length} storylines, one review engine and bounded frontend architecture.`);
+console.log(`NewsFlow repository contract passed: ${news.length} signals, ${storylines.length} storylines, secure owner-selected publication and one review engine.`);

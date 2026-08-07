@@ -368,8 +368,8 @@ const filteredItems = () => {
     if (query && !text.includes(query)) return false;
     if (state.entity && !text.includes(state.entity.toLowerCase())) return false;
     return true;
-  }).sort((a, b) => recommendationScore(b) - recommendationScore(a)
-    || (validDate(b.published_at)?.getTime() || 0) - (validDate(a.published_at)?.getTime() || 0));
+  }).sort((a, b) => (validDate(b.published_at)?.getTime() || 0) - (validDate(a.published_at)?.getTime() || 0)
+    || recommendationScore(b) - recommendationScore(a));
 };
 
 const leadItem = (items) => [...items].sort((a, b) => {
@@ -751,8 +751,8 @@ const render = () => {
     <div class="workspace">${renderSidebar(items)}<main class="main-column" id="main-content">
       <section class="masthead"><div><div class="masthead-kicker">Curated intelligence · 以数据快照为准</div><h1 class="masthead-title">The Daily Signal</h1><p class="masthead-deck">把高频新闻压缩为真正需要判断的变化。先看结论，再追溯来源；需要时展开背景与证据。</p></div><div class="masthead-meta">Data through<br>${escapeHtml(formatDate(snapshot, { year: 'numeric', month: 'long', day: 'numeric' }))}<br>${escapeHtml(topicName)}<br>${items.length} signals</div></section>
       ${renderLead(lead)}
-      <div class="feed-toolbar"><div class="feed-heading"><h2>${state.filter === 'saved' ? '已收藏' : state.entity ? `主题：${escapeHtml(state.entity)}` : '最新信号'}</h2><span>${stream.length} 条可继续阅读</span></div><div class="view-segment" aria-label="布局选择"><button class="segment-button ${state.view === 'list' ? 'active' : ''}" data-action="view" data-value="list">列表</button><button class="segment-button ${state.view === 'grid' ? 'active' : ''}" data-action="view" data-value="grid">网格</button></div></div>
-      ${items.length ? `<section class="feed-list ${state.view}" aria-label="新闻信号列表">${stream.map(renderCard).join('')}</section>` : '<section class="empty-state"><h3>没有匹配的信号</h3><p>当前频道、时间或筛选条件过窄。重置后可以回到完整信息流。</p><button class="text-button primary" data-action="reset">重置筛选</button></section>'}
+      <div class="feed-toolbar"><div class="feed-heading"><h2>${state.filter === 'saved' ? '已收藏' : state.entity ? `主题：${escapeHtml(state.entity)}` : '最新信号'}</h2><span>按时间排序 · ${stream.length} 条可继续阅读</span></div><div class="view-segment" aria-label="布局选择"><button class="segment-button ${state.view === 'list' ? 'active' : ''}" data-action="view" data-value="list">列表</button><button class="segment-button ${state.view === 'grid' ? 'active' : ''}" data-action="view" data-value="grid">网格</button></div></div>
+      ${items.length ? `<section class="feed-list ${state.view}" aria-label="按时间排序的新闻信号列表">${stream.map(renderCard).join('')}</section>` : '<section class="empty-state"><h3>没有匹配的信号</h3><p>当前频道、时间或筛选条件过窄。重置后可以回到完整信息流。</p><button class="text-button primary" data-action="reset">重置筛选</button></section>'}
     </main>${renderBriefRail(items)}</div>${renderMobileNav()}${state.mobileOpen ? '<div class="mobile-backdrop" data-action="mobile-close"></div>' : ''}${renderDrawer()}${renderHelp()}${renderFeedbackCenter()}${state.toast ? `<div class="toast" role="status"><span>${escapeHtml(state.toast.message)}</span>${state.toast.action ? `<button data-action="${escapeHtml(state.toast.action.type)}" data-id="${escapeHtml(state.toast.action.signalId)}" data-event-id="${escapeHtml(state.toast.action.eventId)}">${escapeHtml(state.toast.action.label)}</button>` : ''}</div>` : ''}</div>`);
 };
 

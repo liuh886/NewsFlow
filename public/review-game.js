@@ -6,7 +6,6 @@
   const ROOT_ID = 'newsflow-review-game-root';
   const FORMAL_STORAGE_KEY = 'newsflow_review_game_v4';
   const GUEST_STORAGE_PREFIX = 'newsflow_review_game_v4_guest';
-  const ISSUE_CAPACITY = 5;
   const DATA_TIMEOUT_MS = 5000;
   const REACTION_HOLD_MS = 3000;
 
@@ -31,8 +30,7 @@
     reactions: {},
     records: [],
     formalDecisions: {},
-    issues: [],
-    issueDraft: { selected_ids: [], cover_id: '' },
+    authoritative: false,
     index: 0,
     trainingCount: 0,
     reaction: null,
@@ -199,25 +197,60 @@
     return selected.slice(0, packetSize);
   };
 
+  const accountEditorialDecisions = () => {
+    const account = window.HaoAccount?.getState?.();
+    const decisions = account?.productAccount?.state?.newsflow_editorial?.decisions;
+    return decisions && typeof decisions === 'object' ? decisions : {};
+  };
+
+  const latestDecision = (left, right) => {
+    const leftTime = new Date(left?.decided_at || 0).getTime() || 0;
+    const rightTime = new Date(right?.decided_at || 0).getTime() || 0;
+    return rightTime > leftTime ? right : left;
+  };
+
   const readFormalState = () => {
     const payload = readJson(FORMAL_STORAGE_KEY, {});
-    state.formalDecisions = payload.decisions && typeof payload.decisions === 'object' ? payload.decisions : {};
-    state.issues = Array.isArray(payload.issues) ? payload.issues : [];
-    const draft = payload.issue_draft || {};
-    state.issueDraft = {
-      selected_ids: Array.isArray(draft.selected_ids) ? draft.selected_ids.map(String).slice(0, ISSUE_CAPACITY) : [],
-      cover_id: String(draft.cover_id || '')
-    };
+    const local = payload.decisions && typeof payload.decisions === 'object' ? payload.decisions : {};
+    const cloud = accountEditorialDecisions();
+    const merged = { ...cloud };
+    for (const [candidateId, decision] of Object.entries(local)) {
+      merged[candidateId] = merged[candidateId] ? latestDecision(merged[candidateId], decision) : decision;
+    }
+    state.formalDecisions = merged;
+  };
+
+  const emitFormalState = (updatedAt) => {
+    window.dispatchEvent(new CustomEvent('newsflow:formal-editorial-state', {
+      detail: {
+        schema_version: '1.0',
+        updated_at: updatedAt,
+        decisions: state.formalDecisions
+      }
+    }));
   };
 
   const saveFormalState = () => {
+    const updatedAt = new Date().toISOString();
     localStorage.setItem(FORMAL_STORAGE_KEY, JSON.stringify({
       schema_version: '4.0',
-      updated_at: new Date().toISOString(),
-      decisions: state.formalDecisions,
-      issue_draft: state.issueDraft,
-      issues: state.issues.slice(-100)
+      updated_at: updatedAt,
+      decisions: state.formalDecisions
     }));
+    emitFormalState(updatedAt);
+  };
+
+  const resolveFormalAuthority = async () => {
+    state.authoritative = false;
+    try {
+      const client = await window.HaoAccount?.getClient?.();
+      if (!client) return;
+      const { data, error } = await client.rpc('newsflow_is_authoritative_editor');
+      if (error) throw error;
+      state.authoritative = data === true;
+    } catch (error) {
+      console.warn('NewsFlow editorial authority check unavailable:', error);
+    }
   };
 
   const guestSessionKey = () => `${GUEST_STORAGE_PREFIX}:${state.inviteId || DEFAULT_INVITE_ID}`;
@@ -264,6 +297,7 @@
     state.notice = '';
     state.error = '';
     state.trainingCount = 0;
+    state.authoritative = false;
   };
 
   const loadSharedData = async () => Promise.all([
@@ -284,20 +318,26 @@
     render();
 
     try {
-      const [edition, storylines, reviewCandidates, , reactions] = await loadSharedData();
+      const [shared] = await Promise.all([loadSharedData(), resolveFormalAuthority()]);
+      const [edition, storylines, reviewCandidates, , reactions] = shared;
       state.edition = edition || null;
       state.storylines = Array.isArray(storylines) ? storylines : [];
       state.reactions = reactions || {};
       state.candidates = (Array.isArray(reviewCandidates) ? reviewCandidates : [])
         .map(normalizeLiveCandidate)
-        .filter((candidate) => candidate.id && candidate.title);
+        .filter((candidate) => candidate.id && candidate.title)
+        .sort((left, right) => right.date.localeCompare(left.date));
       readFormalState();
       state.packet = state.candidates.filter((candidate) => !state.formalDecisions[candidate.source_id]);
       state.phase = state.packet.length ? 'review' : 'complete';
-      track('editor_review_game_open', { pending_count: state.packet.length, total_count: state.candidates.length });
+      track('editor_review_game_open', {
+        pending_count: state.packet.length,
+        total_count: state.candidates.length,
+        authoritative: state.authoritative
+      });
       render();
     } catch (error) {
-      state.error = error?.message || '主编审稿台暂时无法加载。';
+      state.error = error?.message || '编辑审稿台暂时无法加载。';
       state.phase = 'error';
       render();
     }
@@ -390,7 +430,8 @@
       invite_id: state.inviteId || undefined,
       decision: decision.id,
       manuscript_index: state.index + 1,
-      manuscript_mode: candidate.exercise ? 'exercise' : 'live'
+      manuscript_mode: candidate.exercise ? 'exercise' : 'live',
+      authoritative: state.mode === 'formal' ? state.authoritative : undefined
     });
     render();
 
@@ -421,7 +462,8 @@
       saveCurrentState(true);
       track(state.mode === 'formal' ? 'editor_review_round_complete' : 'guest_editor_complete', {
         invite_id: state.inviteId || undefined,
-        manuscript_count: state.records.length
+        manuscript_count: state.records.length,
+        authoritative: state.mode === 'formal' ? state.authoritative : undefined
       });
     } else {
       state.phase = 'review';
@@ -449,83 +491,6 @@
     state.records.filter((record) => record.decision === decision.id).length
   ]));
 
-  const allFormalRecords = () => Object.values(state.formalDecisions || {});
-  const publishedIds = () => new Set(state.issues.flatMap((issue) => issue.article_ids || []));
-  const formalAcceptedCandidates = () => {
-    const published = publishedIds();
-    return state.candidates.filter((candidate) => {
-      const record = state.formalDecisions[candidate.source_id];
-      return record && ['cover_story', 'accept'].includes(record.decision) && !published.has(candidate.source_id);
-    });
-  };
-
-  const sanitizeIssueDraft = () => {
-    const acceptedIds = new Set(formalAcceptedCandidates().map((candidate) => candidate.source_id));
-    state.issueDraft.selected_ids = state.issueDraft.selected_ids.filter((id) => acceptedIds.has(id)).slice(0, ISSUE_CAPACITY);
-    if (!state.issueDraft.selected_ids.includes(state.issueDraft.cover_id)) state.issueDraft.cover_id = '';
-    if (!state.issueDraft.cover_id) {
-      const coverCandidate = state.issueDraft.selected_ids.find((id) => state.formalDecisions[id]?.decision === 'cover_story');
-      if (coverCandidate) state.issueDraft.cover_id = coverCandidate;
-    }
-    saveFormalState();
-  };
-
-  const openSettlement = () => {
-    if (state.mode !== 'formal') return;
-    sanitizeIssueDraft();
-    state.phase = 'settlement';
-    render();
-    track('editor_issue_settlement_open');
-  };
-
-  const toggleIssueCandidate = (candidateId) => {
-    if (state.mode !== 'formal') return;
-    const id = String(candidateId || '');
-    if (!formalAcceptedCandidates().some((candidate) => candidate.source_id === id)) return;
-    if (state.issueDraft.selected_ids.includes(id)) {
-      state.issueDraft.selected_ids = state.issueDraft.selected_ids.filter((item) => item !== id);
-      if (state.issueDraft.cover_id === id) state.issueDraft.cover_id = '';
-    } else if (state.issueDraft.selected_ids.length < ISSUE_CAPACITY) {
-      state.issueDraft.selected_ids.push(id);
-      if (!state.issueDraft.cover_id && state.formalDecisions[id]?.decision === 'cover_story') state.issueDraft.cover_id = id;
-    } else {
-      flash(`本期最多 ${ISSUE_CAPACITY} 篇。`);
-      return;
-    }
-    saveFormalState();
-    render();
-  };
-
-  const setIssueCover = (candidateId) => {
-    const id = String(candidateId || '');
-    if (!state.issueDraft.selected_ids.includes(id)) return;
-    state.issueDraft.cover_id = id;
-    saveFormalState();
-    render();
-  };
-
-  const closeIssue = () => {
-    if (state.mode !== 'formal') return;
-    const selected = state.issueDraft.selected_ids;
-    if (!selected.length || !state.issueDraft.cover_id) {
-      flash('请先选择本期稿件并指定封面。');
-      return;
-    }
-    const issue = {
-      id: `local-issue-${Date.now()}`,
-      number: state.issues.length + 1,
-      published_at: new Date().toISOString(),
-      cover_id: state.issueDraft.cover_id,
-      article_ids: [...selected]
-    };
-    state.issues.push(issue);
-    state.issueDraft = { selected_ids: [], cover_id: '' };
-    saveFormalState();
-    state.phase = 'complete';
-    flash(`本期编排已完成 · ${selected.length} 篇。`);
-    track('editor_issue_closed', { article_count: selected.length });
-  };
-
   const resetGuestSession = () => {
     if (state.mode !== 'guest') return;
     clearReactionTimers();
@@ -543,9 +508,11 @@
     const lines = state.records.map((record, index) => `${String(index + 1).padStart(2, '0')}. ${record.decision_label} · ${record.title}`);
     const note = state.mode === 'guest'
       ? '注：客座主编意见为平行编辑意见，不直接改写 Edition 的正式出版判断。'
-      : '注：这是本浏览器中的正式主编评审记录。';
+      : state.authoritative
+        ? '注：封面文章与录用决定已进入下一正式刊期的出版队列。'
+        : '注：该编辑记录不具有正式 Edition 出版权限。';
     return [
-      `${publication} · ${state.mode === 'guest' ? '客座主编' : '主编'}审稿回执`,
+      `${publication} · ${state.mode === 'guest' ? '客座主编' : '编辑'}审稿回执`,
       `处理稿件：${state.records.length} 篇`,
       '',
       ...lines,
@@ -581,6 +548,10 @@
     state.inviteDialogOpen = false;
     render();
   };
+
+  const roleLabel = () => state.mode === 'guest'
+    ? 'GUEST EDITOR'
+    : state.authoritative ? 'EDITOR-IN-CHIEF' : 'EDITOR';
 
   const renderInviteDialog = () => {
     if (!state.inviteDialogOpen) return '';
@@ -628,10 +599,9 @@
     const candidate = currentCandidate();
     if (!candidate) return renderComplete();
     const sourceUrl = safeUrl(candidate.url);
-    const roleLabel = state.mode === 'formal' ? 'EDITOR-IN-CHIEF' : 'GUEST EDITOR';
     return `<section class="nf-review-shell is-review" role="dialog" aria-modal="true" aria-labelledby="nf-review-title">
       <header class="nf-review-header">
-        <div><strong>NewsFlow</strong><span>${roleLabel}</span></div>
+        <div><strong>NewsFlow</strong><span>${roleLabel()}</span></div>
         <div class="nf-review-header-actions"><span>${String(state.index + 1).padStart(2, '0')} / ${String(state.packet.length).padStart(2, '0')}</span>${state.mode === 'formal' ? '<button data-review-action="open-invite">邀请主编</button>' : ''}<button data-review-action="undo" ${state.records.length ? '' : 'disabled'}>Z 撤销</button><button class="nf-review-close" data-review-action="close-game" aria-label="返回期刊">×</button></div>
       </header>
       <main class="nf-review-stage">
@@ -654,54 +624,32 @@
   const renderReaction = () => {
     const reaction = state.reaction;
     if (!reaction) return renderReview();
-    const roleLabel = state.mode === 'formal' ? 'EDITOR-IN-CHIEF' : 'GUEST EDITOR';
     return `<section class="nf-review-shell is-review is-reacting" role="dialog" aria-modal="true">
-      <header class="nf-review-header"><div><strong>NewsFlow</strong><span>${roleLabel}</span></div><div class="nf-review-header-actions"><span>${String(state.index + 1).padStart(2, '0')} / ${String(state.packet.length).padStart(2, '0')}</span><button data-review-action="undo">Z 撤销</button></div></header>
-      <main class="nf-review-stage"><article class="nf-review-card is-stamped"><div class="nf-review-card-meta"><span>EDITORIAL DECISION</span><span>${state.mode === 'formal' ? 'FORMAL EDITORIAL RECORD' : 'GUEST OPINION'}</span></div><h1>${escapeHtml(reaction.candidate.title)}</h1><div class="nf-review-stamp is-${reaction.decision.id}">${escapeHtml(reaction.decision.code)}</div><p class="nf-review-reaction-line">${escapeHtml(reaction.line)}</p><div class="nf-review-countdown" role="timer" aria-live="polite" aria-label="${reaction.countdown} 秒后进入下一稿">（${reaction.countdown}）</div><button class="nf-review-next" data-review-action="advance">下一稿 →</button></article></main>
+      <header class="nf-review-header"><div><strong>NewsFlow</strong><span>${roleLabel()}</span></div><div class="nf-review-header-actions"><span>${String(state.index + 1).padStart(2, '0')} / ${String(state.packet.length).padStart(2, '0')}</span><button data-review-action="undo">Z 撤销</button></div></header>
+      <main class="nf-review-stage"><article class="nf-review-card is-stamped"><div class="nf-review-card-meta"><span>EDITORIAL DECISION</span><span>${state.mode === 'formal' ? (state.authoritative ? 'FORMAL EDITORIAL RECORD' : 'EDITORIAL OPINION') : 'GUEST OPINION'}</span></div><h1>${escapeHtml(reaction.candidate.title)}</h1><div class="nf-review-stamp is-${reaction.decision.id}">${escapeHtml(reaction.decision.code)}</div><p class="nf-review-reaction-line">${escapeHtml(reaction.line)}</p><div class="nf-review-countdown" role="timer" aria-live="polite" aria-label="${reaction.countdown} 秒后进入下一稿">（${reaction.countdown}）</div><button class="nf-review-next" data-review-action="advance">下一稿 →</button></article></main>
       ${renderInviteDialog()}
     </section>`;
   };
 
   const renderComplete = () => {
     const counts = decisionCounts();
-    const formalTotal = allFormalRecords().length;
     const title = state.mode === 'formal'
       ? (state.records.length ? '本轮审稿结束' : '待审稿件已清空')
       : '本轮审稿结束';
     const body = state.mode === 'formal'
-      ? `本轮处理 ${state.records.length} 篇，累计签发 ${formalTotal} 项正式编辑决定。`
+      ? state.authoritative
+        ? `本轮处理 ${state.records.length} 篇。封面文章与录用决定已进入下一正式刊期的出版队列；小修、大修与拒稿不会自动出版。`
+        : `本轮处理 ${state.records.length} 篇。你的编辑意见已经保存，但正式刊物只采用已授权主编的封面与录用决定。`
       : `你已处理 ${state.records.length} 篇稿件。客座意见保存在当前浏览器，不会直接改变本刊正式判断。`;
     return `<section class="nf-review-shell" role="dialog" aria-modal="true" aria-labelledby="nf-review-complete-title">
       <div class="nf-review-paper nf-review-complete">
         <button class="nf-review-close" data-review-action="close-game" aria-label="返回期刊">×</button>
         <span class="nf-review-label">EDITORIAL DISPOSITION REPORT</span><div class="nf-review-seal">✓</div>
-        <p class="nf-review-publication">${state.mode === 'formal' ? 'EDITOR-IN-CHIEF' : 'GUEST EDITOR'}</p><h1 id="nf-review-complete-title">${title}</h1><p class="nf-review-paper-copy">${body}</p>
+        <p class="nf-review-publication">${roleLabel()}</p><h1 id="nf-review-complete-title">${title}</h1><p class="nf-review-paper-copy">${body}</p>
         <div class="nf-review-results">${DECISIONS.map((decision) => `<div><span>${decision.label}</span><strong>${counts[decision.id] || 0}</strong></div>`).join('')}</div>
         <p class="nf-review-complete-joke">${counts.reject > Math.floor(Math.max(1, state.records.length) / 2) ? '编辑部备注：Reviewer #2 对本轮结果表示高度认可。' : counts.cover_story ? '编辑部备注：封面已经有人选，排版老师开始工作了。' : '编辑部备注：本轮审稿过程异常文明，建议保留记录。'}</p>
-        <div class="nf-review-actions is-centered">${state.mode === 'formal' ? '<button class="is-primary" data-review-action="open-settlement">本期编排</button><button data-review-action="open-invite">邀请主编</button><button data-review-action="switch-reader">切换读者模式</button><button data-review-action="close-game">返回期刊</button>' : '<button class="is-primary" data-review-action="copy-receipt">复制审稿回执</button><button data-review-action="open-invite">邀请下一位主编</button><button data-review-action="reset-guest">再审一轮</button><button data-review-action="close-game">返回期刊</button>'}</div>
+        <div class="nf-review-actions is-centered">${state.mode === 'formal' ? '<button class="is-primary" data-review-action="close-game">完成并返回期刊</button><button data-review-action="open-invite">邀请主编</button><button data-review-action="switch-reader">切换读者模式</button>' : '<button class="is-primary" data-review-action="copy-receipt">复制审稿回执</button><button data-review-action="open-invite">邀请下一位主编</button><button data-review-action="reset-guest">再审一轮</button><button data-review-action="close-game">返回期刊</button>'}</div>
       </div>
-      ${state.notice ? `<div class="nf-review-notice" role="status">${escapeHtml(state.notice)}</div>` : ''}
-      ${renderInviteDialog()}
-    </section>`;
-  };
-
-  const renderSettlement = () => {
-    sanitizeIssueDraft();
-    const accepted = formalAcceptedCandidates();
-    const selected = new Set(state.issueDraft.selected_ids);
-    return `<section class="nf-review-shell is-settlement" role="dialog" aria-modal="true" aria-labelledby="nf-settlement-title">
-      <header class="nf-review-header"><div><strong>NewsFlow</strong><span>ISSUE SETTLEMENT</span></div><div class="nf-review-header-actions"><button data-review-action="open-invite">邀请主编</button><button class="nf-review-close" data-review-action="complete" aria-label="返回结算">×</button></div></header>
-      <main class="nf-settlement">
-        <div class="nf-settlement-heading"><div><span class="nf-review-label">AFTER THE GAME</span><h1 id="nf-settlement-title">本期编排</h1></div><p>审稿已经结束。这里只处理最终版位，不再重复判断稿件质量。</p></div>
-        <div class="nf-settlement-status"><span>已选 ${state.issueDraft.selected_ids.length}/${ISSUE_CAPACITY}</span><span>封面 ${state.issueDraft.cover_id ? '已指定' : '待指定'}</span><button class="is-primary" data-review-action="close-issue" ${!state.issueDraft.selected_ids.length || !state.issueDraft.cover_id ? 'disabled' : ''}>CLOSE ISSUE</button></div>
-        <div class="nf-settlement-list">${accepted.length ? accepted.map((candidate) => {
-          const id = candidate.source_id;
-          const record = state.formalDecisions[id];
-          const isSelected = selected.has(id);
-          const isCover = state.issueDraft.cover_id === id;
-          return `<article class="nf-settlement-row ${isSelected ? 'is-selected' : ''}"><div><span>${record?.decision === 'cover_story' ? 'COVER NOMINATION' : 'ACCEPTED'}</span><h2>${escapeHtml(candidate.title)}</h2></div><div class="nf-settlement-row-actions"><button data-review-action="toggle-issue" data-candidate-id="${escapeHtml(id)}">${isSelected ? '移出本期' : '加入本期'}</button>${isSelected ? `<button data-review-action="set-cover" data-candidate-id="${escapeHtml(id)}" ${isCover ? 'disabled' : ''}>${isCover ? '本期封面' : '设为封面'}</button>` : ''}</div></article>`;
-        }).join('') : '<div class="nf-settlement-empty">还没有可进入本期的“封面文章”或“录用”稿件。</div>'}</div>
-      </main>
       ${state.notice ? `<div class="nf-review-notice" role="status">${escapeHtml(state.notice)}</div>` : ''}
       ${renderInviteDialog()}
     </section>`;
@@ -716,7 +664,6 @@
     else if (state.phase === 'review') content = renderReview();
     else if (state.phase === 'reaction') content = renderReaction();
     else if (state.phase === 'complete') content = renderComplete();
-    else if (state.phase === 'settlement') content = renderSettlement();
     else content = renderInviteDialog();
     root.innerHTML = content;
     setOverlayOpen(state.phase !== 'idle' || state.inviteDialogOpen);
@@ -745,11 +692,6 @@
       flash(copied ? '审稿回执已复制。' : '无法复制审稿回执。');
       track('review_receipt_copy');
     } else if (action === 'reset-guest') resetGuestSession();
-    else if (action === 'open-settlement') openSettlement();
-    else if (action === 'toggle-issue') toggleIssueCandidate(target.dataset.candidateId || '');
-    else if (action === 'set-cover') setIssueCover(target.dataset.candidateId || '');
-    else if (action === 'close-issue') closeIssue();
-    else if (action === 'complete') { state.phase = 'complete'; render(); }
     else if (action === 'switch-reader') {
       closeGame();
       window.dispatchEvent(new CustomEvent('newsflow:switch-role', { detail: { role: 'reader' } }));
