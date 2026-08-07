@@ -35,20 +35,19 @@ const syntax = spawnSync(process.execPath, ['--check', resolve(root, 'public/mag
 if (syntax.status !== 0) throw new Error(`magazine-polish.js syntax check failed:\n${syntax.stderr}`);
 
 for (const contract of [
-  'storyline-index-panel',
-  'trapMagazinePanelFocus',
   'setMagazineBackgroundInert',
   'restoreMagazineTrigger',
   "intro.dataset.empty = 'true'",
-  "shellObserver.observe(shell, { childList: true })"
+  "window.addEventListener('newsflow:rendered', decorateMagazine)",
+  "window.addEventListener('newsflow:edition-rendered', decorateMagazine)"
 ]) {
   if (!script.includes(contract)) throw new Error(`magazine interaction layer is missing ${contract}`);
 }
-if (script.includes('subtree: true')) throw new Error('magazine polish must not add a full-subtree observer');
+if (script.includes('MutationObserver') || script.includes('stopImmediatePropagation')) {
+  throw new Error('magazine polish must not observe or intercept the Edition rendering lifecycle.');
+}
 
 for (const selector of [
-  '.storyline-index-panel',
-  '.storyline-index-item',
   "[data-empty='true']",
   '@media (max-width: 720px)',
   '@media print',
@@ -66,8 +65,8 @@ if (packageManifest.version !== '2.4.1') throw new Error('magazine polish releas
 if (!packageManifest.scripts?.check?.includes('check-magazine-polish.mjs')) {
   throw new Error('npm check must include the magazine polish contract');
 }
-if (!serviceWorker.includes('newsflow-editorial-v2.3.1-magazine-v2.4.1-serious-play-v2.5.2')) {
-  throw new Error('service worker cache must include the bounded startup recovery release');
+if (!serviceWorker.includes('serious-play-v2.6.0')) {
+  throw new Error('service worker cache must include the frontend architecture reset release');
 }
 
-console.log('NewsFlow magazine polish contract passed: storyline panels, focus loop, stable mobile editorial rows and bounded startup cache.');
+console.log('NewsFlow magazine polish contract passed: explicit lifecycle, focus containment and stable mobile editorial rows.');
