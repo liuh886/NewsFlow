@@ -1,12 +1,38 @@
--- NewsFlow editorial authority contract.
--- This file is the canonical SQL definition for the two RPCs used by the
--- editor game and semi-monthly publisher. It is intentionally not a migration.
+-- NewsFlow editorial authority and public adoption projection.
+-- Canonical SQL for the live schema. This is intentionally not a migration.
+
+create table if not exists public.newsflow_editorial_adoptions (
+  candidate_id text primary key,
+  decision text not null check (decision in ('cover_story', 'accept')),
+  decided_at timestamptz,
+  editor_user_id uuid not null,
+  updated_at timestamptz not null default now()
+);
+
+alter table public.newsflow_editorial_adoptions enable row level security;
+revoke all on table public.newsflow_editorial_adoptions from anon, authenticated;
+grant select on table public.newsflow_editorial_adoptions to anon, authenticated;
+
+drop policy if exists "Public can read NewsFlow editorial adoptions" on public.newsflow_editorial_adoptions;
+create policy "Public can read NewsFlow editorial adoptions"
+on public.newsflow_editorial_adoptions
+for select
+to anon, authenticated
+using (true);
+
+drop policy if exists "Users can read their own admin role" on public.membership_admins;
+create policy "Users can read their own admin role"
+on public.membership_admins
+for select
+to authenticated
+using ((select auth.uid()) = user_id);
+grant select on table public.membership_admins to authenticated;
 
 create or replace function public.newsflow_is_authoritative_editor()
 returns boolean
 language sql
 stable
-security definer
+security invoker
 set search_path = ''
 as $$
   select exists (
@@ -17,40 +43,49 @@ as $$
       and role in ('owner', 'admin')
   );
 $$;
-
-revoke all on function public.newsflow_is_authoritative_editor() from public;
+revoke all on function public.newsflow_is_authoritative_editor() from public, anon, service_role;
 grant execute on function public.newsflow_is_authoritative_editor() to authenticated;
 
-create or replace function public.newsflow_public_editorial_adoptions()
-returns table(candidate_id text, decision text, decided_at timestamptz)
-language sql
-stable
+create or replace function public.newsflow_sync_editorial_adoptions()
+returns trigger
+language plpgsql
 security definer
 set search_path = ''
 as $$
-  select
-    entry.key::text as candidate_id,
-    entry.value ->> 'decision' as decision,
-    case
-      when coalesce(entry.value ->> 'decided_at', '') ~ '^\d{4}-\d{2}-\d{2}T'
-        then (entry.value ->> 'decided_at')::timestamptz
-      else null
-    end as decided_at
-  from public.membership_admins as admin
-  join public.product_accounts as account
-    on account.user_id = admin.user_id
-   and account.product_code = 'newsflow'
-  cross join lateral jsonb_each(
-    coalesce(account.state -> 'newsflow_editorial' -> 'decisions', '{}'::jsonb)
-  ) as entry
-  where admin.active = true
-    and admin.role = 'owner'
-    and entry.value ->> 'decision' in ('cover_story', 'accept')
-  order by
-    case when entry.value ->> 'decision' = 'cover_story' then 0 else 1 end,
-    decided_at desc nulls last,
-    candidate_id;
-$$;
+begin
+  if new.product_code <> 'newsflow' then
+    return new;
+  end if;
 
-revoke all on function public.newsflow_public_editorial_adoptions() from public;
-grant execute on function public.newsflow_public_editorial_adoptions() to anon, authenticated, service_role;
+  if exists (
+    select 1
+    from public.membership_admins
+    where user_id = new.user_id
+      and active = true
+      and role = 'owner'
+  ) then
+    delete from public.newsflow_editorial_adoptions;
+    insert into public.newsflow_editorial_adoptions (candidate_id, decision, decided_at, editor_user_id, updated_at)
+    select
+      entry.key::text,
+      entry.value ->> 'decision',
+      case
+        when coalesce(entry.value ->> 'decided_at', '') ~ '^\d{4}-\d{2}-\d{2}T'
+          then (entry.value ->> 'decided_at')::timestamptz
+        else null
+      end,
+      new.user_id,
+      now()
+    from jsonb_each(coalesce(new.state -> 'newsflow_editorial' -> 'decisions', '{}'::jsonb)) as entry
+    where entry.value ->> 'decision' in ('cover_story', 'accept');
+  end if;
+
+  return new;
+end;
+$$;
+revoke all on function public.newsflow_sync_editorial_adoptions() from public, anon, authenticated, service_role;
+
+drop trigger if exists newsflow_sync_editorial_adoptions on public.product_accounts;
+create trigger newsflow_sync_editorial_adoptions
+after insert or update of state on public.product_accounts
+for each row execute function public.newsflow_sync_editorial_adoptions();
