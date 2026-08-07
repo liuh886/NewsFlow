@@ -71,15 +71,22 @@ for (const retired of ['openSettlement', 'closeIssue', 'issueDraft', 'CLOSE ISSU
   if (game.includes(retired)) throw new Error(`review game still contains retired local publication step: ${retired}`);
 }
 
+const edition = sources['src/edition-layer.js'];
 for (const contract of [
   "window.addEventListener('newsflow:rendered', applyEditionLayer)",
   "new CustomEvent('newsflow:edition-rendered')",
   'AbortSignal.timeout(DATA_TIMEOUT_MS)',
   'cover_signal_id',
-  'issue-signal-link ${isCover',
-  '按时间排序'
+  '阅读封面文章',
+  'Published with NewsFlow',
+  "heading.textContent = '最新'",
+  "firstEditorialAnchor.insertAdjacentHTML('beforebegin', renderCurrentIssue(edition, issue))",
+  "issueNode.insertAdjacentHTML('afterend', renderPostIssueIntro(issue))"
 ]) {
-  if (!sources['src/edition-layer.js'].includes(contract)) throw new Error(`edition layer missing contract: ${contract}`);
+  if (!edition.includes(contract)) throw new Error(`edition layer missing contract: ${contract}`);
+}
+if (edition.includes('issue-signal-link ${isCover')) {
+  throw new Error('Reader must not repeat the cover headline as a second oversized Issue row.');
 }
 for (const contract of [
   "window.addEventListener('newsflow:rendered', decorateMagazine)",
@@ -127,4 +134,4 @@ if (!pagesWorkflow.includes("cancel-in-progress: ${{ github.event_name == 'pull_
   throw new Error('Pages may cancel superseded PR runs, but active main deployments must be preserved.');
 }
 
-console.log('NewsFlow frontend architecture contract passed: chronological reader desk, one review game, secure owner publication queue and cover-focused Issues.');
+console.log('NewsFlow frontend architecture contract passed: Issue-first Reader, chronological latest stream, one review game and secure owner publication queue.');
