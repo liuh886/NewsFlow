@@ -1,5 +1,5 @@
 const ASSET_VERSION = '2.7.0';
-const CACHE_NAME = 'newsflow-editorial-v2.7.0-reader-editor-modes';
+const CACHE_NAME = 'newsflow-editorial-v2.7.0-reader-editor-modes-reader-v3-c';
 const NETWORK_TIMEOUT_MS = 5000;
 const versioned = (path) => `${path}?v=${ASSET_VERSION}`;
 const APP_SHELL = [
@@ -9,6 +9,7 @@ const APP_SHELL = [
   versioned('./polish.css'),
   versioned('./edition-layer.css'),
   versioned('./magazine-polish.css'),
+  versioned('./reading-surface.css'),
   versioned('./account-integration.css'),
   versioned('./editorial-mode.css'),
   versioned('./review-game.css'),
@@ -17,6 +18,7 @@ const APP_SHELL = [
   versioned('./polish.js'),
   versioned('./edition-layer.js'),
   versioned('./magazine-polish.js'),
+  versioned('./reading-surface.js'),
   versioned('./supabase-feedback.js'),
   versioned('./membership-config.js'),
   versioned('./account-integration.js'),

@@ -10,6 +10,7 @@ const runtimeFiles = [
   'src/polish.js',
   'src/edition-layer.js',
   'public/magazine-polish.js',
+  'public/reading-surface.js',
   'public/editorial-office.js',
   'public/review-game.js',
   'public/account-integration.js',
@@ -81,13 +82,34 @@ for (const contract of [
   'Published with NewsFlow',
   "heading.textContent = '最新'",
   "firstEditorialAnchor.insertAdjacentHTML('beforebegin', renderCurrentIssue(edition, issue))",
-  "issueNode.insertAdjacentHTML('afterend', renderPostIssueIntro(issue))"
+  "issueNode.insertAdjacentHTML('afterend', renderPostIssueIntro(issue))",
+  'renderChannelView',
+  '#section/',
+  "channelSort: 'newest'"
 ]) {
   if (!edition.includes(contract)) throw new Error(`edition layer missing contract: ${contract}`);
 }
 if (edition.includes('issue-signal-link ${isCover')) {
   throw new Error('Reader must not repeat the cover headline as a second oversized Issue row.');
 }
+
+const reading = sources['public/reading-surface.js'];
+for (const contract of [
+  "const ROOT_ID = 'newsflow-reading-surface-root'",
+  '#read/',
+  'renderReadingSurface',
+  'decorateReadingLinks',
+  "document.addEventListener('click'",
+  "window.addEventListener('newsflow:rendered'",
+  "window.addEventListener('newsflow:edition-rendered'",
+  "event.stopPropagation()"
+]) {
+  if (!reading.includes(contract)) throw new Error(`reading surface missing architecture contract: ${contract}`);
+}
+if (reading.includes('stopImmediatePropagation') || reading.includes('window.fetch =')) {
+  throw new Error('Reading Surface must not take global event or fetch ownership.');
+}
+
 for (const contract of [
   "window.addEventListener('newsflow:rendered', decorateMagazine)",
   "window.addEventListener('newsflow:edition-rendered', decorateMagazine)"
@@ -110,6 +132,7 @@ for (const contract of [
   'data-startup-shell="true"',
   './startup-resilience.js?v=2.7.0',
   './editorial-app.js?v=2.7.0',
+  './reading-surface.js?v=2.7.0',
   './review-game.js?v=2.7.0',
   './editorial-office.js?v=2.7.0',
   '<script async src="https://liuh886.github.io/admin/shared/account-shell.js?v=2"></script>'
@@ -126,7 +149,10 @@ for (const retiredPath of ['./guest-editor.js', './editorial-delight.js', './edi
 for (const contract of [
   "const ASSET_VERSION = '2.7.0'",
   'reader-editor-modes',
-  'event.respondWith(networkFirst(event.request))'
+  'reader-v3-c',
+  'event.respondWith(networkFirst(event.request))',
+  "versioned('./reading-surface.css')",
+  "versioned('./reading-surface.js')"
 ]) {
   if (!serviceWorker.includes(contract)) throw new Error(`service worker release coherence missing: ${contract}`);
 }
@@ -134,4 +160,4 @@ if (!pagesWorkflow.includes("cancel-in-progress: ${{ github.event_name == 'pull_
   throw new Error('Pages may cancel superseded PR runs, but active main deployments must be preserved.');
 }
 
-console.log('NewsFlow frontend architecture contract passed: Issue-first Reader, chronological latest stream, one review game and secure owner publication queue.');
+console.log('NewsFlow frontend architecture contract passed: Issue-first Reader, explicit sections, modular Reading Surface, one review game and secure owner publication queue.');
