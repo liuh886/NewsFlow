@@ -1,6 +1,6 @@
 import { spawnSync } from 'node:child_process';
 import { mkdir, readFile, writeFile } from 'node:fs/promises';
-import { dirname, resolve } from 'node:path';
+import { basename, dirname, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 const root = resolve(dirname(fileURLToPath(import.meta.url)), '..');
@@ -59,10 +59,23 @@ try {
 }
 
 const parseCandidates = (text) => {
-  const parsed = JSON.parse(text);
-  if (Array.isArray(parsed?.candidates)) return parsed.candidates;
-  if (parsed && typeof parsed.id === 'string') return [parsed];
-  throw new Error('Apply requires a candidate pack or a single JSON candidate. NDJSON should be converted to a candidate pack before apply.');
+  try {
+    const parsed = JSON.parse(text);
+    if (Array.isArray(parsed?.candidates)) return parsed.candidates;
+    if (parsed && typeof parsed.id === 'string') return [parsed];
+  } catch {
+    const candidates = text.split('\n')
+      .filter((line) => line.trim())
+      .map((line, index) => {
+        try {
+          return JSON.parse(line);
+        } catch (error) {
+          throw new Error(`NDJSON line ${index + 1} is not valid JSON: ${error.message}`);
+        }
+      });
+    if (candidates.length && candidates.every((candidate) => typeof candidate?.id === 'string')) return candidates;
+  }
+  throw new Error('Apply requires a candidate pack, a single JSON candidate or NDJSON candidates.');
 };
 const candidates = parseCandidates(sourceText);
 const normalizedPack = {
@@ -92,9 +105,8 @@ try {
 
 const byId = new Map((Array.isArray(queue.items) ? queue.items : []).map((item) => [String(item.id), item]));
 const candidateById = new Map(candidates.map((candidate) => [String(candidate.id || ''), candidate]));
-const compactRunId = String(report.run.as_of || '')
-  .replace(/[-:]/g, '')
-  .replace('.000Z', 'Z');
+const auditMatch = applied.stdout.match(/Audit:\s*(.+\.json)\s*$/m);
+const runId = auditMatch ? basename(auditMatch[1], '.json') : String(report.run.as_of || '').replace(/[-:]/g, '');
 
 for (const decision of report.decisions || []) {
   const id = String(decision.id || '');
@@ -116,7 +128,7 @@ for (const decision of report.decisions || []) {
       score_mean: decision.score_mean
     },
     run: {
-      id: compactRunId,
+      id: runId,
       as_of: report.run.as_of,
       coverage_start: report.run.coverage_start,
       coverage_end: report.run.coverage_end,
