@@ -5,7 +5,6 @@ create table if not exists public.newsflow_editorial_adoptions (
   candidate_id text primary key,
   decision text not null check (decision in ('cover_story', 'accept')),
   decided_at timestamptz,
-  editor_user_id uuid not null,
   updated_at timestamptz not null default now()
 );
 
@@ -68,7 +67,7 @@ begin
       and role = 'owner'
   ) then
     delete from public.newsflow_editorial_adoptions;
-    insert into public.newsflow_editorial_adoptions (candidate_id, decision, decided_at, editor_user_id, updated_at)
+    insert into public.newsflow_editorial_adoptions (candidate_id, decision, decided_at, updated_at)
     select
       entry.key::text,
       entry.value ->> 'decision',
@@ -77,7 +76,6 @@ begin
           then (entry.value ->> 'decided_at')::timestamptz
         else null
       end,
-      new.user_id,
       now()
     from jsonb_each(coalesce(new.state -> 'newsflow_editorial' -> 'decisions', '{}'::jsonb)) as entry
     where entry.value ->> 'decision' in ('cover_story', 'accept');
