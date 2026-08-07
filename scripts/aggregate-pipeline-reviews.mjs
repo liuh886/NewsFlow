@@ -1,109 +1,54 @@
-import { mkdir, readFile, readdir, writeFile } from 'node:fs/promises';
+import { mkdir, readFile, writeFile } from 'node:fs/promises';
 import { dirname, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 const root = resolve(dirname(fileURLToPath(import.meta.url)), '..');
+const queuePath = resolve(root, 'content/state/pipeline-review-queue.json');
 const outputPath = resolve(root, 'public/data/pipeline-reviews.json');
 const checkOnly = process.argv.includes('--check');
 
-const readJson = async (path) => JSON.parse(await readFile(resolve(root, path), 'utf8'));
-const readJsonOrNull = async (path) => {
-  try {
-    return await readJson(path);
-  } catch {
-    return null;
-  }
-};
-
-const timeValue = (value) => {
-  const parsed = Date.parse(String(value || ''));
-  return Number.isFinite(parsed) ? parsed : 0;
-};
-
-const inboxCandidates = new Map();
-const inboxDir = resolve(root, 'content/inbox');
-try {
-  const files = (await readdir(inboxDir)).filter((file) => file.endsWith('.json')).sort();
-  for (const file of files) {
-    const pack = await readJsonOrNull(`content/inbox/${file}`);
-    const packTime = timeValue(pack?.run?.as_of);
-    for (const candidate of pack?.candidates || []) {
-      const id = String(candidate?.id || '');
-      if (!id) continue;
-      const current = inboxCandidates.get(id);
-      if (!current || packTime >= current.packTime) inboxCandidates.set(id, { candidate, packTime });
-    }
-  }
-} catch {
-  // A new repository may not have an inbox yet.
+const queue = JSON.parse(await readFile(queuePath, 'utf8'));
+if (queue.schema_version !== '1.0' || !Array.isArray(queue.items)) {
+  throw new Error('content/state/pipeline-review-queue.json has an invalid contract.');
 }
 
-const latestDecisionById = new Map();
-let latestRunAt = '';
-const runsDir = resolve(root, 'content/runs');
-try {
-  const files = (await readdir(runsDir)).filter((file) => file.endsWith('.json')).sort();
-  for (const file of files) {
-    const audit = await readJsonOrNull(`content/runs/${file}`);
-    if (!audit?.applied || !Array.isArray(audit.decisions)) continue;
-    const runAt = String(audit.run?.as_of || '');
-    const runTime = timeValue(runAt);
-    if (runTime > timeValue(latestRunAt)) latestRunAt = runAt;
+const candidates = queue.items.map((item) => {
+  const candidate = item.candidate || {};
+  const decision = item.decision || {};
+  return {
+    id: String(item.id || candidate.id || ''),
+    manuscript_key: String(item.manuscript_key || item.id || '').slice(-8).toUpperCase(),
+    title: String(candidate.title || ''),
+    channel_id: String(candidate.channel_id || ''),
+    source_id: String(decision.source_id || ''),
+    score_mean: Number(decision.score_mean || 0),
+    reasons: Array.isArray(decision.reasons) ? decision.reasons.map(String) : [],
+    evidence: Array.isArray(candidate.evidence) ? candidate.evidence.map((evidence) => ({
+      claim: String(evidence?.claim || ''),
+      source_excerpt: String(evidence?.source_excerpt || ''),
+      source_url: String(evidence?.source_url || '')
+    })) : [],
+    run_id: String(item.run?.id || ''),
+    run_time: String(item.run?.as_of || '')
+  };
+}).sort((left, right) => right.run_time.localeCompare(left.run_time) || left.id.localeCompare(right.id));
 
-    for (const decision of audit.decisions) {
-      const id = String(decision?.id || '');
-      if (!id) continue;
-      const current = latestDecisionById.get(id);
-      if (!current || runTime >= current.runTime) {
-        latestDecisionById.set(id, {
-          decision,
-          runTime,
-          runAt,
-          runId: file.replace(/\.json$/, '')
-        });
-      }
-    }
-  }
-} catch {
-  // Empty run history produces an empty, valid report.
-}
-
-const candidates = [...latestDecisionById.entries()]
-  .filter(([, entry]) => entry.decision.status === 'needs_review')
-  .map(([id, entry]) => {
-    const source = inboxCandidates.get(id)?.candidate || {};
-    const evidence = (entry.decision.evidence || []).map((item) => ({
-      claim: String(item?.claim || ''),
-      source_excerpt: String(item?.source_excerpt || ''),
-      source_url: String(item?.source_url || '')
-    }));
-    return {
-      id,
-      manuscript_key: id.slice(-8).toUpperCase(),
-      title: String(source.title || id),
-      channel_id: String(source.channel_id || ''),
-      source_id: String(entry.decision.source_id || ''),
-      score_mean: Number(entry.decision.score_mean || 0),
-      reasons: (entry.decision.reasons || []).map(String),
-      evidence,
-      run_id: entry.runId,
-      run_time: entry.runAt
-    };
-  })
-  .sort((left, right) => right.run_time.localeCompare(left.run_time) || left.id.localeCompare(right.id));
-
+const ids = new Set();
 const manuscriptKeys = new Set();
 for (const candidate of candidates) {
+  if (!candidate.id || !candidate.title) throw new Error('Pipeline preflight items require id and title.');
+  if (ids.has(candidate.id)) throw new Error(`Duplicate pipeline review id: ${candidate.id}`);
   if (manuscriptKeys.has(candidate.manuscript_key)) {
     throw new Error(`Pipeline review manuscript key collision: ${candidate.manuscript_key}`);
   }
+  ids.add(candidate.id);
   manuscriptKeys.add(candidate.manuscript_key);
 }
 
 const report = {
   schema_version: '2.0',
-  source: 'applied-content-runs',
-  latest_run_at: latestRunAt,
+  source: 'content-state',
+  latest_run_at: String(queue.updated_at || ''),
   candidate_count: candidates.length,
   candidates
 };
@@ -122,14 +67,11 @@ if (checkOnly) {
     const lineCount = Math.max(currentLines.length, expectedLines.length);
     let mismatch = 0;
     while (mismatch < lineCount && currentLines[mismatch] === expectedLines[mismatch]) mismatch += 1;
-    const currentLine = currentLines[mismatch] ?? '<missing>';
-    const expectedLine = expectedLines[mismatch] ?? '<missing>';
     throw new Error([
       'public/data/pipeline-reviews.json is stale. Run npm run content:status and commit the result.',
       `First mismatch at line ${mismatch + 1}.`,
-      `Current: ${currentLine}`,
-      `Expected: ${expectedLine}`,
-      `Expected candidates: ${candidates.map((candidate) => candidate.id).join(', ') || '<none>'}`
+      `Current: ${currentLines[mismatch] ?? '<missing>'}`,
+      `Expected: ${expectedLines[mismatch] ?? '<missing>'}`
     ].join('\n'));
   }
   console.log(`Pipeline preflight contract passed: ${candidates.length} candidate(s) require human judgment.`);
