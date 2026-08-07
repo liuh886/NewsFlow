@@ -55,9 +55,11 @@
     }
   };
 
-  const syncFormalEditorialState = async () => {
+  const syncFormalEditorialState = async (explicitEditorial = null) => {
     const account = window.HaoAccount?.getState?.();
-    const editorial = readFormalEditorialState();
+    const editorial = explicitEditorial && typeof explicitEditorial === 'object'
+      ? explicitEditorial
+      : readFormalEditorialState();
     if (!account?.user || !editorial || !window.HaoAccount?.saveProductData) return;
     const productState = account.productAccount?.state && typeof account.productAccount.state === 'object'
       ? account.productAccount.state
@@ -230,6 +232,9 @@
   window.addEventListener('newsflow:switch-role', (event) => {
     const role = event.detail?.role;
     if (['reader', 'editor'].includes(role)) setRole(role);
+  });
+  window.addEventListener('newsflow:formal-editorial-state', (event) => {
+    if (state.account?.user) void syncFormalEditorialState(event.detail);
   });
   window.addEventListener('newsflow:review-game-closed', () => {
     if (state.account?.user) void syncFormalEditorialState();
