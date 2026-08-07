@@ -197,8 +197,8 @@ if (buildSource.includes('aggregate-pipeline-reviews.mjs') || buildSource.includ
 for (const contract of ['pipeline-review-queue.json', 'reviewCandidatesById', 'addReviewCandidate']) {
   if (!buildSource.includes(contract)) throw new Error(`build must include durable review candidates: ${contract}`);
 }
-if (!serviceWorker.includes('newsflow-editorial-v2.3.1-magazine-v2.4.1-serious-play-v2.5.1')) {
-  throw new Error('service worker cache must advance for the unified preflight release');
+if (!serviceWorker.includes('newsflow-editorial-v2.3.1-magazine-v2.4.1-serious-play-v2.5.2')) {
+  throw new Error('service worker cache must advance for the bounded startup recovery release');
 }
 
-console.log('NewsFlow editorial contract passed: one four-state decision path, durable machine preflight, finite Issue Desk and serious-play feedback.');
+console.log('NewsFlow editorial contract passed: one four-state decision path, durable machine preflight, finite Issue Desk and bounded startup recovery.');
