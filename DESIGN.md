@@ -2,348 +2,248 @@
 
 ## Product position
 
-NewsFlow is a GitHub-native autonomous publishing system. It does not merely summarize a high-volume feed. It executes an explicit editorial system over time so that continued reading builds domain expertise.
+NewsFlow is a GitHub-native autonomous publication with two deliberately different experiences built on the same editorial system.
 
-The engine and publication remain separate concepts:
+> **Reader Mode is a publication. Editor Mode is a game.**
 
-- **NewsFlow** supplies the static reader, data contracts, automation and publication runtime;
-- an **Edition** defines the publication's reader promise, editorial view, scope, source policy, materiality rules, Storylines and schedule.
+The product must never collapse those two jobs into a generic dashboard.
 
-The Edition file is the editor. The interface, Agent and workflow execute it.
+- **Reader Mode** presents a serious professional journal: Issue, Signals, Storylines, Archive and evidence.
+- **Editor Mode** is a focused review game: one manuscript, one decision, immediate consequence, next manuscript.
+- **Edition** remains the editorial constitution: reader promise, worldview, scope, source policy, materiality, Storylines and publication cadence.
+- Automation may process evidence but may not silently rewrite the Edition's formal position.
 
-## Reader promise
+The concise product statement is:
 
-The public reader must feel like a professional publication before it feels like a tool.
-
-NewsFlow should answer, in order:
-
-1. What publication am I reading?
-2. What important evidence appeared after the latest formal Issue?
-3. What did the current Issue conclude?
-4. What additional Signals are still accumulating toward the next Issue?
-5. How are the long-running Storylines changing?
-6. Where can the source and evidence be inspected?
-
-## Design decision
-
-The magazine-first direction is defined by four choices:
-
-- the product is perceived first as a professional journal;
-- the homepage focal point is the latest major Signal, not the previous Issue cover;
-- the visual system combines premium-magazine pacing with different densities for different tasks;
-- the formal Issue remains the interaction centre, while Storylines and Archive open beside it.
-
-The concise design statement is:
-
-> NewsFlow looks like a professional journal, but it continues observing between formal Issues.
+> NewsFlow looks like a serious journal when you read it, and behaves like a card game when you edit it.
 
 ## Core principles
 
-1. **Publication before tooling.** Search, filters, scores and automation metadata must not determine the first visual impression.
-2. **New evidence stays attached to prior judgment.** A Signal is presented as a change since an Issue, not as an isolated headline.
-3. **Different surfaces use different densities.** The homepage reads like a magazine, the Desk scans like a newspaper and deep reading behaves like a research brief.
-4. **Issue-centred interaction.** Storylines, Archive and evidence open around the publication rather than becoming competing dashboard pages.
-5. **Strong editor, bounded automation.** Automated workflows process evidence but do not silently change the editor's formal position.
-6. **Continuity over novelty.** Every Signal is interpreted against persistent Storylines and prior Issues.
-7. **Fixed rhythm, variable length.** Formal Issues appear on the 1st and 15th, including concise no-material-change Issues.
-8. **Editorial restraint.** The system must be willing not to publish a low-value item.
-9. **Serious surface, playful consequence.** Game-like emotion belongs in the consequence of an editorial decision, not in decorative chrome or a busy control system.
-10. **One manuscript, one decision.** Guest Editor mode must never become a dashboard: one screen presents one manuscript and one five-level editorial decision.
+1. **Publication before tooling.** Reader Mode must feel like a journal before it feels like software.
+2. **Editor means game mode.** Entering Editor Mode immediately hands the viewport to the review loop; it does not open an admin dashboard.
+3. **One review engine.** Formal editors and invited guest editors use the same card, five decisions, motion and reaction system. Role changes authority, not interaction design.
+4. **One manuscript, one decision.** The primary editor viewport contains one manuscript and exactly five editorial outcomes.
+5. **Serious surface, playful consequence.** Humour appears after the decision as an editorial aside, never as decorative clutter before judgment.
+6. **Post-game administration.** Issue composition and records appear only after the review loop; they do not compete with the manuscript while reviewing.
+7. **New evidence stays attached to prior judgment.** Reader-facing Signals are interpreted against the current Issue and persistent Storylines.
+8. **Continuity over novelty.** Storylines accumulate evidence and retain editorial memory.
+9. **Fixed rhythm, variable length.** Formal Issues publish on the 1st and 15th, including no-material-change Issues.
+10. **Editorial restraint.** The system must be willing not to publish low-value material.
 
-## Core objects
+## Shared content objects
 
 ### Edition
 
-The executable editorial constitution. Runtime metadata is read from `public/data/edition.json`; the readable source lives at `editions/reference/edition.yaml`.
+The executable editorial constitution. Runtime metadata comes from `public/data/edition.json`; the readable source lives in `editions/reference/edition.yaml`.
 
 ### Signal
 
-A normalized evidence item with identity, provenance, quality, layered summaries, tags and a canonical source URL. A Signal may appear on the Desk without being adopted into an Issue.
-
-### Editorial Desk
-
-The continuous evidence surface between formal publication dates. It preserves search, filtering, bookmarks, feedback and evidence-drawer interactions, but does not visually compete with the Issue.
+A normalized evidence item with provenance, quality, summaries, tags and canonical source URL. A Signal can appear on the continuous Desk without entering a formal Issue.
 
 ### Storyline
 
-A persistent editorial question with a current view, evidence count, movement, watch items and falsifiers. Storylines replace disposable trending-topic thinking with accumulated domain memory.
+A persistent editorial question with current view, evidence movement, watch items and falsifiers.
 
 ### Issue
 
-A frozen semi-monthly publication artifact. It records a central judgment, adopted Signals, Storyline movement, next-watch items, coverage window, Edition version and methodology counts.
+A frozen semi-monthly publication artifact with central judgment, adopted Signals, Storyline movement, coverage window and provenance.
 
-### Archive
+### Review candidate
 
-A chronological record of Issues. It makes the publication's judgment history visible instead of continuously overwriting the present.
+A manuscript-like editorial candidate assembled from the content pipeline and durable human-preflight queue. It is the unit shown in Editor Mode.
 
-### Guest Editor Session
+### Review record
 
-A temporary editorial game session entered through an invitation link. It gives a guest a bounded set of manuscripts to judge without turning the public reader into an admin interface.
+One editor's decision on one candidate. Formal and guest review records use the same five-decision vocabulary but different authority boundaries.
 
-A Guest Editor Session records the invited Issue or review batch, manuscript queue, decisions and completion progress. Guest judgments are editorial inputs; they do not silently rewrite the Edition or published Issue.
+## Mode 1: Reader
 
-## Information architecture
+Reader Mode is a traditional professional web publication.
 
-### 1. Persistent publication bar
+### Reader information hierarchy
 
-The top bar contains:
+1. publication identity;
+2. latest material change since the current Issue;
+3. Current Issue;
+4. additional Signals accumulating toward the next Issue;
+5. Storylines;
+6. Archive;
+7. evidence and original sources.
 
-- NewsFlow identity and quiet automatic-publication status;
-- direct anchors to Current Issue and Editorial Desk;
-- controls that open Storylines and Archive in side panels;
-- global search;
-- feedback, theme, help and filter controls.
+### Reader interaction rules
 
-The bar must read as publication navigation, not a product dashboard header.
+- Homepage pacing is magazine-like: large editorial typography, whitespace and one dominant judgment per viewport.
+- The continuous Desk scans like a newspaper: numbered rows, compact metadata and restrained summaries.
+- Deep evidence views read like research briefs.
+- Search, filters, bookmarks and account controls are supporting tools, not the dominant visual identity.
+- Reader Mode contains no game HUD, five-decision bar, review progress or editorial stamps.
 
-### 2. On-demand filter drawer
+### Reader visual language
 
-Channels, reading queues, date filters and bookmarks remain fully available, but no longer occupy a permanent desktop column.
+- warm paper canvas and near-black ink;
+- restrained blue for evidence and active state;
+- muted red only for meaningful editorial movement;
+- `Newsreader` for publication hierarchy;
+- `DM Sans` for controls and summaries;
+- `Roboto Mono` for dates, issue numbers and method;
+- visible editorial rules;
+- no neon, glassmorphism or generic analytics-dashboard styling.
 
-The drawer opens from the publication bar and mobile navigation. This preserves power-user functionality while returning horizontal space to editorial content.
+## Mode 2: Editor
 
-### 3. Edition masthead
+Editor Mode is the primary serious-play experience.
 
-The masthead establishes:
+The core loop is:
 
-- Edition name;
-- reader promise;
-- Issue number and publication date;
-- next scheduled publication.
+> **一屏一稿，一键裁决，一次反馈，然后下一稿。**
 
-GitHub, Agent and configuration details remain provenance metadata rather than headline content.
+Entering Editor Mode does not reveal tabs, sidebars, queues, Storyline panels, score dashboards or issue-management controls. It opens the current manuscript.
 
-### 4. New since the Issue
+### Card model
 
-The most important Signal after the latest formal Issue is the homepage visual centre.
-
-It must include:
-
-- an explicit “刊期之后的新变化” label;
-- source and publication time;
-- headline and editorial summary;
-- a quiet indication that the Signal is still being observed before the next Issue;
-- direct access to the evidence view and original source.
-
-The reader should understand that this is a provisional update to the publication's current picture, not an independent news alert.
-
-### 5. Current Issue
-
-The formal Issue follows the latest major change and acts as the stable interpretive anchor.
-
-It includes:
-
-- Issue number and coverage period;
-- central title and standfirst;
-- formal judgment;
-- candidate and adopted counts;
-- adopted Signals;
-- entry to the full Archive.
-
-The Issue is styled with large editorial typography, horizontal rules and open paper space. It must not look like an elevated analytics card.
-
-### 6. Editorial Desk
-
-The Desk follows the Current Issue and contains Signals still accumulating toward the next publication.
-
-The default treatment is a single numbered editorial list:
-
-- no visible list/grid switch;
-- restrained source, time and score metadata;
-- two-line summaries;
-- hidden topic chips unless needed in deep reading;
-- actions remain discoverable on hover, focus and touch.
-
-### 7. Storyline margin and panel
-
-On wide desktop, a quiet right margin shows a small set of evolving Storylines. Selecting one opens a side panel without losing the reader's position.
-
-The panel presents:
-
-- the current view;
-- evidence movement;
-- watch items;
-- falsifiers or judgment boundaries;
-- the rule that automation cannot silently rewrite the Edition's formal view.
-
-On compact layouts, the margin disappears and the same panel remains available from publication navigation.
-
-### 8. Archive preview and panel
-
-The main reading column ends with a compact preview of recent Issues. The complete Archive opens in a side panel.
-
-This keeps publication history visible without turning the homepage into a database browser.
-
-### 9. Evidence drawer
-
-Deep reading preserves layered summaries, supporting evidence, metadata, original-source links, feedback and bookmarks.
-
-The content sequence should read like a research brief:
-
-1. what changed;
-2. why it matters;
-3. supporting evidence;
-4. relationship to the current editorial view;
-5. unresolved uncertainty;
-6. original source.
-
-## Guest Editor mode: 严肃得不正经
-
-Guest Editor mode is the product's primary game loop. It should feel like a real editorial appointment and a real manuscript decision system, while the consequence of each decision delivers the humour and emotional reward.
-
-The design rule is:
-
-> 一屏一稿，一键裁决，一次反馈，然后下一稿。
-
-### Invitation entry
-
-An invitation link opens directly into a formal appointment screen rather than a generic account or dashboard page.
-
-The appointment surface contains only:
-
-- Edition and Issue identity;
-- the guest role, for example “客座主编”;
-- the number of manuscripts waiting for judgment;
-- one primary action: **接受任命**.
-
-Authentication must not block the first game loop unless required for security. Identity persistence can be offered after the review session.
-
-### Manuscript card
-
-After accepting the appointment, every viewport presents exactly one manuscript card.
-
-The card contains only the information needed to make an editorial judgment:
+Each viewport contains one dominant manuscript card with:
 
 - manuscript number;
 - title;
-- a concise abstract or editorial summary, normally 3–5 lines;
-- source, date and channel or section;
-- at most one secondary action to inspect evidence or the original source;
-- progress such as `7 / 12`.
+- concise abstract/editorial summary;
+- source, date and section;
+- one optional original-source link;
+- progress such as `03 / 12`.
 
-Do not place score sliders, analytics, filters, Storyline panels, sidebars, dashboards or multi-factor forms on this screen. The guest is here to decide, not configure the system.
+A quiet card stack may imply that more submissions remain, but the next manuscript must not compete for attention.
 
-### Five editorial decisions
+### Five decisions
 
 Every manuscript receives exactly one of five decisions:
 
-1. **封面文章 / COVER STORY** — the strongest editorial endorsement; candidate for the Issue lead or cover treatment.
-2. **录用 / ACCEPT** — publishable and worth adopting into the Issue.
-3. **小修 / MINOR REVISION** — fundamentally acceptable, but needs a bounded clarification, evidence improvement or presentation fix.
-4. **大修 / MAJOR REVISION** — potentially valuable, but the argument, evidence or framing needs material work before adoption.
-5. **拒稿 / REJECT** — does not meet the Edition's editorial threshold or fit.
+1. **封面文章 / COVER STORY** — strongest endorsement and preferred Issue lead.
+2. **录用 / ACCEPT** — publishable and worth adopting.
+3. **小修 / MINOR REVISION** — core is sound; bounded clarification or evidence work remains.
+4. **大修 / MAJOR REVISION** — meaningful potential, but argument/evidence/framing needs substantial work.
+5. **拒稿 / REJECT** — does not meet fit, evidence, timeliness or materiality threshold.
 
-The five decisions are the main controls. Desktop may expose keyboard shortcuts `1–5`; touch layouts keep the same five decisions immediately reachable at the bottom of the screen. No secondary confirmation is required for ordinary review decisions.
+Desktop shortcuts are `1–5`. Mobile keeps the same five choices in a fixed bottom decision bar. Ordinary decisions require no confirmation dialog.
 
 ### Decision feedback
 
-The moment after a decision is where the game lives.
+The game lives in the moment after judgment.
 
-Each decision produces a short, tactile editorial response before the next manuscript arrives:
+- **Cover Story:** premium cover stamp and rare celebratory editorial aside.
+- **Accept:** authoritative accepted stamp and restrained positive response.
+- **Minor Revision:** dry academic humour.
+- **Major Revision:** heavier treatment and suitably ominous editorial note.
+- **Reject:** decisive rejection stamp and a deeper pool of academic-circle rejection jokes.
 
-- **封面文章:** premium cover stamp, brief celebratory treatment and a rare high-value editorial quip;
-- **录用:** authoritative `ACCEPTED` stamp and restrained positive response;
-- **小修:** `MINOR REVISION` mark with dry academic humour;
-- **大修:** heavier `MAJOR REVISION` treatment with a suitably ominous editor note;
-- **拒稿:** decisive red `REJECTED` stamp plus a randomly selected academic-circle rejection joke.
-
-The joke is not a separate entertainment panel. It is a one- or two-line editorial aside attached to the decision animation. The visual language stays serious enough that the absurdity comes from contrast.
-
-Examples of the intended humour register include:
+Examples of the intended tone:
 
 - “感谢投稿。本刊与本文的缘分止于摘要。”
 - “审稿人二号虽然没有出现，但我们决定尊重他的意见。”
 - “小修。理论上。”
-- “这是大修，不是让你换一个标题再投回来。”
+- “大修。不是把摘要换个标题再投一次。”
 
-Humour must target academic rituals and editorial situations, not authors' personal traits, identities or protected characteristics.
+Humour targets academic rituals and editorial situations, never personal traits or protected characteristics.
 
-### Loop timing
-
-The interaction loop should be fast enough to feel like a game:
+### Review timing
 
 `read → decide → stamp / quip → next manuscript`
 
-Decision feedback should be brief and skippable. The interface must not require closing a modal before continuing. The next manuscript should become available automatically after the feedback beat, while still allowing the user to undo the immediately previous decision if needed.
+Feedback is brief, automatically advances and remains compatible with reduced-motion settings. The immediately previous decision can be undone with `Z` or the visible undo control.
 
-### What the MVP intentionally excludes
+## Formal editor and guest editor
 
-The first Guest Editor release does not need:
+Formal Editor and Guest Editor share one Review Game implementation.
+
+### Formal editor
+
+- requires the signed-in Editor role;
+- sees real pending review candidates only;
+- decisions are stored as formal local editorial records;
+- Cover Story and Accept become eligible for post-game Issue composition;
+- post-game settlement can select up to five articles, designate a cover and close a local Issue record;
+- can generate and copy a guest-editor invitation.
+
+### Guest editor
+
+- enters through a public invitation URL;
+- registration is not required before the first review loop;
+- uses the exact same manuscript card and five-decision bar as the formal editor;
+- judgments remain parallel editorial opinions and do not gain Edition authority;
+- when the live queue is sparse, the invitation may include clearly labeled blind editorial exercises derived from already public Signals;
+- completion provides a shareable review receipt.
+
+The invitation URL must never embed privileged credentials.
+
+## Mode switching
+
+The account identity control is a mode selector, not a role-management dashboard.
+
+- **Reader** returns to the normal publication.
+- **Editor** immediately opens the Review Game.
+- A returning signed-in Editor may reopen directly into the game.
+- Guest invitation URLs take precedence over the saved formal-editor mode for that visit.
+
+The mode controller owns identity only. It must not contain its own review decisions, manuscript renderer or duplicate editorial state machine.
+
+## Post-game settlement
+
+Issue composition appears only after the editor has finished the immediate review queue.
+
+The settlement surface is intentionally quieter than the game:
+
+- list accepted/Cover Story manuscripts;
+- select up to the current Issue capacity;
+- designate one cover;
+- close the local Issue record;
+- invite another editor;
+- return to the publication.
+
+No review scoring or five-decision controls appear in settlement. Quality judgment has already happened.
+
+## Invitation experience
+
+An invitation opens as a formal `EDITORIAL APPOINTMENT`, not a registration page.
+
+It communicates:
+
+- publication identity;
+- Guest Editor role;
+- manuscript count;
+- whether blind exercises are included;
+- one primary action: **接受任命**.
+
+After acceptance, the invitee immediately enters the same Review Game used by the formal editor.
+
+## What Editor Mode intentionally excludes
+
+The core product does not need:
 
 - points or coins;
-- levels or XP;
-- a skill tree;
-- daily quests or streak pressure;
+- XP or levels;
+- streak pressure;
+- daily quests;
 - loot boxes;
-- a marketplace;
-- complicated reviewer profiles;
-- multi-stage decision forms;
-- leaderboards that distort editorial judgment.
+- marketplace mechanics;
+- leaderboards;
+- multi-factor scoring forms;
+- reviewer dashboards during the game.
 
-The core game must prove itself through decision rhythm, editorial role-play and emotional feedback before any meta-game is considered.
-
-## Visual language
-
-Retain the Editorial Signal Desk foundation:
-
-- warm paper canvas and near-black ink;
-- restrained blue for evidence and active state;
-- muted red only for meaningful movement or freshness;
-- `Newsreader` for publication hierarchy;
-- `DM Sans` for controls and summaries;
-- `Roboto Mono` for dates, issue numbers, scores and method;
-- visible editorial rules;
-- no neon, glassmorphism, decorative telemetry or stock-news imagery.
-
-### Magazine layer
-
-Used for the masthead, latest major change and Current Issue:
-
-- large headlines;
-- generous vertical rhythm;
-- one dominant judgment per viewport;
-- minimal framing;
-- double or heavy editorial rules instead of cards and shadows.
-
-### Newspaper layer
-
-Used for the Editorial Desk:
-
-- numbered rows;
-- compact metadata;
-- strong headline scanning;
-- consistent horizontal rhythm;
-- limited summaries.
-
-### Research-brief layer
-
-Used for evidence and Storyline panels:
-
-- labeled analytical sections;
-- explicit fact/interpretation boundaries;
-- evidence and uncertainty;
-- clear provenance.
-
-### Guest Editor game layer
-
-Used only during invited review sessions:
-
-- one manuscript card dominates the viewport;
-- no permanent side navigation;
-- five decisions form the only strong control group;
-- typography and paper surfaces remain journal-like;
-- decision stamps, page movement and brief editorial asides provide the game feel;
-- animation is short, tactile and optional under reduced-motion settings;
-- humour appears only after a decision, never as decorative clutter before one.
+The game must earn engagement through editorial role-play, rapid judgment and emotional feedback before any meta-game is considered.
 
 ## Responsive contract
 
-- **Wide desktop:** publication column plus a quiet Storyline margin; filters remain in a drawer.
-- **Compact desktop/tablet:** single publication column; Storylines and Archive open from the top bar.
-- **Mobile:** single-column journal, bottom navigation for new change, Current Issue, filters and Archive, full-width evidence and Storyline panels.
-- **Guest Editor:** one manuscript fills the usable viewport at every size; the five decisions stay reachable without scrolling away from the manuscript context.
+### Reader
 
-No essential action may depend on hover. New buttons require visible focus states and mobile touch targets.
+- wide desktop: publication column plus quiet Storyline margin;
+- compact desktop/tablet: one publication column and contextual panels;
+- mobile: one-column journal with essential navigation and full-width evidence panels.
+
+### Editor
+
+- desktop: one centered manuscript card, visible card-stack depth and five-wide decision rail;
+- mobile: manuscript fills available height and the same five decisions remain fixed at the bottom;
+- no essential action depends on hover;
+- all actions have visible focus states and usable touch targets;
+- reduced-motion mode removes stamp animation without removing decision feedback.
 
 ## Automatic publication contract
 
@@ -353,8 +253,8 @@ The reference workflow runs twice monthly and writes `public/data/issues.json`.
 - On the 15th, coverage is the 1st through the 14th.
 - Signals below `materiality.minimum_quality` are rejected.
 - Adopted Signals are capped per channel and per Issue.
-- A no-change Issue is valid and required when nothing qualifies.
-- Automation records evidence movement but sets `editorial_view_changed: false` unless a committed Edition-file change explicitly says otherwise.
+- A no-change Issue remains a valid formal Issue.
+- Automation records evidence movement but cannot silently alter the Edition's formal view.
 
 ## Trust and quality requirements
 
@@ -362,12 +262,22 @@ The reference workflow runs twice monthly and writes `public/data/issues.json`.
 - Visible freshness comes from payload dates.
 - Source tiers and quality scores do not claim independent verification.
 - Generated Issues expose candidate count, selected count, primary-source count, Edition version and automation provenance.
-- All external text is escaped before insertion into HTML.
+- External text is escaped before HTML insertion.
 - Original source links remain safely reachable.
-- The Edition layer must fail softly: if Edition payloads are unavailable, the base Signal Desk remains usable.
-- Public clients never receive Supabase secret or service-role credentials.
-- Guest Editor decisions are recorded separately from the Edition's formal editorial authority until an explicit publication workflow adopts them.
-- Invitation tokens must be revocable or time-bounded and must not embed privileged credentials in the URL.
+- Public clients never receive Supabase service-role credentials.
+- Formal and guest decisions remain distinguishable in storage and analytics.
+- Guest invitations are bounded public appointments, not authority tokens.
+
+## Architecture constraints
+
+1. The reader application owns publication rendering.
+2. The mode controller owns Reader/Editor identity and nothing else.
+3. `review-game.js` owns both formal and guest review interaction.
+4. There is no second four-state editor path.
+5. There is no guest-only duplicate review renderer.
+6. Decision feedback is part of Review Game, not a separate DOM-decorator layer.
+7. Runtime coordination uses explicit lifecycle events; no `MutationObserver` patch layers.
+8. No backward-compatibility layer is retained for the retired review architecture.
 
 ## Acceptance criteria
 
@@ -375,15 +285,15 @@ A release is complete only when:
 
 1. `npm run check` passes;
 2. `npm run build` produces the complete static site;
-3. the Edition masthead, latest post-Issue Signal, Current Issue, Desk, Storyline panel and Archive panel render from repository payloads;
-4. existing search, filters, bookmarks, feedback, theme, keyboard navigation and evidence drawer still work;
-5. the permanent desktop filter column is removed without removing filter access;
-6. the Current Issue no longer uses dashboard-card elevation;
-7. desktop and mobile preserve the hierarchy “new change → Issue → Desk”;
-8. the Edition layer remains dependency-free and fails without breaking the base reader;
-9. the semi-monthly workflow can produce both material-change and no-material-change Issues;
-10. README, Edition protocol, design contract and runtime describe the same implemented product;
-11. Guest Editor mode renders exactly one manuscript as the primary task per screen;
-12. every manuscript exposes exactly the five decisions 封面文章、录用、小修、大修、拒稿;
-13. every decision produces an immediate editorial feedback beat and then advances without a blocking modal;
-14. the Guest Editor screen remains usable on mobile without introducing a dashboard or secondary navigation hierarchy.
+3. Reader Mode preserves the magazine-first hierarchy and existing search/filter/bookmark/evidence behavior;
+4. selecting Editor Mode immediately opens the Review Game;
+5. formal and guest editors render the same manuscript card and same five decisions;
+6. the five decisions are exactly 封面文章、录用、小修、大修、拒稿 with shortcuts `1–5`;
+7. every decision produces immediate editorial feedback and advances without a blocking modal;
+8. mobile keeps all five decisions reachable without introducing dashboard navigation;
+9. formal review uses real pending candidates and does not silently substitute training cases;
+10. guest review clearly labels any blind exercise fallback;
+11. Issue composition appears only after the review loop;
+12. invitation URLs contain no privileged credentials;
+13. retired four-state and guest-only runtimes are absent from the deployed app;
+14. README, Edition protocol, design contract and runtime describe the same implemented product.
