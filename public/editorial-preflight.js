@@ -38,7 +38,10 @@
 
   const loadReport = () => {
     if (!reportPromise) {
-      reportPromise = fetch(DATA_PATH, { cache: 'no-store' })
+      reportPromise = fetch(DATA_PATH, {
+        cache: 'no-store',
+        signal: AbortSignal.timeout(5000)
+      })
         .then((response) => {
           if (!response.ok) throw new Error(`${DATA_PATH}: ${response.status}`);
           return response.json();
@@ -117,6 +120,6 @@
     });
   };
 
-  new MutationObserver(scheduleDecoration).observe(root, { childList: true });
+  window.addEventListener('newsflow:editorial-rendered', scheduleDecoration);
   scheduleDecoration();
 })();
