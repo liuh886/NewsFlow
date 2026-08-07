@@ -14,17 +14,19 @@
     <link rel="manifest" href="./manifest.webmanifest" />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Newsreader:opsz,wght@6..72,500;6..72,600;6..72,700&family=Roboto+Mono:wght@400;500;600&display=swap" rel="stylesheet" />
-    <link rel="stylesheet" href="./styles.css" />
-    <link rel="stylesheet" href="./polish.css" />
-    <link rel="stylesheet" href="./edition-layer.css" />
-    <link rel="stylesheet" href="./magazine-polish.css" />
-    <link rel="stylesheet" href="./editorial-office.css" />
-    <link rel="stylesheet" href="./editorial-game-loop.css" />
-    <link rel="stylesheet" href="./editorial-preflight.css" />
-    <link rel="stylesheet" href="https://liuh886.github.io/admin/shared/account-shell.css?v=2" />
-    <link rel="stylesheet" href="./account-integration.css" />
-    <link rel="stylesheet" href="./editorial-delight.css" />
+    <link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Newsreader:opsz,wght@6..72,500;6..72,600;6..72,700&family=Roboto+Mono:wght@400;500;600&display=swap" onload="this.onload=null;this.rel='stylesheet'" />
+    <noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Newsreader:opsz,wght@6..72,500;6..72,600;6..72,700&family=Roboto+Mono:wght@400;500;600&display=swap" /></noscript>
+    <link rel="stylesheet" href="./styles.css?v=2.6.1" />
+    <link rel="stylesheet" href="./polish.css?v=2.6.1" />
+    <link rel="stylesheet" href="./edition-layer.css?v=2.6.1" />
+    <link rel="stylesheet" href="./magazine-polish.css?v=2.6.1" />
+    <link rel="stylesheet" href="./editorial-office.css?v=2.6.1" />
+    <link rel="stylesheet" href="./editorial-game-loop.css?v=2.6.1" />
+    <link rel="stylesheet" href="./editorial-preflight.css?v=2.6.1" />
+    <link rel="preload" as="style" href="https://liuh886.github.io/admin/shared/account-shell.css?v=2" onload="this.onload=null;this.rel='stylesheet'" />
+    <noscript><link rel="stylesheet" href="https://liuh886.github.io/admin/shared/account-shell.css?v=2" /></noscript>
+    <link rel="stylesheet" href="./account-integration.css?v=2.6.1" />
+    <link rel="stylesheet" href="./editorial-delight.css?v=2.6.1" />
 
     <!-- Google tag (gtag.js) -->
     <script async src="https://www.googletagmanager.com/gtag/js?id=G-HL1RH61WBH"></script>
@@ -39,19 +41,19 @@
   </head>
   <body>
     <a class="skip-link" href="#main-content">跳到主要内容</a>
-    <div id="app"></div>
+    <div id="app"><main class="loading-screen" data-startup-shell="true"><div class="loading-lockup"><div class="loading-mark">N</div><span>正在整理信号流</span></div></main></div>
     <div id="app-status" class="visually-hidden" role="status" aria-live="polite" aria-atomic="true"></div>
     <noscript>NewsFlow 需要 JavaScript 才能加载 Edition 与信号流。</noscript>
-    <script src="./startup-resilience.js"></script>
-    <script type="module" src="./editorial-app.js"></script>
-    <script type="module" src="./polish.js"></script>
-    <script type="module" src="./edition-layer.js"></script>
-    <script type="module" src="./magazine-polish.js"></script>
-    <script type="module" src="./supabase-feedback.js"></script>
-    <script src="./membership-config.js"></script>
-    <script src="https://liuh886.github.io/admin/shared/account-shell.js?v=2"></script>
-    <script src="./account-integration.js"></script>
-    <script src="./editorial-office.js"></script>
-    <script src="./editorial-delight.js"></script>
+    <script src="./startup-resilience.js?v=2.6.1"></script>
+    <script type="module" src="./editorial-app.js?v=2.6.1"></script>
+    <script type="module" src="./polish.js?v=2.6.1"></script>
+    <script type="module" src="./edition-layer.js?v=2.6.1"></script>
+    <script type="module" src="./magazine-polish.js?v=2.6.1"></script>
+    <script type="module" src="./supabase-feedback.js?v=2.6.1"></script>
+    <script src="./membership-config.js?v=2.6.1"></script>
+    <script async src="https://liuh886.github.io/admin/shared/account-shell.js?v=2"></script>
+    <script src="./account-integration.js?v=2.6.1"></script>
+    <script src="./editorial-office.js?v=2.6.1"></script>
+    <script src="./editorial-delight.js?v=2.6.1"></script>
   </body>
 </html>
