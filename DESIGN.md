@@ -47,6 +47,8 @@ The concise design statement is:
 6. **Continuity over novelty.** Every Signal is interpreted against persistent Storylines and prior Issues.
 7. **Fixed rhythm, variable length.** Formal Issues appear on the 1st and 15th, including concise no-material-change Issues.
 8. **Editorial restraint.** The system must be willing not to publish a low-value item.
+9. **Serious surface, playful consequence.** Game-like emotion belongs in the consequence of an editorial decision, not in decorative chrome or a busy control system.
+10. **One manuscript, one decision.** Guest Editor mode must never become a dashboard: one screen presents one manuscript and one five-level editorial decision.
 
 ## Core objects
 
@@ -73,6 +75,12 @@ A frozen semi-monthly publication artifact. It records a central judgment, adopt
 ### Archive
 
 A chronological record of Issues. It makes the publication's judgment history visible instead of continuously overwriting the present.
+
+### Guest Editor Session
+
+A temporary editorial game session entered through an invitation link. It gives a guest a bounded set of manuscripts to judge without turning the public reader into an admin interface.
+
+A Guest Editor Session records the invited Issue or review batch, manuscript queue, decisions and completion progress. Guest judgments are editorial inputs; they do not silently rewrite the Edition or published Issue.
 
 ## Information architecture
 
@@ -179,6 +187,101 @@ The content sequence should read like a research brief:
 5. unresolved uncertainty;
 6. original source.
 
+## Guest Editor mode: 严肃得不正经
+
+Guest Editor mode is the product's primary game loop. It should feel like a real editorial appointment and a real manuscript decision system, while the consequence of each decision delivers the humour and emotional reward.
+
+The design rule is:
+
+> 一屏一稿，一键裁决，一次反馈，然后下一稿。
+
+### Invitation entry
+
+An invitation link opens directly into a formal appointment screen rather than a generic account or dashboard page.
+
+The appointment surface contains only:
+
+- Edition and Issue identity;
+- the guest role, for example “客座主编”;
+- the number of manuscripts waiting for judgment;
+- one primary action: **接受任命**.
+
+Authentication must not block the first game loop unless required for security. Identity persistence can be offered after the review session.
+
+### Manuscript card
+
+After accepting the appointment, every viewport presents exactly one manuscript card.
+
+The card contains only the information needed to make an editorial judgment:
+
+- manuscript number;
+- title;
+- a concise abstract or editorial summary, normally 3–5 lines;
+- source, date and channel or section;
+- at most one secondary action to inspect evidence or the original source;
+- progress such as `7 / 12`.
+
+Do not place score sliders, analytics, filters, Storyline panels, sidebars, dashboards or multi-factor forms on this screen. The guest is here to decide, not configure the system.
+
+### Five editorial decisions
+
+Every manuscript receives exactly one of five decisions:
+
+1. **封面文章 / COVER STORY** — the strongest editorial endorsement; candidate for the Issue lead or cover treatment.
+2. **录用 / ACCEPT** — publishable and worth adopting into the Issue.
+3. **小修 / MINOR REVISION** — fundamentally acceptable, but needs a bounded clarification, evidence improvement or presentation fix.
+4. **大修 / MAJOR REVISION** — potentially valuable, but the argument, evidence or framing needs material work before adoption.
+5. **拒稿 / REJECT** — does not meet the Edition's editorial threshold or fit.
+
+The five decisions are the main controls. Desktop may expose keyboard shortcuts `1–5`; touch layouts keep the same five decisions immediately reachable at the bottom of the screen. No secondary confirmation is required for ordinary review decisions.
+
+### Decision feedback
+
+The moment after a decision is where the game lives.
+
+Each decision produces a short, tactile editorial response before the next manuscript arrives:
+
+- **封面文章:** premium cover stamp, brief celebratory treatment and a rare high-value editorial quip;
+- **录用:** authoritative `ACCEPTED` stamp and restrained positive response;
+- **小修:** `MINOR REVISION` mark with dry academic humour;
+- **大修:** heavier `MAJOR REVISION` treatment with a suitably ominous editor note;
+- **拒稿:** decisive red `REJECTED` stamp plus a randomly selected academic-circle rejection joke.
+
+The joke is not a separate entertainment panel. It is a one- or two-line editorial aside attached to the decision animation. The visual language stays serious enough that the absurdity comes from contrast.
+
+Examples of the intended humour register include:
+
+- “感谢投稿。本刊与本文的缘分止于摘要。”
+- “审稿人二号虽然没有出现，但我们决定尊重他的意见。”
+- “小修。理论上。”
+- “这是大修，不是让你换一个标题再投回来。”
+
+Humour must target academic rituals and editorial situations, not authors' personal traits, identities or protected characteristics.
+
+### Loop timing
+
+The interaction loop should be fast enough to feel like a game:
+
+`read → decide → stamp / quip → next manuscript`
+
+Decision feedback should be brief and skippable. The interface must not require closing a modal before continuing. The next manuscript should become available automatically after the feedback beat, while still allowing the user to undo the immediately previous decision if needed.
+
+### What the MVP intentionally excludes
+
+The first Guest Editor release does not need:
+
+- points or coins;
+- levels or XP;
+- a skill tree;
+- daily quests or streak pressure;
+- loot boxes;
+- a marketplace;
+- complicated reviewer profiles;
+- multi-stage decision forms;
+- leaderboards that distort editorial judgment.
+
+The core game must prove itself through decision rhythm, editorial role-play and emotional feedback before any meta-game is considered.
+
 ## Visual language
 
 Retain the Editorial Signal Desk foundation:
@@ -221,11 +324,24 @@ Used for evidence and Storyline panels:
 - evidence and uncertainty;
 - clear provenance.
 
+### Guest Editor game layer
+
+Used only during invited review sessions:
+
+- one manuscript card dominates the viewport;
+- no permanent side navigation;
+- five decisions form the only strong control group;
+- typography and paper surfaces remain journal-like;
+- decision stamps, page movement and brief editorial asides provide the game feel;
+- animation is short, tactile and optional under reduced-motion settings;
+- humour appears only after a decision, never as decorative clutter before one.
+
 ## Responsive contract
 
 - **Wide desktop:** publication column plus a quiet Storyline margin; filters remain in a drawer.
 - **Compact desktop/tablet:** single publication column; Storylines and Archive open from the top bar.
 - **Mobile:** single-column journal, bottom navigation for new change, Current Issue, filters and Archive, full-width evidence and Storyline panels.
+- **Guest Editor:** one manuscript fills the usable viewport at every size; the five decisions stay reachable without scrolling away from the manuscript context.
 
 No essential action may depend on hover. New buttons require visible focus states and mobile touch targets.
 
@@ -250,6 +366,8 @@ The reference workflow runs twice monthly and writes `public/data/issues.json`.
 - Original source links remain safely reachable.
 - The Edition layer must fail softly: if Edition payloads are unavailable, the base Signal Desk remains usable.
 - Public clients never receive Supabase secret or service-role credentials.
+- Guest Editor decisions are recorded separately from the Edition's formal editorial authority until an explicit publication workflow adopts them.
+- Invitation tokens must be revocable or time-bounded and must not embed privileged credentials in the URL.
 
 ## Acceptance criteria
 
@@ -264,4 +382,8 @@ A release is complete only when:
 7. desktop and mobile preserve the hierarchy “new change → Issue → Desk”;
 8. the Edition layer remains dependency-free and fails without breaking the base reader;
 9. the semi-monthly workflow can produce both material-change and no-material-change Issues;
-10. README, Edition protocol, design contract and runtime describe the same implemented product.
+10. README, Edition protocol, design contract and runtime describe the same implemented product;
+11. Guest Editor mode renders exactly one manuscript as the primary task per screen;
+12. every manuscript exposes exactly the five decisions 封面文章、录用、小修、大修、拒稿;
+13. every decision produces an immediate editorial feedback beat and then advances without a blocking modal;
+14. the Guest Editor screen remains usable on mobile without introducing a dashboard or secondary navigation hierarchy.
