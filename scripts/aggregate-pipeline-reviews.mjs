@@ -117,7 +117,20 @@ if (checkOnly) {
     // Missing output is reported below.
   }
   if (current !== serialized) {
-    throw new Error('public/data/pipeline-reviews.json is stale. Run npm run content:status and commit the result.');
+    const currentLines = current.split('\n');
+    const expectedLines = serialized.split('\n');
+    const lineCount = Math.max(currentLines.length, expectedLines.length);
+    let mismatch = 0;
+    while (mismatch < lineCount && currentLines[mismatch] === expectedLines[mismatch]) mismatch += 1;
+    const currentLine = currentLines[mismatch] ?? '<missing>';
+    const expectedLine = expectedLines[mismatch] ?? '<missing>';
+    throw new Error([
+      'public/data/pipeline-reviews.json is stale. Run npm run content:status and commit the result.',
+      `First mismatch at line ${mismatch + 1}.`,
+      `Current: ${currentLine}`,
+      `Expected: ${expectedLine}`,
+      `Expected candidates: ${candidates.map((candidate) => candidate.id).join(', ') || '<none>'}`
+    ].join('\n'));
   }
   console.log(`Pipeline preflight contract passed: ${candidates.length} candidate(s) require human judgment.`);
   process.exit(0);
