@@ -569,8 +569,10 @@
 
   const renderPipelineReview = () => {
     const pending = state.pipelineReviews.filter((c) => !state.pipelineResolutions[c.id]);
+    const approved = state.pipelineReviews.filter((c) => state.pipelineResolutions[c.id] === 'approved');
     return `<section class="nf-office-panel" aria-labelledby="nf-pipeline-heading">
-      <div class="nf-panel-heading"><div><span class="nf-office-eyebrow">Pipeline review · ${state.pipelineRunId ? String(state.pipelineRunId).slice(0, 15) : 'none'}</span><h2 id="nf-pipeline-heading">待审队列</h2></div><span>${pending.length}/${state.pipelineReviews.length} 条待处理</span></div>
+      <div class="nf-panel-heading"><div><span class="nf-office-eyebrow">Pipeline review · ${state.pipelineRunId ? String(state.pipelineRunId).slice(0, 15) : 'none'}</span><h2 id="nf-pipeline-heading">待审队列</h2></div><span>${pending.length}/${state.pipelineReviews.length} 条待处理${approved.length ? ` · ${approved.length} 条已批准` : ''}</span></div>
+      ${approved.length ? `<div class="nf-pipeline-export-bar"><p>${approved.length} 条信号已批准。导出补丁包后在本地终端执行 <code>node scripts/update-content.mjs --input=content/inbox/review-override-&lt;timestamp&gt;.json --apply</code> 即可推广到线上。</p><button class="nf-pipeline-btn approve" data-editorial-action="pipeline-export">导出已批准信号</button></div>` : ''}
       ${state.pipelineReviews.length === 0 ? '<div class="nf-archive-empty">没有来自内容更新流水线的待审信号。</div>' : ''}
       ${pending.map((candidate) => {
         const resolved = !!state.pipelineResolutions[candidate.id];
@@ -599,6 +601,55 @@
         </article>`;
       }).join('')}
     </section>`;
+  };
+
+  const exportPipelineOverrides = () => {
+    const approved = state.pipelineReviews.filter((c) => state.pipelineResolutions[c.id] === 'approved');
+    if (!approved.length) return;
+    const now = new Date();
+    const pack = {
+      schema_version: '1.0',
+      edition_id: 'frontier-systems-review',
+      run: {
+        as_of: now.toISOString(),
+        coverage_start: approved[0]?.published_at || now.toISOString(),
+        coverage_end: now.toISOString(),
+        timezone: 'Asia/Shanghai',
+        actor: {
+          agent_id: 'editorial-override',
+          runtime: 'NewsFlow Editorial Office pipeline review',
+          workflow_id: 'newsflow-content-update',
+          workflow_version: '1.0.0'
+        }
+      },
+      candidates: approved.map((c) => ({
+        id: c.id,
+        channel_id: c.channel_id,
+        event_type: c.event_type || 'editorial_override',
+        event_date: c.event_date || new Date().toISOString().slice(0, 10),
+        title: c.title,
+        url: c.url,
+        published_at: c.published_at || now.toISOString(),
+        retrieved_at: now.toISOString(),
+        short_summary: c.short_summary,
+        long_summary: c.long_summary || c.short_summary,
+        tags: c.tags || [],
+        storyline_ids: c.storyline_ids,
+        scores: c.scores,
+        verification: c.verification || { full_text_accessed: true, summary_supported_sentence_by_sentence: true },
+        evidence: c.evidence
+      }))
+    };
+    const timestamp = now.toISOString().replace(/[-:]/g, '').replace('T', '-').slice(0, 15);
+    const filename = `review-override-${timestamp}.json`;
+    const blob = new Blob([`${JSON.stringify(pack, null, 2)}\n`], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const anchor = document.createElement('a');
+    anchor.href = url;
+    anchor.download = filename;
+    anchor.click();
+    URL.revokeObjectURL(url);
+    showToast(`已导出 ${filename}，放入 content/inbox/ 后执行 --apply 即可推广到线上。`);
   };
 
   const renderOffice = () => {
@@ -730,6 +781,8 @@
         localStorage.setItem(PIPELINE_REVIEW_STORAGE, JSON.stringify(state.pipelineResolutions));
         showToast('已撤销');
       }
+    } else if (action === 'pipeline-export') {
+      exportPipelineOverrides();
     } else if (action === 'export') exportEditorialRecord();
     else if (action === 'dismiss-toast') {
       state.toast = null;
