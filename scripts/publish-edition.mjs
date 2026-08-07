@@ -58,9 +58,17 @@ if (!supabaseUrl || !supabaseKey) {
 const supabase = createClient(supabaseUrl, supabaseKey, {
   auth: { persistSession: false, autoRefreshToken: false, detectSessionInUrl: false }
 });
-const { data: adoptionRows, error: adoptionError } = await supabase.rpc('newsflow_public_editorial_adoptions');
-if (adoptionError) throw new Error(`Editorial adoption query failed: ${adoptionError.message}`);
-const adoptions = Array.isArray(adoptionRows) ? adoptionRows : [];
+const { data: adoptionRows, error: adoptionError } = await supabase
+  .from('newsflow_editorial_adoptions')
+  .select('candidate_id,decision,decided_at')
+  .order('decision', { ascending: true })
+  .order('decided_at', { ascending: false, nullsFirst: false });
+if (adoptionError) throw new Error(`Editorial adoption projection failed: ${adoptionError.message}`);
+const adoptions = (Array.isArray(adoptionRows) ? adoptionRows : []).sort((left, right) => {
+  const decisionOrder = Number(right.decision === 'cover_story') - Number(left.decision === 'cover_story');
+  if (decisionOrder) return decisionOrder;
+  return new Date(right.decided_at || 0).getTime() - new Date(left.decided_at || 0).getTime();
+});
 
 const candidateById = new Map(news.map((item) => [String(item.id || ''), item]));
 const inboxDir = resolve(root, 'content', 'inbox');
