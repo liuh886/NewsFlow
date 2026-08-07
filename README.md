@@ -8,20 +8,32 @@ An Edition defines the reader promise, editorial view, scope, source policy, mat
 
 ## Product status
 
-NewsFlow now has one coherent editorial pipeline connecting evidence discovery, the five-state Review Game and the formal semi-monthly publication. Reader and Editor remain separate experiences, while the same content and authority model connects them underneath.
+NewsFlow has one coherent editorial pipeline connecting evidence discovery, the five-state Review Game and formal semi-monthly publication. Reader and Editor remain separate experiences, while the same content and authority model connects them underneath.
 
 ### Reader Mode
 
-Reader Mode is the normal NewsFlow website. Its hierarchy is:
+Reader Mode is designed as a premium academic journal / boutique magazine rather than an analytics dashboard. The reference Edition is **Frontier Systems Review**; NewsFlow is the publishing engine beneath it.
 
-1. Edition identity and publication context;
-2. the most important change since the latest Issue;
-3. the current formal Issue;
-4. the continuous Editorial Desk;
-5. Storylines and Archive;
-6. evidence and original sources.
+The Reader hierarchy is now:
 
-The homepage remains editorial rather than chronological: one important post-Issue Signal can lead the page. When a formal Issue contains a `cover_signal_id`, the cover story receives visibly stronger treatment inside the Current Issue. Ordinary accepted Signals remain secondary entries beneath it.
+1. Edition identity and explicit publication navigation;
+2. the Current Issue as the homepage focal point;
+3. the Cover Story / Issue judgment and accepted stories;
+4. compact updates since the Issue;
+5. the chronological Latest stream;
+6. explicit section pages for **AI 基建** and **CCUS 与能源转型**;
+7. Research Agenda / Storylines and Issue Archive;
+8. a full-page Reading Surface for long-form reading, with the evidence drawer retained as quick inspection.
+
+The global Reader navigation is intentionally simple:
+
+`本期 | 最新 | AI 基建 | CCUS 与能源转型 | 长期议题 | 归档`
+
+The two top-level sections reuse the Edition's existing Storylines as second-level taxonomy. AI exposes 能源 / 芯片 / 基础设施 / 模型 / 应用; CCUS exposes 项目交付 / CO₂ 网络与商业结构 / 制度、证据与责任. Section pages support only `最新 / 精选` ordering and use hash routes rather than a router framework.
+
+A formal `cover_signal_id` makes the Current Issue the one dominant homepage editorial event. Post-Issue changes remain visible, but they no longer compete with the Issue for first visual priority.
+
+The Reading Surface uses `#read/<signal-id>` and a 740px desktop reading measure. Its hierarchy is channel/date/source → headline → standfirst → NewsFlow Editorial Desk → 发生了什么 → 为什么重要 → 证据与来源 → 长期议题 → 相关阅读 → same-channel navigation. The small article action remains the quick evidence drawer.
 
 ### Editor Mode
 
@@ -43,9 +55,9 @@ Formal editors and Guest Editors share the same Review Game renderer. **UI mode 
 
 ## Editorial Signal Desk
 
-The Editorial Signal Desk is the continuous evidence stream between formal Issues. It is **chronological by default**, newest first by `published_at`; recommendation score is used only as a tie-breaker. This differs intentionally from the single homepage lead, which may be selected by editorial importance.
+The Editorial Signal Desk is the continuous evidence stream between formal Issues. In Reader Mode it is presented simply as **最新** and is chronological by default, newest first by `published_at`; recommendation score is used only as a tie-breaker.
 
-Search, filters, bookmarks, evidence views and Storylines remain supporting reader tools. The Desk can expose strong evidence before it is adopted into a formal Issue; appearing in the Desk does not equal formal publication.
+Search, filters, bookmarks, quick evidence views and Storylines remain supporting reader tools. The Desk can expose strong evidence before it is adopted into a formal Issue; appearing in the Desk does not equal formal publication.
 
 ## Editorial information flow
 
@@ -106,13 +118,14 @@ A Guest Editor invitation is a public appointment, not an authority token. The r
 
 `?guest-editor=frontier-systems-review`
 
-The invitee accepts an `EDITORIAL APPOINTMENT` and enters the same five-decision game. Guest judgments remain parallel opinions. If the live packet is sparse, already-public Signals may appear only as clearly labeled blind editorial exercises.
+The invitee accepts an `EDITORIAL APPOINTMENT` and enters the same five-decision game. Guest judgments remain parallel editorial opinions. If the live packet is sparse, already-public Signals may appear only as clearly labeled blind editorial exercises.
 
 ## Main runtime ownership
 
-- `src/editorial-app.js` — Reader data, filters, chronological Desk and evidence interactions;
-- `src/edition-layer.js` — Edition, Current Issue, cover hierarchy, Storylines and Archive;
-- `public/magazine-polish.js` — reader lifecycle polish and idempotent data-freshness branding;
+- `src/editorial-app.js` — Reader data, filters, chronological Latest stream and quick evidence drawer;
+- `src/edition-layer.js` — Edition identity, Current Issue, section landing pages, Storylines and Archive;
+- `public/magazine-polish.js/.css` — Reader lifecycle, idempotent freshness branding and final editorial visual restraint;
+- `public/reading-surface.js/.css` — full-page article routing, reading hierarchy and related reading;
 - `public/editorial-office.js` — Reader / Editor mode and shared-account state sync;
 - `public/review-game.js` — the single formal/guest review state machine;
 - `public/data/editorial-reactions.json` — serious-play editorial reactions;
@@ -120,6 +133,20 @@ The invitee accepts an `EDITORIAL APPOINTMENT` and enters the same five-decision
 - `scripts/publish-edition.mjs` — owner-selected semi-monthly compiler.
 
 The retired four-state review path, guest-only review renderer, separate decision-feedback decorator, old candidate-review aggregator and local post-game Issue settlement are not retained.
+
+## Reader v3 visual contract
+
+The Reader deliberately keeps typography and page composition stronger than software chrome:
+
+- Newsreader carries publication hierarchy; DM Sans carries reading/UI copy; Roboto Mono is limited to dates/provenance;
+- warm paper, near-black ink and one editorial blue remain the primary palette;
+- Current Issue has exactly one dominant focal point;
+- score meters and verification badges do not compete with editorial content;
+- section names are not repeated as two competing hero headings;
+- search is visually secondary until focused;
+- Reader mode switching is a quiet text control rather than a pill/button centerpiece;
+- desktop, tablet and mobile rules are explicitly maintained at ~920px, 720px and 430px boundaries;
+- the Reading Surface keeps a 740px desktop measure and 17px+ mobile body type.
 
 ## Local development
 

@@ -8,23 +8,27 @@ NewsFlow is one editorial system with two deliberately different product experie
 
 The product must never collapse those two jobs into a generic dashboard.
 
-- **Reader Mode** presents a serious professional journal: Issue, Signals, Storylines, Archive and evidence.
+- **Reader Mode** presents a premium professional journal: Edition, Issue, Sections, Signals, Storylines, Archive and evidence.
 - **Editor Mode** is a focused card-review game: one manuscript, one decision, immediate consequence, next manuscript.
 - **Edition** remains the editorial constitution: reader promise, worldview, scope, source policy, materiality boundaries, Storylines and cadence.
 - Automation processes evidence and compiles publication artifacts, but does not silently rewrite the Edition's formal long-term view.
 
+The reference Reader identity is **Frontier Systems Review**. `NewsFlow` appears as the publishing engine, not as a competing Reader masthead.
+
 ## Core principles
 
 1. **Publication before tooling.** Reader Mode must feel like a journal before it feels like software.
-2. **Editor means game mode.** Entering Editor Mode immediately hands the viewport to the review loop.
-3. **One review engine.** Formal and invited guest editors share one manuscript renderer and five-decision interaction.
-4. **One manuscript, one decision.** No review dashboard, score sheet or duplicate settlement step competes with the manuscript.
-5. **Serious surface, playful consequence.** Humour appears after the decision, not before judgment.
-6. **Decision is publication intent.** For an authorised editor, Cover Story and Accept are the publication decisions; there is no second `CLOSE ISSUE` judgment.
-7. **UI role is not authority.** The Editor experience is broadly usable, while formal publication is restricted to the active owner projection.
-8. **New evidence stays attached to prior judgment.** Signals are interpreted against the current Issue and persistent Storylines.
-9. **Fixed rhythm, variable length.** Formal Issues publish on the 1st and 15th, including no-change Issues.
-10. **Editorial restraint.** The system must be willing not to publish.
+2. **One editorial focal point.** The Current Issue is the homepage anchor; post-Issue updates remain visible but secondary.
+3. **Taxonomy is visible.** Readers can reach AI 基建 and CCUS 与能源转型 without opening a filter drawer.
+4. **Reading is a first-class surface.** Formal reading uses a full-page article surface; the side drawer is quick evidence inspection.
+5. **Editor means game mode.** Entering Editor Mode immediately hands the viewport to the review loop.
+6. **One review engine.** Formal and invited guest editors share one manuscript renderer and five-decision interaction.
+7. **One manuscript, one decision.** No review dashboard, score sheet or duplicate settlement step competes with the manuscript.
+8. **Serious surface, playful consequence.** Humour appears after the decision, not before judgment.
+9. **Decision is publication intent.** For an authorised editor, Cover Story and Accept are the publication decisions; there is no second `CLOSE ISSUE` judgment.
+10. **UI role is not authority.** The Editor experience is broadly usable, while formal publication is restricted to the active owner projection.
+11. **Fixed rhythm, variable length.** Formal Issues publish on the 1st and 15th, including no-change Issues.
+12. **Editorial restraint.** The system must be willing not to publish and must not pad thin historical Issues.
 
 ## Shared objects
 
@@ -34,11 +38,11 @@ The editorial constitution. Runtime metadata comes from `public/data/edition.jso
 
 ### Signal
 
-A normalized evidence item with provenance, quality, summaries, tags and canonical source URL. A Signal can exist on the continuous Desk without entering a formal Issue.
+A normalized evidence item with provenance, quality, summaries, tags and canonical source URL. A Signal can exist in Latest without entering a formal Issue.
 
 ### Storyline
 
-A persistent editorial question with current view, evidence movement, watch items and falsifiers.
+A persistent editorial question with current view, evidence movement, watch items and falsifiers. Storylines also provide the existing second-level Reader taxonomy.
 
 ### Review candidate
 
@@ -58,39 +62,115 @@ A frozen semi-monthly publication artifact. It records adopted Signals, optional
 
 ## Mode 1: Reader
 
-Reader Mode is a traditional professional web publication.
+Reader Mode is a premium academic journal / boutique magazine website.
 
 ### Reader hierarchy
 
-1. publication identity;
-2. latest material change since the current Issue;
-3. Current Issue;
-4. additional Signals accumulating toward the next Issue;
-5. Storylines;
-6. Archive;
-7. evidence and original sources.
+1. Edition identity and publication navigation;
+2. Current Issue as the first major editorial event;
+3. Cover Story / Issue judgment and accepted stories;
+4. compact changes since the current Issue;
+5. chronological Latest stream;
+6. explicit section landing pages;
+7. Research Agenda / Storylines;
+8. Archive;
+9. full-page Reading Surface and original evidence.
 
-### Reader ordering
+The first viewport should answer, within seconds: **What publication is this? Which Issue is current? What is its central judgment? What are the main sections?**
 
-The homepage and Editorial Desk deliberately use different ordering rules:
+### Global navigation
 
-- **Homepage lead:** editorial importance can select the strongest current Signal so the publication has a point of view.
-- **Editorial Desk:** newest first by `published_at`; recommendation score is only a tie-breaker.
-- **Current Issue:** when `cover_signal_id` exists, the cover story receives the strongest visual hierarchy and is followed by ordinary accepted Signals.
+Reader navigation is:
 
-This keeps the page from becoming either a raw timestamp feed or an opaque recommendation list.
+`本期 | 最新 | AI 基建 | CCUS 与能源转型 | 长期议题 | 归档`
+
+Right-side product chrome is secondary. Search stays compact until focused; theme/account remain available; Reader/Editor mode switching is a quiet text-level control. Feedback/help/editor shortcuts do not compete with publication navigation.
+
+### Current Issue
+
+The Current Issue is the only homepage hero.
+
+- `cover_signal_id`, when present, determines the preferred Cover Story action.
+- The Issue title/judgment and standfirst carry the strongest typography.
+- Ordinary accepted Signals sit below as secondary Issue entries.
+- Cover headlines are not repeated as a second oversized row.
+- Internal selection metrics, score meters and verification badges do not compete with editorial content.
+
+Post-Issue updates are deliberately compact. They demonstrate that NewsFlow keeps observing between fixed publication dates without making the site feel like a breaking-news dashboard.
+
+### Sections
+
+Top-level Reader sections come directly from the Edition:
+
+- **AI 基建**
+- **CCUS 与能源转型**
+
+Second-level taxonomy reuses existing Storylines rather than creating another taxonomy configuration.
+
+AI:
+
+`能源 | 芯片 | 基础设施 | 模型 | 应用`
+
+CCUS:
+
+`项目交付 | CO₂ 网络与商业结构 | 制度、证据与责任`
+
+Section routes use `#section/<channel-id>`. They expose only two ordering choices:
+
+- **最新** — newest first;
+- **精选** — formally adopted Signals first, then the existing editorial quality signal as tie-break.
+
+No new recommendation engine is introduced.
+
+### Latest
+
+The continuous Editorial Signal Desk is reader-facing as **最新**.
+
+- newest first by `published_at`;
+- recommendation score only breaks ties;
+- compact numbered newspaper rows;
+- title click opens the full Reading Surface;
+- the small article action remains quick evidence inspection.
+
+### Reading Surface
+
+Formal deep reading uses `#read/<signal-id>`.
+
+Desktop body measure is approximately **740px**. The article hierarchy is:
+
+1. channel / date / source;
+2. headline;
+3. standfirst;
+4. `NewsFlow Editorial Desk` byline;
+5. 发生了什么;
+6. 为什么重要;
+7. 证据与来源;
+8. 长期议题;
+9. 相关阅读;
+10. same-channel previous / next.
+
+The original source is always directly reachable. Related reading uses existing channel/Storyline relationships only. The Reading Surface does not invent another recommendation model.
+
+The legacy side drawer remains valuable as **quick evidence**, not as the primary magazine-reading experience.
 
 ### Reader visual language
 
 - warm paper canvas and near-black ink;
-- restrained evidence blue and editorial red;
+- one restrained editorial blue plus semantic red only where needed;
 - `Newsreader` for publication hierarchy;
-- `DM Sans` for controls and summaries;
-- `Roboto Mono` for dates, issue numbers and method;
-- large headlines and whitespace for the Issue;
-- numbered compact rows for the Editorial Desk;
-- research-brief treatment for evidence;
+- `DM Sans` for reading/UI copy;
+- `Roboto Mono` mainly for dates and provenance;
+- strong whitespace and editorial rules;
+- fewer pills, badges and rounded controls;
+- no score meters in the main publication hierarchy;
 - no game HUD or review controls in Reader Mode.
+
+### Responsive contract
+
+- wide desktop: publication column plus quiet Storyline margin;
+- around **920px**: one publication column and contextual panels;
+- around **720px**: one-column article/publication layout with simplified controls;
+- around **430px**: compact mobile typography, no horizontal overflow, source/meta wrapping and readable 17px+ Reading Surface body copy.
 
 ## Mode 2: Editor
 
@@ -102,16 +182,9 @@ Entering Editor Mode opens the current manuscript rather than tabs, queues, anal
 
 ### Manuscript card
 
-Each viewport contains one dominant card with:
+Each viewport contains one dominant card with manuscript number, title, concise summary, source/date/section, original-source link and progress such as `03 / 12`.
 
-- manuscript number;
-- title;
-- concise abstract/editorial summary;
-- source, date and section;
-- one optional original-source link;
-- progress such as `03 / 12`.
-
-On desktop the manuscript/card stack uses approximately 80% visual scale while the top identity/progress and bottom decision controls remain full interactive size. The objective is to keep ordinary review within one viewport.
+On desktop the manuscript/card stack uses approximately 80% visual scale while top identity/progress and bottom decisions remain full interactive size. The objective is ordinary review within one viewport.
 
 ### Five decisions
 
@@ -121,15 +194,13 @@ On desktop the manuscript/card stack uses approximately 80% visual scale while t
 4. **大修 / MAJOR REVISION** — substantial argument/evidence/framing work remains.
 5. **拒稿 / REJECT** — does not meet the current editorial threshold.
 
-Desktop shortcuts are `1–5`; `Z` undoes the immediately previous decision. Mobile keeps the same five choices fixed at the bottom.
+Desktop shortcuts are `1–5`; `Z` undoes the previous decision. Mobile keeps all five choices fixed at the bottom.
 
 ### Decision feedback
 
 `read → decide → stamp / quip → (3) → (2) → (1) → next manuscript`
 
-Every decision holds for three seconds unless the editor manually advances or undoes. The feedback beat contains the stamp and a short academic-circle reaction. Reduced-motion removes decorative animation without removing the decision state or three-second rhythm.
-
-Humour targets academic rituals and editorial situations, never authors' identities or protected traits.
+Every decision holds for three seconds unless manually advanced or undone. Reduced-motion removes decorative animation without removing the decision state or timing.
 
 ## Formal editor, non-authoritative editor and guest editor
 
@@ -137,18 +208,18 @@ All use the same Review Game.
 
 ### Authorised formal editor
 
-- is verified through shared-account authority, not by the visual mode selector;
+- verified through shared-account authority, not the visual mode selector;
 - reviews real pending candidates only;
-- decisions are synchronized into private NewsFlow account state;
-- `cover_story` and `accept` are projected into the public read-only publication queue;
-- `minor_revision`, `major_revision` and `reject` are retained as decisions but do not enter the formal publication queue;
-- can create the Guest Editor invitation.
+- decisions synchronize into private NewsFlow account state;
+- `cover_story` and `accept` project into the public read-only publication queue;
+- `minor_revision`, `major_revision` and `reject` do not enter formal publication;
+- can create Guest Editor invitations.
 
 ### Editor-mode user without formal authority
 
 - receives the same game experience;
 - can preserve personal editorial continuity;
-- does not gain formal Edition publication authority merely by selecting Editor Mode.
+- does not gain formal publication authority by selecting Editor Mode.
 
 ### Guest editor
 
@@ -178,46 +249,26 @@ research
 The authority boundary is intentionally asymmetric:
 
 - private account state can contain all five editor decisions;
-- `newsflow_editorial_adoptions` exposes only active-owner Cover/Accept records needed by publication;
+- `newsflow_editorial_adoptions` exposes only active-owner Cover/Accept records required by publication;
 - the browser never receives a service-role credential;
 - the compiler reads only the public adoption projection with the publishable key.
 
 ## Formal publication contract
-
-The reference workflow runs twice monthly.
 
 - **1st:** coverage is the 16th through the final day of the previous month.
 - **15th:** coverage is the 1st through the 14th.
 - Only active-owner `cover_story` and `accept` decisions inside the coverage window are eligible.
 - Edition maximum-per-Issue and per-channel caps still apply.
 - A `cover_story` becomes `cover_signal_id` and the first adopted Signal when selected.
-- Selected inbox candidates are promoted into `public/data/news.json` so reader evidence links remain coherent.
-- The frozen formal artifact is written to `public/data/issues.json`.
+- Selected inbox candidates are promoted into `public/data/news.json` so Reader links remain coherent.
+- The frozen Issue is written to `public/data/issues.json`.
 - A no-change Issue is valid when no eligible adoption exists.
-- Quality scores support discovery/review but never silently substitute for the owner's publication decision.
-- Automation may record Storyline evidence movement but cannot silently alter the Edition's formal worldview.
-
-## Homepage focus
-
-A strong Reader homepage depends on a strong Current Issue, not decorative widgets.
-
-The hierarchy is:
-
-- one important post-Issue change can lead above the Issue;
-- the Current Issue remains the stable editorial anchor;
-- when a cover exists, it is visually dominant within the Issue;
-- ordinary accepted Signals support the cover rather than competing with it;
-- the chronological Editorial Desk follows as the continuing evidence stream.
-
-A historically thin Issue remains thin; the product must not pad it retroactively with weaker content merely to create visual volume.
+- Quality scores support discovery/review but never substitute for the owner's publication decision.
+- Automation may record Storyline evidence movement but cannot silently alter the Edition's worldview.
 
 ## Branding freshness
 
-The data-freshness badge in the NewsFlow branding is a single idempotent element. Repeated render lifecycle events must update or reuse the same badge, never nest another brand row or append duplicate dates.
-
-## Invitation experience
-
-A Guest Editor invitation opens as a formal `EDITORIAL APPOINTMENT`, not a registration page. It communicates publication identity, role, manuscript count and one primary action: **接受任命**. After acceptance, the guest enters the same Review Game.
+The data-freshness badge is one idempotent element. Repeated render lifecycle events update or reuse it; they never nest another brand row or append duplicate dates.
 
 ## What Editor Mode intentionally excludes
 
@@ -228,23 +279,6 @@ A Guest Editor invitation opens as a formal `EDITORIAL APPOINTMENT`, not a regis
 - multi-factor scoring forms;
 - reviewer dashboards during the game;
 - a second Issue-settlement decision surface.
-
-The game must earn engagement through editorial role-play, rapid judgment and emotional feedback.
-
-## Responsive contract
-
-### Reader
-
-- wide desktop: publication column plus quiet Storyline margin;
-- compact desktop/tablet: one publication column and contextual panels;
-- mobile: one-column journal with full-width evidence panels.
-
-### Editor
-
-- desktop: centered 80%-scale manuscript/card stack plus full-size five-wide decision rail;
-- mobile: manuscript fills usable height and all five decisions remain reachable;
-- no essential action depends on hover;
-- reduced-motion preserves feedback meaning and timing.
 
 ## Trust and quality requirements
 
@@ -260,34 +294,37 @@ The game must earn engagement through editorial role-play, rapid judgment and em
 
 ## Architecture constraints
 
-1. The reader application owns Signal rendering and chronological Desk order.
-2. The Edition layer owns formal Issue hierarchy, cover presentation, Storylines and Archive.
-3. The mode controller owns Reader/Editor selection and account-state synchronization, not a second review UI.
-4. `review-game.js` owns all formal and guest review interaction.
-5. There is no four-state editor path or guest-only duplicate renderer.
-6. There is no local post-game `CLOSE ISSUE` workflow.
-7. An internal database trigger owns active-owner adoption projection.
-8. The publisher reads the public projection; it does not inspect private account state directly.
-9. Runtime coordination uses explicit lifecycle events; no `MutationObserver` patch layers.
-10. No backward-compatibility layer is retained for retired review architecture.
+1. `editorial-app.js` owns Signal data, chronological Latest rendering and quick evidence drawer.
+2. `edition-layer.js` owns Edition identity, Issue hierarchy, section landing pages, Storylines and Archive.
+3. `reading-surface.js` owns full-page article route/state/rendering only.
+4. `magazine-polish.js/.css` owns Reader lifecycle and final publication polish, not core content state.
+5. The mode controller owns Reader/Editor selection and account sync, not a second review UI.
+6. `review-game.js` owns all formal and guest review interaction.
+7. There is no four-state editor path, guest-only duplicate renderer or local post-game `CLOSE ISSUE` workflow.
+8. An internal database trigger owns active-owner adoption projection.
+9. The publisher reads the public projection; it does not inspect private account state directly.
+10. Runtime coordination uses explicit lifecycle events; no `MutationObserver` patch layers.
+11. No backward-compatibility layer is retained for retired architecture.
 
 ## Acceptance criteria
 
-A release is complete only when:
+A Reader v3 release is complete only when:
 
 1. `npm run check` passes;
 2. `npm run build` produces the complete static site;
 3. branding freshness remains one date after repeated renders;
-4. Reader Mode preserves search, filters, bookmarks and evidence behavior;
-5. Editorial Desk is visibly and structurally newest-first;
-6. selecting Editor Mode immediately opens the shared Review Game;
-7. the five decisions are exactly 封面文章、录用、小修、大修、拒稿;
-8. feedback holds for three seconds with `（3）（2）（1）` and then auto-advances;
-9. formal review uses real pending candidates and does not silently substitute training cases;
-10. Guest review clearly labels any blind exercise fallback;
-11. active-owner Cover/Accept decisions synchronize to the public adoption projection;
-12. non-owner and Guest decisions do not enter formal publication automatically;
-13. the 1st/15th compiler reads only the adoption projection and has no quality-only adoption fallback;
-14. a formal cover is persisted as `cover_signal_id` and receives visibly stronger Current Issue treatment;
-15. retired local settlement and old candidate-review aggregation are absent;
-16. README, design contract and runtime describe the same implemented product.
+4. Reader browser identity and masthead are Edition-first;
+5. Current Issue appears before post-Issue updates and is the single homepage focal point;
+6. AI 基建 and CCUS 与能源转型 are directly reachable Reader sections;
+7. second-level taxonomy comes from existing Storylines;
+8. Latest is visibly and structurally newest-first;
+9. section ordering exposes only 最新 / 精选;
+10. title/deep-read actions open a full-page 740px Reading Surface;
+11. the small article action remains quick evidence inspection;
+12. Reader score meters/tool chrome do not compete with publication hierarchy;
+13. ~920px / 720px / 430px responsive boundaries preserve hierarchy without horizontal overflow;
+14. selecting Editor Mode immediately opens the shared Review Game;
+15. the five decisions remain exactly 封面文章、录用、小修、大修、拒稿;
+16. feedback remains three seconds with `（3）（2）（1）` before auto-advance;
+17. active-owner Cover/Accept drives formal publication and non-owner/Guest decisions do not;
+18. README, DESIGN and runtime describe the same implemented product.
