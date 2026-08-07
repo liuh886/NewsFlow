@@ -1,6 +1,6 @@
 {
   "schema_version": "2.0",
-  "source": "applied-content-runs",
+  "source": "content-state",
   "latest_run_at": "2026-08-06T12:00:00+08:00",
   "candidate_count": 1,
   "candidates": [
