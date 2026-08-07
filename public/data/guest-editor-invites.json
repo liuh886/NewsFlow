@@ -1,0 +1,16 @@
+{
+  "schema_version": "1.0",
+  "invites": [
+    {
+      "id": "frontier-systems-review",
+      "edition_id": "frontier-systems-review",
+      "publication_label": "Frontier Systems Review",
+      "appointment_title": "客座主编任命",
+      "appointment_note": "你将以客座主编身份处理一组送审稿件。每篇稿件只做一次编辑裁决。",
+      "packet_size": 8,
+      "live_minimum": 5,
+      "exercise_fallback": true,
+      "expires_at": null
+    }
+  ]
+}
