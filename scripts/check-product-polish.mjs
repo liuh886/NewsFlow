@@ -50,7 +50,7 @@ for (const contract of [
   "(validDate(b.published_at)?.getTime() || 0) - (validDate(a.published_at)?.getTime() || 0)",
   'recommendationScore(b) - recommendationScore(a)'
 ]) {
-  if (!appJs.includes(contract)) throw new Error(`Editorial Desk chronological contract is missing ${contract}`);
+  if (!appJs.includes(contract)) throw new Error(`Latest stream chronological contract is missing ${contract}`);
 }
 for (const contract of ['NETWORK_TIMEOUT_MS = 5000', 'fetchWithTimeout', 'warmAppShell', 'reader-editor-modes']) {
   if (!serviceWorker.includes(contract)) throw new Error(`Service worker startup contract is missing ${contract}`);
@@ -70,18 +70,27 @@ for (const contract of [
 
 for (const contract of [
   'cover_signal_id',
-  '封面已定',
-  '主编选稿',
-  '按时间排序'
+  '阅读封面文章',
+  'Published with NewsFlow',
+  'AI 基建',
+  'CCUS 与能源转型',
+  "heading.textContent = '最新'",
+  "firstEditorialAnchor.insertAdjacentHTML('beforebegin', renderCurrentIssue(edition, issue))",
+  "issueNode.insertAdjacentHTML('afterend', renderPostIssueIntro(issue))"
 ]) {
-  if (!editionJs.includes(contract)) throw new Error(`Issue focus contract is missing ${contract}`);
+  if (!editionJs.includes(contract)) throw new Error(`Premium Reader IA contract is missing ${contract}`);
 }
 for (const selector of [
-  '.issue-signal-link.is-cover',
-  'font-size: clamp(30px, 4vw, 43px)',
-  'border-top: 4px double var(--ink)'
+  '.issue-hero-copy h2',
+  'font-size: clamp(48px, 6.2vw, 76px)',
+  '.issue-judgment-band',
+  '.global-search:focus-within',
+  '.signal-score'
 ]) {
-  if (!editionCss.includes(selector)) throw new Error(`Cover story visual hierarchy is missing ${selector}`);
+  if (!editionCss.includes(selector)) throw new Error(`Premium Reader visual hierarchy is missing ${selector}`);
+}
+if (!editionCss.includes('display: none;') || !editionCss.includes('.source-verification')) {
+  throw new Error('Reader homepage must suppress score/badge chrome from the editorial hierarchy.');
 }
 
 const reactions = JSON.parse(reactionsText);
@@ -103,4 +112,4 @@ if (!Number.isInteger(status.signal_count) || status.signal_count < 1) throw new
 const statusCheck = spawnSync(process.execPath, [resolve(root, 'scripts/update-data-status.mjs'), '--check'], { encoding: 'utf8' });
 if (statusCheck.status !== 0) throw new Error(statusCheck.stderr || statusCheck.stdout);
 
-console.log('NewsFlow product polish passed: chronological reader desk, cover-led Issue hierarchy, secure editor publication and live freshness.');
+console.log('NewsFlow product polish passed: Issue-first Reader hierarchy, explicit sections, chronological latest stream, secure editor publication and live freshness.');
