@@ -86,4 +86,8 @@ await build({
   outfile: resolve(dist, 'supabase-feedback.js')
 });
 
+const { spawnSync } = await import('node:child_process');
+const aggregate = spawnSync(process.execPath, [resolve(root, 'scripts/aggregate-pipeline-reviews.mjs')], { cwd: root, encoding: 'utf8' });
+if (aggregate.stdout) console.log(aggregate.stdout.trim());
+
 console.log(`NewsFlow build complete: dist/ with autonomous Edition layer and Supabase sync ${supabaseConfig.enabled ? 'enabled' : 'disabled'}.`);
