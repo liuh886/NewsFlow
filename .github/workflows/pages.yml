@@ -10,7 +10,8 @@ on:
       - 'index.html'
       - 'src/**'
       - 'public/**'
-      - 'content/**'
+      - 'content/inbox/**'
+      - 'content/state/pipeline-review-queue.json'
       - 'data/**'
       - 'scripts/**'
       - 'package.json'
@@ -22,7 +23,8 @@ on:
       - 'index.html'
       - 'src/**'
       - 'public/**'
-      - 'content/**'
+      - 'content/inbox/**'
+      - 'content/state/pipeline-review-queue.json'
       - 'data/**'
       - 'scripts/**'
       - 'package.json'
@@ -35,7 +37,7 @@ permissions:
 
 concurrency:
   group: newsflow-pages-${{ github.event.pull_request.number || github.ref }}
-  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+  cancel-in-progress: true
 
 jobs:
   build:

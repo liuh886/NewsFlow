@@ -17,10 +17,11 @@ const runtimeFiles = [
 ];
 
 const sources = Object.fromEntries(await Promise.all(runtimeFiles.map(async (path) => [path, await read(path)])));
-const [index, buildSource, serviceWorker] = await Promise.all([
+const [index, buildSource, serviceWorker, pagesWorkflow] = await Promise.all([
   read('index.html'),
   read('scripts/build.mjs'),
-  read('public/sw.js')
+  read('public/sw.js'),
+  read('.github/workflows/pages.yml')
 ]);
 
 for (const [path, source] of Object.entries(sources)) {
@@ -83,8 +84,26 @@ const startup = sources['public/startup-resilience.js'];
 if (startup.includes('window.fetch =') || startup.includes('nativeFetch')) {
   throw new Error('startup bootstrap must never monkey-patch global fetch.');
 }
-if (!startup.includes('STARTUP_WATCHDOG_MS = 8000') || !startup.includes("serviceWorker.register('./sw.js', { updateViaCache: 'none' })")) {
-  throw new Error('startup bootstrap must remain a small watchdog and service-worker bootstrap.');
+for (const contract of [
+  'STARTUP_WATCHDOG_MS = 8000',
+  'const watchdogTimer = window.setTimeout(showRecovery, STARTUP_WATCHDOG_MS)',
+  "serviceWorker.register('./sw.js', { updateViaCache: 'none' })",
+  "window.addEventListener('newsflow:rendered'",
+  "key.startsWith('newsflow-')"
+]) {
+  if (!startup.includes(contract)) throw new Error(`startup bootstrap is missing contract: ${contract}`);
+}
+if (startup.includes("window.addEventListener('DOMContentLoaded'")) {
+  throw new Error('startup watchdog must begin immediately and may not wait for DOMContentLoaded.');
+}
+
+for (const contract of [
+  'data-startup-shell="true"',
+  './startup-resilience.js?v=2.6.1',
+  './editorial-app.js?v=2.6.1',
+  '<script async src="https://liuh886.github.io/admin/shared/account-shell.js?v=2"></script>'
+]) {
+  if (!index.includes(contract)) throw new Error(`index startup shell is missing contract: ${contract}`);
 }
 
 for (const retiredPath of ['./language-polish.js', './editorial-preflight.js']) {
@@ -101,8 +120,19 @@ for (const path of ['src/language-polish.js', 'public/editorial-preflight.js']) 
   }
 }
 
-if (!serviceWorker.includes('serious-play-v2.6.0')) {
-  throw new Error('service worker cache must advance for the frontend architecture reset.');
+for (const contract of [
+  "const ASSET_VERSION = '2.6.1'",
+  'startup-v2.6.1',
+  'const isRuntimeAsset = /\\.(?:js|css)$/i.test(url.pathname)',
+  'event.respondWith(networkFirst(event.request))'
+]) {
+  if (!serviceWorker.includes(contract)) throw new Error(`service worker release coherence is missing: ${contract}`);
+}
+if (!pagesWorkflow.includes('cancel-in-progress: true')) {
+  throw new Error('Pages must cancel obsolete queued deployments and publish only the latest ref state.');
+}
+if (pagesWorkflow.includes("- 'content/**'")) {
+  throw new Error('Pages must not redeploy for unrelated content history changes.');
 }
 
-console.log('NewsFlow frontend architecture contract passed: explicit lifecycle, one formal editorial path, no DOM observers or global fetch patch.');
+console.log('NewsFlow frontend architecture contract passed: explicit lifecycle, coherent runtime release, immediate watchdog and latest-only Pages deployment.');
