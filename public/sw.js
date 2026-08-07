@@ -1,25 +1,29 @@
-const CACHE_NAME = 'newsflow-editorial-v2.3.1-magazine-v2.4.1-serious-play-v2.6.0';
+const ASSET_VERSION = '2.6.1';
+const CACHE_NAME = 'newsflow-editorial-v2.3.1-magazine-v2.4.1-serious-play-v2.6.0-startup-v2.6.1';
 const NETWORK_TIMEOUT_MS = 5000;
+const versioned = (path) => `${path}?v=${ASSET_VERSION}`;
 const APP_SHELL = [
   './',
   './index.html',
-  './styles.css',
-  './polish.css',
-  './edition-layer.css',
-  './magazine-polish.css',
-  './editorial-office.css',
-  './editorial-game-loop.css',
-  './editorial-preflight.css',
-  './editorial-delight.css',
-  './startup-resilience.js',
-  './editorial-app.js',
-  './polish.js',
-  './edition-layer.js',
-  './magazine-polish.js',
-  './supabase-feedback.js',
-  './editorial-office.js',
-  './editorial-delight.js',
-  './membership-config.js',
+  versioned('./styles.css'),
+  versioned('./polish.css'),
+  versioned('./edition-layer.css'),
+  versioned('./magazine-polish.css'),
+  versioned('./editorial-office.css'),
+  versioned('./editorial-game-loop.css'),
+  versioned('./editorial-preflight.css'),
+  versioned('./account-integration.css'),
+  versioned('./editorial-delight.css'),
+  versioned('./startup-resilience.js'),
+  versioned('./editorial-app.js'),
+  versioned('./polish.js'),
+  versioned('./edition-layer.js'),
+  versioned('./magazine-polish.js'),
+  versioned('./supabase-feedback.js'),
+  versioned('./membership-config.js'),
+  versioned('./account-integration.js'),
+  versioned('./editorial-office.js'),
+  versioned('./editorial-delight.js'),
   './icon.svg',
   './manifest.webmanifest',
   './data/topics.json',
@@ -51,7 +55,7 @@ const warmAppShell = async () => {
       const response = await fetchWithTimeout(request);
       if (response.ok) await cache.put(request, response);
     } catch {
-      // One unavailable optional asset must not block worker activation.
+      // A missed optional asset must not block activation of the recovery worker.
     }
   }));
 };
@@ -102,6 +106,12 @@ self.addEventListener('fetch', (event) => {
   }
 
   if (url.pathname.includes('/data/')) {
+    event.respondWith(networkFirst(event.request));
+    return;
+  }
+
+  const isRuntimeAsset = /\.(?:js|css)$/i.test(url.pathname);
+  if (isRuntimeAsset) {
     event.respondWith(networkFirst(event.request));
     return;
   }
