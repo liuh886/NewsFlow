@@ -1,5 +1,5 @@
-const ASSET_VERSION = '2.6.1';
-const CACHE_NAME = 'newsflow-editorial-v2.3.1-magazine-v2.4.1-serious-play-v2.6.0-startup-v2.6.1-guest-editor-v1';
+const ASSET_VERSION = '2.7.0';
+const CACHE_NAME = 'newsflow-editorial-v2.7.0-reader-editor-modes';
 const NETWORK_TIMEOUT_MS = 5000;
 const versioned = (path) => `${path}?v=${ASSET_VERSION}`;
 const APP_SHELL = [
@@ -9,12 +9,9 @@ const APP_SHELL = [
   versioned('./polish.css'),
   versioned('./edition-layer.css'),
   versioned('./magazine-polish.css'),
-  versioned('./editorial-office.css'),
-  versioned('./editorial-game-loop.css'),
-  versioned('./editorial-preflight.css'),
   versioned('./account-integration.css'),
-  versioned('./editorial-delight.css'),
-  versioned('./guest-editor.css'),
+  versioned('./editorial-mode.css'),
+  versioned('./review-game.css'),
   versioned('./startup-resilience.js'),
   versioned('./editorial-app.js'),
   versioned('./polish.js'),
@@ -23,9 +20,8 @@ const APP_SHELL = [
   versioned('./supabase-feedback.js'),
   versioned('./membership-config.js'),
   versioned('./account-integration.js'),
+  versioned('./review-game.js'),
   versioned('./editorial-office.js'),
-  versioned('./editorial-delight.js'),
-  versioned('./guest-editor.js'),
   './icon.svg',
   './manifest.webmanifest',
   './data/topics.json',
@@ -59,7 +55,7 @@ const warmAppShell = async () => {
       const response = await fetchWithTimeout(request);
       if (response.ok) await cache.put(request, response);
     } catch {
-      // A missed optional asset must not block activation of the recovery worker.
+      // A missed optional asset must not block activation.
     }
   }));
 };
@@ -82,7 +78,6 @@ const staleWhileRevalidate = (event) => {
     .catch(() => null);
 
   event.waitUntil(networkUpdate.then(() => undefined));
-
   return caches.match(request).then(async (cached) => cached || (await networkUpdate) || Response.error());
 };
 
@@ -100,7 +95,6 @@ self.addEventListener('activate', (event) => {
 
 self.addEventListener('fetch', (event) => {
   if (event.request.method !== 'GET') return;
-
   const url = new URL(event.request.url);
   if (url.origin !== self.location.origin) return;
 
@@ -108,17 +102,13 @@ self.addEventListener('fetch', (event) => {
     event.respondWith(networkFirst(event.request, './index.html'));
     return;
   }
-
   if (url.pathname.includes('/data/')) {
     event.respondWith(networkFirst(event.request));
     return;
   }
-
-  const isRuntimeAsset = /\.(?:js|css)$/i.test(url.pathname);
-  if (isRuntimeAsset) {
+  if (/\.(?:js|css)$/i.test(url.pathname)) {
     event.respondWith(networkFirst(event.request));
     return;
   }
-
   event.respondWith(staleWhileRevalidate(event));
 });
