@@ -12,12 +12,7 @@
     target.insertBefore(host, mobileMenu || null);
   }
 
-  const observer = new MutationObserver(syncAccountMount);
-  observer.observe(document.getElementById('app') || document.body, {
-    childList: true,
-    subtree: true,
-  });
-
-  syncAccountMount();
+  window.addEventListener('newsflow:rendered', syncAccountMount);
   window.addEventListener('hao:account-changed', syncAccountMount);
+  syncAccountMount();
 })();
