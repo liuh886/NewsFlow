@@ -92,10 +92,6 @@ const simplifySidebar = () => {
 };
 
 const simplifyFeed = () => {
-  document.querySelectorAll('.article-meta span').forEach((span) => {
-    if (/^score\s/i.test(span.textContent?.trim() || '')) span.remove();
-  });
-
   document.querySelectorAll('.signal-score').forEach((element) => element.remove());
 
   if (!isMagazineMode()) {
@@ -103,11 +99,6 @@ const simplifyFeed = () => {
     const count = feedCount?.textContent?.match(/\d+/)?.[0];
     if (feedCount && count) feedCount.textContent = `${count} 条`;
   }
-
-  document.querySelectorAll('.segment-button').forEach((button) => {
-    if (button.dataset.value === 'list') button.textContent = '列表';
-    if (button.dataset.value === 'grid') button.textContent = '网格';
-  });
 };
 
 const simplifyRail = () => {
@@ -129,9 +120,6 @@ const simplifyRail = () => {
 
 const simplifyDrawer = () => {
   setText(document.querySelector('.drawer-brand'), 'NewsFlow · 深读');
-
-  const eyebrow = document.querySelector('.drawer-eyebrow');
-  if (eyebrow) eyebrow.textContent = eyebrow.textContent.replace(/\s*·\s*Score\s*[\d.]+/i, '');
 
   document.querySelectorAll('.drawer-section h3').forEach((heading) => {
     const text = heading.textContent?.trim();
@@ -183,10 +171,6 @@ const updateAppOverlayState = () => {
 };
 
 const decorateInterface = () => {
-  document.querySelectorAll('.article-meta .source-verification').forEach((badge) => {
-    if (badge.textContent?.trim().toLowerCase() === 'primary') badge.textContent = '机构 / 一手源';
-  });
-
   simplifyMasthead();
   simplifySidebar();
   simplifyFeed();
@@ -206,9 +190,8 @@ const scheduleDecoration = () => {
   });
 };
 
-const observer = new MutationObserver(scheduleDecoration);
-observer.observe(appRoot, { childList: true });
-decorateInterface();
+window.addEventListener('newsflow:rendered', scheduleDecoration);
+scheduleDecoration();
 
 const searchSheet = document.createElement('div');
 searchSheet.className = 'mobile-search-backdrop';
