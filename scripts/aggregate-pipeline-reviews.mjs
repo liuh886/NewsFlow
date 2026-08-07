@@ -1,89 +1,128 @@
-import { access, mkdir, readFile, readdir, writeFile } from 'node:fs/promises';
+import { mkdir, readFile, readdir, writeFile } from 'node:fs/promises';
 import { dirname, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 const root = resolve(dirname(fileURLToPath(import.meta.url)), '..');
+const outputPath = resolve(root, 'public/data/pipeline-reviews.json');
+const checkOnly = process.argv.includes('--check');
 
-const readJson = async (path) => {
-  try { return JSON.parse(await readFile(resolve(root, path), 'utf8')); } catch { return null; }
+const readJson = async (path) => JSON.parse(await readFile(resolve(root, path), 'utf8'));
+const readJsonOrNull = async (path) => {
+  try {
+    return await readJson(path);
+  } catch {
+    return null;
+  }
 };
 
-const resolutionStatePath = 'content/state/pipeline-review-resolutions.json';
-const resolutions = await readJson(resolutionStatePath) || {};
-const resolvedIds = new Set(Object.keys(resolutions));
-
-const runsDir = resolve(root, 'content', 'runs');
-let runFiles = [];
-try {
-  runFiles = (await readdir(runsDir)).filter((f) => f.endsWith('.json')).sort().reverse();
-} catch {
-  console.log('No run audits found. Skipping pipeline review aggregation.');
-  process.exit(0);
-}
-
-const inboxDir = resolve(root, 'content', 'inbox');
-let inboxFiles = [];
-try {
-  inboxFiles = (await readdir(inboxDir)).filter((f) => f.endsWith('.json'));
-} catch {
-  inboxFiles = [];
-}
+const timeValue = (value) => {
+  const parsed = Date.parse(String(value || ''));
+  return Number.isFinite(parsed) ? parsed : 0;
+};
 
 const inboxCandidates = new Map();
-for (const file of inboxFiles) {
-  const pack = await readJson(`content/inbox/${file}`);
-  if (!pack?.candidates) continue;
-  for (const c of pack.candidates) {
-    if (c.id) inboxCandidates.set(c.id, c);
+const inboxDir = resolve(root, 'content/inbox');
+try {
+  const files = (await readdir(inboxDir)).filter((file) => file.endsWith('.json')).sort();
+  for (const file of files) {
+    const pack = await readJsonOrNull(`content/inbox/${file}`);
+    const packTime = timeValue(pack?.run?.as_of);
+    for (const candidate of pack?.candidates || []) {
+      const id = String(candidate?.id || '');
+      if (!id) continue;
+      const current = inboxCandidates.get(id);
+      if (!current || packTime >= current.packTime) inboxCandidates.set(id, { candidate, packTime });
+    }
   }
+} catch {
+  // A new repository may not have an inbox yet.
 }
 
-const latestRun = runFiles[0];
-if (!latestRun) {
-  console.log('No run audits found.');
-  process.exit(0);
+const latestDecisionById = new Map();
+let latestRunAt = '';
+const runsDir = resolve(root, 'content/runs');
+try {
+  const files = (await readdir(runsDir)).filter((file) => file.endsWith('.json')).sort();
+  for (const file of files) {
+    const audit = await readJsonOrNull(`content/runs/${file}`);
+    if (!audit?.applied || !Array.isArray(audit.decisions)) continue;
+    const runAt = String(audit.run?.as_of || '');
+    const runTime = timeValue(runAt);
+    if (runTime > timeValue(latestRunAt)) latestRunAt = runAt;
+
+    for (const decision of audit.decisions) {
+      const id = String(decision?.id || '');
+      if (!id) continue;
+      const current = latestDecisionById.get(id);
+      if (!current || runTime >= current.runTime) {
+        latestDecisionById.set(id, {
+          decision,
+          runTime,
+          runAt,
+          runId: file.replace(/\.json$/, '')
+        });
+      }
+    }
+  }
+} catch {
+  // Empty run history produces an empty, valid report.
 }
 
-const audit = await readJson(`content/runs/${latestRun}`);
-if (!audit?.decisions) {
-  console.log('Run audit has no decisions array.');
-  process.exit(0);
+const candidates = [...latestDecisionById.entries()]
+  .filter(([, entry]) => entry.decision.status === 'needs_review')
+  .map(([id, entry]) => {
+    const source = inboxCandidates.get(id)?.candidate || {};
+    const evidence = (entry.decision.evidence || []).map((item) => ({
+      claim: String(item?.claim || ''),
+      source_excerpt: String(item?.source_excerpt || ''),
+      source_url: String(item?.source_url || '')
+    }));
+    return {
+      id,
+      manuscript_key: id.slice(-8).toUpperCase(),
+      title: String(source.title || id),
+      channel_id: String(source.channel_id || ''),
+      source_id: String(entry.decision.source_id || ''),
+      score_mean: Number(entry.decision.score_mean || 0),
+      reasons: (entry.decision.reasons || []).map(String),
+      evidence,
+      run_id: entry.runId,
+      run_time: entry.runAt
+    };
+  })
+  .sort((left, right) => right.run_time.localeCompare(left.run_time) || left.id.localeCompare(right.id));
+
+const manuscriptKeys = new Set();
+for (const candidate of candidates) {
+  if (manuscriptKeys.has(candidate.manuscript_key)) {
+    throw new Error(`Pipeline review manuscript key collision: ${candidate.manuscript_key}`);
+  }
+  manuscriptKeys.add(candidate.manuscript_key);
 }
-
-const needsReview = audit.decisions.filter((d) => d.status === 'needs_review' && !resolvedIds.has(d.id));
-
-const candidates = needsReview.map((d) => {
-  const full = inboxCandidates.get(d.id) || {};
-  return {
-    id: d.id,
-    title: full.title || d.id,
-    short_summary: full.short_summary || '',
-    long_summary: full.long_summary || '',
-    channel_id: full.channel_id || '',
-    storyline_ids: d.storyline_ids || [],
-    event_type: full.event_type || '',
-    event_date: full.event_date || '',
-    source_id: d.source_id || '',
-    scores: d.scores || {},
-    score_mean: d.score_mean || 0,
-    reasons: d.reasons || [],
-    evidence: d.evidence || [],
-    verification: d.verification || null,
-    published_at: full.published_at || audit.run?.as_of || '',
-    url: full.url || ''
-  };
-});
 
 const report = {
-  schema_version: '1.0',
-  run_id: latestRun.replace(/\.json$/, ''),
-  run_time: audit.run?.as_of || '',
-  applied: audit.applied || false,
+  schema_version: '2.0',
+  source: 'applied-content-runs',
+  latest_run_at: latestRunAt,
+  candidate_count: candidates.length,
   candidates
 };
+const serialized = `${JSON.stringify(report, null, 2)}\n`;
 
-const outDir = resolve(root, 'public', 'data');
-await mkdir(outDir, { recursive: true });
-await writeFile(resolve(outDir, 'pipeline-reviews.json'), `${JSON.stringify(report, null, 2)}\n`, 'utf8');
+if (checkOnly) {
+  let current = '';
+  try {
+    current = await readFile(outputPath, 'utf8');
+  } catch {
+    // Missing output is reported below.
+  }
+  if (current !== serialized) {
+    throw new Error('public/data/pipeline-reviews.json is stale. Run npm run content:status and commit the result.');
+  }
+  console.log(`Pipeline preflight contract passed: ${candidates.length} candidate(s) require human judgment.`);
+  process.exit(0);
+}
 
-console.log(`Pipeline review aggregated: ${candidates.length} needs_review candidate(s) from run ${report.run_id}.`);
+await mkdir(dirname(outputPath), { recursive: true });
+await writeFile(outputPath, serialized, 'utf8');
+console.log(`Pipeline preflight refreshed: ${candidates.length} candidate(s) require human judgment.`);

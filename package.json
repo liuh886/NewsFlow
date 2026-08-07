@@ -4,13 +4,13 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "check": "node scripts/check.mjs && node scripts/check-language.mjs && node scripts/check-membership.mjs && node scripts/check-magazine-polish.mjs && node scripts/check-editorial-office.mjs && node scripts/check-product-polish.mjs && node scripts/check-ga4.mjs",
+    "check": "node scripts/check.mjs && node scripts/check-language.mjs && node scripts/check-membership.mjs && node scripts/check-magazine-polish.mjs && node scripts/check-editorial-office.mjs && node scripts/aggregate-pipeline-reviews.mjs --check && node scripts/check-product-polish.mjs && node scripts/check-ga4.mjs",
     "build": "node scripts/build.mjs",
     "publish:edition": "node scripts/publish-edition.mjs",
     "publish:edition:dry-run": "node scripts/publish-edition.mjs --dry-run --force",
     "content:check": "node scripts/update-content.mjs --check",
     "content:update": "node scripts/update-content.mjs",
-    "content:status": "node scripts/update-data-status.mjs",
+    "content:status": "node scripts/update-data-status.mjs && node scripts/aggregate-pipeline-reviews.mjs",
     "review:process": "node scripts/process-reviews.mjs",
     "supabase:catalog": "node scripts/sync-supabase-catalog.mjs"
   },

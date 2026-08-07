@@ -6,22 +6,26 @@ NewsFlow should feel like a credible academic journal operated through a game co
 
 The journal layer owns facts, evidence, decisions, issue composition and publication records. The game layer owns pacing, anticipation, stamps, short animations and humorous emotional feedback. Game copy must never alter a score, decision, evidence record or exported audit artifact.
 
+Automated pipeline output is **pre-review evidence**, not a second editorial workflow. A machine may flag an unresolved source, date or methodology boundary inside the manuscript, but only the existing four-state decision desk may accept, revise or reject it. Do not create separate approve/reject state, override exports or parallel review archives.
+
 ## Visual grammar
 
 - Paper, ink, rules, folio numbers, manuscript IDs and editorial stamps establish institutional authority.
 - Serif typography carries article and decision hierarchy; mono typography carries metadata, keyboard shortcuts and system state.
 - Burgundy is the editorial accent. Green, blue and ochre are reserved for accepted, minor-revision and major-revision feedback.
+- Machine pre-review uses ruled marginalia, numbered findings and evidence citations—not dashboard cards, progress bars or pill badges.
 - Motion should resemble paper handling and rubber stamps, not arcade particles or cartoon bounce.
 - Interfaces may be witty, but never visually childish.
 
 ## Core game loop
 
 1. A manuscript enters the desk with a stable ID, scope and evidence summary.
-2. The editor signs one of four decisions: accept, minor revision, major revision or reject.
-3. The real decision is immediately persisted to the local editorial record.
-4. A short editorial event appears as emotional feedback. It is random, dismissible and explicitly marked as excluded from the record.
-5. Accepted manuscripts compete for limited issue slots and one cover position.
-6. Closing an issue converts a sequence of judgments into a formal publication artifact.
+2. When automation found an unresolved boundary, the manuscript displays a read-only pre-review note before the decision letter.
+3. The editor signs one of four decisions: accept, minor revision, major revision or reject.
+4. The real decision is immediately persisted to the local editorial record.
+5. A short editorial event appears as emotional feedback. It is random, dismissible and explicitly marked as excluded from the record.
+6. Accepted manuscripts compete for limited issue slots and one cover position.
+7. Closing an issue converts a sequence of judgments into a formal publication artifact.
 
 ## Humour boundary
 
@@ -36,4 +40,4 @@ Humour should target familiar academic rituals: reviewer two, impossible robustn
 
 ## Data freshness
 
-The masthead date beside NEWSFLOW is not the browser date and not the newest article date. It is derived from the latest applied content-run audit artifact. The content pipeline must update `public/data/data-status.json` whenever accepted Signals are applied.
+The masthead date beside NEWSFLOW is not the browser date and not the newest article date. It is derived from the latest applied content-run audit artifact. The content pipeline must update `public/data/data-status.json` and the deterministic machine pre-review snapshot whenever accepted Signals are applied.

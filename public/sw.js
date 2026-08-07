@@ -1,4 +1,4 @@
-const CACHE_NAME = 'newsflow-editorial-v2.3.1-magazine-v2.4.1-serious-play-v2.5.0';
+const CACHE_NAME = 'newsflow-editorial-v2.3.1-magazine-v2.4.1-serious-play-v2.5.1';
 const APP_SHELL = [
   './',
   './index.html',
@@ -8,6 +8,7 @@ const APP_SHELL = [
   './magazine-polish.css',
   './editorial-office.css',
   './editorial-game-loop.css',
+  './editorial-preflight.css',
   './editorial-delight.css',
   './editorial-app.js',
   './polish.js',
@@ -16,6 +17,7 @@ const APP_SHELL = [
   './language-polish.js',
   './supabase-feedback.js',
   './editorial-office.js',
+  './editorial-preflight.js',
   './editorial-delight.js',
   './membership-config.js',
   './icon.svg',
@@ -27,6 +29,7 @@ const APP_SHELL = [
   './data/issues.json',
   './data/storylines.json',
   './data/review-candidates.json',
+  './data/pipeline-reviews.json',
   './data/supabase-config.json',
   './data/data-status.json'
 ];
