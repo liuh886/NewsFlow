@@ -41,7 +41,7 @@ for (const contract of [
   "newsflow_guest_editor_v1",
   "exercise_fallback",
   "BLIND EDITORIAL EXERCISE",
-  "按 1",
+  "data-guest-action=\"decision\"",
   "DECISIONS"
 ]) {
   if (!guestSource.includes(contract)) throw new Error(`Guest Editor runtime is missing contract: ${contract}`);
