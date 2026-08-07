@@ -642,9 +642,16 @@ html.nf-review-game-open body {
   font: 500 clamp(17px, 2.4vw, 22px)/1.5 var(--font-editorial, Georgia, serif);
 }
 
+.nf-review-countdown {
+  margin: 20px auto 0;
+  color: var(--nf-review-muted);
+  font: 700 20px/1 var(--font-mono, monospace);
+  letter-spacing: 0.08em;
+}
+
 .nf-review-next {
   justify-self: center;
-  margin-top: 26px;
+  margin-top: 18px;
 }
 
 .nf-review-results {
@@ -787,6 +794,17 @@ html.nf-review-game-open body {
 @keyframes nf-review-stamp-in {
   from { opacity: 0; transform: scale(1.5) rotate(-12deg); }
   to { opacity: 1; transform: scale(1) rotate(-5deg); }
+}
+
+@media (min-width: 761px) {
+  .nf-review-stage {
+    overflow: hidden;
+  }
+
+  .nf-review-stack,
+  .nf-review-card {
+    zoom: 0.8;
+  }
 }
 
 @media (max-width: 760px) {

@@ -42,11 +42,15 @@ for (const retired of ['./guest-editor.js', './guest-editor.css', './editorial-d
 for (const contract of [
   "const FORMAL_STORAGE_KEY = 'newsflow_review_game_v4'",
   "const GUEST_STORAGE_PREFIX = 'newsflow_review_game_v4_guest'",
+  'const REACTION_HOLD_MS = 3000',
   "const openFormal = async () =>",
   "const openGuest = async",
   "const renderReview = () =>",
   "const renderDecisionBar = () =>",
   "const openSettlement = () =>",
+  'countdown: 3',
+  'nf-review-countdown',
+  'window.setTimeout(advance, REACTION_HOLD_MS)',
   "window.NewsFlowReviewGame",
   "guest_editor_invite_open",
   "editor_review_game_open",
@@ -91,7 +95,11 @@ for (const selector of [
   '.nf-review-decision-bar',
   'grid-template-columns: repeat(5',
   '.nf-review-stamp',
+  '.nf-review-countdown',
+  'zoom: 0.8',
+  'overflow: hidden',
   '.nf-settlement-row',
+  '@media (min-width: 761px)',
   '@media (max-width: 760px)',
   '@media (prefers-reduced-motion: reduce)'
 ]) {
@@ -119,4 +127,4 @@ for (const decision of ['cover_story', 'accept', 'minor_revision', 'major_revisi
   }
 }
 
-console.log('NewsFlow review game contract passed: reader website, editor game, one shared five-decision engine and post-game settlement.');
+console.log('NewsFlow review game contract passed: compact 80% desktop manuscript, three-second countdown, one shared five-decision engine and post-game settlement.');
