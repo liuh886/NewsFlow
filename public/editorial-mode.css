@@ -1,0 +1,246 @@
+:root {
+  --nf-mode-paper: #f3efe5;
+  --nf-mode-ink: #171615;
+  --nf-mode-muted: #70685f;
+  --nf-mode-line: #b9ae9f;
+  --nf-mode-red: #7f2430;
+}
+
+html[data-theme='dark'] {
+  --nf-mode-paper: #1b1a17;
+  --nf-mode-ink: #f2ede3;
+  --nf-mode-muted: #aca399;
+  --nf-mode-line: #574f45;
+  --nf-mode-red: #d57a84;
+}
+
+html.nf-mode-dialog-open,
+html.nf-mode-dialog-open body {
+  overflow: hidden;
+}
+
+#newsflow-editorial-mode-root {
+  position: relative;
+  z-index: 11900;
+  font-family: var(--font-ui, system-ui, sans-serif);
+}
+
+.nf-mode-trigger {
+  min-height: 36px;
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  padding: 4px 9px 4px 5px;
+  border: 1px solid color-mix(in srgb, var(--ink) 20%, transparent);
+  border-radius: 999px;
+  color: var(--ink);
+  background: color-mix(in srgb, var(--surface) 88%, transparent);
+  cursor: pointer;
+  font-family: var(--font-ui);
+}
+
+.nf-mode-trigger > span {
+  width: 26px;
+  height: 26px;
+  display: grid;
+  place-items: center;
+  border-radius: 50%;
+  color: var(--nf-mode-paper);
+  background: var(--nf-mode-ink);
+  font: 700 10px/1 var(--font-editorial, Georgia, serif);
+}
+
+.nf-mode-trigger.is-editor > span {
+  background: var(--nf-mode-red);
+}
+
+.nf-mode-trigger > strong {
+  font-size: 11px;
+  font-weight: 700;
+}
+
+.nf-mode-trigger:hover,
+.nf-mode-trigger:focus-visible {
+  border-color: color-mix(in srgb, var(--nf-mode-red) 52%, transparent);
+  outline: none;
+}
+
+.nf-mode-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 11900;
+  border: 0;
+  background: rgba(15, 13, 11, .58);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+}
+
+.nf-mode-dialog {
+  position: fixed;
+  z-index: 11910;
+  top: 50%;
+  left: 50%;
+  width: min(900px, calc(100vw - 36px));
+  max-height: calc(100dvh - 36px);
+  overflow: auto;
+  padding: clamp(28px, 5vw, 50px);
+  border: 1px solid var(--nf-mode-line);
+  color: var(--nf-mode-ink);
+  background: var(--nf-mode-paper);
+  box-shadow: 0 32px 90px rgba(0,0,0,.34);
+  transform: translate(-50%, -50%);
+}
+
+.nf-mode-dialog::before {
+  content: '';
+  position: absolute;
+  inset: 9px;
+  border: 1px solid color-mix(in srgb, var(--nf-mode-line) 70%, transparent);
+  pointer-events: none;
+}
+
+.nf-mode-dialog header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 20px;
+  padding-bottom: 20px;
+  border-bottom: 4px double var(--nf-mode-ink);
+}
+
+.nf-mode-dialog header span {
+  color: var(--nf-mode-red);
+  font: 700 9px/1 var(--font-mono, monospace);
+  letter-spacing: .14em;
+}
+
+.nf-mode-dialog h2 {
+  margin: 6px 0 0;
+  font: 600 clamp(38px, 6vw, 58px)/.98 var(--font-editorial, Georgia, serif);
+  letter-spacing: -.045em;
+}
+
+.nf-mode-dialog > p {
+  max-width: 690px;
+  margin: 22px 0 26px;
+  color: var(--nf-mode-muted);
+  font: 500 18px/1.6 var(--font-editorial, Georgia, serif);
+}
+
+.nf-mode-close {
+  width: 40px;
+  height: 40px;
+  display: grid;
+  place-items: center;
+  flex: 0 0 auto;
+  border: 1px solid var(--nf-mode-line);
+  border-radius: 50%;
+  color: inherit;
+  background: transparent;
+  cursor: pointer;
+  font-size: 24px;
+}
+
+.nf-mode-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 16px;
+}
+
+.nf-mode-card {
+  position: relative;
+  min-height: 280px;
+  display: grid;
+  grid-template-columns: 36px minmax(0, 1fr);
+  gap: 18px;
+  padding: 24px;
+  border: 1px solid var(--nf-mode-line);
+  color: var(--nf-mode-ink);
+  background: color-mix(in srgb, var(--nf-mode-paper) 94%, white 6%);
+  text-align: left;
+  cursor: pointer;
+}
+
+.nf-mode-card:hover,
+.nf-mode-card:focus-visible,
+.nf-mode-card.is-selected {
+  border-color: var(--nf-mode-red);
+  outline: none;
+}
+
+.nf-mode-number {
+  color: var(--nf-mode-red);
+  font: 700 9px/1 var(--font-mono, monospace);
+  letter-spacing: .12em;
+  writing-mode: vertical-rl;
+}
+
+.nf-mode-copy {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+}
+
+.nf-mode-copy > span {
+  color: var(--nf-mode-muted);
+  font: 700 9px/1 var(--font-mono, monospace);
+  letter-spacing: .12em;
+}
+
+.nf-mode-copy strong {
+  margin-top: 12px;
+  font: 600 clamp(34px, 5vw, 50px)/1 var(--font-editorial, Georgia, serif);
+}
+
+.nf-mode-copy em {
+  margin-top: 20px;
+  font-style: normal;
+  font-size: 15px;
+  line-height: 1.6;
+}
+
+.nf-mode-copy small {
+  margin-top: auto;
+  padding-top: 28px;
+  color: var(--nf-mode-muted);
+  font-size: 11px;
+  line-height: 1.55;
+}
+
+.nf-mode-card > b {
+  position: absolute;
+  right: 18px;
+  bottom: 16px;
+  color: var(--nf-mode-red);
+  font: 700 9px/1 var(--font-mono, monospace);
+}
+
+.nf-mode-dialog footer {
+  margin-top: 22px;
+  padding-top: 16px;
+  border-top: 1px solid var(--nf-mode-line);
+  color: var(--nf-mode-muted);
+  font: 700 8px/1.5 var(--font-mono, monospace);
+  letter-spacing: .08em;
+}
+
+@media (max-width: 720px) {
+  .nf-mode-trigger > span { display: none; }
+  .nf-mode-trigger { padding: 5px 10px; }
+
+  .nf-mode-dialog {
+    width: 100vw;
+    min-height: 100dvh;
+    max-height: 100dvh;
+    padding: max(26px, env(safe-area-inset-top)) 18px max(26px, env(safe-area-inset-bottom));
+    border: 0;
+  }
+
+  .nf-mode-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .nf-mode-card {
+    min-height: 220px;
+  }
+}
