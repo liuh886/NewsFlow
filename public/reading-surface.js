@@ -180,9 +180,12 @@
   const open = (id, options = {}) => {
     const item = state.news.find((candidate) => itemId(candidate) === String(id || ''));
     if (!item) return;
-    state.returnFocus = document.activeElement instanceof HTMLElement ? document.activeElement : null;
+    const openingNewSurface = !state.activeId;
+    if (openingNewSurface) {
+      state.returnFocus = document.activeElement instanceof HTMLElement ? document.activeElement : null;
+    }
     state.activeId = itemId(item);
-    state.openedBySurface = !options.fromRoute;
+    if (!options.replace) state.openedBySurface = !options.fromRoute;
     if (!options.fromRoute) setRoute(state.activeId, Boolean(options.replace));
     render();
     globalThis.gtag?.('event', 'reader_article_open', {
