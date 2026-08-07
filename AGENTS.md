@@ -11,7 +11,7 @@ For recommendation, PWA feedback ingestion, preference learning or ranking, also
 - Read `editions/reference/edition.yaml`, `public/data/edition.json` and `config/content-discovery.json` before researching.
 - Treat the Edition, its scope and its editorial view as human-maintained authority.
 - A content update may add Signals and evidence movement. It must not edit the Edition, rewrite a Storyline `current_view`, hand-edit `public/data/issues.json`, or change application code.
-- Never edit `public/data/news.json` directly. Promote candidates only through `npm run content:update`.
+- Never edit `public/data/news.json` or the human preflight queue directly. Evaluate and apply candidates only through `npm run content:update`.
 
 ## Research boundary
 
@@ -38,9 +38,9 @@ For recommendation, PWA feedback ingestion, preference learning or ranking, also
 1. Read `WORKFLOW.md` and `config/content-workflow.json`, then every file listed in its `required_inputs`.
 2. Research the declared coverage window and create a candidate pack under `content/inbox/` using the contracts in `docs/content-update.md` and `docs/attention-policy.md`.
 3. Record the actual agent, runtime, workflow ID and workflow version under `run.actor`; never impersonate another agent or silently reuse an earlier actor record.
-4. Run `node scripts/update-content.mjs --input=content/inbox/<file>.json` and inspect every rejection or review item.
+4. Run `npm run content:update -- --input=content/inbox/<file>.json` and inspect every rejection or review item.
 5. Do not silently add an unregistered source. Leave it for review and propose a source-registry change separately.
-6. When the content task authorizes updating the repository, run the same command with `--apply`.
+6. When the content task authorizes updating the repository, run `npm run content:update -- --input=content/inbox/<file>.json --apply`. This command updates Signals, audit artifacts and the durable human preflight queue as one transaction.
 7. Run `npm run check` and `npm run build`.
 8. Report sources checked, accepted/rejected/review counts, changed files, unresolved uncertainty and validation results.
 

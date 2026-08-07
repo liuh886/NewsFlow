@@ -54,7 +54,7 @@ jobs:
           shopt -s nullglob
           for pack in content/inbox/review-processed-*.json; do
             echo "Applying $pack..."
-            node scripts/update-content.mjs --input="$pack" --apply
+            npm run content:update -- --input="$pack" --apply
             rm "$pack"
           done
           shopt -u nullglob
@@ -70,11 +70,11 @@ jobs:
         run: |
           git config user.name "newsflow-review-bot"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add -A -- public/data/news.json public/data/data-status.json content/inbox content/state content/runs
+          git add -A -- public/data/news.json public/data/data-status.json public/data/pipeline-reviews.json content/inbox content/state content/runs
           if git diff --staged --quiet; then
             echo "No review outcomes to commit."
             exit 0
           fi
-          git commit -m "chore: apply review outcomes and refresh data status"
+          git commit -m "chore: apply review outcomes and refresh editorial state"
           git pull --rebase origin main
           git push

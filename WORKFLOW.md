@@ -19,7 +19,8 @@ If the operator requests a content update, that authorizes research and creation
 3. Source, discovery and scout registries define where and how to search.
 4. The JSON Schema defines the exchange format.
 5. `scripts/update-content.mjs` makes deterministic promotion decisions.
-6. Agent-specific files are adapters only; they may not weaken or extend this workflow.
+6. `scripts/apply-content.mjs` applies those decisions and persists the human preflight queue.
+7. Agent-specific files are adapters only; they may not weaken or extend this workflow.
 
 If two layers conflict, stop before applying and report the conflict.
 
@@ -51,14 +52,14 @@ If two layers conflict, stop before applying and report the conflict.
 
 - Write one JSON candidate pack to `content/inbox/` using `schemas/content-candidate-pack.schema.json`.
 - Include claim-level evidence and short excerpts from the same canonical URL.
-- Do not edit the Edition, Storyline views, application code, `public/data/news.json` or `public/data/issues.json` directly.
+- Do not edit the Edition, Storyline views, application code, `public/data/news.json`, the human preflight queue or `public/data/issues.json` directly.
 
 ### 5. Validate and promote
 
 Run the deterministic dry-run:
 
 ```bash
-node scripts/update-content.mjs --input=content/inbox/<candidate-pack>.json
+npm run content:update -- --input=content/inbox/<candidate-pack>.json
 ```
 
 Inspect every `accepted`, `needs_review` and `rejected` decision. Never reinterpret `needs_review` as accepted.
@@ -66,10 +67,12 @@ Inspect every `accepted`, `needs_review` and `rejected` decision. Never reinterp
 Only with explicit update authorization:
 
 ```bash
-node scripts/update-content.mjs --input=content/inbox/<candidate-pack>.json --apply
+npm run content:update -- --input=content/inbox/<candidate-pack>.json --apply
 npm run check
 npm run build
 ```
+
+The apply command updates accepted Signals, writes the immutable audit and adds or removes durable human-preflight items from `content/state/pipeline-review-queue.json`. A `needs_review` candidate remains available to the formal editorial desk even after the transient inbox is cleaned.
 
 ### 6. Handoff
 
@@ -79,6 +82,6 @@ Report the declared time window, agent identity and workflow version; sources an
 
 - `completed_no_material_change`: research completed, but no candidate earned attention.
 - `completed_dry_run`: candidate pack and decision report produced; repository data not changed.
-- `completed_applied`: accepted Signals promoted, audit written, checks passed.
-- `needs_human_review`: at least one material ambiguity or unregistered source remains; do not self-approve it.
+- `completed_applied`: accepted Signals promoted, audit written, preflight state synchronized, checks passed.
+- `needs_human_review`: at least one material ambiguity or unregistered source remains in the formal editorial desk; do not self-approve it.
 - `blocked`: required evidence, access or contract inputs are unavailable; do not fabricate a substitute.

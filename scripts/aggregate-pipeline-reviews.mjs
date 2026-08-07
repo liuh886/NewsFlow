@@ -1,89 +1,83 @@
-import { access, mkdir, readFile, readdir, writeFile } from 'node:fs/promises';
+import { mkdir, readFile, writeFile } from 'node:fs/promises';
 import { dirname, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 const root = resolve(dirname(fileURLToPath(import.meta.url)), '..');
+const queuePath = resolve(root, 'content/state/pipeline-review-queue.json');
+const outputPath = resolve(root, 'public/data/pipeline-reviews.json');
+const checkOnly = process.argv.includes('--check');
 
-const readJson = async (path) => {
-  try { return JSON.parse(await readFile(resolve(root, path), 'utf8')); } catch { return null; }
-};
-
-const resolutionStatePath = 'content/state/pipeline-review-resolutions.json';
-const resolutions = await readJson(resolutionStatePath) || {};
-const resolvedIds = new Set(Object.keys(resolutions));
-
-const runsDir = resolve(root, 'content', 'runs');
-let runFiles = [];
-try {
-  runFiles = (await readdir(runsDir)).filter((f) => f.endsWith('.json')).sort().reverse();
-} catch {
-  console.log('No run audits found. Skipping pipeline review aggregation.');
-  process.exit(0);
+const queue = JSON.parse(await readFile(queuePath, 'utf8'));
+if (queue.schema_version !== '1.0' || !Array.isArray(queue.items)) {
+  throw new Error('content/state/pipeline-review-queue.json has an invalid contract.');
 }
 
-const inboxDir = resolve(root, 'content', 'inbox');
-let inboxFiles = [];
-try {
-  inboxFiles = (await readdir(inboxDir)).filter((f) => f.endsWith('.json'));
-} catch {
-  inboxFiles = [];
-}
-
-const inboxCandidates = new Map();
-for (const file of inboxFiles) {
-  const pack = await readJson(`content/inbox/${file}`);
-  if (!pack?.candidates) continue;
-  for (const c of pack.candidates) {
-    if (c.id) inboxCandidates.set(c.id, c);
-  }
-}
-
-const latestRun = runFiles[0];
-if (!latestRun) {
-  console.log('No run audits found.');
-  process.exit(0);
-}
-
-const audit = await readJson(`content/runs/${latestRun}`);
-if (!audit?.decisions) {
-  console.log('Run audit has no decisions array.');
-  process.exit(0);
-}
-
-const needsReview = audit.decisions.filter((d) => d.status === 'needs_review' && !resolvedIds.has(d.id));
-
-const candidates = needsReview.map((d) => {
-  const full = inboxCandidates.get(d.id) || {};
+const candidates = queue.items.map((item) => {
+  const candidate = item.candidate || {};
+  const decision = item.decision || {};
   return {
-    id: d.id,
-    title: full.title || d.id,
-    short_summary: full.short_summary || '',
-    long_summary: full.long_summary || '',
-    channel_id: full.channel_id || '',
-    storyline_ids: d.storyline_ids || [],
-    event_type: full.event_type || '',
-    event_date: full.event_date || '',
-    source_id: d.source_id || '',
-    scores: d.scores || {},
-    score_mean: d.score_mean || 0,
-    reasons: d.reasons || [],
-    evidence: d.evidence || [],
-    verification: d.verification || null,
-    published_at: full.published_at || audit.run?.as_of || '',
-    url: full.url || ''
+    id: String(item.id || candidate.id || ''),
+    manuscript_key: String(item.manuscript_key || item.id || '').slice(-8).toUpperCase(),
+    title: String(candidate.title || ''),
+    channel_id: String(candidate.channel_id || ''),
+    source_id: String(decision.source_id || ''),
+    score_mean: Number(decision.score_mean || 0),
+    reasons: Array.isArray(decision.reasons) ? decision.reasons.map(String) : [],
+    evidence: Array.isArray(candidate.evidence) ? candidate.evidence.map((evidence) => ({
+      claim: String(evidence?.claim || ''),
+      source_excerpt: String(evidence?.source_excerpt || ''),
+      source_url: String(evidence?.source_url || '')
+    })) : [],
+    run_id: String(item.run?.id || ''),
+    run_time: String(item.run?.as_of || '')
   };
-});
+}).sort((left, right) => right.run_time.localeCompare(left.run_time) || left.id.localeCompare(right.id));
+
+const ids = new Set();
+const manuscriptKeys = new Set();
+for (const candidate of candidates) {
+  if (!candidate.id || !candidate.title) throw new Error('Pipeline preflight items require id and title.');
+  if (ids.has(candidate.id)) throw new Error(`Duplicate pipeline review id: ${candidate.id}`);
+  if (manuscriptKeys.has(candidate.manuscript_key)) {
+    throw new Error(`Pipeline review manuscript key collision: ${candidate.manuscript_key}`);
+  }
+  ids.add(candidate.id);
+  manuscriptKeys.add(candidate.manuscript_key);
+}
 
 const report = {
-  schema_version: '1.0',
-  run_id: latestRun.replace(/\.json$/, ''),
-  run_time: audit.run?.as_of || '',
-  applied: audit.applied || false,
+  schema_version: '2.0',
+  source: 'content-state',
+  latest_run_at: String(queue.updated_at || ''),
+  candidate_count: candidates.length,
   candidates
 };
+const serialized = `${JSON.stringify(report, null, 2)}\n`;
 
-const outDir = resolve(root, 'public', 'data');
-await mkdir(outDir, { recursive: true });
-await writeFile(resolve(outDir, 'pipeline-reviews.json'), `${JSON.stringify(report, null, 2)}\n`, 'utf8');
+if (checkOnly) {
+  let current = '';
+  try {
+    current = await readFile(outputPath, 'utf8');
+  } catch {
+    // Missing output is reported below.
+  }
+  if (current !== serialized) {
+    const currentLines = current.split('\n');
+    const expectedLines = serialized.split('\n');
+    const lineCount = Math.max(currentLines.length, expectedLines.length);
+    let mismatch = 0;
+    while (mismatch < lineCount && currentLines[mismatch] === expectedLines[mismatch]) mismatch += 1;
+    throw new Error([
+      'public/data/pipeline-reviews.json is stale. Run npm run content:status and commit the result.',
+      `First mismatch at line ${mismatch + 1}.`,
+      `Current: ${currentLines[mismatch] ?? '<missing>'}`,
+      `Expected: ${expectedLines[mismatch] ?? '<missing>'}`
+    ].join('\n'));
+  }
+  console.log(`Pipeline preflight contract passed: ${candidates.length} candidate(s) require human judgment.`);
+  process.exit(0);
+}
 
-console.log(`Pipeline review aggregated: ${candidates.length} needs_review candidate(s) from run ${report.run_id}.`);
+await mkdir(dirname(outputPath), { recursive: true });
+await writeFile(outputPath, serialized, 'utf8');
+console.log(`Pipeline preflight refreshed: ${candidates.length} candidate(s) require human judgment.`);

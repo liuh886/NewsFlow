@@ -14,7 +14,6 @@
     { id: 'reject', label: '拒稿', code: 'REJECT', key: '4', description: '未达到本刊的事实、时效或产业影响门槛。' }
   ];
 
-  const PIPELINE_REVIEW_STORAGE = 'newsflow_pipeline_resolutions_v1';
   const state = {
     account: null,
     role: '',
@@ -32,10 +31,7 @@
     loading: false,
     promptedForUser: '',
     toast: null,
-    lastDecision: null,
-    pipelineReviews: [],
-    pipelineRunId: '',
-    pipelineResolutions: {}
+    lastDecision: null
   };
 
   let toastTimer = 0;
@@ -223,20 +219,6 @@
     }
   };
 
-  const loadPipelineReviews = async () => {
-    state.pipelineResolutions = readJson(PIPELINE_REVIEW_STORAGE, {});
-    try {
-      const response = await fetch('./data/pipeline-reviews.json', { cache: 'no-store' });
-      if (!response.ok) { state.pipelineReviews = []; state.pipelineRunId = ''; return; }
-      const data = await response.json();
-      state.pipelineReviews = Array.isArray(data.candidates) ? data.candidates : [];
-      state.pipelineRunId = data.run_id || '';
-    } catch {
-      state.pipelineReviews = [];
-      state.pipelineRunId = '';
-    }
-  };
-
   const openOffice = async () => {
     if (!state.account?.user) {
       openAccount();
@@ -254,7 +236,6 @@
     state.officeTab = 'desk';
     renderOverlay();
     if (!state.storylines.length && !state.candidates.length) await loadOfficeData();
-    await loadPipelineReviews();
   };
 
   const closeOffice = () => {
@@ -567,100 +548,14 @@
     return `<div class="nf-editorial-toast" role="status"><span>${escapeHtml(state.toast.message)}</span>${state.toast.action ? `<button data-editorial-action="${escapeHtml(state.toast.action)}">撤销</button>` : ''}<button aria-label="关闭提示" data-editorial-action="dismiss-toast">×</button></div>`;
   };
 
-  const renderPipelineReview = () => {
-    const pending = state.pipelineReviews.filter((c) => !state.pipelineResolutions[c.id]);
-    const approved = state.pipelineReviews.filter((c) => state.pipelineResolutions[c.id] === 'approved');
-    return `<section class="nf-office-panel" aria-labelledby="nf-pipeline-heading">
-      <div class="nf-panel-heading"><div><span class="nf-office-eyebrow">Pipeline review · ${state.pipelineRunId ? String(state.pipelineRunId).slice(0, 15) : 'none'}</span><h2 id="nf-pipeline-heading">待审队列</h2></div><span>${pending.length}/${state.pipelineReviews.length} 条待处理${approved.length ? ` · ${approved.length} 条已批准` : ''}</span></div>
-      ${approved.length ? `<div class="nf-pipeline-export-bar"><p>${approved.length} 条信号已批准。导出补丁包后在本地终端执行 <code>node scripts/update-content.mjs --input=content/inbox/review-override-&lt;timestamp&gt;.json --apply</code> 即可推广到线上。</p><button class="nf-pipeline-btn approve" data-editorial-action="pipeline-export">导出已批准信号</button></div>` : ''}
-      ${state.pipelineReviews.length === 0 ? '<div class="nf-archive-empty">没有来自内容更新流水线的待审信号。</div>' : ''}
-      ${pending.map((candidate) => {
-        const resolved = !!state.pipelineResolutions[candidate.id];
-        const resolution = state.pipelineResolutions[candidate.id];
-        const dims = ['facts', 'source', 'timeliness', 'news_quality', 'industry_impact'];
-        const labels = { facts: '事实', source: '来源', timeliness: '时效', news_quality: '新闻质量', industry_impact: '行业影响' };
-        return `<article class="nf-pipeline-card ${resolved ? 'is-resolved' : ''}">
-          <div class="nf-pipeline-head">
-            <div><span class="nf-office-eyebrow">${escapeHtml(candidate.channel_id || '')} · ${escapeHtml(candidate.source_id || '')}</span><h3>${escapeHtml(candidate.title || '未命名')}</h3></div>
-            ${resolved ? `<span class="nf-pipeline-badge is-${resolution}">${resolution === 'approved' ? '已批准' : '已退回'}</span>` : ''}
-          </div>
-          <p class="nf-pipeline-summary">${escapeHtml(candidate.short_summary || '')}</p>
-          ${candidate.reasons.length ? `<div class="nf-pipeline-reasons"><span>审阅理由</span><ul>${candidate.reasons.map((r) => `<li>${escapeHtml(r)}</li>`).join('')}</ul></div>` : ''}
-          <div class="nf-pipeline-scores">
-            ${dims.map((dim) => {
-              const value = Number(candidate.scores?.[dim]) || 0;
-              return `<div class="nf-pipeline-score-row"><span>${labels[dim]}</span><div class="nf-score-track"><span style="width:${value * 20}%"></span></div><span>${value.toFixed(1)}</span></div>`;
-            }).join('')}
-            <div class="nf-pipeline-score-mean">均值 ${(candidate.score_mean || 0).toFixed(1)} / 5</div>
-          </div>
-          ${candidate.evidence?.length ? `<details class="nf-pipeline-evidence"><summary>证据链 (${candidate.evidence.length} 条)</summary>${candidate.evidence.map((e, i) => `<div class="nf-pipeline-evidence-item"><strong>${i + 1}. ${escapeHtml(e.claim || '')}</strong><blockquote>${escapeHtml(e.source_excerpt || '')}</blockquote></div>`).join('')}</details>` : ''}
-          ${!resolved ? `<div class="nf-pipeline-actions">
-            <button class="nf-pipeline-btn reject" data-editorial-action="pipeline-reject" data-candidate-id="${escapeHtml(candidate.id)}">退回</button>
-            <button class="nf-pipeline-btn approve" data-editorial-action="pipeline-approve" data-candidate-id="${escapeHtml(candidate.id)}">批准</button>
-          </div>` : ''}
-        </article>`;
-      }).join('')}
-    </section>`;
-  };
-
-  const exportPipelineOverrides = () => {
-    const approved = state.pipelineReviews.filter((c) => state.pipelineResolutions[c.id] === 'approved');
-    if (!approved.length) return;
-    const now = new Date();
-    const pack = {
-      schema_version: '1.0',
-      edition_id: 'frontier-systems-review',
-      run: {
-        as_of: now.toISOString(),
-        coverage_start: approved[0]?.published_at || now.toISOString(),
-        coverage_end: now.toISOString(),
-        timezone: 'Asia/Shanghai',
-        actor: {
-          agent_id: 'editorial-override',
-          runtime: 'NewsFlow Editorial Office pipeline review',
-          workflow_id: 'newsflow-content-update',
-          workflow_version: '1.0.0'
-        }
-      },
-      candidates: approved.map((c) => ({
-        id: c.id,
-        channel_id: c.channel_id,
-        event_type: c.event_type || 'editorial_override',
-        event_date: c.event_date || new Date().toISOString().slice(0, 10),
-        title: c.title,
-        url: c.url,
-        published_at: c.published_at || now.toISOString(),
-        retrieved_at: now.toISOString(),
-        short_summary: c.short_summary,
-        long_summary: c.long_summary || c.short_summary,
-        tags: c.tags || [],
-        storyline_ids: c.storyline_ids,
-        scores: c.scores,
-        verification: c.verification || { full_text_accessed: true, summary_supported_sentence_by_sentence: true },
-        evidence: c.evidence
-      }))
-    };
-    const timestamp = now.toISOString().replace(/[-:]/g, '').replace('T', '-').slice(0, 15);
-    const filename = `review-override-${timestamp}.json`;
-    const blob = new Blob([`${JSON.stringify(pack, null, 2)}\n`], { type: 'application/json' });
-    const url = URL.createObjectURL(blob);
-    const anchor = document.createElement('a');
-    anchor.href = url;
-    anchor.download = filename;
-    anchor.click();
-    URL.revokeObjectURL(url);
-    showToast(`已导出 ${filename}，放入 content/inbox/ 后执行 --apply 即可推广到线上。`);
-  };
-
   const renderOffice = () => {
     if (!state.officeOpen) return '';
     const panel = state.loading
       ? '<div class="nf-office-loading"><div class="nf-office-seal">NF</div><span>正在调取稿件与征稿范围</span></div>'
-      : state.officeTab === 'pipeline' ? renderPipelineReview()
-        : state.officeTab === 'issue' ? renderIssueDesk()
-          : state.officeTab === 'calls' ? renderCalls()
-            : state.officeTab === 'archive' ? renderArchive()
-              : renderDesk();
+      : state.officeTab === 'issue' ? renderIssueDesk()
+        : state.officeTab === 'calls' ? renderCalls()
+          : state.officeTab === 'archive' ? renderArchive()
+            : renderDesk();
     return `<section class="nf-office-shell" role="dialog" aria-modal="true" aria-labelledby="nf-office-title">
       <header class="nf-office-header">
         <div class="nf-office-brand"><span class="nf-office-seal">NF</span><div><span class="nf-office-eyebrow">Frontier Systems Review</span><h1 id="nf-office-title">Editorial Office</h1></div></div>
@@ -669,7 +564,6 @@
       </header>
       <nav class="nf-office-tabs" aria-label="编辑部导航">
         <button class="${state.officeTab === 'desk' ? 'is-active' : ''}" data-editorial-action="tab" data-tab="desk">待审稿件</button>
-        <button class="${state.officeTab === 'pipeline' ? 'is-active' : ''}" data-editorial-action="tab" data-tab="pipeline">待审队列 <span>${state.pipelineReviews.filter((c) => !state.pipelineResolutions[c.id]).length}</span></button>
         <button class="${state.officeTab === 'issue' ? 'is-active' : ''}" data-editorial-action="tab" data-tab="issue">本期编排 <span>${state.issueDraft.selected_ids.length}/${ISSUE_CAPACITY}</span></button>
         <button class="${state.officeTab === 'calls' ? 'is-active' : ''}" data-editorial-action="tab" data-tab="calls">征稿启事</button>
         <button class="${state.officeTab === 'archive' ? 'is-active' : ''}" data-editorial-action="tab" data-tab="archive">出版档案</button>
@@ -766,23 +660,6 @@
       const issueId = target.dataset.issueId || '';
       state.openIssueId = state.openIssueId === issueId ? '' : issueId;
       renderOverlay();
-    } else if (action === 'pipeline-approve' || action === 'pipeline-reject') {
-      const candidateId = target.dataset.candidateId || '';
-      if (!candidateId) return;
-      const resolution = action === 'pipeline-approve' ? 'approved' : 'rejected';
-      state.pipelineResolutions[candidateId] = resolution;
-      localStorage.setItem(PIPELINE_REVIEW_STORAGE, JSON.stringify(state.pipelineResolutions));
-      const label = resolution === 'approved' ? '已批准，可使用补丁包提交' : '已退回';
-      showToast(label, { action: 'undo-pipeline-resolution', candidateId });
-    } else if (action === 'undo-pipeline-resolution') {
-      const candidateId = target.dataset.candidateId || '';
-      if (candidateId) {
-        delete state.pipelineResolutions[candidateId];
-        localStorage.setItem(PIPELINE_REVIEW_STORAGE, JSON.stringify(state.pipelineResolutions));
-        showToast('已撤销');
-      }
-    } else if (action === 'pipeline-export') {
-      exportPipelineOverrides();
     } else if (action === 'export') exportEditorialRecord();
     else if (action === 'dismiss-toast') {
       state.toast = null;
