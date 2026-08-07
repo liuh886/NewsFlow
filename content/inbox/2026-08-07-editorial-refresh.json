@@ -1,0 +1,113 @@
+{
+  "schema_version": "1.0",
+  "edition_id": "frontier-systems-review",
+  "run": {
+    "as_of": "2026-08-07T17:52:00+08:00",
+    "coverage_start": "2026-08-03T00:00:00+08:00",
+    "coverage_end": "2026-08-07T17:52:00+08:00",
+    "timezone": "Asia/Shanghai",
+    "actor": {
+      "agent_id": "chatgpt-github",
+      "runtime": "ChatGPT",
+      "workflow_id": "newsflow-content-update",
+      "workflow_version": "1.0.0",
+      "model": "GPT-5.6 Sol"
+    }
+  },
+  "candidates": [
+    {
+      "id": "spacex-tesla-terafab-texas-2026",
+      "channel_id": "ai-infrastructure",
+      "event_type": "foundry_capacity",
+      "event_date": "2026-08-06",
+      "title": "SpaceX 与 Tesla 启动 168 亿美元 Terafab，试图把 AI 芯片制造、封装与测试收进同一体系",
+      "url": "https://www.reuters.com/business/media-telecom/spacex-says-terafab-be-built-texas-with-initial-investment-168-billion-2026-08-06/",
+      "published_at": "2026-08-06T14:25:56Z",
+      "retrieved_at": "2026-08-07T17:52:00+08:00",
+      "short_summary": "SpaceX 与 Tesla 宣布在得州 Grimes County 建设 Terafab，初始投资 168 亿美元，计划在同一园区制造、封装并测试先进逻辑与存储芯片，以支撑机器人、自动驾驶和高功率 AI 计算需求。",
+      "long_summary": "这不是单纯新增一座芯片厂，而是把先进逻辑、存储、封装和测试进一步垂直整合到同一 AI 产业体系。项目指向的核心约束是长期芯片供给：SpaceX 与 Tesla 预计未来计算需求超过 1 TW，并把自有制造能力视为降低外部供给瓶颈的一部分。对 NewsFlow 的判断意义在于，AI 基础设施竞争正在从采购算力继续向制造能力和产业链控制延伸。",
+      "tags": [
+        "AI & Tech",
+        "Semiconductor",
+        "Manufacturing",
+        "AI Infrastructure"
+      ],
+      "storyline_ids": [
+        "ai-chip-layer",
+        "ai-infrastructure-layer"
+      ],
+      "scores": {
+        "facts": 4.8,
+        "source": 4.6,
+        "timeliness": 5.0,
+        "news_quality": 4.7,
+        "industry_impact": 4.9
+      },
+      "verification": {
+        "full_text_accessed": true,
+        "summary_supported_sentence_by_sentence": true,
+        "attributed_to_source": true,
+        "stakeholder_position_attributed": true
+      },
+      "evidence": [
+        {
+          "claim": "SpaceX 与 Tesla 计划初始投入 168 亿美元建设 Terafab。",
+          "source_excerpt": "will initially invest $16.8 billion to build Terafab",
+          "source_url": "https://www.reuters.com/business/media-telecom/spacex-says-terafab-be-built-texas-with-initial-investment-168-billion-2026-08-06/"
+        },
+        {
+          "claim": "Terafab 计划在同一园区覆盖先进芯片制造、封装与测试。",
+          "source_excerpt": "make, package and test advanced logic and memory chips under one roof",
+          "source_url": "https://www.reuters.com/business/media-telecom/spacex-says-terafab-be-built-texas-with-initial-investment-168-billion-2026-08-06/"
+        }
+      ]
+    },
+    {
+      "id": "texas-data-center-grid-audit-pause-2026",
+      "channel_id": "ai-infrastructure",
+      "event_type": "regulatory_decision",
+      "event_date": "2026-08-04",
+      "title": "得州暂停新的数据中心并网审批并启动审计，474GW 申请队列暴露 AI 负荷扩张的真实性与电网约束",
+      "url": "https://www.reuters.com/business/energy/texas-governor-orders-pause-new-data-center-approvals-pending-audit-2026-08-04/",
+      "published_at": "2026-08-04T20:17:00Z",
+      "retrieved_at": "2026-08-07T17:52:00+08:00",
+      "short_summary": "得州州长要求暂停新的数据中心并网审批，在项目继续推进前审计所有申请。ERCOT 正审查约 474GW 的新增负荷申请，其中约 90% 来自数据中心，并已推迟 Batch Zero 输电规划研究。",
+      "long_summary": "这一变化把 AI 数据中心的电力约束从预测问题推进到了审批与真实性核验层面。474GW 的申请规模远超得州历史峰值负荷，监管者开始要求项目披露电力、水资源、所有权和地方影响，并验证哪些负荷是真实可落地需求。对 NewsFlow 的判断意义在于，AI 基础设施扩张不仅受发电和输电能力限制，还开始受到项目成熟度、社区接受度和并网治理的约束。",
+      "tags": [
+        "AI & Tech",
+        "Data Center",
+        "Grid",
+        "Regulation"
+      ],
+      "storyline_ids": [
+        "ai-energy-foundation",
+        "ai-infrastructure-layer"
+      ],
+      "scores": {
+        "facts": 4.9,
+        "source": 4.6,
+        "timeliness": 4.8,
+        "news_quality": 4.8,
+        "industry_impact": 5.0
+      },
+      "verification": {
+        "full_text_accessed": true,
+        "summary_supported_sentence_by_sentence": true,
+        "attributed_to_source": true,
+        "stakeholder_position_attributed": true
+      },
+      "evidence": [
+        {
+          "claim": "得州要求在继续审批前审计所有寻求电网连接的计划数据中心。",
+          "source_excerpt": "conduct an audit of all planned data centers seeking grid connections",
+          "source_url": "https://www.reuters.com/business/energy/texas-governor-orders-pause-new-data-center-approvals-pending-audit-2026-08-04/"
+        },
+        {
+          "claim": "ERCOT 正审查约 474GW 的新增负荷申请，其中约九成来自数据中心。",
+          "source_excerpt": "roughly 474 gigawatts of proposed new electricity demand",
+          "source_url": "https://www.reuters.com/business/energy/texas-governor-orders-pause-new-data-center-approvals-pending-audit-2026-08-04/"
+        }
+      ]
+    }
+  ]
+}
