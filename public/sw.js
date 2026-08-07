@@ -1,4 +1,5 @@
-const CACHE_NAME = 'newsflow-editorial-v2.3.1-magazine-v2.4.1-serious-play-v2.5.1';
+const CACHE_NAME = 'newsflow-editorial-v2.3.1-magazine-v2.4.1-serious-play-v2.5.2';
+const NETWORK_TIMEOUT_MS = 5000;
 const APP_SHELL = [
   './',
   './index.html',
@@ -10,6 +11,7 @@ const APP_SHELL = [
   './editorial-game-loop.css',
   './editorial-preflight.css',
   './editorial-delight.css',
+  './startup-resilience.js',
   './editorial-app.js',
   './polish.js',
   './edition-layer.js',
@@ -34,15 +36,32 @@ const APP_SHELL = [
   './data/data-status.json'
 ];
 
+const fetchWithTimeout = (request) => fetch(request, {
+  signal: AbortSignal.timeout(NETWORK_TIMEOUT_MS)
+});
+
 const cacheResponse = async (cache, request, response) => {
   if (response?.ok) await cache.put(request, response.clone());
   return response;
 };
 
+const warmAppShell = async () => {
+  const cache = await caches.open(CACHE_NAME);
+  await Promise.all(APP_SHELL.map(async (path) => {
+    try {
+      const request = new Request(path, { cache: 'reload' });
+      const response = await fetchWithTimeout(request);
+      if (response.ok) await cache.put(request, response);
+    } catch {
+      // A missed optional asset must not block activation of the recovery worker.
+    }
+  }));
+};
+
 const networkFirst = async (request, fallbackRequest = request) => {
   const cache = await caches.open(CACHE_NAME);
   try {
-    const response = await fetch(request);
+    const response = await fetchWithTimeout(request);
     if (!response.ok) throw new Error(`Network response: ${response.status}`);
     return await cacheResponse(cache, request, response);
   } catch {
@@ -53,7 +72,7 @@ const networkFirst = async (request, fallbackRequest = request) => {
 const staleWhileRevalidate = (event) => {
   const request = event.request;
   const networkUpdate = caches.open(CACHE_NAME)
-    .then((cache) => fetch(request).then((response) => cacheResponse(cache, request, response)))
+    .then((cache) => fetchWithTimeout(request).then((response) => cacheResponse(cache, request, response)))
     .catch(() => null);
 
   event.waitUntil(networkUpdate.then(() => undefined));
@@ -62,7 +81,7 @@ const staleWhileRevalidate = (event) => {
 };
 
 self.addEventListener('install', (event) => {
-  event.waitUntil(caches.open(CACHE_NAME).then((cache) => cache.addAll(APP_SHELL)));
+  event.waitUntil(warmAppShell());
   self.skipWaiting();
 });
 
