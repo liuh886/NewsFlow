@@ -6,7 +6,11 @@ NewsFlow is a GitHub-native professional publication with two deliberately diffe
 
 An Edition defines the reader promise, editorial view, scope, source policy, materiality boundaries and long-running Storylines. NewsFlow continuously gathers candidate evidence, lets editors judge it through a card-review game, and publishes a formal Issue on the 1st and 15th of each month.
 
-## Reader Mode
+## Product status
+
+NewsFlow now has one coherent editorial pipeline connecting evidence discovery, the five-state Review Game and the formal semi-monthly publication. Reader and Editor remain separate experiences, while the same content and authority model connects them underneath.
+
+### Reader Mode
 
 Reader Mode is the normal NewsFlow website. Its hierarchy is:
 
@@ -17,11 +21,9 @@ Reader Mode is the normal NewsFlow website. Its hierarchy is:
 5. Storylines and Archive;
 6. evidence and original sources.
 
-The homepage remains editorial rather than chronological: one important post-Issue Signal can lead the page. The **Editorial Desk itself is chronological by default**, newest first, with recommendation score used only as a tie-breaker.
+The homepage remains editorial rather than chronological: one important post-Issue Signal can lead the page. When a formal Issue contains a `cover_signal_id`, the cover story receives visibly stronger treatment inside the Current Issue. Ordinary accepted Signals remain secondary entries beneath it.
 
-When a formal Issue contains a `cover_signal_id`, the cover story receives visibly stronger treatment inside the Current Issue. Ordinary accepted Signals remain secondary entries beneath it.
-
-## Editor Mode
+### Editor Mode
 
 Selecting **Editor** opens the full-screen Review Game rather than an admin dashboard:
 
@@ -39,9 +41,13 @@ Desktop shortcuts are `1–5`; `Z` undoes the previous decision. On desktop the 
 
 Formal editors and Guest Editors share the same Review Game renderer. **UI mode is not publication authority.** Anyone may use the editor experience, while formal publication is restricted by the shared account authority model.
 
-## Editorial information flow
+## Editorial Signal Desk
 
-The production path is intentionally simple:
+The Editorial Signal Desk is the continuous evidence stream between formal Issues. It is **chronological by default**, newest first by `published_at`; recommendation score is used only as a tie-breaker. This differs intentionally from the single homepage lead, which may be selected by editorial importance.
+
+Search, filters, bookmarks, evidence views and Storylines remain supporting reader tools. The Desk can expose strong evidence before it is adopted into a formal Issue; appearing in the Desk does not equal formal publication.
+
+## Editorial information flow
 
 ```text
 source research
@@ -55,15 +61,15 @@ source research
   → Reader Mode
 ```
 
-The important publication semantics are:
+Publication semantics:
 
-- **封面文章** → eligible for the next formal Issue and becomes `cover_signal_id` when it is the selected cover;
+- **封面文章** → eligible for the next formal Issue and becomes `cover_signal_id` when selected as the cover;
 - **录用** → eligible for the next formal Issue;
 - **小修 / 大修 / 拒稿** → do not automatically enter the formal Issue;
 - Guest Editor decisions remain parallel opinions and never enter formal publication automatically;
-- non-owner Editor-mode decisions may be saved for continuity, but the formal publisher only reads the active owner's public adoption projection.
+- non-owner Editor-mode decisions may be saved for continuity, but formal publication reads only the active owner's adoption projection.
 
-There is no second `CLOSE ISSUE` decision after review. The editorial decision is the publication decision. This removes the previous duplicate settlement step.
+There is no second `CLOSE ISSUE` judgment after review. The editorial decision is the publication intent.
 
 ## Formal publication
 
@@ -75,25 +81,21 @@ There is no second `CLOSE ISSUE` decision after review. The editorial decision i
 - Only active-owner `cover_story` and `accept` decisions inside the coverage window can enter the Issue.
 - Edition caps still bound maximum Signals per Issue and per channel.
 - A no-change Issue is valid when the owner has not adopted any eligible Signal.
-- The publisher promotes selected inbox candidates into `public/data/news.json` and writes the frozen Issue to `public/data/issues.json`.
+- Selected inbox candidates are promoted into `public/data/news.json`; the frozen formal Issue is written to `public/data/issues.json`.
 - Automation records evidence movement but never silently rewrites the Edition's long-term editorial view.
 
-Quality scores still help candidate discovery and review, but **formal Issue adoption no longer falls back to a quality-score threshold**.
+Quality scores help candidate discovery and review, but **formal Issue adoption has no quality-score fallback**.
 
 ## Publication authority
 
-Shared account state is private. The database projects only the minimum public publication record:
+Shared account state is private. The database projects only the minimum publication record required by the publisher.
 
-- candidate ID;
-- `cover_story` or `accept`;
-- decision timestamp.
-
-`supabase/newsflow-editorial.sql` defines this boundary:
+`supabase/newsflow-editorial.sql` defines the boundary:
 
 - signed-in users may read only their own admin-role record;
 - `newsflow_is_authoritative_editor()` is a security-invoker authority check;
-- an internal trigger projects active-owner Cover/Accept decisions to `newsflow_editorial_adoptions`;
-- the public projection is read-only to clients;
+- an internal trigger projects active-owner Cover/Accept decisions into `newsflow_editorial_adoptions`;
+- the projection is public read-only;
 - the trigger itself is not executable by public client roles.
 
 No service-role credential is shipped to the frontend or invitation URL.
@@ -104,7 +106,7 @@ A Guest Editor invitation is a public appointment, not an authority token. The r
 
 `?guest-editor=frontier-systems-review`
 
-The invitee accepts an `EDITORIAL APPOINTMENT` and enters the same five-decision review game. Guest judgments remain parallel editorial opinions. If the live packet is sparse, already-public Signals may appear only as clearly labeled blind editorial exercises.
+The invitee accepts an `EDITORIAL APPOINTMENT` and enters the same five-decision game. Guest judgments remain parallel opinions. If the live packet is sparse, already-public Signals may appear only as clearly labeled blind editorial exercises.
 
 ## Main runtime ownership
 
