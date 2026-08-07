@@ -1,39 +1,7 @@
 (() => {
   'use strict';
 
-  const DATA_TIMEOUT_MS = 5000;
   const STARTUP_WATCHDOG_MS = 8000;
-  const nativeFetch = window.fetch.bind(window);
-
-  const requestUrl = (input) => {
-    try {
-      return new URL(input instanceof Request ? input.url : String(input), window.location.href);
-    } catch {
-      return null;
-    }
-  };
-
-  const isStaticDataRequest = (input) => {
-    const url = requestUrl(input);
-    return Boolean(
-      url
-      && url.origin === window.location.origin
-      && url.pathname.includes('/data/')
-      && url.pathname.endsWith('.json')
-    );
-  };
-
-  window.fetch = (input, init = {}) => {
-    if (!isStaticDataRequest(input)) return nativeFetch(input, init);
-
-    const timeoutSignal = AbortSignal.timeout(DATA_TIMEOUT_MS);
-    const requestSignal = init.signal || (input instanceof Request ? input.signal : null);
-    const signal = requestSignal
-      ? AbortSignal.any([requestSignal, timeoutSignal])
-      : timeoutSignal;
-
-    return nativeFetch(input, { ...init, signal });
-  };
 
   if ('serviceWorker' in navigator && window.location.protocol.startsWith('http')) {
     navigator.serviceWorker.register('./sw.js', { updateViaCache: 'none' })
