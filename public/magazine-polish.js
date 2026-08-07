@@ -141,23 +141,39 @@ const formatFreshnessLong = (value) => {
 
 const decorateDataFreshness = () => {
   const brandName = appRoot?.querySelector('.brand-name');
-  if (!brandName || !freshnessStatus?.updated_at) return;
-  const parent = brandName.parentElement;
-  if (!parent) return;
-  parent.classList.add('nf-brand-copy');
-  let row = parent.querySelector('.nf-brand-row');
+  const brandCopy = brandName?.closest('.brand-copy');
+  if (!brandName || !brandCopy || !freshnessStatus?.updated_at) return;
+
+  brandCopy.classList.add('nf-brand-copy');
+
+  const existingRows = [...brandCopy.querySelectorAll('.nf-brand-row')];
+  let row = existingRows.find((candidate) => candidate.parentElement === brandCopy) || null;
   if (!row) {
     row = document.createElement('span');
     row.className = 'nf-brand-row';
-    brandName.before(row);
-    row.appendChild(brandName);
+    brandCopy.prepend(row);
   }
-  let badge = row.querySelector('.nf-data-date');
+
+  if (brandName.parentElement !== row) row.prepend(brandName);
+
+  for (const duplicateRow of existingRows) {
+    if (duplicateRow === row) continue;
+    duplicateRow.querySelectorAll('.nf-data-date').forEach((badge) => badge.remove());
+    while (duplicateRow.firstChild) row.appendChild(duplicateRow.firstChild);
+    duplicateRow.remove();
+  }
+
+  const badges = [...brandCopy.querySelectorAll('.nf-data-date')];
+  let badge = badges.find((candidate) => candidate.parentElement === row) || null;
   if (!badge) {
     badge = document.createElement('span');
     badge.className = 'nf-data-date';
     row.appendChild(badge);
   }
+  badges.forEach((candidate) => {
+    if (candidate !== badge) candidate.remove();
+  });
+
   badge.textContent = formatFreshnessBadge(freshnessStatus.updated_at);
   badge.title = `数据更新至 ${formatFreshnessLong(freshnessStatus.updated_at)}`;
   badge.setAttribute('aria-label', badge.title);
