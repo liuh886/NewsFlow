@@ -12,7 +12,10 @@ const editionState = {
   edition: null,
   issues: [],
   storylines: [],
+  news: [],
   activeStorylineId: '',
+  activeChannelId: '',
+  channelSort: 'newest',
   archiveOpen: false
 };
 
@@ -54,29 +57,50 @@ const nextPublicationLabel = (issue) => {
   return `下一期 · ${formatEditionDate(next)}`;
 };
 
+const signalById = (id) => editionState.news.find((item) => String(item.id || '') === String(id || '')) || null;
+
 const issueSignals = (issue) => {
   const ids = Array.isArray(issue?.signal_ids) ? issue.signal_ids : [];
   return ids.map((id) => {
-    const item = [...document.querySelectorAll('[data-id]')].find((node) => node.dataset.id === id);
-    return item ? { id, title: item.getAttribute('aria-label')?.replace(/^深读\s*/, '') || '' } : { id, title: '' };
+    const item = signalById(id);
+    return { id: String(id), title: String(item?.title || '') };
   });
+};
+
+const selectedSignalIds = () => new Set(publishedIssues().flatMap((issue) => issue.signal_ids || []).map(String));
+
+const channelDefinition = (channelId) => (editionState.edition?.channels || []).find((channel) => channel.id === channelId) || null;
+const channelStorylines = (channelId) => editionState.storylines.filter((storyline) => storyline.channel_id === channelId);
+const channelSignals = (channelId) => editionState.news.filter((item) => item.channel_id === channelId);
+const taxonomyLabel = (title = '') => String(title).replace(/^第[一二三四五六七八九十]+层[：:]\s*/, '');
+
+const sortedChannelSignals = (channelId) => {
+  const selected = selectedSignalIds();
+  const items = [...channelSignals(channelId)];
+  if (editionState.channelSort === 'selected') {
+    return items.sort((a, b) => Number(selected.has(String(b.id))) - Number(selected.has(String(a.id)))
+      || Number(b.quality_index || 0) - Number(a.quality_index || 0)
+      || new Date(b.published_at || 0).getTime() - new Date(a.published_at || 0).getTime());
+  }
+  return items.sort((a, b) => new Date(b.published_at || 0).getTime() - new Date(a.published_at || 0).getTime()
+    || Number(b.quality_index || 0) - Number(a.quality_index || 0));
 };
 
 const renderPublicationNav = () => `
   <nav class="publication-nav" data-edition-layer="navigation" aria-label="刊物导航">
-    <a href="#current-issue">本期</a>
-    <a href="#latest-change">最新</a>
-    <button type="button" data-action="topic" data-value="ai-tech">AI 基建</button>
-    <button type="button" data-action="topic" data-value="energy">CCUS 与能源转型</button>
+    <button type="button" data-edition-action="go-home" data-target="current-issue">本期</button>
+    <button type="button" data-edition-action="go-home" data-target="latest-change">最新</button>
+    <button type="button" data-edition-action="open-section" data-channel-id="ai-infrastructure">AI 基建</button>
+    <button type="button" data-edition-action="open-section" data-channel-id="ccus-energy-transition">CCUS 与能源转型</button>
     <button type="button" data-edition-action="open-storylines">长期议题</button>
     <button type="button" data-edition-action="open-archive">归档</button>
   </nav>`;
 
 const renderMastheadSections = () => `
   <div class="masthead-sections" data-edition-layer="masthead-sections" aria-label="主要栏目">
-    <button type="button" data-action="topic" data-value="ai-tech">AI 基建</button>
+    <button type="button" data-edition-action="open-section" data-channel-id="ai-infrastructure">AI 基建</button>
     <span aria-hidden="true">/</span>
-    <button type="button" data-action="topic" data-value="energy">CCUS 与能源转型</button>
+    <button type="button" data-edition-action="open-section" data-channel-id="ccus-energy-transition">CCUS 与能源转型</button>
   </div>`;
 
 const renderFilterHeading = () => `
@@ -134,9 +158,43 @@ const renderCurrentIssue = (edition, issue) => {
   </section>`;
 };
 
+const renderChannelView = () => {
+  const channel = channelDefinition(editionState.activeChannelId);
+  if (!channel) return '';
+  const storylines = channelStorylines(channel.id);
+  const signals = sortedChannelSignals(channel.id);
+  const selected = selectedSignalIds();
+  const list = signals.slice(0, 10).map((item, index) => `
+    <button class="issue-signal-link" data-action="open" data-id="${escapeEditionHtml(item.id)}">
+      <span>${selected.has(String(item.id)) ? '选' : String(index + 1).padStart(2, '0')}</span>
+      <span>${escapeEditionHtml(item.title)}</span>
+    </button>`).join('');
+
+  return `<section class="latest-edition-panel" data-edition-layer="section-view" aria-labelledby="channel-view-title">
+    <div class="issue-topline">
+      <button type="button" data-edition-action="go-home">← ${escapeEditionHtml(editionState.edition.name)}</button>
+      <span>${signals.length} 条信号</span>
+    </div>
+    <div class="issue-hero-copy">
+      <h2 id="channel-view-title">${escapeEditionHtml(channel.name)}</h2>
+      <p class="issue-standfirst">${escapeEditionHtml(channel.promise)}</p>
+      <div class="masthead-sections" aria-label="${escapeEditionHtml(channel.name)} 子栏目">
+        ${storylines.map((storyline, index) => `${index ? '<span aria-hidden="true">/</span>' : ''}<button type="button" data-edition-action="open-storyline" data-storyline-id="${escapeEditionHtml(storyline.id)}">${escapeEditionHtml(taxonomyLabel(storyline.title))}</button>`).join('')}
+      </div>
+    </div>
+    <div class="issue-signals">
+      <div class="issue-section-heading">
+        <span>${editionState.channelSort === 'selected' ? 'Selected' : 'Latest'}</span>
+        <span class="masthead-sections"><button type="button" data-edition-action="section-sort" data-sort="newest" aria-pressed="${editionState.channelSort === 'newest'}">最新</button><span>/</span><button type="button" data-edition-action="section-sort" data-sort="selected" aria-pressed="${editionState.channelSort === 'selected'}">精选</button></span>
+      </div>
+      ${list || '<p class="storyline-index-empty">该栏目暂时没有可阅读信号。</p>'}
+    </div>
+  </section>`;
+};
+
 const renderStorylines = () => `
   <section class="rail-card storyline-rail" id="storylines" data-edition-layer="storylines">
-    <div class="storyline-heading"><div><p class="section-label">长期议题</p><h2>正在演化的判断</h2></div><span>${editionState.storylines.length}</span></div>
+    <div class="storyline-heading"><div><p class="section-label">Research Agenda</p><h2>正在演化的判断</h2></div><span>${editionState.storylines.length}</span></div>
     <div class="storyline-list">
       ${editionState.storylines.map((storyline) => `
         <button class="storyline-item" type="button" data-edition-action="open-storyline" data-storyline-id="${escapeEditionHtml(storyline.id)}">
@@ -220,6 +278,41 @@ const closeEditionPanels = () => {
   emitEditionRendered();
 };
 
+const syncSectionView = (main, masthead, issue) => {
+  main.querySelector('[data-edition-layer="section-view"]')?.remove();
+  const homeNodes = [
+    main.querySelector('[data-edition-layer="latest"]'),
+    main.querySelector('[data-edition-layer="post-issue"]'),
+    main.querySelector('.lead-story'),
+    main.querySelector('.feed-toolbar'),
+    main.querySelector('.feed-list'),
+    main.querySelector('[data-edition-layer="archive"]')
+  ].filter(Boolean);
+  const channel = channelDefinition(editionState.activeChannelId);
+  homeNodes.forEach((node) => { node.hidden = Boolean(channel); });
+
+  const title = masthead.querySelector('.masthead-title');
+  const deck = masthead.querySelector('.masthead-deck');
+  const kicker = masthead.querySelector('.masthead-kicker');
+  const meta = masthead.querySelector('.masthead-meta');
+  const sections = masthead.querySelector('[data-edition-layer="masthead-sections"]');
+
+  if (channel) {
+    if (kicker) kicker.textContent = `${editionState.edition.name} · 栏目`;
+    if (title) title.textContent = channel.name;
+    if (deck) deck.textContent = channel.promise;
+    if (meta) meta.innerHTML = `${channelSignals(channel.id).length} signals<br>${editionState.channelSort === 'selected' ? 'Selected first' : 'Newest first'}<br>Published with NewsFlow`;
+    if (sections) sections.hidden = true;
+    masthead.insertAdjacentHTML('afterend', renderChannelView());
+  } else {
+    if (kicker) kicker.textContent = 'Independent editorial review · 半月刊';
+    if (title) title.textContent = editionState.edition.name;
+    if (deck) deck.textContent = editionState.edition.strapline || editionState.edition.reader_promise;
+    if (meta) meta.innerHTML = `${issue ? `Issue ${escapeEditionHtml(issue.issue_number)}` : '刊期准备中'}<br>${issue ? escapeEditionHtml(formatEditionDate(issue.published_at)) : '首期准备中'}<br>${escapeEditionHtml(nextPublicationLabel(issue))}`;
+    if (sections) sections.hidden = false;
+  }
+};
+
 const applyEditionLayer = () => {
   const edition = editionState.edition;
   if (!edition || !appRoot?.firstElementChild) return;
@@ -255,18 +348,7 @@ const applyEditionLayer = () => {
     sidebar.insertAdjacentHTML('afterbegin', renderFilterHeading());
   }
 
-  if (!masthead.dataset.editionLayer) {
-    masthead.dataset.editionLayer = 'magazine';
-    const kicker = masthead.querySelector('.masthead-kicker');
-    const title = masthead.querySelector('.masthead-title');
-    const deck = masthead.querySelector('.masthead-deck');
-    const meta = masthead.querySelector('.masthead-meta');
-    if (kicker) kicker.textContent = 'Independent editorial review · 半月刊';
-    if (title) title.textContent = edition.name;
-    if (deck) deck.textContent = edition.strapline || edition.reader_promise;
-    if (meta) meta.innerHTML = `${issue ? `Issue ${escapeEditionHtml(issue.issue_number)}` : '刊期准备中'}<br>${issue ? escapeEditionHtml(formatEditionDate(issue.published_at)) : '首期准备中'}<br>${escapeEditionHtml(nextPublicationLabel(issue))}`;
-  }
-
+  if (!masthead.dataset.editionLayer) masthead.dataset.editionLayer = 'magazine';
   const mastheadCopy = masthead.firstElementChild;
   if (mastheadCopy && !mastheadCopy.querySelector('[data-edition-layer="masthead-sections"]')) {
     mastheadCopy.insertAdjacentHTML('beforeend', renderMastheadSections());
@@ -307,32 +389,48 @@ const applyEditionLayer = () => {
   }
 
   if (rail) rail.innerHTML = renderStorylines();
-
-  if (!main.querySelector('[data-edition-layer="archive"]')) {
-    main.insertAdjacentHTML('beforeend', renderArchive());
-  }
+  if (!main.querySelector('[data-edition-layer="archive"]')) main.insertAdjacentHTML('beforeend', renderArchive());
 
   const mobileNav = appRoot.querySelector('.mobile-nav');
   if (mobileNav && !mobileNav.dataset.editionLayer) {
     mobileNav.dataset.editionLayer = 'magazine';
-    mobileNav.innerHTML = '<a href="#current-issue"><span>本期</span></a><a href="#latest-change"><span>最新</span></a><button data-action="topic" data-value="ai-tech"><span>AI 基建</span></button><button data-action="topic" data-value="energy"><span>CCUS</span></button><button data-edition-action="open-archive"><span>归档</span></button>';
+    mobileNav.innerHTML = '<button data-edition-action="go-home" data-target="current-issue"><span>本期</span></button><button data-edition-action="go-home" data-target="latest-change"><span>最新</span></button><button data-edition-action="open-section" data-channel-id="ai-infrastructure"><span>AI 基建</span></button><button data-edition-action="open-section" data-channel-id="ccus-energy-transition"><span>CCUS</span></button><button data-edition-action="open-archive"><span>归档</span></button>';
   }
 
+  syncSectionView(main, masthead, issue);
   emitEditionRendered();
+};
+
+const setActiveChannel = (channelId, pushHistory = true) => {
+  editionState.activeChannelId = channelDefinition(channelId) ? channelId : '';
+  editionState.channelSort = 'newest';
+  if (pushHistory) {
+    const nextHash = editionState.activeChannelId ? `#section/${editionState.activeChannelId}` : `${window.location.pathname}${window.location.search}`;
+    if (editionState.activeChannelId) window.history.pushState({ newsflowSection: editionState.activeChannelId }, '', nextHash);
+    else window.history.pushState({}, '', `${window.location.pathname}${window.location.search}`);
+  }
+  applyEditionLayer();
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+};
+
+const channelFromHash = () => {
+  const match = window.location.hash.match(/^#section\/(.+)$/);
+  return match && channelDefinition(match[1]) ? match[1] : '';
 };
 
 const initializeEditionLayer = async () => {
   try {
-    const [edition, issues, storylines] = await Promise.all([
+    const [edition, issues, storylines, news] = await Promise.all([
       loadEditionJson('./data/edition.json'),
       loadEditionJson('./data/issues.json'),
-      loadEditionJson('./data/storylines.json')
+      loadEditionJson('./data/storylines.json'),
+      loadEditionJson('./data/news.json')
     ]);
     editionState.edition = edition;
     editionState.issues = Array.isArray(issues) ? issues : [];
-    editionState.storylines = Array.isArray(storylines)
-      ? storylines.filter((storyline) => storyline.status !== 'retired')
-      : [];
+    editionState.storylines = Array.isArray(storylines) ? storylines.filter((storyline) => storyline.status !== 'retired') : [];
+    editionState.news = Array.isArray(news) ? news : [];
+    editionState.activeChannelId = channelFromHash();
     applyEditionLayer();
   } catch (error) {
     console.warn('NewsFlow Edition layer unavailable:', error);
@@ -343,7 +441,16 @@ appRoot?.addEventListener('click', (event) => {
   const target = event.target.closest('[data-edition-action]');
   if (!target) return;
   const action = target.dataset.editionAction;
-  if (action === 'open-storyline') {
+  if (action === 'open-section') {
+    setActiveChannel(target.dataset.channelId || '');
+  } else if (action === 'go-home') {
+    const anchorId = target.dataset.target || '';
+    setActiveChannel('', true);
+    if (anchorId) requestAnimationFrame(() => document.getElementById(anchorId)?.scrollIntoView({ behavior: 'smooth', block: 'start' }));
+  } else if (action === 'section-sort') {
+    editionState.channelSort = target.dataset.sort === 'selected' ? 'selected' : 'newest';
+    applyEditionLayer();
+  } else if (action === 'open-storyline') {
     editionState.activeStorylineId = target.dataset.storylineId || editionState.storylines[0]?.id || '';
     editionState.archiveOpen = false;
     syncEditionPanels();
@@ -360,8 +467,14 @@ appRoot?.addEventListener('click', (event) => {
   }
 });
 
+window.addEventListener('popstate', () => {
+  editionState.activeChannelId = channelFromHash();
+  applyEditionLayer();
+});
+
 window.addEventListener('keydown', (event) => {
   if (event.key === 'Escape' && (editionState.activeStorylineId || editionState.archiveOpen)) closeEditionPanels();
+  else if (event.key === 'Escape' && editionState.activeChannelId) setActiveChannel('', true);
 });
 
 window.addEventListener('newsflow:rendered', applyEditionLayer);
