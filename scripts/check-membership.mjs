@@ -45,8 +45,16 @@ for (const contract of [
 ]) {
   if (!config.includes(contract)) throw new Error(`NewsFlow account config is missing ${contract}`);
 }
-for (const contract of ['hao-account-newsflow', "document.querySelector('.top-actions')", 'MutationObserver']) {
+for (const contract of [
+  'hao-account-newsflow',
+  "document.querySelector('.top-actions')",
+  "window.addEventListener('newsflow:rendered', syncAccountMount)",
+  "window.addEventListener('hao:account-changed', syncAccountMount)"
+]) {
   if (!integration.includes(contract)) throw new Error(`NewsFlow account integration is missing ${contract}`);
+}
+if (integration.includes('MutationObserver')) {
+  throw new Error('NewsFlow account mount must follow the explicit app lifecycle, not observe the DOM.');
 }
 for (const contract of ['.top-actions .hao-account-trigger', 'box-shadow: none', 'backdrop-filter: none']) {
   if (!styles.includes(contract)) throw new Error(`NewsFlow account styles are missing ${contract}`);
@@ -63,4 +71,4 @@ if (combined.includes('membership-widget.js') || combined.includes('membership-w
   throw new Error('NewsFlow must not load the retired local membership widget');
 }
 
-console.log('NewsFlow account uses only the native topbar mount and Account Shell v2.');
+console.log('NewsFlow account uses the native topbar mount through the explicit render lifecycle.');
