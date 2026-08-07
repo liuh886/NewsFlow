@@ -213,6 +213,31 @@
     }
   };
 
+  const decorateReadingLinks = () => {
+    const shell = document.querySelector('#app .app-shell[data-product-model="magazine-edition"]');
+    if (!shell || !state.news.length) return;
+
+    const bindHeadline = (anchor, id) => {
+      if (!anchor || !id || !state.news.some((item) => itemId(item) === id)) return;
+      anchor.dataset.readingLink = 'true';
+      anchor.dataset.id = id;
+      anchor.href = `#read/${encodeURIComponent(id)}`;
+      anchor.removeAttribute('target');
+      anchor.removeAttribute('rel');
+    };
+
+    const lead = shell.querySelector('.lead-story');
+    const leadId = lead?.querySelector('[data-action="open"][data-id]')?.dataset.id || '';
+    bindHeadline(lead?.querySelector('.lead-title a'), leadId);
+
+    shell.querySelectorAll('.article-card').forEach((card) => {
+      const quickEvidence = card.querySelector('.article-action[data-action="open"][data-id]');
+      const id = quickEvidence?.dataset.id || '';
+      bindHeadline(card.querySelector('.article-title a'), id);
+      if (quickEvidence) quickEvidence.setAttribute('aria-label', `快速证据 ${quickEvidence.getAttribute('aria-label')?.replace(/^深读\s*/, '') || ''}`.trim());
+    });
+  };
+
   document.addEventListener('click', (event) => {
     const internal = event.target.closest?.('[data-reading-action]');
     if (internal && document.getElementById(ROOT_ID)?.contains(internal)) {
@@ -220,8 +245,9 @@
       if (action === 'close') close();
       else if (action === 'read') open(internal.dataset.id || '', { replace: true });
       else if (action === 'storyline') {
+        const storylineId = internal.dataset.storylineId || '';
         close();
-        requestAnimationFrame(() => document.querySelector(`[data-edition-action="open-storyline"][data-storyline-id="${CSS.escape(internal.dataset.storylineId || '')}"]`)?.click());
+        requestAnimationFrame(() => document.querySelector(`[data-edition-action="open-storyline"][data-storyline-id="${CSS.escape(storylineId)}"]`)?.click());
       }
       return;
     }
@@ -237,6 +263,8 @@
     open(id);
   }, true);
 
+  window.addEventListener('newsflow:rendered', () => requestAnimationFrame(decorateReadingLinks));
+  window.addEventListener('newsflow:edition-rendered', () => requestAnimationFrame(decorateReadingLinks));
   window.addEventListener('popstate', syncFromRoute);
   window.addEventListener('hashchange', syncFromRoute);
   window.addEventListener('keydown', (event) => {
@@ -267,6 +295,7 @@
       state.edition = edition;
       state.storylines = Array.isArray(storylines) ? storylines : [];
       state.news = Array.isArray(news) ? news : [];
+      decorateReadingLinks();
       syncFromRoute();
     } catch (error) {
       console.warn('NewsFlow reading surface unavailable:', error);
