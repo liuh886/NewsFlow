@@ -20,6 +20,9 @@ for select
 to anon, authenticated
 using (true);
 
+-- The previous blanket deny policy is unnecessary: RLS denies every action that
+-- lacks an allowing policy. Keep one precise authenticated SELECT policy instead.
+drop policy if exists "Clients cannot access membership admins" on public.membership_admins;
 drop policy if exists "Users can read their own admin role" on public.membership_admins;
 create policy "Users can read their own admin role"
 on public.membership_admins
