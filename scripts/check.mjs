@@ -1,9 +1,9 @@
 import { access, readFile } from 'node:fs/promises';
 import { spawnSync } from 'node:child_process';
-import { dirname, resolve } from 'node:path';
+import { dirname, resolve } from 'node:url';
 import { fileURLToPath } from 'node:url';
 
-const root = resolve(dirname(fileURLToPath(import.meta.url)), '..');
+const root = resolve(new URL('..', import.meta.url).pathname);
 const requiredFiles = [
   'index.html',
   'src/editorial-app.js',
@@ -16,7 +16,9 @@ const requiredFiles = [
   'public/startup-resilience.js',
   'public/magazine-polish.js',
   'public/editorial-office.js',
-  'public/editorial-delight.js',
+  'public/editorial-mode.css',
+  'public/review-game.js',
+  'public/review-game.css',
   'public/sw.js',
   'public/manifest.webmanifest',
   'public/data/news.json',
@@ -26,6 +28,8 @@ const requiredFiles = [
   'public/data/issues.json',
   'public/data/storylines.json',
   'public/data/pipeline-reviews.json',
+  'public/data/guest-editor-invites.json',
+  'public/data/editorial-reactions.json',
   'public/data/supabase-config.json',
   'scripts/build.mjs',
   'scripts/update-content.mjs',
@@ -57,7 +61,7 @@ const syntaxFiles = [
   'public/startup-resilience.js',
   'public/magazine-polish.js',
   'public/editorial-office.js',
-  'public/editorial-delight.js',
+  'public/review-game.js',
   'public/sw.js',
   'scripts/build.mjs',
   'scripts/update-content.mjs',
@@ -116,6 +120,10 @@ for (const reference of [
   './polish.js',
   './edition-layer.js',
   './supabase-feedback.js',
+  './editorial-mode.css',
+  './review-game.css',
+  './review-game.js',
+  './editorial-office.js',
   './manifest.webmanifest'
 ]) {
   if (!index.includes(reference)) throw new Error(`index.html is missing ${reference}`);
@@ -168,4 +176,4 @@ if (!pagesWorkflow.includes('npm run check') || !pagesWorkflow.includes('npm run
   throw new Error('Pages workflow must validate contracts before building.');
 }
 
-console.log(`NewsFlow repository contract passed: ${news.length} signals, ${storylines.length} storylines, durable editorial state and bounded frontend architecture.`);
+console.log(`NewsFlow repository contract passed: ${news.length} signals, ${storylines.length} storylines, one review engine and bounded frontend architecture.`);
