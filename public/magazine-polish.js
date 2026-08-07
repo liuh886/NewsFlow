@@ -2,10 +2,7 @@ const appRoot = document.querySelector('#app');
 const focusableSelector = 'a[href], button:not([disabled]), input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])';
 
 let triggerReference = null;
-let observedShell = null;
-let shellObserver = null;
 let panelWasOpen = false;
-let decorateTimer = 0;
 
 const escapeMagazineHtml = (value = '') => String(value)
   .replaceAll('&', '&amp;')
@@ -54,20 +51,15 @@ const otherOverlayIsOpen = () => Boolean(document.querySelector(
   '.article-drawer, .help-dialog, .feedback-dialog, .sidebar.open, .mobile-search-backdrop.open'
 ));
 
-const activeMagazineWrapper = () => appRoot?.querySelector(
-  '[data-magazine-panel], [data-edition-layer="panel"]'
-) || null;
-
-const activeMagazinePanel = () => activeMagazineWrapper()?.querySelector('.edition-panel') || null;
+const activeMagazinePanel = () => appRoot?.querySelector('[data-edition-layer="panel"] .edition-panel') || null;
 
 const syncMagazinePanelState = () => {
-  const wrapper = activeMagazineWrapper();
-  if (wrapper) {
+  const panel = activeMagazinePanel();
+  if (panel) {
     panelWasOpen = true;
     setMagazineBackgroundInert(true);
     document.body.classList.add('overlay-active');
-    const panel = wrapper.querySelector('.edition-panel');
-    if (panel && !panel.contains(document.activeElement)) {
+    if (!panel.contains(document.activeElement)) {
       requestAnimationFrame(() => panel.querySelector(focusableSelector)?.focus());
     }
     return;
@@ -119,73 +111,30 @@ const enhanceMagazineTriggers = () => {
   appRoot?.querySelectorAll('[data-edition-action^="open-"]').forEach((button) => {
     button.setAttribute('aria-haspopup', 'dialog');
   });
-  appRoot?.querySelectorAll('[data-edition-action="open-storylines"]').forEach((button) => {
-    button.setAttribute('aria-controls', 'storyline-index-panel');
-  });
   appRoot?.querySelectorAll('[data-edition-action="open-archive"]').forEach((button) => {
     button.setAttribute('aria-controls', 'archive-panel-title');
   });
 };
 
-const storylineIndexItems = () => [...(appRoot?.querySelectorAll('.storyline-item[data-storyline-id]') || [])]
-  .map((item) => ({
-    id: item.dataset.storylineId || '',
-    title: item.querySelector('h3')?.textContent?.trim() || '未命名议题',
-    view: item.querySelector('p')?.textContent?.trim() || '',
-    movement: item.querySelector('.movement')?.textContent?.trim() || '观察中',
-    evidence: item.querySelector('.storyline-meta span:last-child')?.textContent?.trim() || '0 条证据'
-  }))
-  .filter((item) => item.id);
-
-const renderStorylineIndexPanel = () => {
-  const items = storylineIndexItems();
-  return `<div data-magazine-panel="storyline-index">
-    <div class="edition-overlay" data-magazine-action="close-index"></div>
-    <aside class="edition-panel storyline-index-panel" id="storyline-index-panel" role="dialog" aria-modal="true" aria-labelledby="storyline-index-title">
-      <div class="edition-panel-head"><span>NewsFlow · 长期议题</span><button type="button" data-magazine-action="close-index" aria-label="关闭长期议题总览">×</button></div>
-      <div class="edition-panel-body">
-        <span class="section-label">议题总览</span>
-        <h2 id="storyline-index-title">持续追踪，而不是追逐热点</h2>
-        <p class="panel-question">每条长期议题都保留当前判断、证据变化、下一步观察与可推翻条件。</p>
-        <div class="storyline-index-list">
-          ${items.map((item, index) => `<button type="button" class="storyline-index-item" data-magazine-action="open-storyline" data-storyline-id="${escapeMagazineHtml(item.id)}">
-            <span class="storyline-index-number">${String(index + 1).padStart(2, '0')}</span>
-            <span class="storyline-index-copy"><span class="storyline-index-meta">${escapeMagazineHtml(item.movement)} · ${escapeMagazineHtml(item.evidence)}</span><strong>${escapeMagazineHtml(item.title)}</strong><span>${escapeMagazineHtml(item.view)}</span></span>
-            <span class="storyline-index-arrow" aria-hidden="true">→</span>
-          </button>`).join('') || '<p class="storyline-index-empty">长期议题数据暂不可用。</p>'}
-        </div>
-      </div>
-    </aside>
-  </div>`;
-};
-
-const openStorylineIndex = (trigger) => {
-  const shell = appRoot?.querySelector('.app-shell');
+const decorateMagazine = () => {
+  const shell = appRoot?.querySelector('.app-shell[data-product-model="magazine-edition"]');
   if (!shell) return;
-  triggerReference = captureMagazineTrigger(trigger);
-  shell.querySelector('[data-magazine-panel]')?.remove();
-  shell.insertAdjacentHTML('beforeend', renderStorylineIndexPanel());
+  normalizeMastheadMeta();
+  updateLatestChangeState();
+  enhanceMagazineTriggers();
   syncMagazinePanelState();
 };
 
-const closeStorylineIndex = ({ restore = true } = {}) => {
-  appRoot?.querySelector('[data-magazine-panel]')?.remove();
-  if (!restore) {
-    panelWasOpen = false;
-    setMagazineBackgroundInert(false);
-    return;
+appRoot?.addEventListener('click', (event) => {
+  const editionAction = event.target.closest('[data-edition-action]');
+  if (!editionAction) return;
+  const action = editionAction.dataset.editionAction;
+  if (['open-storyline', 'open-storylines', 'open-archive'].includes(action)) {
+    triggerReference = captureMagazineTrigger(editionAction);
   }
-  syncMagazinePanelState();
-};
+});
 
-const openStorylineFromIndex = (storylineId) => {
-  const target = [...(appRoot?.querySelectorAll('.storyline-item[data-storyline-id]') || [])]
-    .find((item) => item.dataset.storylineId === storylineId);
-  closeStorylineIndex({ restore: false });
-  target?.click();
-};
-
-const trapMagazinePanelFocus = (event) => {
+document.addEventListener('keydown', (event) => {
   if (event.key !== 'Tab') return;
   const panel = activeMagazinePanel();
   if (!panel) return;
@@ -205,79 +154,8 @@ const trapMagazinePanelFocus = (event) => {
     event.preventDefault();
     first.focus();
   }
-};
-
-const decorateMagazine = () => {
-  const shell = appRoot?.querySelector('.app-shell[data-product-model="magazine-edition"]');
-  if (!shell) return false;
-  normalizeMastheadMeta();
-  updateLatestChangeState();
-  enhanceMagazineTriggers();
-  syncMagazinePanelState();
-  return true;
-};
-
-const scheduleMagazineDecoration = (attempt = 0) => {
-  window.clearTimeout(decorateTimer);
-  decorateTimer = window.setTimeout(() => {
-    if (!decorateMagazine() && attempt < 20) scheduleMagazineDecoration(attempt + 1);
-  }, attempt ? 80 : 0);
-};
-
-const bindShellObserver = () => {
-  const shell = appRoot?.querySelector('.app-shell');
-  if (shell === observedShell) return;
-  shellObserver?.disconnect();
-  observedShell = shell;
-  if (!shell) return;
-  shellObserver = new MutationObserver(() => {
-    scheduleMagazineDecoration();
-    syncMagazinePanelState();
-  });
-  shellObserver.observe(shell, { childList: true });
-};
-
-appRoot?.addEventListener('click', (event) => {
-  const customAction = event.target.closest('[data-magazine-action]');
-  if (customAction) {
-    const action = customAction.dataset.magazineAction;
-    if (action === 'close-index') {
-      closeStorylineIndex();
-    } else if (action === 'open-storyline') {
-      openStorylineFromIndex(customAction.dataset.storylineId || '');
-    }
-    return;
-  }
-
-  const editionAction = event.target.closest('[data-edition-action]');
-  if (!editionAction) return;
-  const action = editionAction.dataset.editionAction;
-  if (action === 'open-storylines') {
-    event.preventDefault();
-    event.stopImmediatePropagation();
-    openStorylineIndex(editionAction);
-    return;
-  }
-  if (action === 'open-storyline' || action === 'open-archive') {
-    triggerReference = captureMagazineTrigger(editionAction);
-  }
-}, true);
-
-document.addEventListener('keydown', (event) => {
-  trapMagazinePanelFocus(event);
-  if (event.key !== 'Escape' || !activeMagazineWrapper()) return;
-  event.preventDefault();
-  event.stopImmediatePropagation();
-  const customPanel = appRoot?.querySelector('[data-magazine-panel]');
-  if (customPanel) closeStorylineIndex();
-  else activeMagazinePanel()?.querySelector('[data-edition-action="close-panel"]')?.click();
-}, true);
-
-const rootObserver = new MutationObserver(() => {
-  bindShellObserver();
-  scheduleMagazineDecoration();
 });
-if (appRoot) rootObserver.observe(appRoot, { childList: true });
 
-bindShellObserver();
-scheduleMagazineDecoration();
+window.addEventListener('newsflow:rendered', decorateMagazine);
+window.addEventListener('newsflow:edition-rendered', decorateMagazine);
+decorateMagazine();

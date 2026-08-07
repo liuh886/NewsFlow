@@ -182,7 +182,10 @@
 
   const loadStatus = async () => {
     try {
-      const response = await fetch(STATUS_PATH, { cache: 'no-store' });
+      const response = await fetch(STATUS_PATH, {
+        cache: 'no-store',
+        signal: AbortSignal.timeout(5000)
+      });
       if (!response.ok) return;
       const payload = await response.json();
       if (payload && typeof payload.updated_at === 'string') status = payload;
@@ -218,8 +221,6 @@
     window.setTimeout(() => showDecisionEvent(decision), 70);
   }, true);
 
-  const observer = new MutationObserver(() => decorateBrand());
-  observer.observe(document.getElementById('app') || document.body, { childList: true, subtree: true });
-
+  window.addEventListener('newsflow:rendered', decorateBrand);
   loadStatus();
 })();

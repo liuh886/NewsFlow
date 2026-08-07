@@ -208,18 +208,15 @@ const state = {
     message: '正在检查云同步配置',
     user: null,
     pending_count: 0
-  },
-  reviewActive: false,
-  reviewQueue: [],
-  reviewIndex: 0,
-  reviewCompleted: false,
-  reviewDragging: false,
-  reviewDragX: 0,
-  reviewVerdicts: new Map(),
-  reviewEvents: []
+  }
 };
 
 const app = document.querySelector('#app');
+
+const commitApp = (markup) => {
+  app.innerHTML = markup;
+  window.dispatchEvent(new CustomEvent('newsflow:rendered'));
+};
 
 const escapeHtml = (value = '') => String(value)
   .replaceAll('&', '&amp;')
@@ -586,9 +583,7 @@ const resetFilters = () => {
   state.focusedIndex = -1;
 };
 
-const renderLoading = () => {
-  app.innerHTML = '<main class="loading-screen"><div class="loading-lockup"><div class="loading-mark">N</div><span>正在整理信号流</span></div></main>';
-};
+const renderLoading = () => commitApp('<main class="loading-screen"><div class="loading-lockup"><div class="loading-mark">N</div><span>正在整理信号流</span></div></main>');
 
 const renderSidebar = (items) => {
   const dates = itemDates();
@@ -636,9 +631,9 @@ const renderSidebar = (items) => {
       </div>
     </section>
     <section class="sidebar-section">
-      <p class="section-label">信号审核</p>
+      <p class="section-label">编辑部</p>
       <div class="sidebar-list">
-        <button class="nav-button" data-action="open-review"><span class="nav-name"><span class="nav-indicator"></span><span>开始审核</span></span></button>
+        <button class="nav-button" data-action="open-editorial-office"><span class="nav-name"><span class="nav-indicator"></span><span>进入主编室</span></span></button>
       </div>
     </section>
   </aside>`;
@@ -663,7 +658,7 @@ const renderLead = (item) => {
     </div>
     <aside class="lead-aside">
       ${item.key_quote ? `<blockquote class="lead-quote">${escapeHtml(item.key_quote)}</blockquote>` : `<blockquote class="lead-quote">${escapeHtml(getLongSummary(item).slice(0, 118))}${getLongSummary(item).length > 118 ? '…' : ''}</blockquote>`}
-      <div class="signal-score"><div class="score-row"><span>Signal score</span><strong>${quality.toFixed(1)} / 10</strong></div><div class="score-meter"><span style="width:${Math.min(100, quality * 10)}%"></span></div></div>
+      <div class="signal-score"><div class="score-row"><span>信号评分</span><strong>${quality.toFixed(1)} / 10</strong></div><div class="score-meter"><span style="width:${Math.min(100, quality * 10)}%"></span></div></div>
     </aside>
   </article>`;
 };
@@ -674,7 +669,7 @@ const renderCard = (item, index) => {
   return `<article class="article-card ${state.focusedIndex === index ? 'keyboard-focus' : ''}" id="signal-${encodeURIComponent(id)}" data-card-index="${index}">
     <div class="article-index"><span>${String(index + 1).padStart(2, '0')}</span>${state.view === 'grid' ? `<span>${escapeHtml(relativeTime(item.published_at))}</span>` : ''}</div>
     <div class="article-body">
-      <div class="article-meta"><span class="article-source">${escapeHtml(item.source)}</span>${isPrimary(item) ? '<span class="source-verification">Primary</span>' : ''}<span>${escapeHtml(relativeTime(item.published_at))}</span><span>Score ${getQuality(item).toFixed(1)}</span></div>
+      <div class="article-meta"><span class="article-source">${escapeHtml(item.source)}</span>${isPrimary(item) ? '<span class="source-verification">机构 / 一手源</span>' : ''}<span>${escapeHtml(relativeTime(item.published_at))}</span><span>评分 ${getQuality(item).toFixed(1)}</span></div>
       <h3 class="article-title"><a href="${safeUrl(item.url)}" target="_blank" rel="noopener noreferrer">${escapeHtml(item.title)}</a></h3>
       <p class="article-summary">${escapeHtml(getSummary(item))}</p>
       <div class="article-tags">${(item.tags || []).slice(0, 3).map((tag) => `<span class="article-tag">${escapeHtml(tag)}</span>`).join('')}</div>
@@ -701,8 +696,8 @@ const renderDrawer = () => {
   const saved = state.bookmarks.has(id);
   const quotes = (item.supporting_quotes || []).filter(Boolean);
   return `<div class="drawer-backdrop" data-action="close-drawer"></div><article class="article-drawer" role="dialog" aria-modal="true" aria-labelledby="drawer-title">
-    <div class="drawer-head"><span class="drawer-brand">NewsFlow · Evidence view</span><button class="drawer-close" data-action="close-drawer" aria-label="关闭">${icon('close')}</button></div>
-    <div class="drawer-eyebrow">${escapeHtml(item.source)} · ${escapeHtml(formatDate(item.published_at, { year: 'numeric', month: 'long', day: 'numeric' }))} · Score ${getQuality(item).toFixed(1)}</div>
+    <div class="drawer-head"><span class="drawer-brand">NewsFlow · 证据视图</span><button class="drawer-close" data-action="close-drawer" aria-label="关闭">${icon('close')}</button></div>
+    <div class="drawer-eyebrow">${escapeHtml(item.source)} · ${escapeHtml(formatDate(item.published_at, { year: 'numeric', month: 'long', day: 'numeric' }))} · 评分 ${getQuality(item).toFixed(1)}</div>
     <h2 class="drawer-title" id="drawer-title">${escapeHtml(item.title)}</h2><p class="drawer-summary">${escapeHtml(getSummary(item))}</p>
     ${item.key_quote ? `<blockquote class="drawer-quote">${escapeHtml(item.key_quote)}</blockquote>` : ''}
     <section class="drawer-section"><h3>发生了什么 / 为什么重要</h3><p>${escapeHtml(getLongSummary(item))}</p></section>
@@ -738,238 +733,11 @@ const renderFeedbackCenter = () => {
   </section>`;
 };
 
-const REVIEW_STORAGE_KEY = 'newsflow_review_v1';
-
-const loadReviewEvents = () => {
-  try {
-    const data = JSON.parse(localStorage.getItem(REVIEW_STORAGE_KEY) || '{}');
-    state.reviewVerdicts = new Map(Object.entries(data.verdicts || {}));
-    state.reviewEvents = Array.isArray(data.events) ? data.events : [];
-  } catch {
-    state.reviewVerdicts = new Map();
-    state.reviewEvents = [];
-  }
-};
-
-const saveReviewEvents = () => {
-  localStorage.setItem(REVIEW_STORAGE_KEY, JSON.stringify({
-    verdicts: Object.fromEntries(state.reviewVerdicts),
-    events: state.reviewEvents.slice(-200)
-  }));
-};
-
-const reviewCounts = () => {
-  const counts = { accept: 0, reject: 0, skip: 0 };
-  for (const v of state.reviewVerdicts.values()) counts[v] = (counts[v] || 0) + 1;
-  return counts;
-};
-
-const loadReviewQueue = async () => {
-  try {
-    const response = await fetch('./data/review-candidates.json', { cache: 'no-store' });
-    if (!response.ok) return [];
-    const candidates = await response.json();
-    if (!Array.isArray(candidates)) return [];
-    const reviewed = new Set(Object.keys(Object.fromEntries(state.reviewVerdicts)));
-    return candidates.filter((c) => c && c.id && !reviewed.has(c.id));
-  } catch {
-    return [];
-  }
-};
-
-const enterReviewMode = async () => {
-  state.reviewActive = true;
-  state.reviewCompleted = false;
-  state.reviewQueue = [];
-  state.reviewIndex = 0;
-  state.reviewDragging = false;
-  state.reviewDragX = 0;
-  render();
-  const queue = await loadReviewQueue();
-  if (queue.length === 0) {
-    state.reviewQueue = [];
-    state.reviewCompleted = true;
-  } else {
-    state.reviewQueue = queue;
-    state.reviewIndex = 0;
-  }
-  render();
-  requestAnimationFrame(initReviewGestures);
-};
-
-const recordVerdict = (verdict) => {
-  const candidate = state.reviewQueue[state.reviewIndex];
-  if (!candidate) return;
-  state.reviewVerdicts.set(candidate.id, verdict);
-  state.reviewEvents.push({
-    candidate_id: candidate.id,
-    verdict,
-    candidate_title: candidate.title || '',
-    candidate_source: candidate.url || '',
-    reviewed_at: new Date().toISOString()
-  });
-  saveReviewEvents();
-  state.reviewDragX = 0;
-  state.reviewDragging = false;
-  if (state.reviewIndex + 1 >= state.reviewQueue.length) {
-    state.reviewCompleted = true;
-  } else {
-    state.reviewIndex++;
-  }
-  render();
-  requestAnimationFrame(initReviewGestures);
-};
-
-const exportReviews = () => {
-  const payload = {
-    schema_version: '1.0',
-    app_id: 'newsflow-review-game',
-    exported_at: new Date().toISOString(),
-    edition_id: state.editionId,
-    review_count: state.reviewEvents.length,
-    candidate_count: state.reviewQueue.length,
-    events: state.reviewEvents
-  };
-  const url = URL.createObjectURL(new Blob([`${JSON.stringify(payload, null, 2)}\n`], { type: 'application/json' }));
-  const anchor = document.createElement('a');
-  anchor.href = url;
-  anchor.download = `newsflow-reviews-${payload.exported_at.slice(0, 10)}.json`;
-  anchor.click();
-  URL.revokeObjectURL(url);
-  showToast(`已导出 ${state.reviewEvents.length} 条审核结果`);
-};
-
-const renderReviewLoading = () => `<main class="review-screen"><div class="review-center"><div class="loading-mark">R</div><span>正在加载候选信号</span></div></main>`;
-
-const renderReviewCard = (candidate) => {
-  const dims = ['facts', 'source', 'timeliness', 'news_quality', 'industry_impact'];
-  const labels = { facts: '事实', source: '来源', timeliness: '时效', news_quality: '新闻质量', industry_impact: '行业影响' };
-  const scoreBars = dims.map((dim) => {
-    const value = Number(candidate.scores?.[dim]) || 0;
-    return `<div class="rv-score-row"><span class="rv-score-label">${labels[dim]}</span><div class="rv-score-track"><span style="width:${value * 20}%"></span></div><span class="rv-score-value">${value.toFixed(1)}</span></div>`;
-  }).join('');
-  const dragStyle = state.reviewDragging ? `transform: translateX(${state.reviewDragX}px) rotate(${state.reviewDragX * 0.05}deg);` : '';
-  const counts = reviewCounts();
-  return `<main class="review-screen">
-    <div class="review-topbar">
-      <button class="text-button" data-action="review-exit">返回编辑部</button>
-      <span class="review-progress">第 ${state.reviewIndex + 1} 张 / 共 ${state.reviewQueue.length} 张</span>
-      <span class="review-progress-secondary">${counts.accept + counts.reject + counts.skip} 条已评审</span>
-    </div>
-    <div class="review-stack" id="review-stack">
-      <div class="review-card${state.reviewDragging ? ' dragging' : ''}" id="review-card" style="${dragStyle}">
-        <div class="rv-card-header">
-          <span class="rv-card-source">${escapeHtml(candidate.source || candidate.id || '')}</span>
-          <span class="rv-card-date">${escapeHtml(String(candidate.channel_id || ''))} · ${escapeHtml(String(candidate.event_type || ''))}</span>
-        </div>
-        <h2 class="rv-card-title">${escapeHtml(candidate.title || '')}</h2>
-        <p class="rv-card-summary">${escapeHtml(candidate.short_summary || '')}</p>
-        <div class="rv-card-tags">${(candidate.tags || []).slice(0, 4).map((tag) => `<span class="article-tag">${escapeHtml(tag)}</span>`).join('')}</div>
-        <div class="rv-card-scores">
-          <p class="section-label">信号评分</p>
-          ${scoreBars}
-        </div>
-        <div class="rv-card-hint left">拒绝</div>
-        <div class="rv-card-hint right">采纳</div>
-      </div>
-    </div>
-    <div class="review-actions">
-      <button class="review-action-button reject" data-action="review-reject" aria-label="拒绝此信号">拒绝</button>
-      <button class="review-action-button skip" data-action="review-skip" aria-label="跳过此信号">跳过</button>
-      <button class="review-action-button accept" data-action="review-accept" aria-label="采纳此信号">采纳</button>
-    </div>
-  </main>`;
-};
-
-const renderReviewSummary = () => {
-  const counts = reviewCounts();
-  return `<main class="review-screen">
-    <div class="review-summary">
-      <div class="review-center"><div class="loading-mark" style="animation:none">✓</div><span>审核完成</span></div>
-      <div class="rv-summary-stats">
-        <div class="rv-stat accept"><strong>${counts.accept}</strong><span>采纳</span></div>
-        <div class="rv-stat reject"><strong>${counts.reject}</strong><span>拒绝</span></div>
-        <div class="rv-stat skip"><strong>${counts.skip}</strong><span>跳过</span></div>
-      </div>
-      <p class="rv-summary-note">共审查 ${state.reviewQueue.length} 条候选信号。审核数据已保存在本机。</p>
-      <div class="rv-summary-actions">
-        <button class="text-button primary" data-action="review-export">${icon('download')} 导出审核结果</button>
-        <button class="text-button" data-action="review-back-to-feed">返回信号流</button>
-      </div>
-    </div>
-  </main>`;
-};
-
-const renderReviewEmpty = () => `<main class="review-screen"><div class="review-center"><h3>暂无可审核的信号</h3><p>Agent 研究完成后，候选信号会出现在这里。</p><button class="text-button primary" data-action="review-exit">返回编辑部</button></div></main>`;
-
-const initReviewGestures = () => {
-  const stack = document.querySelector('#review-stack');
-  if (!stack) return;
-  let startX = 0, startY = 0;
-  const threshold = 60;
-  const skipThreshold = 40;
-
-  const onDown = (e) => {
-    state.reviewDragging = true;
-    startX = e.clientX;
-    startY = e.clientY;
-    render();
-    const card = document.querySelector('#review-card');
-    if (card) card.setPointerCapture(e.pointerId);
-  };
-
-  const onMove = (e) => {
-    if (!state.reviewDragging) return;
-    state.reviewDragX = e.clientX - startX;
-    render();
-  };
-
-  const onUp = (e) => {
-    if (!state.reviewDragging) return;
-    state.reviewDragging = false;
-    const dx = e.clientX - startX;
-    const dy = e.clientY - startY;
-    if (Math.abs(dx) > threshold) {
-      recordVerdict(dx > 0 ? 'accept' : 'reject');
-    } else if (Math.abs(dy) > skipThreshold && Math.abs(dx) <= threshold) {
-      recordVerdict('skip');
-    } else {
-      state.reviewDragX = 0;
-      render();
-    }
-  };
-
-  stack.removeEventListener('pointerdown', onDown);
-  stack.addEventListener('pointerdown', onDown);
-  stack.removeEventListener('pointermove', onMove);
-  stack.addEventListener('pointermove', onMove);
-  stack.removeEventListener('pointerup', onUp);
-  stack.addEventListener('pointerup', onUp);
-};
-
-const renderMobileNav = () => `<nav class="mobile-nav" aria-label="移动端主导航"><button class="${state.topic === 'all' && state.filter === 'all' ? 'active' : ''}" data-action="mobile-home">${icon('home')}<span>首页</span></button><button data-action="mobile-filter">${icon('filter')}<span>筛选</span></button><button class="${state.filter === 'saved' ? 'active' : ''}" data-action="mobile-saved">${icon('bookmark')}<span>收藏</span></button><button data-action="focus-search">${icon('search')}<span>搜索</span></button><button data-action="open-review">${icon('review')}<span>审核</span></button></nav>`;
+const renderMobileNav = () => `<nav class="mobile-nav" aria-label="移动端主导航"><button class="${state.topic === 'all' && state.filter === 'all' ? 'active' : ''}" data-action="mobile-home">${icon('home')}<span>首页</span></button><button data-action="mobile-filter">${icon('filter')}<span>筛选</span></button><button class="${state.filter === 'saved' ? 'active' : ''}" data-action="mobile-saved">${icon('bookmark')}<span>收藏</span></button><button data-action="focus-search">${icon('search')}<span>搜索</span></button><button data-action="open-editorial-office">${icon('review')}<span>主编室</span></button></nav>`;
 
 const render = () => {
   setTheme(state.theme);
   if (state.loading) return renderLoading();
-
-  if (state.reviewActive) {
-    if (state.reviewQueue.length === 0 && !state.reviewCompleted) {
-      app.innerHTML = renderReviewLoading();
-      return;
-    }
-    if (state.reviewCompleted) {
-      app.innerHTML = state.reviewQueue.length ? renderReviewSummary() : renderReviewEmpty();
-      return;
-    }
-    if (state.reviewQueue.length && state.reviewIndex < state.reviewQueue.length) {
-      app.innerHTML = renderReviewCard(state.reviewQueue[state.reviewIndex]);
-      requestAnimationFrame(initReviewGestures);
-      return;
-    }
-    app.innerHTML = renderReviewEmpty();
-    return;
-  }
 
   const items = filteredItems();
   const lead = leadItem(items);
@@ -978,14 +746,14 @@ const render = () => {
   const topicName = state.topics.find((topic) => topic.id === state.topic)?.name || '全部信号';
   const snapshot = latestDate();
 
-  app.innerHTML = `<div class="app-shell">
-    <header class="topbar"><div class="topbar-inner"><button class="brand" data-action="reset" aria-label="重置 NewsFlow"><span class="brand-copy"><span class="brand-name">NewsFlow</span><span class="brand-status"><span class="status-dot"></span>Editorial signal desk</span></span></button><label class="global-search">${icon('search')}<input id="global-search" type="search" value="${escapeHtml(state.query)}" placeholder="搜索标题、摘要、证据或主题…" autocomplete="off"><span class="search-kbd">⌘ K</span></label><div class="top-actions"><button class="icon-button" data-action="feedback-center" aria-label="查看推荐反馈">${icon('feedback')}</button><button class="icon-button" data-action="theme" aria-label="切换明暗主题">${state.theme === 'dark' ? icon('sun') : icon('moon')}</button><button class="icon-button" data-action="open-review" aria-label="信号审核">${icon('review')}</button><button class="icon-button" data-action="help" data-desktop-only="true" aria-label="查看键盘快捷键">${icon('help')}</button><button class="mobile-menu-button" data-action="mobile-menu" aria-label="打开筛选菜单">${icon('menu')}</button></div></div></header>
+  commitApp(`<div class="app-shell">
+    <header class="topbar"><div class="topbar-inner"><button class="brand" data-action="reset" aria-label="重置 NewsFlow"><span class="brand-copy"><span class="brand-name">NewsFlow</span><span class="brand-status"><span class="status-dot"></span>Editorial signal desk</span></span></button><label class="global-search">${icon('search')}<input id="global-search" type="search" value="${escapeHtml(state.query)}" placeholder="搜索标题、摘要、证据或主题…" autocomplete="off"><span class="search-kbd">⌘ K</span></label><div class="top-actions"><button class="icon-button" data-action="feedback-center" aria-label="查看推荐反馈">${icon('feedback')}</button><button class="icon-button" data-action="theme" aria-label="切换明暗主题">${state.theme === 'dark' ? icon('sun') : icon('moon')}</button><button class="icon-button" data-action="open-editorial-office" aria-label="打开主编编辑部">${icon('review')}</button><button class="icon-button" data-action="help" data-desktop-only="true" aria-label="查看键盘快捷键">${icon('help')}</button><button class="mobile-menu-button" data-action="mobile-menu" aria-label="打开筛选菜单">${icon('menu')}</button></div></div></header>
     <div class="workspace">${renderSidebar(items)}<main class="main-column" id="main-content">
       <section class="masthead"><div><div class="masthead-kicker">Curated intelligence · 以数据快照为准</div><h1 class="masthead-title">The Daily Signal</h1><p class="masthead-deck">把高频新闻压缩为真正需要判断的变化。先看结论，再追溯来源；需要时展开背景与证据。</p></div><div class="masthead-meta">Data through<br>${escapeHtml(formatDate(snapshot, { year: 'numeric', month: 'long', day: 'numeric' }))}<br>${escapeHtml(topicName)}<br>${items.length} signals</div></section>
       ${renderLead(lead)}
-      <div class="feed-toolbar"><div class="feed-heading"><h2>${state.filter === 'saved' ? '已收藏' : state.entity ? `主题：${escapeHtml(state.entity)}` : '最新信号'}</h2><span>${stream.length} 条可继续阅读</span></div><div class="view-segment" aria-label="布局选择"><button class="segment-button ${state.view === 'list' ? 'active' : ''}" data-action="view" data-value="list">List</button><button class="segment-button ${state.view === 'grid' ? 'active' : ''}" data-action="view" data-value="grid">Grid</button></div></div>
+      <div class="feed-toolbar"><div class="feed-heading"><h2>${state.filter === 'saved' ? '已收藏' : state.entity ? `主题：${escapeHtml(state.entity)}` : '最新信号'}</h2><span>${stream.length} 条可继续阅读</span></div><div class="view-segment" aria-label="布局选择"><button class="segment-button ${state.view === 'list' ? 'active' : ''}" data-action="view" data-value="list">列表</button><button class="segment-button ${state.view === 'grid' ? 'active' : ''}" data-action="view" data-value="grid">网格</button></div></div>
       ${items.length ? `<section class="feed-list ${state.view}" aria-label="新闻信号列表">${stream.map(renderCard).join('')}</section>` : '<section class="empty-state"><h3>没有匹配的信号</h3><p>当前频道、时间或筛选条件过窄。重置后可以回到完整信息流。</p><button class="text-button primary" data-action="reset">重置筛选</button></section>'}
-    </main>${renderBriefRail(items)}</div>${renderMobileNav()}${state.mobileOpen ? '<div class="mobile-backdrop" data-action="mobile-close"></div>' : ''}${renderDrawer()}${renderHelp()}${renderFeedbackCenter()}${state.toast ? `<div class="toast" role="status"><span>${escapeHtml(state.toast.message)}</span>${state.toast.action ? `<button data-action="${escapeHtml(state.toast.action.type)}" data-id="${escapeHtml(state.toast.action.signalId)}" data-event-id="${escapeHtml(state.toast.action.eventId)}">${escapeHtml(state.toast.action.label)}</button>` : ''}</div>` : ''}</div>`;
+    </main>${renderBriefRail(items)}</div>${renderMobileNav()}${state.mobileOpen ? '<div class="mobile-backdrop" data-action="mobile-close"></div>' : ''}${renderDrawer()}${renderHelp()}${renderFeedbackCenter()}${state.toast ? `<div class="toast" role="status"><span>${escapeHtml(state.toast.message)}</span>${state.toast.action ? `<button data-action="${escapeHtml(state.toast.action.type)}" data-id="${escapeHtml(state.toast.action.signalId)}" data-event-id="${escapeHtml(state.toast.action.eventId)}">${escapeHtml(state.toast.action.label)}</button>` : ''}</div>` : ''}</div>`);
 };
 
 const openArticle = (id) => {
@@ -1049,7 +817,7 @@ app.addEventListener('click', (event) => {
     exportFeedback(); return;
   } else if (action === 'restore-hidden') {
     for (const signalId of [...state.hiddenSignals]) {
-      const targetEvent = activeFeedbackEvents().findLast((event) => event.signal_id === signalId && ['hide', 'not_interested'].includes(event.action));
+      const targetEvent = activeFeedbackEvents().findLast((entry) => entry.signal_id === signalId && ['hide', 'not_interested'].includes(entry.action));
       if (targetEvent) restoreFeedback(signalId, targetEvent.event_id, 'feedback-center', false);
       else state.hiddenSignals.delete(signalId);
     }
@@ -1067,20 +835,9 @@ app.addEventListener('click', (event) => {
       window.dispatchEvent(new CustomEvent('newsflow:cloud-action', { detail: { action: 'clear' } }));
     }
     return;
-  } else if (action === 'open-review') {
-    enterReviewMode(); return;
-  } else if (action === 'review-exit') {
-    state.reviewActive = false; render(); return;
-  } else if (action === 'review-accept') {
-    recordVerdict('accept'); return;
-  } else if (action === 'review-reject') {
-    recordVerdict('reject'); return;
-  } else if (action === 'review-skip') {
-    recordVerdict('skip'); return;
-  } else if (action === 'review-export') {
-    exportReviews(); return;
-  } else if (action === 'review-back-to-feed') {
-    state.reviewActive = false; state.reviewCompleted = false; render(); return;
+  } else if (action === 'open-editorial-office') {
+    window.dispatchEvent(new CustomEvent('newsflow:open-editorial-office'));
+    return;
   } else if (action === 'open') {
     openArticle(id); return;
   } else if (action === 'close-drawer') {
@@ -1132,19 +889,12 @@ window.addEventListener('keydown', (event) => {
     event.preventDefault(); document.querySelector('#global-search')?.focus(); return;
   }
   if (event.key === 'Escape') {
-    if (state.reviewActive) { state.reviewActive = false; state.reviewCompleted = false; render(); return; }
     if (state.activeArticle) state.activeArticle = null;
     else if (state.helpOpen) state.helpOpen = false;
     else if (state.feedbackOpen) state.feedbackOpen = false;
     else if (state.mobileOpen) state.mobileOpen = false;
     else if (state.query) state.query = '';
     render(); return;
-  }
-  if (state.reviewActive) {
-    if (event.key === 'ArrowLeft') { recordVerdict('reject'); return; }
-    if (event.key === 'ArrowRight') { recordVerdict('accept'); return; }
-    if (event.key === 'ArrowDown') { recordVerdict('skip'); return; }
-    return;
   }
   if (typing || state.activeArticle || state.helpOpen || state.feedbackOpen) return;
 
@@ -1206,13 +956,15 @@ window.addEventListener('newsflow:remote-feedback', (event) => {
 });
 
 const loadJson = async (path) => {
-  const response = await fetch(path, { cache: 'no-store' });
+  const response = await fetch(path, {
+    cache: 'no-store',
+    signal: AbortSignal.timeout(5000)
+  });
   if (!response.ok) throw new Error(`${path}: ${response.status}`);
   return response.json();
 };
 
 const initialize = async () => {
-  loadReviewEvents();
   renderLoading();
   setTheme(state.theme);
   try {
@@ -1252,10 +1004,6 @@ const initialize = async () => {
     state.loading = false;
     if (state.cloudSnapshotRequested) broadcastFeedbackSnapshot();
     render();
-  }
-
-  if ('serviceWorker' in navigator && location.protocol.startsWith('http')) {
-    navigator.serviceWorker.register('./sw.js').catch((error) => console.warn('Service worker registration failed:', error));
   }
 };
 

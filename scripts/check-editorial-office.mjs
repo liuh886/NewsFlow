@@ -8,7 +8,6 @@ const files = [
   'public/editorial-office.js',
   'public/editorial-office.css',
   'public/editorial-game-loop.css',
-  'public/editorial-preflight.js',
   'public/editorial-preflight.css',
   'public/data/pipeline-reviews.json',
   'content/state/pipeline-review-queue.json',
@@ -19,12 +18,11 @@ const files = [
 ];
 for (const file of files) await access(resolve(root, file));
 
-const [index, script, officeCss, gameCss, preflightScript, preflightCss, serviceWorker, packageSource, design, buildSource, applySource, queueText] = await Promise.all([
+const [index, script, officeCss, gameCss, preflightCss, serviceWorker, packageSource, design, buildSource, applySource, queueText] = await Promise.all([
   readFile(resolve(root, 'index.html'), 'utf8'),
   readFile(resolve(root, 'public/editorial-office.js'), 'utf8'),
   readFile(resolve(root, 'public/editorial-office.css'), 'utf8'),
   readFile(resolve(root, 'public/editorial-game-loop.css'), 'utf8'),
-  readFile(resolve(root, 'public/editorial-preflight.js'), 'utf8'),
   readFile(resolve(root, 'public/editorial-preflight.css'), 'utf8'),
   readFile(resolve(root, 'public/sw.js'), 'utf8'),
   readFile(resolve(root, 'package.json'), 'utf8'),
@@ -40,19 +38,15 @@ for (const reference of [
   './editorial-office.css',
   './editorial-game-loop.css',
   './editorial-preflight.css',
-  './editorial-office.js',
-  './editorial-preflight.js',
-  './data/pipeline-reviews.json'
+  './editorial-office.js'
 ]) {
-  if (!index.includes(reference) && !serviceWorker.includes(reference)) {
-    throw new Error(`NewsFlow shell is missing ${reference}`);
-  }
-  if (reference.startsWith('./data/') && !serviceWorker.includes(reference)) {
-    throw new Error(`service worker is missing ${reference}`);
-  }
-  if (!reference.startsWith('./data/') && !index.includes(reference)) {
-    throw new Error(`index.html is missing ${reference}`);
-  }
+  if (!index.includes(reference)) throw new Error(`index.html is missing ${reference}`);
+}
+for (const reference of ['./data/pipeline-reviews.json', './editorial-office.js']) {
+  if (!serviceWorker.includes(reference)) throw new Error(`service worker is missing ${reference}`);
+}
+if (index.includes('./editorial-preflight.js') || serviceWorker.includes('./editorial-preflight.js')) {
+  throw new Error('editorial preflight must be rendered inside editorial-office.js, not as a DOM decorator.');
 }
 if (index.indexOf('./editorial-game-loop.css') < index.indexOf('./editorial-office.css')) {
   throw new Error('editorial-game-loop.css must load after editorial-office.css');
@@ -63,11 +57,8 @@ if (index.indexOf('./editorial-preflight.css') < index.indexOf('./editorial-game
 if (index.indexOf('./editorial-office.js') < index.indexOf('account-shell.js')) {
   throw new Error('editorial-office.js must load after the shared account shell');
 }
-if (index.indexOf('./editorial-preflight.js') < index.indexOf('./editorial-office.js')) {
-  throw new Error('editorial-preflight.js must load after the formal editorial office');
-}
 
-for (const path of ['public/editorial-office.js', 'public/editorial-preflight.js', 'scripts/apply-content.mjs', 'scripts/aggregate-pipeline-reviews.mjs']) {
+for (const path of ['public/editorial-office.js', 'scripts/apply-content.mjs', 'scripts/aggregate-pipeline-reviews.mjs']) {
   const syntax = spawnSync(process.execPath, ['--check', resolve(root, path)], { encoding: 'utf8' });
   if (syntax.status !== 0) throw new Error(`${path} syntax check failed:\n${syntax.stderr}`);
 }
@@ -79,16 +70,20 @@ for (const contract of [
   "id: 'minor_revision'",
   "id: 'major_revision'",
   "id: 'reject'",
-  "fetch('./data/storylines.json'",
-  "fetch('./data/review-candidates.json'",
+  "fetchJson('./data/storylines.json')",
+  "fetchJson('./data/review-candidates.json')",
+  "fetchJson('./data/pipeline-reviews.json')",
   'const renderIssueDesk = () =>',
   'const publishIssue = () =>',
   'const undoDecision = () =>',
   'const renderReaderReceipt = () =>',
   "schema_version: '3.0'",
-  "document.addEventListener('click', handleReviewCapture, true)",
-  "new MutationObserver(decorateApp).observe(appRoot, { childList: true })",
-  'window.HaoAccount.saveProductData'
+  "window.addEventListener('newsflow:open-editorial-office'",
+  "window.addEventListener('newsflow:rendered', mountRoleTrigger)",
+  'window.HaoAccount.saveProductData',
+  'AUTOMATED PRE-REVIEW',
+  '需要主编判断',
+  '不构成编辑决定'
 ]) {
   if (!script.includes(contract)) throw new Error(`editorial office is missing contract: ${contract}`);
 }
@@ -97,25 +92,13 @@ for (const forbidden of [
   'PIPELINE_REVIEW_STORAGE',
   "data-tab=\"pipeline\"",
   'pipeline-export',
-  'editorial_override'
+  'editorial_override',
+  'handleReviewCapture',
+  'decorateReviewEntrances',
+  'MutationObserver'
 ]) {
-  if (script.includes(forbidden)) throw new Error(`editorial office contains a duplicate or retired review path: ${forbidden}`);
+  if (script.includes(forbidden)) throw new Error(`editorial office contains duplicate or retired architecture: ${forbidden}`);
 }
-if (script.includes('subtree: true')) throw new Error('editorial office must not observe the full application subtree');
-
-for (const contract of [
-  "const DATA_PATH = './data/pipeline-reviews.json'",
-  'AUTOMATED PRE-REVIEW',
-  '需要主编判断',
-  '不构成编辑决定',
-  "observe(root, { childList: true })"
-]) {
-  if (!preflightScript.includes(contract)) throw new Error(`editorial preflight is missing contract: ${contract}`);
-}
-if (preflightScript.includes('localStorage.setItem') || preflightScript.includes('data-editorial-action')) {
-  throw new Error('pipeline preflight must remain read-only and may not create a second decision state');
-}
-if (preflightScript.includes('subtree: true')) throw new Error('pipeline preflight must not observe the full subtree');
 
 for (const contract of [
   "const evaluatorPath = resolve(root, 'scripts/update-content.mjs')",
@@ -197,8 +180,8 @@ if (buildSource.includes('aggregate-pipeline-reviews.mjs') || buildSource.includ
 for (const contract of ['pipeline-review-queue.json', 'reviewCandidatesById', 'addReviewCandidate']) {
   if (!buildSource.includes(contract)) throw new Error(`build must include durable review candidates: ${contract}`);
 }
-if (!serviceWorker.includes('newsflow-editorial-v2.3.1-magazine-v2.4.1-serious-play-v2.5.2')) {
-  throw new Error('service worker cache must advance for the bounded startup recovery release');
+if (!serviceWorker.includes('serious-play-v2.6.0')) {
+  throw new Error('service worker cache must advance for the frontend architecture reset release');
 }
 
-console.log('NewsFlow editorial contract passed: one four-state decision path, durable machine preflight, finite Issue Desk and bounded startup recovery.');
+console.log('NewsFlow editorial contract passed: one four-state decision path, inline machine preflight and finite Issue Desk.');

@@ -1,4 +1,5 @@
 const appRoot = document.querySelector('#app');
+const DATA_TIMEOUT_MS = 5000;
 
 const escapeEditionHtml = (value = '') => String(value)
   .replaceAll('&', '&amp;')
@@ -30,7 +31,10 @@ const formatEditionDate = (value, options = { year: 'numeric', month: 'short', d
 };
 
 const loadEditionJson = async (path) => {
-  const response = await fetch(path, { cache: 'no-store' });
+  const response = await fetch(path, {
+    cache: 'no-store',
+    signal: AbortSignal.timeout(DATA_TIMEOUT_MS)
+  });
   if (!response.ok) throw new Error(`${path}: ${response.status}`);
   return response.json();
 };
@@ -172,18 +176,24 @@ const renderArchiveDrawer = () => {
   </aside>`;
 };
 
+const emitEditionRendered = () => window.dispatchEvent(new CustomEvent('newsflow:edition-rendered'));
+
 const syncEditionPanels = () => {
   const shell = appRoot?.querySelector('.app-shell');
   if (!shell) return;
   shell.querySelectorAll('[data-edition-layer="panel"]').forEach((node) => node.remove());
   const panelMarkup = editionState.activeStorylineId ? renderStorylineDrawer() : renderArchiveDrawer();
-  if (!panelMarkup) return;
+  if (!panelMarkup) {
+    emitEditionRendered();
+    return;
+  }
   const wrapper = document.createElement('div');
   wrapper.dataset.editionLayer = 'panel';
   wrapper.innerHTML = panelMarkup;
   shell.append(wrapper);
   document.body.classList.add('overlay-active');
   requestAnimationFrame(() => wrapper.querySelector('.edition-panel button')?.focus());
+  emitEditionRendered();
 };
 
 const closeEditionPanels = () => {
@@ -191,6 +201,7 @@ const closeEditionPanels = () => {
   editionState.archiveOpen = false;
   appRoot?.querySelector('[data-edition-layer="panel"]')?.remove();
   document.body.classList.remove('overlay-active');
+  emitEditionRendered();
 };
 
 const applyEditionLayer = () => {
@@ -276,6 +287,8 @@ const applyEditionLayer = () => {
     mobileNav.dataset.editionLayer = 'magazine';
     mobileNav.innerHTML = '<a href="#latest-change"><span>新变化</span></a><a href="#current-issue"><span>本期</span></a><button data-action="mobile-filter"><span>筛选</span></button><button data-edition-action="open-archive"><span>归档</span></button>';
   }
+
+  emitEditionRendered();
 };
 
 const initializeEditionLayer = async () => {
@@ -321,6 +334,5 @@ window.addEventListener('keydown', (event) => {
   if (event.key === 'Escape' && (editionState.activeStorylineId || editionState.archiveOpen)) closeEditionPanels();
 });
 
-const observer = new MutationObserver(() => applyEditionLayer());
-if (appRoot) observer.observe(appRoot, { childList: true });
+window.addEventListener('newsflow:rendered', applyEditionLayer);
 initializeEditionLayer();
