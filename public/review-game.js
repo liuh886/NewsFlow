@@ -8,6 +8,7 @@
   const GUEST_STORAGE_PREFIX = 'newsflow_review_game_v4_guest';
   const ISSUE_CAPACITY = 5;
   const DATA_TIMEOUT_MS = 5000;
+  const REACTION_HOLD_MS = 3000;
 
   const DECISIONS = [
     { id: 'cover_story', label: '封面文章', code: 'COVER STORY', key: '1' },
@@ -40,7 +41,15 @@
   };
 
   let advanceTimer = 0;
+  let countdownTimer = 0;
   let noticeTimer = 0;
+
+  const clearReactionTimers = () => {
+    window.clearTimeout(advanceTimer);
+    window.clearInterval(countdownTimer);
+    advanceTimer = 0;
+    countdownTimer = 0;
+  };
 
   const escapeHtml = (value = '') => String(value)
     .replaceAll('&', '&amp;')
@@ -248,7 +257,7 @@
   };
 
   const resetTransientState = () => {
-    window.clearTimeout(advanceTimer);
+    clearReactionTimers();
     state.records = [];
     state.index = 0;
     state.reaction = null;
@@ -369,7 +378,12 @@
 
     state.records.push(record);
     if (state.mode === 'formal') state.formalDecisions[record.source_id] = record;
-    state.reaction = { decision, line: selectReaction(decision.id, candidate.id), candidate };
+    state.reaction = {
+      decision,
+      line: selectReaction(decision.id, candidate.id),
+      candidate,
+      countdown: 3
+    };
     state.phase = 'reaction';
     saveCurrentState(false);
     track(state.mode === 'formal' ? 'editor_review_decision' : 'guest_editor_decision', {
@@ -380,12 +394,26 @@
     });
     render();
 
-    const reducedMotion = window.matchMedia?.('(prefers-reduced-motion: reduce)').matches;
-    advanceTimer = window.setTimeout(advance, reducedMotion ? 420 : 1250);
+    clearReactionTimers();
+    countdownTimer = window.setInterval(() => {
+      if (state.phase !== 'reaction' || !state.reaction) {
+        clearReactionTimers();
+        return;
+      }
+      const next = state.reaction.countdown - 1;
+      if (next <= 0) {
+        window.clearInterval(countdownTimer);
+        countdownTimer = 0;
+        return;
+      }
+      state.reaction.countdown = next;
+      render();
+    }, 1000);
+    advanceTimer = window.setTimeout(advance, REACTION_HOLD_MS);
   };
 
   const advance = () => {
-    window.clearTimeout(advanceTimer);
+    clearReactionTimers();
     state.reaction = null;
     state.index = state.records.length;
     if (state.index >= state.packet.length) {
@@ -404,7 +432,7 @@
 
   const undoLastDecision = () => {
     if (!state.records.length) return;
-    window.clearTimeout(advanceTimer);
+    clearReactionTimers();
     const last = state.records.pop();
     if (state.mode === 'formal') delete state.formalDecisions[last.source_id];
     state.index = state.records.length;
@@ -500,6 +528,7 @@
 
   const resetGuestSession = () => {
     if (state.mode !== 'guest') return;
+    clearReactionTimers();
     localStorage.removeItem(guestSessionKey());
     state.records = [];
     state.index = 0;
@@ -526,7 +555,7 @@
   };
 
   const closeGame = () => {
-    window.clearTimeout(advanceTimer);
+    clearReactionTimers();
     state.phase = 'idle';
     state.reaction = null;
     state.inviteDialogOpen = false;
@@ -628,7 +657,7 @@
     const roleLabel = state.mode === 'formal' ? 'EDITOR-IN-CHIEF' : 'GUEST EDITOR';
     return `<section class="nf-review-shell is-review is-reacting" role="dialog" aria-modal="true">
       <header class="nf-review-header"><div><strong>NewsFlow</strong><span>${roleLabel}</span></div><div class="nf-review-header-actions"><span>${String(state.index + 1).padStart(2, '0')} / ${String(state.packet.length).padStart(2, '0')}</span><button data-review-action="undo">Z 撤销</button></div></header>
-      <main class="nf-review-stage"><article class="nf-review-card is-stamped"><div class="nf-review-card-meta"><span>EDITORIAL DECISION</span><span>${state.mode === 'formal' ? 'FORMAL EDITORIAL RECORD' : 'GUEST OPINION'}</span></div><h1>${escapeHtml(reaction.candidate.title)}</h1><div class="nf-review-stamp is-${reaction.decision.id}">${escapeHtml(reaction.decision.code)}</div><p class="nf-review-reaction-line">${escapeHtml(reaction.line)}</p><button class="nf-review-next" data-review-action="advance">下一稿 →</button></article></main>
+      <main class="nf-review-stage"><article class="nf-review-card is-stamped"><div class="nf-review-card-meta"><span>EDITORIAL DECISION</span><span>${state.mode === 'formal' ? 'FORMAL EDITORIAL RECORD' : 'GUEST OPINION'}</span></div><h1>${escapeHtml(reaction.candidate.title)}</h1><div class="nf-review-stamp is-${reaction.decision.id}">${escapeHtml(reaction.decision.code)}</div><p class="nf-review-reaction-line">${escapeHtml(reaction.line)}</p><div class="nf-review-countdown" role="timer" aria-live="polite" aria-label="${reaction.countdown} 秒后进入下一稿">（${reaction.countdown}）</div><button class="nf-review-next" data-review-action="advance">下一稿 →</button></article></main>
       ${renderInviteDialog()}
     </section>`;
   };
