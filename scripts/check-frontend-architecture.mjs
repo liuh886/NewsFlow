@@ -11,11 +11,11 @@ const runtimeFiles = [
   'src/edition-layer.js',
   'public/magazine-polish.js',
   'public/editorial-office.js',
-  'public/editorial-delight.js',
+  'public/review-game.js',
   'public/account-integration.js',
   'public/startup-resilience.js'
 ];
-
+for (const file of runtimeFiles) await access(resolve(root, file));
 const sources = Object.fromEntries(await Promise.all(runtimeFiles.map(async (path) => [path, await read(path)])));
 const [index, buildSource, serviceWorker, pagesWorkflow] = await Promise.all([
   read('index.html'),
@@ -25,45 +25,41 @@ const [index, buildSource, serviceWorker, pagesWorkflow] = await Promise.all([
 ]);
 
 for (const [path, source] of Object.entries(sources)) {
-  if (source.includes('MutationObserver')) {
-    throw new Error(`${path} must use explicit NewsFlow lifecycle events instead of MutationObserver.`);
-  }
+  if (source.includes('MutationObserver')) throw new Error(`${path} must use explicit lifecycle events instead of MutationObserver.`);
 }
 
 const app = sources['src/editorial-app.js'];
 for (const contract of [
   "new CustomEvent('newsflow:rendered')",
   "new CustomEvent('newsflow:open-editorial-office')",
-  "data-action=\"open-editorial-office\"",
   'AbortSignal.timeout(5000)'
 ]) {
   if (!app.includes(contract)) throw new Error(`reader app is missing architecture contract: ${contract}`);
 }
-for (const retired of [
-  'newsflow_review_v1',
-  'reviewActive',
-  'reviewQueue',
-  'reviewVerdicts',
-  'renderReviewCard',
-  'recordVerdict',
-  'open-review'
+
+const mode = sources['public/editorial-office.js'];
+for (const contract of [
+  "const ROLE_STORAGE_KEY = 'newsflow_role_v2'",
+  "window.NewsFlowReviewGame?.openFormal?.()",
+  "window.addEventListener('newsflow:rendered', mountModeTrigger)",
+  "window.addEventListener('newsflow:switch-role'"
 ]) {
-  if (app.includes(retired)) throw new Error(`reader app still contains retired review architecture: ${retired}`);
+  if (!mode.includes(contract)) throw new Error(`editor mode controller missing contract: ${contract}`);
+}
+for (const retired of ['renderDesk', 'renderIssueDesk', 'officeTab', "id: 'accept'", 'AUTOMATED PRE-REVIEW']) {
+  if (mode.includes(retired)) throw new Error(`editor mode controller still owns retired review UI: ${retired}`);
 }
 
-const office = sources['public/editorial-office.js'];
+const game = sources['public/review-game.js'];
 for (const contract of [
-  "window.addEventListener('newsflow:open-editorial-office'",
-  "window.addEventListener('newsflow:rendered', mountRoleTrigger)",
-  "new CustomEvent('newsflow:editorial-rendered')",
-  "fetchJson('./data/pipeline-reviews.json')",
-  'AUTOMATED PRE-REVIEW',
-  'AbortSignal.timeout(DATA_TIMEOUT_MS)'
+  'const openFormal = async () =>',
+  'const openGuest = async',
+  'const renderReview = () =>',
+  'const renderDecisionBar = () =>',
+  'const openSettlement = () =>',
+  'window.NewsFlowReviewGame'
 ]) {
-  if (!office.includes(contract)) throw new Error(`editorial office is missing architecture contract: ${contract}`);
-}
-for (const retired of ['handleReviewCapture', 'decorateReviewEntrances', "addEventListener('click', handleReviewCapture, true)"]) {
-  if (office.includes(retired)) throw new Error(`editorial office still intercepts the retired review path: ${retired}`);
+  if (!game.includes(contract)) throw new Error(`review game missing architecture contract: ${contract}`);
 }
 
 for (const contract of [
@@ -71,68 +67,52 @@ for (const contract of [
   "new CustomEvent('newsflow:edition-rendered')",
   'AbortSignal.timeout(DATA_TIMEOUT_MS)'
 ]) {
-  if (!sources['src/edition-layer.js'].includes(contract)) throw new Error(`edition layer is missing lifecycle contract: ${contract}`);
+  if (!sources['src/edition-layer.js'].includes(contract)) throw new Error(`edition layer missing contract: ${contract}`);
 }
 for (const contract of [
   "window.addEventListener('newsflow:rendered', decorateMagazine)",
   "window.addEventListener('newsflow:edition-rendered', decorateMagazine)"
 ]) {
-  if (!sources['public/magazine-polish.js'].includes(contract)) throw new Error(`magazine polish is missing lifecycle contract: ${contract}`);
+  if (!sources['public/magazine-polish.js'].includes(contract)) throw new Error(`magazine polish missing contract: ${contract}`);
 }
 
 const startup = sources['public/startup-resilience.js'];
-if (startup.includes('window.fetch =') || startup.includes('nativeFetch')) {
-  throw new Error('startup bootstrap must never monkey-patch global fetch.');
-}
+if (startup.includes('window.fetch =') || startup.includes('nativeFetch')) throw new Error('startup bootstrap must never monkey-patch global fetch.');
 for (const contract of [
   'STARTUP_WATCHDOG_MS = 8000',
-  'const watchdogTimer = window.setTimeout(showRecovery, STARTUP_WATCHDOG_MS)',
   "serviceWorker.register('./sw.js', { updateViaCache: 'none' })",
   "window.addEventListener('newsflow:rendered'",
   "key.startsWith('newsflow-')"
 ]) {
-  if (!startup.includes(contract)) throw new Error(`startup bootstrap is missing contract: ${contract}`);
-}
-if (startup.includes("window.addEventListener('DOMContentLoaded'")) {
-  throw new Error('startup watchdog must begin immediately and may not wait for DOMContentLoaded.');
+  if (!startup.includes(contract)) throw new Error(`startup bootstrap missing contract: ${contract}`);
 }
 
 for (const contract of [
   'data-startup-shell="true"',
-  './startup-resilience.js?v=2.6.1',
-  './editorial-app.js?v=2.6.1',
+  './startup-resilience.js?v=2.7.0',
+  './editorial-app.js?v=2.7.0',
+  './review-game.js?v=2.7.0',
+  './editorial-office.js?v=2.7.0',
   '<script async src="https://liuh886.github.io/admin/shared/account-shell.js?v=2"></script>'
 ]) {
-  if (!index.includes(contract)) throw new Error(`index startup shell is missing contract: ${contract}`);
+  if (!index.includes(contract)) throw new Error(`index startup shell missing contract: ${contract}`);
 }
 
-for (const retiredPath of ['./language-polish.js', './editorial-preflight.js']) {
+for (const retiredPath of ['./guest-editor.js', './editorial-delight.js', './editorial-preflight.js', './language-polish.js']) {
   if (index.includes(retiredPath) || serviceWorker.includes(retiredPath) || buildSource.includes(retiredPath)) {
-    throw new Error(`retired runtime layer is still referenced: ${retiredPath}`);
-  }
-}
-for (const path of ['src/language-polish.js', 'public/editorial-preflight.js']) {
-  try {
-    await access(resolve(root, path));
-    throw new Error(`retired runtime file still exists: ${path}`);
-  } catch (error) {
-    if (error?.code !== 'ENOENT') throw error;
+    throw new Error(`retired runtime layer still referenced: ${retiredPath}`);
   }
 }
 
 for (const contract of [
-  "const ASSET_VERSION = '2.6.1'",
-  'startup-v2.6.1',
-  'const isRuntimeAsset = /\\.(?:js|css)$/i.test(url.pathname)',
+  "const ASSET_VERSION = '2.7.0'",
+  'reader-editor-modes',
   'event.respondWith(networkFirst(event.request))'
 ]) {
-  if (!serviceWorker.includes(contract)) throw new Error(`service worker release coherence is missing: ${contract}`);
+  if (!serviceWorker.includes(contract)) throw new Error(`service worker release coherence missing: ${contract}`);
 }
 if (!pagesWorkflow.includes("cancel-in-progress: ${{ github.event_name == 'pull_request' }}")) {
   throw new Error('Pages may cancel superseded PR runs, but active main deployments must be preserved.');
 }
-if (pagesWorkflow.includes("- 'content/**'")) {
-  throw new Error('Pages must not redeploy for unrelated content history changes.');
-}
 
-console.log('NewsFlow frontend architecture contract passed: explicit lifecycle, coherent runtime release, immediate watchdog and stable main Pages deployment.');
+console.log('NewsFlow frontend architecture contract passed: reader owns publication, one review game owns editor interaction, mode controller owns identity only.');

@@ -1,8 +1,10 @@
 const appRoot = document.querySelector('#app');
 const focusableSelector = 'a[href], button:not([disabled]), input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])';
+const STATUS_PATH = './data/data-status.json';
 
 let triggerReference = null;
 let panelWasOpen = false;
+let freshnessStatus = null;
 
 const escapeMagazineHtml = (value = '') => String(value)
   .replaceAll('&', '&amp;')
@@ -116,6 +118,66 @@ const enhanceMagazineTriggers = () => {
   });
 };
 
+const formatFreshnessBadge = (value) => {
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return '';
+  return new Intl.DateTimeFormat('en-CA', {
+    timeZone: freshnessStatus?.timezone || 'Asia/Shanghai',
+    month: '2-digit',
+    day: '2-digit'
+  }).format(date).replace('-', '.');
+};
+
+const formatFreshnessLong = (value) => {
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return '';
+  return new Intl.DateTimeFormat('zh-CN', {
+    timeZone: freshnessStatus?.timezone || 'Asia/Shanghai',
+    year: 'numeric',
+    month: 'long',
+    day: 'numeric'
+  }).format(date);
+};
+
+const decorateDataFreshness = () => {
+  const brandName = appRoot?.querySelector('.brand-name');
+  if (!brandName || !freshnessStatus?.updated_at) return;
+  const parent = brandName.parentElement;
+  if (!parent) return;
+  parent.classList.add('nf-brand-copy');
+  let row = parent.querySelector('.nf-brand-row');
+  if (!row) {
+    row = document.createElement('span');
+    row.className = 'nf-brand-row';
+    brandName.before(row);
+    row.appendChild(brandName);
+  }
+  let badge = row.querySelector('.nf-data-date');
+  if (!badge) {
+    badge = document.createElement('span');
+    badge.className = 'nf-data-date';
+    row.appendChild(badge);
+  }
+  badge.textContent = formatFreshnessBadge(freshnessStatus.updated_at);
+  badge.title = `数据更新至 ${formatFreshnessLong(freshnessStatus.updated_at)}`;
+  badge.setAttribute('aria-label', badge.title);
+};
+
+const loadDataFreshness = async () => {
+  try {
+    const response = await fetch(STATUS_PATH, {
+      cache: 'no-store',
+      signal: AbortSignal.timeout(5000)
+    });
+    if (!response.ok) return;
+    const payload = await response.json();
+    if (payload && typeof payload.updated_at === 'string') freshnessStatus = payload;
+  } catch {
+    freshnessStatus = null;
+  }
+  decorateDataFreshness();
+};
+
 const decorateMagazine = () => {
   const shell = appRoot?.querySelector('.app-shell[data-product-model="magazine-edition"]');
   if (!shell) return;
@@ -123,6 +185,7 @@ const decorateMagazine = () => {
   updateLatestChangeState();
   enhanceMagazineTriggers();
   syncMagazinePanelState();
+  decorateDataFreshness();
 };
 
 appRoot?.addEventListener('click', (event) => {
@@ -158,4 +221,5 @@ document.addEventListener('keydown', (event) => {
 
 window.addEventListener('newsflow:rendered', decorateMagazine);
 window.addEventListener('newsflow:edition-rendered', decorateMagazine);
+loadDataFreshness();
 decorateMagazine();

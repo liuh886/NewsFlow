@@ -38,6 +38,10 @@ for (const contract of [
   'setMagazineBackgroundInert',
   'restoreMagazineTrigger',
   "intro.dataset.empty = 'true'",
+  "const STATUS_PATH = './data/data-status.json'",
+  'AbortSignal.timeout(5000)',
+  'decorateDataFreshness',
+  'nf-data-date',
   "window.addEventListener('newsflow:rendered', decorateMagazine)",
   "window.addEventListener('newsflow:edition-rendered', decorateMagazine)"
 ]) {
@@ -61,12 +65,14 @@ for (const selector of [
   if (!css.includes(selector)) throw new Error(`magazine polish CSS is missing ${selector}`);
 }
 
-if (packageManifest.version !== '2.4.1') throw new Error('magazine polish release must be version 2.4.1');
+if (packageManifest.version !== '2.4.1') throw new Error('package release contract must remain pinned until a package release is intentionally cut');
 if (!packageManifest.scripts?.check?.includes('check-magazine-polish.mjs')) {
   throw new Error('npm check must include the magazine polish contract');
 }
-if (!serviceWorker.includes('serious-play-v2.6.0')) {
-  throw new Error('service worker cache must include the frontend architecture reset release');
+for (const releaseContract of ["const ASSET_VERSION = '2.7.0'", 'reader-editor-modes']) {
+  if (!serviceWorker.includes(releaseContract)) {
+    throw new Error(`service worker is missing reader/editor release contract: ${releaseContract}`);
+  }
 }
 
-console.log('NewsFlow magazine polish contract passed: explicit lifecycle, focus containment and stable mobile editorial rows.');
+console.log('NewsFlow magazine polish contract passed: reader lifecycle, data freshness, focus containment and stable mobile editorial rows.');
