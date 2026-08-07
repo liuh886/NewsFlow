@@ -1,5 +1,5 @@
 const ASSET_VERSION = '2.6.1';
-const CACHE_NAME = 'newsflow-editorial-v2.3.1-magazine-v2.4.1-serious-play-v2.6.0-startup-v2.6.1';
+const CACHE_NAME = 'newsflow-editorial-v2.3.1-magazine-v2.4.1-serious-play-v2.6.0-startup-v2.6.1-guest-editor-v1';
 const NETWORK_TIMEOUT_MS = 5000;
 const versioned = (path) => `${path}?v=${ASSET_VERSION}`;
 const APP_SHELL = [
@@ -14,6 +14,7 @@ const APP_SHELL = [
   versioned('./editorial-preflight.css'),
   versioned('./account-integration.css'),
   versioned('./editorial-delight.css'),
+  versioned('./guest-editor.css'),
   versioned('./startup-resilience.js'),
   versioned('./editorial-app.js'),
   versioned('./polish.js'),
@@ -24,6 +25,7 @@ const APP_SHELL = [
   versioned('./account-integration.js'),
   versioned('./editorial-office.js'),
   versioned('./editorial-delight.js'),
+  versioned('./guest-editor.js'),
   './icon.svg',
   './manifest.webmanifest',
   './data/topics.json',
@@ -34,6 +36,8 @@ const APP_SHELL = [
   './data/storylines.json',
   './data/review-candidates.json',
   './data/pipeline-reviews.json',
+  './data/guest-editor-invites.json',
+  './data/editorial-reactions.json',
   './data/supabase-config.json',
   './data/data-status.json'
 ];
