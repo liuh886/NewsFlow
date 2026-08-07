@@ -89,18 +89,15 @@
     const decisionLetter = manuscript?.querySelector('.nf-decision-letter');
     const idLabel = manuscript?.querySelector('.nf-manuscript-id')?.textContent?.trim() || '';
     if (!manuscript || !decisionLetter || !idLabel.startsWith('MS-')) return;
+    if (manuscript.querySelector('[data-preflight-key]')) return;
 
     const manuscriptKey = idLabel.slice(3).toUpperCase();
-    if (manuscript.querySelector(`[data-preflight-key="${CSS.escape(manuscriptKey)}"]`)) return;
-
     const version = ++decorationVersion;
     const report = await loadReport();
     if (version !== decorationVersion || !manuscript.isConnected) return;
 
-    const title = manuscript.querySelector('h2')?.textContent?.trim() || '';
     const candidate = report.candidates.find((item) =>
       String(item?.manuscript_key || '').toUpperCase() === manuscriptKey
-      && (!item.title || !title || item.title === title)
     );
     if (!candidate) return;
 
