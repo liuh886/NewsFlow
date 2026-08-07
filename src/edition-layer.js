@@ -65,10 +65,19 @@ const issueSignals = (issue) => {
 const renderPublicationNav = () => `
   <nav class="publication-nav" data-edition-layer="navigation" aria-label="刊物导航">
     <a href="#current-issue">本期</a>
-    <a href="#editorial-desk">编辑台</a>
+    <a href="#latest-change">最新</a>
+    <button type="button" data-action="topic" data-value="ai-tech">AI 基建</button>
+    <button type="button" data-action="topic" data-value="energy">CCUS 与能源转型</button>
     <button type="button" data-edition-action="open-storylines">长期议题</button>
     <button type="button" data-edition-action="open-archive">归档</button>
   </nav>`;
+
+const renderMastheadSections = () => `
+  <div class="masthead-sections" data-edition-layer="masthead-sections" aria-label="主要栏目">
+    <button type="button" data-action="topic" data-value="ai-tech">AI 基建</button>
+    <span aria-hidden="true">/</span>
+    <button type="button" data-action="topic" data-value="energy">CCUS 与能源转型</button>
+  </div>`;
 
 const renderFilterHeading = () => `
   <div class="filter-drawer-heading" data-edition-layer="filter-heading">
@@ -79,51 +88,48 @@ const renderFilterHeading = () => `
 const renderPostIssueIntro = (issue) => `
   <section class="post-issue-intro" data-edition-layer="post-issue" aria-label="刊期之后的新变化">
     <div>
-      <span class="section-label">刊期之后的新变化</span>
-      <p>${issue ? `第 ${escapeEditionHtml(issue.issue_number)} 期发布后，值得立即更新认知的最新重大信号。` : '首期发布前，值得立即关注的重大信号。'}</p>
+      <span class="section-label">刊期之后</span>
+      <p>${issue ? `第 ${escapeEditionHtml(issue.issue_number)} 期发布后的最新变化，按时间继续进入 NewsFlow。` : '首期发布前，值得继续关注的最新变化。'}</p>
     </div>
     <div class="post-issue-status">
-      <span class="movement evidence_added">持续观察</span>
+      <span>最新更新</span>
       <span>${issue ? escapeEditionHtml(nextPublicationLabel(issue)) : '首期准备中'}</span>
     </div>
   </section>`;
 
 const renderCurrentIssue = (edition, issue) => {
   if (!issue) {
-    return `<section class="latest-edition-panel" id="current-issue" data-edition-layer="latest"><div class="issue-empty"><span>最新刊期</span><h2>首期正在准备</h2><p>编辑台会继续运行；正式刊期只收录主编明确录用的变化。</p></div></section>`;
+    return `<section class="latest-edition-panel" id="current-issue" data-edition-layer="latest"><div class="issue-empty"><span>Current Issue</span><h2>首期正在准备</h2><p>正式刊期只收录主编明确录用的变化；最新信号仍会持续进入阅读流。</p></div></section>`;
   }
 
   const signals = issueSignals(issue);
   const coverSignalId = String(issue.cover_signal_id || '');
-  const signalButtons = signals.map((signal, index) => {
-    const isCover = coverSignalId && signal.id === coverSignalId;
-    return `
-    <button class="issue-signal-link ${isCover ? 'is-cover' : ''}" data-action="open" data-id="${escapeEditionHtml(signal.id)}">
-      <span>${isCover ? '封面' : String(index + 1).padStart(2, '0')}</span>
+  const coverSignal = signals.find((signal) => signal.id === coverSignalId) || null;
+  const secondarySignals = coverSignalId ? signals.filter((signal) => signal.id !== coverSignalId) : signals;
+  const signalButtons = secondarySignals.map((signal, index) => `
+    <button class="issue-signal-link" data-action="open" data-id="${escapeEditionHtml(signal.id)}">
+      <span>${String(index + 1).padStart(2, '0')}</span>
       <span>${escapeEditionHtml(signal.title || `打开本期信号 ${index + 1}`)}</span>
-    </button>`;
-  }).join('');
-  const issueKicker = coverSignalId
-    ? `本期 · 第 ${escapeEditionHtml(issue.issue_number)} 期 · 封面已定`
-    : `本期 · 第 ${escapeEditionHtml(issue.issue_number)} 期`;
+    </button>`).join('');
   const selectionRecord = issue.selection_mode === 'owner_editorial_decisions'
     ? '主编选稿'
     : issue.auto_generated ? '定期编译' : '人工出版';
 
-  return `<section class="latest-edition-panel" id="current-issue" data-edition-layer="latest" aria-labelledby="latest-edition-title">
-    <div class="issue-header">
-      <div>
-        <div class="issue-kicker">${issueKicker}</div>
-        <h2 id="latest-edition-title">${escapeEditionHtml(issue.title)}</h2>
-      </div>
-      <div class="issue-dates">${escapeEditionHtml(formatEditionDate(issue.coverage_start, { month: 'short', day: 'numeric' }))}—${escapeEditionHtml(formatEditionDate(issue.coverage_end, { month: 'short', day: 'numeric' }))}<br>${escapeEditionHtml(formatEditionDate(issue.published_at))} · ${selectionRecord}</div>
+  return `<section class="latest-edition-panel ${coverSignalId ? 'has-cover' : ''}" id="current-issue" data-edition-layer="latest" aria-labelledby="latest-edition-title">
+    <div class="issue-topline">
+      <span>Issue ${escapeEditionHtml(issue.issue_number)}</span>
+      <span>${escapeEditionHtml(formatEditionDate(issue.published_at))} · ${selectionRecord}</span>
     </div>
-    <p class="issue-standfirst">${escapeEditionHtml(issue.standfirst)}</p>
-    <div class="issue-grid">
-      <div class="issue-judgment"><span class="section-label">本期判断</span><p>${escapeEditionHtml(issue.judgment)}</p></div>
-      <div class="issue-method"><span class="section-label">出版记录</span><dl><div><dt>候选</dt><dd>${escapeEditionHtml(issue.methodology?.candidate_count ?? 0)}</dd></div><div><dt>采用</dt><dd>${escapeEditionHtml(issue.methodology?.selected_count ?? 0)}</dd></div><div><dt>主编判断</dt><dd>${issue.methodology?.editorial_view_changed ? '已更新' : '保持不变'}</dd></div></dl></div>
+    <div class="issue-hero-copy">
+      <h2 id="latest-edition-title">${escapeEditionHtml(issue.title)}</h2>
+      <p class="issue-standfirst">${escapeEditionHtml(issue.standfirst)}</p>
+      ${coverSignal ? `<button class="issue-cover-action" data-action="open" data-id="${escapeEditionHtml(coverSignal.id)}">阅读封面文章 →</button>` : ''}
     </div>
-    ${signalButtons ? `<div class="issue-signals"><span class="section-label">本期采用信号</span>${signalButtons}</div>` : ''}
+    <div class="issue-judgment-band">
+      <span class="section-label">本期判断</span>
+      <p>${escapeEditionHtml(issue.judgment)}</p>
+    </div>
+    ${signalButtons ? `<div class="issue-signals"><div class="issue-section-heading"><span>In this issue</span><span>${secondarySignals.length} 篇</span></div>${signalButtons}</div>` : ''}
     <div class="issue-footer"><span>${escapeEditionHtml(edition.name)}</span><button type="button" data-edition-action="open-archive">查看全部刊期 →</button></div>
   </section>`;
 };
@@ -161,7 +167,7 @@ const renderStorylineDrawer = () => {
     : (Array.isArray(storyline.watch_next) ? storyline.watch_next : []);
   const falsifiers = Array.isArray(storyline.falsifiers) ? storyline.falsifiers : [];
   return `<div class="edition-overlay" data-edition-action="close-panel"></div><aside class="edition-panel" role="dialog" aria-modal="true" aria-labelledby="storyline-panel-title">
-    <div class="edition-panel-head"><span>NewsFlow · 长期议题</span><button type="button" data-edition-action="close-panel" aria-label="关闭长期议题">×</button></div>
+    <div class="edition-panel-head"><span>${escapeEditionHtml(editionState.edition?.short_name || 'Frontier Systems')} · 长期议题</span><button type="button" data-edition-action="close-panel" aria-label="关闭长期议题">×</button></div>
     <div class="edition-panel-body">
       <div class="storyline-meta"><span class="movement ${escapeEditionHtml(storyline.movement)}">${escapeEditionHtml(movementLabel(storyline.movement))}</span><span>${escapeEditionHtml(storyline.evidence_count || 0)} 条证据</span></div>
       <h2 id="storyline-panel-title">${escapeEditionHtml(storyline.title)}</h2>
@@ -178,7 +184,7 @@ const renderArchiveDrawer = () => {
   if (!editionState.archiveOpen) return '';
   const issues = publishedIssues();
   return `<div class="edition-overlay" data-edition-action="close-panel"></div><aside class="edition-panel archive-panel" role="dialog" aria-modal="true" aria-labelledby="archive-panel-title">
-    <div class="edition-panel-head"><span>NewsFlow · 刊期归档</span><button type="button" data-edition-action="close-panel" aria-label="关闭刊期归档">×</button></div>
+    <div class="edition-panel-head"><span>${escapeEditionHtml(editionState.edition?.short_name || 'Frontier Systems')} · 刊期归档</span><button type="button" data-edition-action="close-panel" aria-label="关闭刊期归档">×</button></div>
     <div class="edition-panel-body">
       <span class="section-label">完整归档</span><h2 id="archive-panel-title">每一期都是一次认知结算</h2>
       <div class="archive-panel-list">${issues.map((issue) => `<article><span>${String(issue.issue_number).padStart(2, '0')}</span><div><h3>${escapeEditionHtml(issue.title)}</h3><p>${escapeEditionHtml(issue.standfirst)}</p><small>${escapeEditionHtml(formatEditionDate(issue.coverage_start))}—${escapeEditionHtml(formatEditionDate(issue.coverage_end))} · ${issue.selection_mode === 'owner_editorial_decisions' ? '主编选稿' : issue.auto_generated ? '定期编译' : '人工出版'}</small></div></article>`).join('') || '<p>尚无已出版刊期。</p>'}</div>
@@ -230,11 +236,14 @@ const applyEditionLayer = () => {
   shell.dataset.productModel = 'magazine-edition';
   const issue = latestIssue();
 
+  const brand = appRoot.querySelector('.brand');
+  const brandName = appRoot.querySelector('.brand-name');
   const brandStatus = appRoot.querySelector('.brand-status');
-  if (brandStatus) brandStatus.innerHTML = '<span class="status-dot"></span>半月刊 · 定期出版';
+  if (brandName) brandName.textContent = edition.short_name || edition.name;
+  if (brandStatus) brandStatus.innerHTML = '<span class="status-dot"></span>Published with NewsFlow';
+  if (brand) brand.setAttribute('aria-label', `返回 ${edition.name} 首页`);
 
   const topbarInner = appRoot.querySelector('.topbar-inner');
-  const brand = appRoot.querySelector('.brand');
   if (topbarInner && brand && !topbarInner.querySelector('[data-edition-layer="navigation"]')) {
     brand.insertAdjacentHTML('afterend', renderPublicationNav());
   }
@@ -252,26 +261,31 @@ const applyEditionLayer = () => {
     const title = masthead.querySelector('.masthead-title');
     const deck = masthead.querySelector('.masthead-deck');
     const meta = masthead.querySelector('.masthead-meta');
-    if (kicker) kicker.textContent = `${edition.short_name || 'NewsFlow Edition'} · 专业半月刊`;
+    if (kicker) kicker.textContent = 'Independent editorial review · 半月刊';
     if (title) title.textContent = edition.name;
-    if (deck) deck.textContent = edition.reader_promise;
-    if (meta) meta.innerHTML = `${issue ? `第 ${escapeEditionHtml(issue.issue_number)} 期` : '刊期准备中'}<br>${issue ? escapeEditionHtml(formatEditionDate(issue.published_at)) : '首期准备中'}<br>${escapeEditionHtml(nextPublicationLabel(issue))}`;
+    if (deck) deck.textContent = edition.strapline || edition.reader_promise;
+    if (meta) meta.innerHTML = `${issue ? `Issue ${escapeEditionHtml(issue.issue_number)}` : '刊期准备中'}<br>${issue ? escapeEditionHtml(formatEditionDate(issue.published_at)) : '首期准备中'}<br>${escapeEditionHtml(nextPublicationLabel(issue))}`;
+  }
+
+  const mastheadCopy = masthead.firstElementChild;
+  if (mastheadCopy && !mastheadCopy.querySelector('[data-edition-layer="masthead-sections"]')) {
+    mastheadCopy.insertAdjacentHTML('beforeend', renderMastheadSections());
   }
 
   const firstEditorialAnchor = lead || feedToolbar;
-  if (firstEditorialAnchor && !main.querySelector('[data-edition-layer="post-issue"]')) {
-    firstEditorialAnchor.insertAdjacentHTML('beforebegin', renderPostIssueIntro(issue));
+  if (firstEditorialAnchor && !main.querySelector('[data-edition-layer="latest"]')) {
+    firstEditorialAnchor.insertAdjacentHTML('beforebegin', renderCurrentIssue(edition, issue));
+  }
+
+  const issueNode = main.querySelector('[data-edition-layer="latest"]');
+  if (issueNode && !main.querySelector('[data-edition-layer="post-issue"]')) {
+    issueNode.insertAdjacentHTML('afterend', renderPostIssueIntro(issue));
   }
 
   if (lead) {
     const leadLabel = lead.querySelector('.eyebrow-primary');
-    if (leadLabel) leadLabel.textContent = '刊期之后的新变化';
+    if (leadLabel) leadLabel.textContent = '最新更新';
     lead.id = 'latest-change';
-  }
-
-  const issueAnchor = lead || main.querySelector('[data-edition-layer="post-issue"]');
-  if (issueAnchor && !main.querySelector('[data-edition-layer="latest"]')) {
-    issueAnchor.insertAdjacentHTML('afterend', renderCurrentIssue(edition, issue));
   }
 
   if (feedToolbar) {
@@ -279,17 +293,17 @@ const applyEditionLayer = () => {
     const heading = feedToolbar.querySelector('.feed-heading h2');
     const count = feedToolbar.querySelector('.feed-heading span');
     if (heading && !heading.dataset.originalHeading) heading.dataset.originalHeading = heading.textContent || '';
-    if (heading && !/收藏|主题/.test(heading.textContent || '')) heading.textContent = '编辑台';
+    if (heading && !/收藏|主题/.test(heading.textContent || '')) heading.textContent = '最新';
     if (count) {
       const countValue = count.textContent?.match(/\d+/)?.[0] || '0';
-      count.textContent = `按时间排序 · ${countValue} 条待结算信号`;
+      count.textContent = `按时间排序 · ${countValue} 条`;
     }
   }
 
   const feedList = appRoot.querySelector('.feed-list');
   if (feedList) {
     feedList.classList.add('publication-list');
-    feedList.setAttribute('aria-label', '按时间排序的编辑台信号');
+    feedList.setAttribute('aria-label', '按时间排序的最新信号');
   }
 
   if (rail) rail.innerHTML = renderStorylines();
@@ -301,7 +315,7 @@ const applyEditionLayer = () => {
   const mobileNav = appRoot.querySelector('.mobile-nav');
   if (mobileNav && !mobileNav.dataset.editionLayer) {
     mobileNav.dataset.editionLayer = 'magazine';
-    mobileNav.innerHTML = '<a href="#latest-change"><span>新变化</span></a><a href="#current-issue"><span>本期</span></a><button data-action="mobile-filter"><span>筛选</span></button><button data-edition-action="open-archive"><span>归档</span></button>';
+    mobileNav.innerHTML = '<a href="#current-issue"><span>本期</span></a><a href="#latest-change"><span>最新</span></a><button data-action="topic" data-value="ai-tech"><span>AI 基建</span></button><button data-action="topic" data-value="energy"><span>CCUS</span></button><button data-edition-action="open-archive"><span>归档</span></button>';
   }
 
   emitEditionRendered();
