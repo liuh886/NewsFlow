@@ -128,11 +128,11 @@ for (const contract of [
 ]) {
   if (!serviceWorker.includes(contract)) throw new Error(`service worker release coherence is missing: ${contract}`);
 }
-if (!pagesWorkflow.includes('cancel-in-progress: true')) {
-  throw new Error('Pages must cancel obsolete queued deployments and publish only the latest ref state.');
+if (!pagesWorkflow.includes("cancel-in-progress: ${{ github.event_name == 'pull_request' }}")) {
+  throw new Error('Pages may cancel superseded PR runs, but active main deployments must be preserved.');
 }
 if (pagesWorkflow.includes("- 'content/**'")) {
   throw new Error('Pages must not redeploy for unrelated content history changes.');
 }
 
-console.log('NewsFlow frontend architecture contract passed: explicit lifecycle, coherent runtime release, immediate watchdog and latest-only Pages deployment.');
+console.log('NewsFlow frontend architecture contract passed: explicit lifecycle, coherent runtime release, immediate watchdog and stable main Pages deployment.');
