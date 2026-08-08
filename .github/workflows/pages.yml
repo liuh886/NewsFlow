@@ -74,7 +74,17 @@ jobs:
         env:
           NEWSFLOW_SUPABASE_URL: ${{ vars.NEWSFLOW_SUPABASE_URL || '' }}
           NEWSFLOW_SUPABASE_PUBLISHABLE_KEY: ${{ vars.NEWSFLOW_SUPABASE_PUBLISHABLE_KEY || '' }}
+          CLOUDFLARE_WEB_ANALYTICS_TOKEN: ${{ vars.CLOUDFLARE_WEB_ANALYTICS_TOKEN || '' }}
         run: npm run build
+
+      - name: Verify Cloudflare RUM when configured
+        env:
+          CLOUDFLARE_WEB_ANALYTICS_TOKEN: ${{ vars.CLOUDFLARE_WEB_ANALYTICS_TOKEN || '' }}
+        run: |
+          if [ -n "$CLOUDFLARE_WEB_ANALYTICS_TOKEN" ]; then
+            grep -q 'static.cloudflareinsights.com/beacon.min.js' dist/index.html
+            grep -q "$CLOUDFLARE_WEB_ANALYTICS_TOKEN" dist/index.html
+          fi
 
       - name: Install browser-smoke runner
         run: npm install --no-save --package-lock=false --ignore-scripts --no-audit --no-fund @playwright/test@1.61.1
@@ -122,6 +132,6 @@ jobs:
       pages: write
       id-token: write
     steps:
-      - name: Deploy to GitHub Pages
+      - name: Deploy GitHub Pages
         id: deployment
         uses: actions/deploy-pages@v4
