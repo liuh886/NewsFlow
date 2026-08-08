@@ -162,6 +162,7 @@ let lastAppOverlayTrigger = null;
 let editionPanelOpen = false;
 let editionPanelReturnFocus = null;
 let syncingEditionRoute = false;
+let initialEditionRouteSynced = false;
 
 const setEditionBackgroundInert = (inert) => {
   const shell = appRoot?.querySelector('.app-shell');
@@ -178,7 +179,7 @@ const setEditionBackgroundInert = (inert) => {
 const syncEditionDialogAccessibility = () => {
   const panel = appRoot?.querySelector('[data-edition-layer="panel"] .edition-panel');
   if (panel && !editionPanelOpen) {
-    editionPanelReturnFocus = captureFocusReference(document.activeElement);
+    if (!editionPanelReturnFocus) editionPanelReturnFocus = captureFocusReference(document.activeElement);
     editionPanelOpen = true;
     setEditionBackgroundInert(true);
     requestAnimationFrame(() => panel.querySelector(focusableSelector)?.focus());
@@ -318,7 +319,10 @@ const scheduleDecoration = () => {
 window.addEventListener('newsflow:rendered', scheduleDecoration);
 window.addEventListener('newsflow:edition-rendered', () => {
   scheduleDecoration();
-  requestAnimationFrame(syncEditionRouteFromLocation);
+  if (!initialEditionRouteSynced) {
+    initialEditionRouteSynced = true;
+    requestAnimationFrame(syncEditionRouteFromLocation);
+  }
 });
 window.addEventListener('resize', scheduleDecoration, { passive: true });
 scheduleDecoration();
