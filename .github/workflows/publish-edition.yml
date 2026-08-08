@@ -14,7 +14,7 @@ permissions:
   contents: write
 
 concurrency:
-  group: newsflow-content-writer
+  group: newsflow-publication-writer
   cancel-in-progress: false
 
 jobs:
@@ -22,7 +22,16 @@ jobs:
     name: Compile and publish
     runs-on: ubuntu-24.04
     timeout-minutes: 10
+    env:
+      NEWSFLOW_SUPABASE_URL: ${{ vars.NEWSFLOW_SUPABASE_URL || '' }}
+      NEWSFLOW_SUPABASE_PUBLISHABLE_KEY: ${{ vars.NEWSFLOW_SUPABASE_PUBLISHABLE_KEY || '' }}
     steps:
+      - name: Require publication configuration
+        if: env.NEWSFLOW_SUPABASE_URL == '' || env.NEWSFLOW_SUPABASE_PUBLISHABLE_KEY == ''
+        run: |
+          echo "NEWSFLOW_SUPABASE_URL and NEWSFLOW_SUPABASE_PUBLISHABLE_KEY are required." >&2
+          exit 1
+
       - name: Checkout
         uses: actions/checkout@v6
         with:
@@ -34,13 +43,10 @@ jobs:
           node-version: 22
           cache: npm
 
-      - name: Install
-        run: npm ci
+      - name: Install locked toolchain
+        run: npm ci --no-audit --no-fund
 
       - name: Compile semi-monthly edition
-        env:
-          NEWSFLOW_SUPABASE_URL: ${{ vars.NEWSFLOW_SUPABASE_URL || '' }}
-          NEWSFLOW_SUPABASE_PUBLISHABLE_KEY: ${{ vars.NEWSFLOW_SUPABASE_PUBLISHABLE_KEY || '' }}
         shell: bash
         run: |
           if [ -n "${{ inputs.publication_date }}" ]; then
@@ -48,6 +54,7 @@ jobs:
           else
             npm run publish:edition
           fi
+          npm run content:status
 
       - name: Validate publication
         run: |
@@ -57,13 +64,13 @@ jobs:
       - name: Commit published issue
         shell: bash
         run: |
-          if git diff --quiet -- public/data/issues.json public/data/news.json; then
+          if git diff --quiet -- public/data/issues.json public/data/news.json public/data/data-status.json; then
             echo "No publication changes were generated."
             exit 0
           fi
           git config user.name "newsflow-edition-bot"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add public/data/issues.json public/data/news.json
+          git add public/data/issues.json public/data/news.json public/data/data-status.json
           git commit -m "publish: semi-monthly editor-selected edition"
           git pull --rebase origin main
           git push
