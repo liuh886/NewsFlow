@@ -10,6 +10,12 @@ const appRoot = document.querySelector('#app');
 const statusRegion = document.querySelector('#app-status');
 const focusableSelector = 'a[href], button:not([disabled]), input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])';
 const isMagazineMode = () => appRoot?.querySelector('.app-shell')?.dataset.productModel === 'magazine-edition';
+const EDITION_ROUTES = {
+  archive: /^#archive$/,
+  storylines: /^#storylines$/,
+  storyline: /^#storyline\/(.+)$/,
+  issue: /^#issue\/(.+)$/
+};
 
 const announce = (message) => {
   if (!statusRegion) return;
@@ -23,7 +29,10 @@ const captureFocusReference = (element) => {
   if (!(element instanceof HTMLElement)) return null;
   return {
     action: element.dataset.action || '',
+    editionAction: element.dataset.editionAction || '',
     id: element.dataset.id || '',
+    issueId: element.dataset.issueId || '',
+    storylineId: element.dataset.storylineId || '',
     value: element.dataset.value || '',
     ariaLabel: element.getAttribute('aria-label') || ''
   };
@@ -31,12 +40,15 @@ const captureFocusReference = (element) => {
 
 const restoreFocus = (reference) => {
   if (!reference) return;
-  const candidates = reference.action
-    ? [...document.querySelectorAll(`[data-action="${reference.action}"]`)]
-    : [...document.querySelectorAll(focusableSelector)];
+  let candidates = [];
+  if (reference.action) candidates = [...document.querySelectorAll(`[data-action="${reference.action}"]`)];
+  else if (reference.editionAction) candidates = [...document.querySelectorAll(`[data-edition-action="${reference.editionAction}"]`)];
+  else candidates = [...document.querySelectorAll(focusableSelector)];
   const target = candidates.find((element) => {
     if (!(element instanceof HTMLElement)) return false;
     if (reference.id && element.dataset.id !== reference.id) return false;
+    if (reference.issueId && element.dataset.issueId !== reference.issueId) return false;
+    if (reference.storylineId && element.dataset.storylineId !== reference.storylineId) return false;
     if (reference.value && element.dataset.value !== reference.value) return false;
     if (reference.ariaLabel && element.getAttribute('aria-label') !== reference.ariaLabel) return false;
     return true;
@@ -129,8 +141,118 @@ const simplifyDrawer = () => {
   });
 };
 
+const ensureMobileReaderSearch = () => {
+  const topActions = document.querySelector('.top-actions');
+  if (!topActions || !isMagazineMode()) return;
+  let button = topActions.querySelector('[data-action="focus-search"].mobile-reader-search');
+  if (!button) {
+    button = document.createElement('button');
+    button.type = 'button';
+    button.className = 'icon-button mobile-reader-search';
+    button.dataset.action = 'focus-search';
+    button.setAttribute('aria-label', '搜索刊物');
+    button.innerHTML = polishIcon('search');
+    topActions.prepend(button);
+  }
+  button.hidden = !window.matchMedia('(max-width: 720px)').matches;
+};
+
 let previousAppOverlayOpen = false;
 let lastAppOverlayTrigger = null;
+let editionPanelOpen = false;
+let editionPanelReturnFocus = null;
+let syncingEditionRoute = false;
+
+const setEditionBackgroundInert = (inert) => {
+  const shell = appRoot?.querySelector('.app-shell');
+  const panelLayer = shell?.querySelector('[data-edition-layer="panel"]');
+  if (!shell) return;
+  [...shell.children].forEach((child) => {
+    if (child === panelLayer) return;
+    child.inert = inert;
+    if (inert) child.setAttribute('aria-hidden', 'true');
+    else child.removeAttribute('aria-hidden');
+  });
+};
+
+const syncEditionDialogAccessibility = () => {
+  const panel = appRoot?.querySelector('[data-edition-layer="panel"] .edition-panel');
+  if (panel && !editionPanelOpen) {
+    editionPanelReturnFocus = captureFocusReference(document.activeElement);
+    editionPanelOpen = true;
+    setEditionBackgroundInert(true);
+    requestAnimationFrame(() => panel.querySelector(focusableSelector)?.focus());
+    return;
+  }
+  if (!panel && editionPanelOpen) {
+    editionPanelOpen = false;
+    setEditionBackgroundInert(false);
+    const returnFocus = editionPanelReturnFocus;
+    editionPanelReturnFocus = null;
+    requestAnimationFrame(() => restoreFocus(returnFocus));
+  }
+};
+
+const editionRouteForAction = (target) => {
+  const action = target?.dataset.editionAction || '';
+  if (action === 'open-archive') return '#archive';
+  if (action === 'open-storylines') return '#storylines';
+  if (action === 'open-storyline' && target.dataset.storylineId) return `#storyline/${encodeURIComponent(target.dataset.storylineId)}`;
+  if (action === 'open-issue' && target.dataset.issueId) return `#issue/${encodeURIComponent(target.dataset.issueId)}`;
+  return '';
+};
+
+const pushEditionRoute = (hash) => {
+  if (!hash || syncingEditionRoute || window.location.hash === hash) return;
+  window.history.pushState({ newsflowEdition: true, hash }, '', `${window.location.pathname}${window.location.search}${hash}`);
+};
+
+const syncEditionRouteFromLocation = () => {
+  if (!isMagazineMode()) return;
+  const hash = window.location.hash;
+  let target = null;
+  const issueMatch = hash.match(EDITION_ROUTES.issue);
+  const storylineMatch = hash.match(EDITION_ROUTES.storyline);
+  if (issueMatch) {
+    let id = issueMatch[1];
+    try { id = decodeURIComponent(id); } catch {}
+    target = document.querySelector(`[data-edition-action="open-issue"][data-issue-id="${CSS.escape(id)}"]`);
+  } else if (storylineMatch) {
+    let id = storylineMatch[1];
+    try { id = decodeURIComponent(id); } catch {}
+    target = document.querySelector(`[data-edition-action="open-storyline"][data-storyline-id="${CSS.escape(id)}"]`);
+  } else if (EDITION_ROUTES.archive.test(hash)) {
+    target = document.querySelector('[data-edition-action="open-archive"]');
+  } else if (EDITION_ROUTES.storylines.test(hash)) {
+    target = document.querySelector('[data-edition-action="open-storylines"]');
+  }
+
+  syncingEditionRoute = true;
+  try {
+    if (target) target.click();
+    else if (appRoot?.querySelector('[data-edition-layer="panel"]')) {
+      appRoot.querySelector('[data-edition-action="close-panel"]')?.click();
+    }
+  } finally {
+    syncingEditionRoute = false;
+  }
+};
+
+const trapEditionFocus = (event) => {
+  const panel = appRoot?.querySelector('[data-edition-layer="panel"] .edition-panel');
+  if (!panel || event.key !== 'Tab') return;
+  const focusable = [...panel.querySelectorAll(focusableSelector)].filter((element) => !element.hidden && element.getClientRects().length);
+  if (!focusable.length) return;
+  const first = focusable[0];
+  const last = focusable.at(-1);
+  if (event.shiftKey && document.activeElement === first) {
+    event.preventDefault();
+    last.focus();
+  } else if (!event.shiftKey && document.activeElement === last) {
+    event.preventDefault();
+    first.focus();
+  }
+};
 
 const decorateControls = () => {
   document.querySelector('.global-search')?.setAttribute('role', 'search');
@@ -157,6 +279,8 @@ const decorateControls = () => {
 
   const mobileSearch = document.querySelector('[data-action="focus-search"]');
   if (mobileSearch) mobileSearch.setAttribute('aria-controls', 'mobile-search-sheet');
+
+  ensureMobileReaderSearch();
 };
 
 const updateAppOverlayState = () => {
@@ -178,6 +302,7 @@ const decorateInterface = () => {
   simplifyDrawer();
   decorateControls();
   updateAppOverlayState();
+  syncEditionDialogAccessibility();
   applyScrollState();
 };
 
@@ -191,6 +316,11 @@ const scheduleDecoration = () => {
 };
 
 window.addEventListener('newsflow:rendered', scheduleDecoration);
+window.addEventListener('newsflow:edition-rendered', () => {
+  scheduleDecoration();
+  requestAnimationFrame(syncEditionRouteFromLocation);
+});
+window.addEventListener('resize', scheduleDecoration, { passive: true });
 scheduleDecoration();
 
 const searchSheet = document.createElement('div');
@@ -268,11 +398,25 @@ searchSheet.addEventListener('click', (event) => {
 });
 
 document.addEventListener('click', (event) => {
-  const target = event.target instanceof Element ? event.target.closest('[data-action]') : null;
+  const target = event.target instanceof Element ? event.target.closest('[data-action], [data-edition-action]') : null;
   const action = target?.dataset.action;
+  const editionAction = target?.dataset.editionAction;
 
   if (['open', 'help', 'feedback-center', 'mobile-menu', 'mobile-filter'].includes(action)) {
     lastAppOverlayTrigger = captureFocusReference(target);
+  }
+
+  if (editionAction && ['open-archive', 'open-storylines', 'open-storyline', 'open-issue'].includes(editionAction)) {
+    if (!editionPanelOpen) editionPanelReturnFocus = captureFocusReference(target);
+    pushEditionRoute(editionRouteForAction(target));
+  } else if (editionAction === 'close-panel' && !syncingEditionRoute) {
+    if (window.history.state?.newsflowEdition) window.history.back();
+    else if (EDITION_ROUTES.archive.test(window.location.hash)
+      || EDITION_ROUTES.storylines.test(window.location.hash)
+      || EDITION_ROUTES.storyline.test(window.location.hash)
+      || EDITION_ROUTES.issue.test(window.location.hash)) {
+      window.history.replaceState({}, '', `${window.location.pathname}${window.location.search}`);
+    }
   }
 
   if (action === 'focus-search') {
@@ -289,6 +433,7 @@ document.addEventListener('click', (event) => {
 
 document.addEventListener('keydown', (event) => {
   trapSearchFocus(event);
+  trapEditionFocus(event);
   if (event.key === 'Escape' && searchWasOpen) {
     event.preventDefault();
     event.stopPropagation();
@@ -296,5 +441,7 @@ document.addEventListener('keydown', (event) => {
   }
 }, true);
 
+window.addEventListener('popstate', () => requestAnimationFrame(syncEditionRouteFromLocation));
+window.addEventListener('hashchange', () => requestAnimationFrame(syncEditionRouteFromLocation));
 window.addEventListener('offline', () => announce('网络连接已中断，NewsFlow 将继续使用已缓存内容。'));
 window.addEventListener('online', () => announce('网络连接已恢复。'));
