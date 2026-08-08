@@ -1,7 +1,7 @@
 name: NewsFlow Frontend
 
-# Catalog synchronization is intentionally isolated in catalog-sync.yml.
-# That workflow owns SUPABASE_SERVICE_ROLE_KEY and runs npm run supabase:catalog.
+# Server-side Supabase/editorial synchronization is intentionally isolated from the Reader build.
+# supabase-sync.yml owns repository → private workflow sync; editorial-sync.yml owns chief state → GitHub/Pages.
 
 on:
   pull_request:
@@ -12,11 +12,16 @@ on:
       - 'public/**'
       - 'content/inbox/**'
       - 'content/state/pipeline-review-queue.json'
+      - 'content/state/adoption-sync.json'
+      - 'content/state/governance-sync.json'
+      - 'config/**'
       - 'data/**'
       - 'scripts/**'
       - 'package.json'
       - 'package-lock.json'
       - '.github/workflows/pages.yml'
+      - '.github/workflows/editorial-sync.yml'
+      - '.github/workflows/supabase-sync.yml'
   push:
     branches: [main]
     paths:
@@ -25,11 +30,16 @@ on:
       - 'public/**'
       - 'content/inbox/**'
       - 'content/state/pipeline-review-queue.json'
+      - 'content/state/adoption-sync.json'
+      - 'content/state/governance-sync.json'
+      - 'config/**'
       - 'data/**'
       - 'scripts/**'
       - 'package.json'
       - 'package-lock.json'
       - '.github/workflows/pages.yml'
+      - '.github/workflows/editorial-sync.yml'
+      - '.github/workflows/supabase-sync.yml'
   workflow_dispatch:
 
 permissions:
