@@ -14,12 +14,12 @@ const requiredFiles = [
   'public/manifest.webmanifest', 'public/data/news.json', 'public/data/topics.json', 'public/data/edition.json',
   'public/data/issues.json', 'public/data/storylines.json', 'public/data/data-status.json',
   'public/data/governance-status.json', 'public/data/editorial-reactions.json', 'public/data/supabase-config.json',
-  'scripts/build.mjs', 'scripts/update-content.mjs', 'scripts/apply-content.mjs', 'scripts/publish-edition.mjs',
+  'scripts/build.mjs', 'scripts/update-content.mjs', 'scripts/apply-content.mjs', 'scripts/sync-live-issue.mjs',
   'scripts/sync-adopted-signals.mjs', 'scripts/sync-editorial-governance.mjs', 'scripts/update-data-status.mjs',
   'schemas/content-candidate-pack.schema.json', 'config/content-workflow.json', 'config/content-sources.json',
   'config/content-discovery.json', 'content/state/adoption-sync.json', 'content/state/governance-sync.json',
-  'supabase/newsflow-editorial.sql', '.github/workflows/pages.yml', '.github/workflows/publish-edition.yml',
-  '.github/workflows/editorial-sync.yml', 'WORKFLOW.md', 'DESIGN.md', 'README.md'
+  'supabase/newsflow-editorial.sql', '.github/workflows/pages.yml', '.github/workflows/publication-sync.yml',
+  'WORKFLOW.md', 'DESIGN.md', 'README.md'
 ];
 for (const file of requiredFiles) await access(resolve(root, file));
 
@@ -27,7 +27,8 @@ const retiredFiles = [
   'public/data/ai_digest.json', 'public/data/review-candidates.json', 'public/data/pipeline-reviews.json',
   'public/data/guest-editor-invites.json', 'content/state/pipeline-review-queue.json', 'scripts/sync-supabase.mjs',
   '.github/workflows/supabase-sync.yml', 'scripts/aggregate-pipeline-reviews.mjs',
-  'scripts/sync-supabase-catalog.mjs', 'editions/reference/edition.yaml'
+  'scripts/sync-supabase-catalog.mjs', 'editions/reference/edition.yaml',
+  'scripts/publish-edition.mjs', '.github/workflows/publish-edition.yml', '.github/workflows/editorial-sync.yml'
 ];
 for (const file of retiredFiles) {
   try {
@@ -46,7 +47,7 @@ const syntaxFiles = [
   'src/editorial-app.js', 'src/edition-layer.js', 'src/supabase-feedback.js', 'public/startup-resilience.js',
   'public/magazine-polish.js', 'public/reading-surface.js', 'public/editorial-office.js', 'public/review-game.js',
   'public/editorial-governance.js', 'public/sw.js', 'scripts/build.mjs', 'scripts/update-content.mjs',
-  'scripts/apply-content.mjs', 'scripts/publish-edition.mjs', 'scripts/sync-adopted-signals.mjs',
+  'scripts/apply-content.mjs', 'scripts/sync-live-issue.mjs', 'scripts/sync-adopted-signals.mjs',
   'scripts/sync-editorial-governance.mjs', 'scripts/update-data-status.mjs'
 ];
 for (const file of syntaxFiles) {
@@ -74,7 +75,8 @@ if (supabaseConfig.schema_version !== '1.0' || supabaseConfig.enabled !== false 
 if (packageManifest.dependencies?.['@supabase/supabase-js'] !== '2.112.0'
   || packageManifest.devDependencies?.supabase !== '2.111.0'
   || packageManifest.devDependencies?.esbuild !== '0.28.1') throw new Error('Pinned runtime/toolchain dependencies changed unexpectedly.');
-if (!packageManifest.scripts?.['editorial:sync'] || !packageManifest.scripts?.['content:update']) throw new Error('Core editorial scripts are missing.');
+if (!packageManifest.scripts?.['editorial:sync'] || !packageManifest.scripts?.['content:update'] || !packageManifest.scripts?.['issue:sync']) throw new Error('Core editorial scripts are missing.');
+if (packageManifest.scripts?.['publish:edition'] || packageManifest.scripts?.['publish:edition:dry-run']) throw new Error('Retired frozen-edition publisher scripts must not return.');
 if (packageManifest.scripts?.['supabase:sync']) throw new Error('Repository-to-Supabase Candidate synchronization must not return.');
 
 const appSource = await read('src/editorial-app.js');
@@ -103,18 +105,31 @@ for (const contract of [
 ]) if (!editorialSql.toLowerCase().includes(contract.toLowerCase())) throw new Error(`Editorial SQL missing ${contract}`);
 if (!editorialSql.includes('update public.newsflow_candidates set active = false') || !editorialSql.includes('update public.newsflow_candidates set active = true')) throw new Error('Canonical editorial SQL must close/reopen Candidates with the chief decision lifecycle.');
 
-const publisher = await read('scripts/publish-edition.mjs');
-for (const contract of [".from('newsflow_editorial_adoptions')", ".select('candidate_id,decision,decided_at')", 'cover_signal_id:', "writeFile(resolve(root, 'public/data/news.json')", "writeFile(resolve(root, 'public/data/issues.json')"]) if (!publisher.includes(contract)) throw new Error(`Formal publisher missing contract: ${contract}`);
-if (publisher.includes('minimum_quality') || publisher.includes('minimumQuality')) throw new Error('Formal Issue selection must not fall back to quality-only adoption.');
+const adoptionCompiler = await read('scripts/sync-adopted-signals.mjs');
+for (const contract of [
+  "from('newsflow_editorial_adoptions')", "from('newsflow_candidates')", 'frozenIssueSignalIds',
+  ".filter((issue) => issue?.lifecycle !== 'live')", "editorial_status: 'adopted'", 'unregistered source'
+]) if (!adoptionCompiler.includes(contract)) throw new Error(`Adoption compiler missing live/frozen boundary: ${contract}`);
 
-const [pagesWorkflow, publishWorkflow, editorialWorkflow] = await Promise.all([
-  read('.github/workflows/pages.yml'), read('.github/workflows/publish-edition.yml'), read('.github/workflows/editorial-sync.yml')
+const liveCompiler = await read('scripts/sync-live-issue.mjs');
+for (const contract of [
+  "item?.editorial_status !== 'adopted'", "lifecycle: 'live'", "lifecycle: 'frozen'",
+  'rankIssueSignals', 'chief_cover_then_quality_then_recency', "writeJson('public/data/issues.json'",
+  'maxSignalsPerChannel', 'coverage_start:', 'coverage_end:'
+]) if (!liveCompiler.includes(contract)) throw new Error(`Live Issue compiler missing contract: ${contract}`);
+if (liveCompiler.includes("from('newsflow_editorial_adoptions')") || liveCompiler.includes('SUPABASE_SERVICE_ROLE_KEY')) throw new Error('Live Issue compiler must consume authoritative public Signals, not create a second Supabase read path.');
+
+const [pagesWorkflow, publicationWorkflow] = await Promise.all([
+  read('.github/workflows/pages.yml'), read('.github/workflows/publication-sync.yml')
 ]);
 if (!pagesWorkflow.includes('npm run check') || !pagesWorkflow.includes('npm run build')) throw new Error('Pages workflow must validate before building.');
-for (const workflow of [publishWorkflow, editorialWorkflow]) if (!workflow.includes('group: newsflow-publication-writer')) throw new Error('All main publication writers must share one concurrency lock.');
-for (const contract of ['NEWSFLOW_SUPABASE_URL:', 'NEWSFLOW_SUPABASE_PUBLISHABLE_KEY:', 'npm run content:status', 'public/data/data-status.json']) if (!publishWorkflow.includes(contract)) throw new Error(`Publish workflow missing ${contract}`);
-for (const contract of ["cron: '17 * * * *'", 'SUPABASE_SERVICE_ROLE_KEY', 'NEWSFLOW_SUPABASE_PUBLISHABLE_KEY', 'npm run editorial:sync', 'npm run check', 'actions/upload-pages-artifact@v4', 'actions/deploy-pages@v4', 'git pull --rebase origin main']) if (!editorialWorkflow.includes(contract)) throw new Error(`Editorial sync workflow missing ${contract}`);
-if (editorialWorkflow.includes('npm run supabase:sync')) throw new Error('Editorial sync must not resurrect repository Candidate synchronization.');
+for (const contract of [
+  "cron: '17,47 * * * *'", 'group: newsflow-publication-writer', 'SUPABASE_SERVICE_ROLE_KEY',
+  'NEWSFLOW_SUPABASE_PUBLISHABLE_KEY', 'npm run editorial:sync', 'npm run issue:sync', 'npm run content:status',
+  'npm run check', 'npm run build', 'public/data/issues.json', 'actions/upload-pages-artifact@v4',
+  'actions/deploy-pages@v4', 'git pull --rebase origin main'
+]) if (!publicationWorkflow.includes(contract)) throw new Error(`Publication sync workflow missing ${contract}`);
+if (publicationWorkflow.includes('npm run supabase:sync')) throw new Error('Publication sync must not resurrect repository Candidate synchronization.');
 
 const runFiles = await readdir(resolve(root, 'content/runs'));
 for (const name of runFiles.filter((file) => file.endsWith('.json'))) {
@@ -122,4 +137,4 @@ for (const name of runFiles.filter((file) => file.endsWith('.json'))) {
   if ('decisions' in run || 'candidates' in run) throw new Error(`Public scan audit exposes Candidate detail: ${name}`);
 }
 
-console.log(`NewsFlow repository contract passed: ${news.length} authoritative public Signals, ${storylines.length} Storylines, Supabase-private Candidates, advisory Editors and one Editor-in-Chief publication authority.`);
+console.log(`NewsFlow repository contract passed: ${news.length} authoritative public Signals, ${storylines.length} Storylines, Supabase-private Candidates, live Current Issue and frozen historical Issues.`);

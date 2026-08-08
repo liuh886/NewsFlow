@@ -36,7 +36,7 @@ for (const retired of ['openGuest', 'openSettlement', 'CLOSE ISSUE', 'saveProduc
 for (const contract of ["from('newsflow_governance_drafts')", '刊物判断', '长期议题', '信源', '编辑部', '发布到 GitHub']) {
   if (!governance.includes(contract)) throw new Error(`Governance surface missing ${contract}`);
 }
-for (const contract of ['cover_signal_id', 'Published with NewsFlow', "new CustomEvent('newsflow:edition-rendered')", '#section/']) {
+for (const contract of ['cover_signal_id', 'Published with NewsFlow', "new CustomEvent('newsflow:edition-rendered')", '#section/', "issue?.lifecycle === 'live'", 'archivedIssues']) {
   if (!edition.includes(contract)) throw new Error(`Edition layer missing ${contract}`);
 }
 for (const contract of ["const ROOT_ID = 'newsflow-reading-surface-root'", '#read/', "window.addEventListener('newsflow:rendered'"]) {
@@ -45,13 +45,13 @@ for (const contract of ["const ROOT_ID = 'newsflow-reading-surface-root'", '#rea
 if (reading.includes('stopImmediatePropagation') || reading.includes('window.fetch =')) throw new Error('Reading Surface must not take global ownership.');
 if (startup.includes('window.fetch =')) throw new Error('Startup resilience must not patch fetch.');
 
-for (const asset of ['./startup-resilience.js?v=2.9.0', './editorial-app.js?v=2.9.0', './reading-surface.js?v=2.9.0', './review-game.js?v=2.9.0', './editorial-office.js?v=2.9.0']) {
+for (const asset of ['./startup-resilience.js?v=2.10.0', './editorial-app.js?v=2.10.0', './reading-surface.js?v=2.10.0', './review-game.js?v=2.10.0', './editorial-office.js?v=2.10.0']) {
   if (!index.includes(asset)) throw new Error(`Index missing current asset ${asset}`);
 }
 for (const retired of ['review-candidates.json', 'pipeline-reviews.json', 'guest-editor-invites.json', 'ai_digest.json']) {
   if (index.includes(retired) || sw.includes(retired) || build.includes(retired)) throw new Error(`Reader artifact exposes retired data: ${retired}`);
 }
-for (const contract of ["const ASSET_VERSION = '2.9.0'", 'editorial-governance-v2.9.0', './data/source-registry.json', './data/governance-status.json']) {
+for (const contract of ["const ASSET_VERSION = '2.10.0'", 'editorial-governance-v2.10.0', './data/source-registry.json', './data/governance-status.json']) {
   if (!sw.includes(contract)) throw new Error(`Service worker missing ${contract}`);
 }
 if (!pages.includes("cancel-in-progress: ${{ github.event_name == 'pull_request' }}")) throw new Error('Pages main deployment cancellation policy regressed.');

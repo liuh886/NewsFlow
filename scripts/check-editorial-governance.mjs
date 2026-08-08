@@ -21,7 +21,7 @@ for (const file of ['public/editorial-governance.js', 'scripts/sync-editorial-go
   const syntax = spawnSync(process.execPath, ['--check', resolve(root, file)], { encoding: 'utf8' });
   if (syntax.status !== 0) throw new Error(`${file} syntax failed:\n${syntax.stderr}`);
 }
-for (const asset of ['./editorial-governance.css?v=2.9.0', './editorial-governance.js?v=2.9.0']) if (!index.includes(asset)) throw new Error(`index is missing ${asset}`);
+for (const asset of ['./editorial-governance.css?v=2.10.0', './editorial-governance.js?v=2.10.0']) if (!index.includes(asset)) throw new Error(`index is missing ${asset}`);
 
 for (const contract of [
   "{ id: 'edition', label: '刊物判断'", "{ id: 'storyline', label: '长期议题'", "{ id: 'source', label: '信源'", "{ id: 'editorial', label: '编辑部'",
@@ -51,7 +51,7 @@ for (const contract of [
 ]) if (!governanceSync.includes(contract)) throw new Error(`GitHub governance compiler missing ${contract}`);
 for (const contract of [
   "from('newsflow_editorial_adoptions')", "from('newsflow_candidates')", 'managed_signal_ids',
-  'issueSignalIds', 'allowedPublicIds', "editorial_status: 'adopted'", 'non-authoritative public Signal(s) removed', 'unregistered source'
+  'frozenIssueSignalIds', "editorial_status: 'adopted'", 'non-authoritative public Signal(s) removed', 'unregistered source'
 ]) if (!adoptionSync.includes(contract)) throw new Error(`adoption compiler missing ${contract}`);
 
 for (const contract of [

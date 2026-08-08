@@ -21,7 +21,7 @@ for (const file of ['public/review-game.js', 'public/editorial-office.js', 'publ
   if (syntax.status !== 0) throw new Error(`${file} syntax failed:\n${syntax.stderr}`);
 }
 
-for (const asset of ['./editorial-mode.css?v=2.9.0', './review-game.css?v=2.9.0', './review-game.js?v=2.9.0', './editorial-office.js?v=2.9.0']) {
+for (const asset of ['./editorial-mode.css?v=2.10.0', './review-game.css?v=2.10.0', './review-game.js?v=2.10.0', './editorial-office.js?v=2.10.0']) {
   if (!index.includes(asset)) throw new Error(`index is missing ${asset}`);
 }
 for (const retired of ['guest-editor', 'review-candidates.json', 'pipeline-reviews.json', 'guest-editor-invites.json', 'newsflow_review_game_v4_guest']) {
@@ -68,7 +68,7 @@ for (const asset of ['./review-game.js', './review-game.css', './editorial-offic
   if (!sw.includes(asset)) throw new Error(`service worker missing ${asset}`);
 }
 for (const forbidden of ['./data/review-candidates.json', './data/pipeline-reviews.json', './data/guest-editor-invites.json']) if (sw.includes(forbidden)) throw new Error(`service worker must not cache private editorial data: ${forbidden}`);
-if (!sw.includes("const ASSET_VERSION = '2.9.0'") || !sw.includes('editorial-governance-v2.9.0')) throw new Error('service worker cache must identify the current Governance v2 release.');
+if (!sw.includes("const ASSET_VERSION = '2.10.0'") || !sw.includes('editorial-governance-v2.10.0')) throw new Error('service worker cache must identify the current Governance v2 release.');
 
 const reactions = JSON.parse(reactionsText);
 for (const decision of ['cover_story', 'accept', 'minor_revision', 'major_revision', 'reject']) {

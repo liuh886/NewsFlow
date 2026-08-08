@@ -107,9 +107,14 @@ const normalizeAdoptedSignal = (candidate, adoption) => {
   };
 };
 
-const issueSignalIds = new Set((issues || []).flatMap((issue) => issue.signal_ids || []).map(String));
+// Frozen Issues are immutable publication history. A live Issue is rebuilt from the
+// current adoption projection, so withdrawn chief decisions must disappear from it.
+const frozenIssueSignalIds = new Set((issues || [])
+  .filter((issue) => issue?.lifecycle !== 'live')
+  .flatMap((issue) => issue.signal_ids || [])
+  .map(String));
 const currentAdoptionIds = new Set(adoptionIds);
-const allowedPublicIds = new Set([...issueSignalIds, ...currentAdoptionIds]);
+const allowedPublicIds = new Set([...frozenIssueSignalIds, ...currentAdoptionIds]);
 const nextById = new Map(
   news
     .filter((item) => allowedPublicIds.has(String(item.id || '')))
@@ -136,7 +141,7 @@ const semanticSync = {
   schema_version: '1.0',
   managed_signal_ids: nextManaged,
   current_adoption_count: currentAdoptionIds.size,
-  formal_issue_signal_count: issueSignalIds.size
+  formal_issue_signal_count: frozenIssueSignalIds.size
 };
 const previousSemanticSync = {
   schema_version: previousSync.schema_version || '1.0',
@@ -154,4 +159,4 @@ if (stateChanged) {
   });
 }
 
-console.log(`Editorial adoption sync: ${currentAdoptionIds.size} current adoption(s), ${issueSignalIds.size} frozen Issue Signal(s), ${removedLegacyOrWithdrawn.length} non-authoritative public Signal(s) removed, ${newsChanged || stateChanged ? 'state changed' : 'no semantic change'}.`);
+console.log(`Editorial adoption sync: ${currentAdoptionIds.size} current adoption(s), ${frozenIssueSignalIds.size} frozen Issue Signal(s), ${removedLegacyOrWithdrawn.length} non-authoritative public Signal(s) removed, ${newsChanged || stateChanged ? 'state changed' : 'no semantic change'}.`);

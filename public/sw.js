@@ -1,5 +1,5 @@
-const ASSET_VERSION = '2.9.0';
-const CACHE_NAME = 'newsflow-editorial-governance-v2.9.0';
+const ASSET_VERSION = '2.10.0';
+const CACHE_NAME = 'newsflow-editorial-governance-v2.10.0';
 const NETWORK_TIMEOUT_MS = 5000;
 const versioned = (path) => `${path}?v=${ASSET_VERSION}`;
 const APP_SHELL = [

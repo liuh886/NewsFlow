@@ -35,7 +35,7 @@ for (const contract of ['按时间排序', "(validDate(b.published_at)?.getTime(
 for (const forbidden of ['verifiedFallbackItems', './data/ai_digest.json', '信号评分', '高置信度', '评分 ${getQuality']) {
   if (appJs.includes(forbidden)) throw new Error(`Reader must not expose or synthesize internal editorial content: ${forbidden}`);
 }
-for (const contract of ['NETWORK_TIMEOUT_MS = 5000', 'fetchWithTimeout', 'warmAppShell', 'editorial-governance-v2.9.0']) {
+for (const contract of ['NETWORK_TIMEOUT_MS = 5000', 'fetchWithTimeout', 'warmAppShell', 'editorial-governance-v2.10.0']) {
   if (!serviceWorker.includes(contract)) throw new Error(`Service worker startup contract is missing ${contract}`);
 }
 
@@ -49,7 +49,8 @@ if (gameJs.includes('openGuest') || gameJs.includes('localStorage')) throw new E
 for (const contract of [
   'cover_signal_id', '阅读封面文章', 'Published with NewsFlow', 'AI 基建', 'CCUS 与能源转型',
   "heading.textContent = '最新'", "firstEditorialAnchor.insertAdjacentHTML('beforebegin', renderCurrentIssue(edition, issue))",
-  "issueNode.insertAdjacentHTML('afterend', renderPostIssueIntro(issue))", '#section/', "channelSort: 'newest'", "data-sort=\"selected\""
+  "issueNode.insertAdjacentHTML('afterend', renderPostIssueIntro(issue))", '#section/', "channelSort: 'newest'", "data-sort=\"selected\"",
+  "issue?.lifecycle === 'live'", 'archivedIssues'
 ]) if (!editionJs.includes(contract)) throw new Error(`Premium Reader IA/section contract is missing ${contract}`);
 for (const selector of ['.issue-hero-copy h2', 'font-size: clamp(48px, 6.2vw, 76px)', '.issue-judgment-band', '.global-search:focus-within']) {
   if (!editionCss.includes(selector)) throw new Error(`Premium Reader visual hierarchy is missing ${selector}`);
