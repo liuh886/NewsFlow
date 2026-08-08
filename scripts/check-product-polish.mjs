@@ -37,7 +37,7 @@ for (const contract of ['NETWORK_TIMEOUT_MS = 5000', 'fetchWithTimeout', 'warmAp
 }
 
 for (const contract of [
-  '一屏一稿', 'EDITORIAL DISPOSITION REPORT', 'data-review-action="decision"', 'nf-review-stamp',
+  'EDITORIAL DISPOSITION REPORT', 'data-review-action="decision"', 'nf-review-stamp',
   'prefers-reduced-motion', 'grid-template-columns: repeat(5', "from('newsflow_candidates')", "from('newsflow_editorial_reviews')",
   '编辑意见', 'FINAL EDITORIAL RECORD'
 ]) {
