@@ -1,47 +1,55 @@
 # NewsFlow
 
-NewsFlow is a GitHub-native professional publication with two deliberately different experiences on one editorial system:
+NewsFlow is a GitHub-native professional publication with a private editorial workflow behind a premium Reader experience.
 
-> **Reader Mode is a publication. Editor Mode is a game.**
+> **Machines collect. Editors advise. The Editor-in-Chief decides. Readers see only adopted publication content.**
 
-An Edition defines the reader promise, editorial view, scope, source policy, materiality boundaries and long-running Storylines. NewsFlow continuously gathers candidate evidence, lets editors judge it through a card-review game, and publishes a formal Issue on the 1st and 15th of each month.
+The reference publication is **Frontier Systems Review**, focused on AI infrastructure, CCUS and the energy transition.
 
 ## Product status
 
-NewsFlow has one coherent editorial pipeline connecting evidence discovery, the five-state Review Game and formal semi-monthly publication. Reader and Editor remain separate experiences, while the same content and authority model connects them underneath.
+NewsFlow has three explicit editorial roles and one publication gate:
 
-### Reader Mode
+- **主编 / Editor-in-Chief** — final publication authority. Cover Story and Accept decisions control public adoption. The chief also owns Edition judgment, long-running Storylines, trusted-source policy and Editor appointments.
+- **编辑 / Editor** — reviews the same five-state manuscript game, but every decision is advisory only.
+- **读者 / Reader** — sees only chief-adopted Signals, formal Issues, Sections, Storylines, evidence and Archive. Candidate manuscripts, review votes, revision states and rejected material are private.
 
-Reader Mode is designed as a premium academic journal / boutique magazine rather than an analytics dashboard. The reference Edition is **Frontier Systems Review**; NewsFlow is the publishing engine beneath it.
+UI mode never grants authority. An Editor seat is an authenticated, database-backed appointment.
 
-The Reader hierarchy is now:
+## Reader Mode
 
-1. Edition identity and explicit publication navigation;
-2. the Current Issue as the homepage focal point;
-3. the Cover Story / Issue judgment and accepted stories;
-4. compact updates since the Issue;
-5. the chronological Latest stream;
-6. explicit section pages for **AI 基建** and **CCUS 与能源转型**;
+Reader Mode is a premium academic journal / boutique magazine rather than an analytics dashboard.
+
+The hierarchy is:
+
+1. Edition identity and publication navigation;
+2. Current Issue as the homepage focal point;
+3. Cover Story / Issue judgment and accepted stories;
+4. compact changes since the Issue;
+5. chronological **最新** containing only public adopted/published Signals;
+6. section pages for **AI 基建** and **CCUS 与能源转型**;
 7. Research Agenda / Storylines and Issue Archive;
-8. a full-page Reading Surface for long-form reading, with the evidence drawer retained as quick inspection.
+8. full-page Reading Surface, with the side drawer retained for quick evidence inspection.
 
-The global Reader navigation is intentionally simple:
+Reader navigation remains:
 
 `本期 | 最新 | AI 基建 | CCUS 与能源转型 | 长期议题 | 归档`
 
-The two top-level sections reuse the Edition's existing Storylines as second-level taxonomy. AI exposes 能源 / 芯片 / 基础设施 / 模型 / 应用; CCUS exposes 项目交付 / CO₂ 网络与商业结构 / 制度、证据与责任. Section pages support only `最新 / 精选` ordering and use hash routes rather than a router framework.
+The Reader static artifact does **not** contain unpublished Candidate packets or editorial review projections.
 
-A formal `cover_signal_id` makes the Current Issue the one dominant homepage editorial event. Post-Issue changes remain visible, but they no longer compete with the Issue for first visual priority.
+## Editorial Signal Desk
 
-The Reading Surface uses `#read/<signal-id>` and a 740px desktop reading measure. Its hierarchy is channel/date/source → headline → standfirst → NewsFlow Editorial Desk → 发生了什么 → 为什么重要 → 证据与来源 → 长期议题 → 相关阅读 → same-channel navigation. The small article action remains the quick evidence drawer.
+The public **最新** stream is newest-first by `published_at`; recommendation score only breaks ties. It contains content that the Editor-in-Chief has already adopted, even when the next formal Issue has not yet frozen.
 
-### Editor Mode
+This is intentionally different from the private editorial queue. Being collected, scored or reviewed never makes a manuscript public.
 
-Selecting **Editor** opens the full-screen Review Game rather than an admin dashboard:
+## Editor Mode
+
+Editors and the Editor-in-Chief share one Review Game:
 
 > 一屏一稿，一键裁决，一次反馈，然后下一稿。
 
-Every manuscript receives exactly one decision:
+The five decisions are:
 
 1. 封面文章 / COVER STORY
 2. 录用 / ACCEPT
@@ -49,104 +57,93 @@ Every manuscript receives exactly one decision:
 4. 大修 / MAJOR REVISION
 5. 拒稿 / REJECT
 
-Desktop shortcuts are `1–5`; `Z` undoes the previous decision. On desktop the manuscript itself is rendered at roughly 80% visual scale so the review remains a one-screen task. After every decision, the stamp and editorial reaction remain visible for three seconds with `（3）→（2）→（1）` before the next manuscript advances.
+Desktop shortcuts are `1–5`; `Z` undoes the previous decision. After each decision, the stamp/reaction remains for three seconds with `（3）→（2）→（1）` before auto-advance.
 
-Formal editors and Guest Editors share the same Review Game renderer. **UI mode is not publication authority.** Anyone may use the editor experience, while formal publication is restricted by the shared account authority model.
+For an **Editor**, all five choices are opinions stored in `newsflow_editorial_reviews`. They never publish automatically.
 
-## Editorial Signal Desk
+For the **Editor-in-Chief**, the same review row is the final editorial record. A database trigger projects only chief `cover_story` / `accept` decisions to `newsflow_editorial_adoptions`. Revision/reject decisions remove any pre-Issue adoption. The chief can see aggregate Editor opinion counts on the manuscript, but no majority rule or automated vote determines publication.
 
-The Editorial Signal Desk is the continuous evidence stream between formal Issues. In Reader Mode it is presented simply as **最新** and is chronological by default, newest first by `published_at`; recommendation score is used only as a tie-breaker.
+## Editorial governance
 
-Search, filters, bookmarks, quick evidence views and Storylines remain supporting reader tools. The Desk can expose strong evidence before it is adopted into a formal Issue; appearing in the Desk does not equal formal publication.
+The Editor-in-Chief has a dedicated **Publication Settings** surface with four areas:
+
+- **刊物判断** — Reader promise, editorial view and core questions;
+- **长期议题** — title, research question, current chief view, watch items and falsifiers;
+- **信源** — trusted source identity, domain/path, class/tier, routed Sections/Storylines, allowed uses and limitations;
+- **编辑部** — permanent Editor appointments and role status.
+
+These settings are not edited directly in GitHub from the browser.
+
+### Why Supabase + GitHub
+
+Supabase is the private workflow layer:
+
+- editorial membership and one-time appointment tokens;
+- private Candidate manuscripts;
+- normalized Editor/Chief reviews;
+- private governance drafts;
+- published governance-change queue.
+
+GitHub remains the canonical, auditable publication source:
+
+- `public/data/edition.json`
+- `public/data/storylines.json`
+- `config/content-sources.json`
+- `public/data/news.json`
+- `public/data/issues.json`
+
+When the chief presses **发布到 GitHub**, the browser writes only to a private Supabase governance row. `.github/workflows/editorial-sync.yml` checks hourly, pulls published chief changes with the existing server-side Supabase service-role secret, validates them, commits the canonical files to `main`, and lets the normal Pages flow deploy them. No GitHub token or service-role credential is shipped to the browser.
+
+`public/data/edition.json` is the single Edition authority. The retired duplicate YAML Edition is not retained.
 
 ## Editorial information flow
 
 ```text
-source research
-  → content/inbox candidate pack
-  → review-candidates.json
-  → Editor Review Game
-  → editor decision saved to shared account state
-  → active owner decision projected to newsflow_editorial_adoptions
-  → 1st / 15th publisher
-  → public/data/news.json + public/data/issues.json
-  → Reader Mode
+source research / automated discovery
+  → candidate pack
+  → validation, scoring, source/evidence checks
+  → private Candidate queue
+  → Supabase newsflow_candidates
+  → Editors: advisory five-state reviews
+  → Editor-in-Chief: final five-state decision
+        ├─ minor / major / reject → remains private
+        └─ cover / accept
+              → newsflow_editorial_adoptions
+              → hourly GitHub adoption sync
+              → public/data/news.json → Reader Latest
+              → 1st / 15th publisher
+              → public/data/issues.json → formal Issue
 ```
 
-Publication semantics:
-
-- **封面文章** → eligible for the next formal Issue and becomes `cover_signal_id` when selected as the cover;
-- **录用** → eligible for the next formal Issue;
-- **小修 / 大修 / 拒稿** → do not automatically enter the formal Issue;
-- Guest Editor decisions remain parallel opinions and never enter formal publication automatically;
-- non-owner Editor-mode decisions may be saved for continuity, but formal publication reads only the active owner's adoption projection.
-
-There is no second `CLOSE ISSUE` judgment after review. The editorial decision is the publication intent.
+Collection has no direct write path to `public/data/news.json`. `scripts/update-content.mjs` is a read-only evaluator; `scripts/apply-content.mjs --apply` queues reviewable Candidates and writes an audit record only.
 
 ## Formal publication
 
 `.github/workflows/publish-edition.yml` runs at 09:15 Asia/Shanghai on the 1st and 15th.
 
-- On the 1st, coverage is the 16th through the final day of the previous month.
-- On the 15th, coverage is the 1st through the 14th.
-- The publisher reads the public, read-only `newsflow_editorial_adoptions` projection.
-- Only active-owner `cover_story` and `accept` decisions inside the coverage window can enter the Issue.
-- Edition caps still bound maximum Signals per Issue and per channel.
-- A no-change Issue is valid when the owner has not adopted any eligible Signal.
-- Selected inbox candidates are promoted into `public/data/news.json`; the frozen formal Issue is written to `public/data/issues.json`.
-- Automation records evidence movement but never silently rewrites the Edition's long-term editorial view.
-
-Quality scores help candidate discovery and review, but **formal Issue adoption has no quality-score fallback**.
-
-## Publication authority
-
-Shared account state is private. The database projects only the minimum publication record required by the publisher.
-
-`supabase/newsflow-editorial.sql` defines the boundary:
-
-- signed-in users may read only their own admin-role record;
-- `newsflow_is_authoritative_editor()` is a security-invoker authority check;
-- an internal trigger projects active-owner Cover/Accept decisions into `newsflow_editorial_adoptions`;
-- the projection is public read-only;
-- the trigger itself is not executable by public client roles.
-
-No service-role credential is shipped to the frontend or invitation URL.
-
-## Guest Editor invitation
-
-A Guest Editor invitation is a public appointment, not an authority token. The reference invitation uses:
-
-`?guest-editor=frontier-systems-review`
-
-The invitee accepts an `EDITORIAL APPOINTMENT` and enters the same five-decision game. Guest judgments remain parallel editorial opinions. If the live packet is sparse, already-public Signals may appear only as clearly labeled blind editorial exercises.
+- 1st: coverage is the 16th through the final day of the previous month.
+- 15th: coverage is the 1st through the 14th.
+- Only chief `cover_story` / `accept` adoptions are eligible.
+- Edition caps bound total and per-channel Issue size.
+- A no-change Issue is valid.
+- Cover Story becomes `cover_signal_id`.
+- Quality scores support discovery and review; there is no score-only publication fallback.
 
 ## Main runtime ownership
 
-- `src/editorial-app.js` — Reader data, filters, chronological Latest stream and quick evidence drawer;
-- `src/edition-layer.js` — Edition identity, Current Issue, section landing pages, Storylines and Archive;
-- `public/magazine-polish.js/.css` — Reader lifecycle, idempotent freshness branding and final editorial visual restraint;
-- `public/reading-surface.js/.css` — full-page article routing, reading hierarchy and related reading;
-- `public/editorial-office.js` — Reader / Editor mode and shared-account state sync;
-- `public/review-game.js` — the single formal/guest review state machine;
-- `public/data/editorial-reactions.json` — serious-play editorial reactions;
-- `supabase/newsflow-editorial.sql` — publication authority and adoption projection;
-- `scripts/publish-edition.mjs` — owner-selected semi-monthly compiler.
+- `src/editorial-app.js` — Reader Signals, chronological Latest and quick evidence;
+- `src/edition-layer.js` — Edition identity, Current Issue, Sections, Storylines and Archive;
+- `public/reading-surface.js/.css` — premium article reading;
+- `public/editorial-office.js` — Reader/editorial mode and membership-backed appointment entry;
+- `public/review-game.js` — the single five-state review engine;
+- `public/editorial-governance.js/.css` — chief-only Publication Settings;
+- `supabase/newsflow-editorial.sql` — roles, private candidates/reviews, adoption and governance queues;
+- `scripts/sync-supabase.mjs` — GitHub candidate/publication state → Supabase;
+- `scripts/sync-adopted-signals.mjs` — chief adoption → Reader Latest;
+- `scripts/sync-editorial-governance.mjs` — chief governance publication → canonical GitHub files;
+- `scripts/publish-edition.mjs` — semi-monthly Issue compiler.
 
-The retired four-state review path, guest-only review renderer, separate decision-feedback decorator, old candidate-review aggregator and local post-game Issue settlement are not retained.
-
-## Reader v3 visual contract
-
-The Reader deliberately keeps typography and page composition stronger than software chrome:
-
-- Newsreader carries publication hierarchy; DM Sans carries reading/UI copy; Roboto Mono is limited to dates/provenance;
-- warm paper, near-black ink and one editorial blue remain the primary palette;
-- Current Issue has exactly one dominant focal point;
-- score meters and verification badges do not compete with editorial content;
-- section names are not repeated as two competing hero headings;
-- search is visually secondary until focused;
-- Reader mode switching is a quiet text control rather than a pill/button centerpiece;
-- desktop, tablet and mobile rules are explicitly maintained at ~920px, 720px and 430px boundaries;
-- the Reading Surface keeps a 740px desktop measure and 17px+ mobile body type.
+Retired architecture is deleted rather than wrapped: anonymous Guest review packets, public Candidate/review JSON, local review decision stores, product-account publication projection, local Issue settlement, catalog-only sync and duplicate Edition YAML are not retained.
 
 ## Local development
 
@@ -157,14 +154,16 @@ npm run build
 python -m http.server 4173 --directory dist
 ```
 
-The formal publication compiler additionally requires the public Supabase URL and publishable key so it can read `newsflow_editorial_adoptions`.
+Server-side sync commands require `SUPABASE_URL` and `SUPABASE_SERVICE_ROLE_KEY`. Browser builds receive only the configured publishable Supabase key.
 
 ## CI and deployment
 
-- `NewsFlow Repository Contract` protects data, authority and publication contracts.
+- `NewsFlow Repository Contract` protects data, privacy, authority and publication boundaries.
 - `NewsFlow Frontend` validates JavaScript, product behavior and the static build.
-- `CI Governance` enforces workflow and package-manager policy.
-- `Publish autonomous edition` executes the owner-selected 1st/15th publication path.
+- `CI Governance` enforces workflow/package policy.
+- `Sync NewsFlow to Supabase` syncs public catalog + private Candidate snapshots on relevant main changes.
+- `Sync chief editorial state` pulls chief adoption/governance back to GitHub only when state changed.
+- `Publish autonomous edition` freezes formal Issues twice monthly.
 - GitHub Pages deploys the built artifact only from `main`.
 
-See `DESIGN.md`, `WORKFLOW.md`, `docs/edition-protocol.md` and `docs/ci-governance.md` for the enforceable product and engineering contracts.
+See `DESIGN.md`, `WORKFLOW.md`, `docs/edition-protocol.md` and `docs/ci-governance.md` for the enforceable contracts.
