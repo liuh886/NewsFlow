@@ -20,6 +20,33 @@ try {
     timeout: 15_000,
   });
 
+  const freshnessBadge = page.locator('#app .nf-data-date');
+  await freshnessBadge.waitFor({ state: 'visible', timeout: 10_000 });
+  const badgeContract = await freshnessBadge.evaluate((badge) => {
+    const style = getComputedStyle(badge);
+    const row = badge.parentElement;
+    return {
+      sameRowAsBrand: Boolean(row?.querySelector('.brand-name')),
+      borderStyle: style.borderTopStyle,
+      borderWidth: Number.parseFloat(style.borderTopWidth),
+      borderRadius: Number.parseFloat(style.borderTopLeftRadius),
+    };
+  });
+  if (!badgeContract.sameRowAsBrand || badgeContract.borderStyle === 'none' || badgeContract.borderWidth < 1 || badgeContract.borderRadius < 8) {
+    throw new Error('Reader freshness date is not rendered as a compact badge beside the publication name.');
+  }
+
+  const searchInput = page.locator('#global-search');
+  const collapsedPlaceholderOpacity = await searchInput.evaluate((input) => getComputedStyle(input, '::placeholder').opacity);
+  if (Number.parseFloat(collapsedPlaceholderOpacity) !== 0) {
+    throw new Error('Collapsed Reader search exposes placeholder text instead of remaining icon-only.');
+  }
+  await searchInput.focus();
+  const expandedPlaceholderOpacity = await searchInput.evaluate((input) => getComputedStyle(input, '::placeholder').opacity);
+  if (Number.parseFloat(expandedPlaceholderOpacity) < 0.9) {
+    throw new Error('Expanded Reader search does not restore its search hint.');
+  }
+
   const firstArticle = page.locator('#app [data-reading-link="true"]').first();
   await firstArticle.waitFor({ state: 'visible', timeout: 10_000 });
   await firstArticle.click();

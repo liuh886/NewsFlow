@@ -36,6 +36,36 @@
   display: block;
 }
 
+/* Compact publication identity: Edition name + freshness badge. */
+.app-shell[data-product-model='magazine-edition'] .nf-brand-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+}
+
+.app-shell[data-product-model='magazine-edition'] .nf-brand-row .brand-name {
+  min-width: 0;
+}
+
+.app-shell[data-product-model='magazine-edition'] .nf-data-date {
+  display: inline-flex;
+  flex: 0 0 auto;
+  align-items: center;
+  min-height: 18px;
+  padding: 1px 6px;
+  border: 1px solid var(--line-strong);
+  border-radius: 999px;
+  color: var(--ink-faint);
+  background: color-mix(in srgb, var(--surface-raised) 72%, transparent);
+  font-family: var(--font-mono);
+  font-size: 8px;
+  font-weight: 500;
+  line-height: 1.35;
+  letter-spacing: 0.035em;
+  white-space: nowrap;
+}
+
 /* Collapsed Reader search is icon-only. The placeholder returns only after focus opens the field. */
 .app-shell[data-product-model='magazine-edition'] .global-search:not(:focus-within) input::placeholder {
   color: transparent;
