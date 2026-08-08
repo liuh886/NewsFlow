@@ -42,6 +42,7 @@ if (script.includes('MutationObserver') || script.includes('stopImmediatePropaga
 
 for (const selector of [
   "[data-empty='true']", "[data-action='feedback-center']", "[data-action='open-editorial-office']", '.nf-mode-trigger',
+  '.nf-brand-row', '.nf-data-date', ".global-search:not(:focus-within) input::placeholder", '.global-search:focus-within input::placeholder',
   "[data-edition-layer='section-view'] .issue-hero-copy > h2", ".issue-section-heading .masthead-sections button[aria-pressed='true']",
   "[data-action='feedback-hide']", '@media (max-width: 920px)', '@media (max-width: 720px)', '@media (max-width: 430px)',
   '@media print', '@media (prefers-reduced-motion: reduce)', 'overflow-x: clip',
@@ -62,4 +63,4 @@ for (const releaseContract of ["const ASSET_VERSION = '2.9.0'", 'editorial-gover
   if (!serviceWorker.includes(releaseContract)) throw new Error(`service worker is missing governance release contract: ${releaseContract}`);
 }
 
-console.log('NewsFlow magazine polish contract passed: Edition-first identity, restrained Reader chrome, section hierarchy and responsive reading typography.');
+console.log('NewsFlow magazine polish contract passed: Edition-first identity, restrained Reader chrome, header badge/search state, section hierarchy and responsive reading typography.');
