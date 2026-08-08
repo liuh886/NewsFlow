@@ -1,4 +1,4 @@
-name: Sync signal catalog
+name: Sync NewsFlow to Supabase
 
 on:
   workflow_dispatch:
@@ -6,27 +6,32 @@ on:
     branches: [main]
     paths:
       - 'public/data/news.json'
-      - 'public/data/data-status.json'
+      - 'public/data/edition.json'
+      - 'content/inbox/**'
+      - 'content/state/pipeline-review-queue.json'
+      - 'config/content-sources.json'
+      - 'scripts/sync-supabase.mjs'
+      - '.github/workflows/supabase-sync.yml'
 
 permissions:
   contents: read
 
 concurrency:
-  group: newsflow-catalog-sync
+  group: newsflow-supabase-sync
   cancel-in-progress: true
 
 jobs:
   sync:
-    name: Sync Supabase catalog
+    name: Sync public catalog and private candidates
     runs-on: ubuntu-24.04
     timeout-minutes: 8
     env:
       SUPABASE_URL: ${{ vars.NEWSFLOW_SUPABASE_URL || '' }}
       SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY || '' }}
     steps:
-      - name: Skip when catalog credentials are absent
+      - name: Skip when Supabase credentials are absent
         if: env.SUPABASE_URL == '' || env.SUPABASE_SERVICE_ROLE_KEY == ''
-        run: echo "Supabase catalog sync skipped because credentials are not configured."
+        run: echo "NewsFlow Supabase sync skipped because server credentials are not configured."
 
       - name: Checkout
         if: env.SUPABASE_URL != '' && env.SUPABASE_SERVICE_ROLE_KEY != ''
@@ -39,10 +44,10 @@ jobs:
           node-version: 22
           cache: npm
 
-      - name: Install
+      - name: Install locked toolchain
         if: env.SUPABASE_URL != '' && env.SUPABASE_SERVICE_ROLE_KEY != ''
-        run: npm ci
+        run: npm ci --no-audit --no-fund
 
-      - name: Sync catalog
+      - name: Sync NewsFlow state
         if: env.SUPABASE_URL != '' && env.SUPABASE_SERVICE_ROLE_KEY != ''
-        run: npm run supabase:catalog
+        run: npm run supabase:sync

@@ -1,5 +1,4 @@
-import { createHash } from 'node:crypto';
-import { access, mkdir, readFile, writeFile } from 'node:fs/promises';
+import { access, readFile } from 'node:fs/promises';
 import { dirname, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { Ajv2020 as Ajv } from 'ajv/dist/2020.js';
@@ -10,24 +9,28 @@ const args = new Map(process.argv.slice(2).map((entry) => {
   const [key, ...rest] = entry.replace(/^--/, '').split('=');
   return [key, rest.join('=') || true];
 }));
-const apply = args.has('apply');
+if (args.has('apply')) {
+  throw new Error('Direct evaluator apply is retired. Use scripts/apply-content.mjs --apply; collection may create Candidates but cannot publish Reader Signals.');
+}
 const checkOnly = args.has('check');
 const inputArgument = args.get('input');
+const stdin = args.has('stdin');
 
 const readJson = async (path) => JSON.parse(await readFile(resolve(root, path), 'utf8'));
-const workflowConfig = await readJson('config/content-workflow.json');
-const sourceConfig = await readJson('config/content-sources.json');
-const discoveryConfig = await readJson('config/content-discovery.json');
-const scoutConfig = await readJson('config/content-scouts.json');
-const edition = await readJson('public/data/edition.json');
-const news = await readJson('public/data/news.json');
-const storylines = await readJson('public/data/storylines.json');
-const candidatePackSchema = await readJson('schemas/content-candidate-pack.schema.json');
+const [workflowConfig, sourceConfig, discoveryConfig, scoutConfig, edition, news, storylines, candidatePackSchema] = await Promise.all([
+  readJson('config/content-workflow.json'),
+  readJson('config/content-sources.json'),
+  readJson('config/content-discovery.json'),
+  readJson('config/content-scouts.json'),
+  readJson('public/data/edition.json'),
+  readJson('public/data/news.json'),
+  readJson('public/data/storylines.json'),
+  readJson('schemas/content-candidate-pack.schema.json')
+]);
 
 const ajv = new Ajv({ allErrors: true });
 addFormats(ajv);
 const validateCandidatePack = ajv.compile(candidatePackSchema);
-
 const isObject = (value) => value && typeof value === 'object' && !Array.isArray(value);
 const toDate = (value) => {
   const date = new Date(value);
@@ -45,24 +48,6 @@ const parsedUrlFor = (value) => {
   }
 };
 const hostnameFor = (value) => parsedUrlFor(value)?.hostname.toLowerCase().replace(/^www\./, '') || '';
-const sourceForUrl = (value) => {
-  const url = parsedUrlFor(value);
-  if (!url) return null;
-  const hostname = url.hostname.toLowerCase();
-  const pathname = url.pathname.toLowerCase();
-  return sourceConfig.sources.find((source) => {
-    const domainMatches = hostname === source.domain || hostname.endsWith(`.${source.domain}`);
-    const pathMatches = !source.path_prefixes?.length
-      || source.path_prefixes.some((prefix) => pathname.startsWith(String(prefix).toLowerCase()));
-    return domainMatches && pathMatches;
-  });
-};
-const scoutForUrl = (value) => {
-  const url = parsedUrlFor(value);
-  if (!url || !['x.com', 'www.x.com', 'twitter.com', 'www.twitter.com'].includes(url.hostname.toLowerCase())) return null;
-  const handle = url.pathname.split('/').filter(Boolean)[0]?.toLowerCase();
-  return scoutConfig.scouts?.find((scout) => scout.handle.toLowerCase() === handle) || null;
-};
 const normalizeUrl = (value) => {
   try {
     const url = new URL(value);
@@ -77,6 +62,25 @@ const normalizeUrl = (value) => {
     return String(value || '').trim();
   }
 };
+const sourceForUrl = (value) => {
+  const url = parsedUrlFor(value);
+  if (!url) return null;
+  const hostname = url.hostname.toLowerCase().replace(/^www\./, '');
+  const pathname = url.pathname.toLowerCase();
+  return sourceConfig.sources.find((source) => {
+    const domain = String(source.domain || '').toLowerCase().replace(/^www\./, '');
+    const domainMatches = hostname === domain || hostname.endsWith(`.${domain}`);
+    const pathMatches = !source.path_prefixes?.length
+      || source.path_prefixes.some((prefix) => pathname.startsWith(String(prefix).toLowerCase()));
+    return domainMatches && pathMatches;
+  }) || null;
+};
+const scoutForUrl = (value) => {
+  const url = parsedUrlFor(value);
+  if (!url || !['x.com', 'www.x.com', 'twitter.com', 'www.twitter.com'].includes(url.hostname.toLowerCase())) return null;
+  const handle = url.pathname.split('/').filter(Boolean)[0]?.toLowerCase();
+  return scoutConfig.scouts?.find((scout) => scout.handle.toLowerCase() === handle) || null;
+};
 const titleBigrams = (value) => {
   const normalized = String(value || '').toLowerCase().replace(/[\s\p{P}\p{S}]+/gu, '');
   if (normalized.length < 2) return new Set(normalized ? [normalized] : []);
@@ -89,6 +93,20 @@ const titleSimilarity = (left, right) => {
   const intersection = [...a].filter((part) => b.has(part)).length;
   return (2 * intersection) / (a.size + b.size);
 };
+const dateInShanghai = (date) => {
+  const parts = new Intl.DateTimeFormat('en-US', {
+    timeZone: 'Asia/Shanghai', year: 'numeric', month: '2-digit', day: '2-digit'
+  }).formatToParts(date);
+  const value = Object.fromEntries(parts.map((part) => [part.type, part.value]));
+  return `${value.year}-${value.month}-${value.day}`;
+};
+const formatTimeForError = (date) => {
+  const shanghai = new Intl.DateTimeFormat('en-US', {
+    timeZone: 'Asia/Shanghai', year: 'numeric', month: '2-digit', day: '2-digit',
+    hour: '2-digit', minute: '2-digit', hour12: false
+  }).format(date);
+  return `${shanghai} CST (${date.toISOString().replace('T', ' ').replace(/\.\d{3}Z$/, '')} UTC)`;
+};
 
 const configProblems = [];
 if (workflowConfig.schema_version !== '1.0') configProblems.push('unsupported content workflow schema_version');
@@ -96,58 +114,46 @@ if (workflowConfig.workflow_id !== 'newsflow-content-update') configProblems.pus
 if (workflowConfig.workflow_version !== '1.0.0') configProblems.push('unsupported content workflow_version');
 if (workflowConfig.timezone !== 'Asia/Shanghai') configProblems.push('content workflow timezone must be Asia/Shanghai');
 if (workflowConfig.entrypoint !== 'WORKFLOW.md') configProblems.push('content workflow must use WORKFLOW.md as its entrypoint');
-if (workflowConfig.exchange_contract?.candidate_pack_schema !== 'schemas/content-candidate-pack.schema.json') {
-  configProblems.push('content workflow has an invalid candidate pack schema path');
-}
+if (workflowConfig.exchange_contract?.candidate_pack_schema !== 'schemas/content-candidate-pack.schema.json') configProblems.push('invalid candidate pack schema path');
 for (const field of ['agent_id', 'runtime', 'workflow_id', 'workflow_version']) {
   if (!workflowConfig.exchange_contract?.required_actor_fields?.includes(field)) configProblems.push(`content workflow actor is missing ${field}`);
 }
+if (workflowConfig.apply_writes?.includes('public/data/news.json')) configProblems.push('content collection must not publish directly to news.json');
+if (workflowConfig.commands?.apply?.includes('update-content.mjs')) configProblems.push('content apply must go through candidate-only apply-content.mjs');
 if (sourceConfig.schema_version !== '1.1') configProblems.push('unsupported source config schema_version');
-if (!Array.isArray(sourceConfig.sources) || sourceConfig.sources.length === 0) configProblems.push('source registry is empty');
+if (!Array.isArray(sourceConfig.sources) || !sourceConfig.sources.length) configProblems.push('source registry is empty');
 if (!Array.isArray(sourceConfig.score_dimensions) || sourceConfig.score_dimensions.length !== 5) configProblems.push('score_dimensions must define exactly five dimensions');
 for (const field of ['score_min_per_dimension', 'score_mean_min', 'title_similarity_review', 'max_evidence_excerpt_chars']) {
   if (!Number.isFinite(Number(sourceConfig.thresholds?.[field]))) configProblems.push(`invalid threshold ${field}`);
 }
-const sourceIds = new Set();
-const sourceDomains = new Set();
+
 const editionChannelIds = new Set((edition.channels || []).map((channel) => channel.id));
 const storylineIds = new Set(storylines.map((storyline) => storyline.id));
+const sourceIds = new Set();
 for (const source of sourceConfig.sources || []) {
   for (const field of ['id', 'name', 'domain', 'class', 'tier']) requireText(source, field, configProblems);
   if (sourceIds.has(source.id)) configProblems.push(`duplicate source id ${source.id}`);
-  if (sourceDomains.has(source.domain)) configProblems.push(`duplicate source domain ${source.domain}`);
   sourceIds.add(source.id);
-  sourceDomains.add(source.domain);
-  if (!Array.isArray(source.channels) || source.channels.length === 0) configProblems.push(`source ${source.id} has no channels`);
+  if (!Array.isArray(source.channels) || !source.channels.length) configProblems.push(`source ${source.id} has no channels`);
   for (const channelId of source.channels || []) if (!editionChannelIds.has(channelId)) configProblems.push(`source ${source.id} uses unknown channel ${channelId}`);
-  if (!Array.isArray(source.storylines) || source.storylines.length === 0) configProblems.push(`source ${source.id} has no Storylines`);
+  if (!Array.isArray(source.storylines) || !source.storylines.length) configProblems.push(`source ${source.id} has no Storylines`);
   for (const storylineId of source.storylines || []) if (!storylineIds.has(storylineId)) configProblems.push(`source ${source.id} uses unknown Storyline ${storylineId}`);
-  if (!Array.isArray(source.allowed_uses) || source.allowed_uses.length === 0) configProblems.push(`source ${source.id} has no allowed_uses`);
+  if (!Array.isArray(source.allowed_uses) || !source.allowed_uses.length) configProblems.push(`source ${source.id} has no allowed_uses`);
   if (source.path_prefixes?.some((prefix) => typeof prefix !== 'string' || !prefix.startsWith('/'))) configProblems.push(`source ${source.id} has invalid path_prefixes`);
   if (source.class === 'corporate_primary' && !source.leader_watch?.role) configProblems.push(`corporate source ${source.id} has no leader_watch role`);
-  if (source.class === 'corporate_primary' && (!Array.isArray(source.limitations) || source.limitations.length === 0)) {
-    configProblems.push(`corporate source ${source.id} has no limitations`);
-  }
-  if (source.report_source === true && (!Array.isArray(source.report_families) || source.report_families.length === 0)) {
-    configProblems.push(`report source ${source.id} has no report_families`);
-  }
-  if ((source.report_source === true || source.stakeholder_source === true) && (!Array.isArray(source.limitations) || source.limitations.length === 0)) {
-    configProblems.push(`institutional source ${source.id} has no limitations`);
-  }
+  if ((source.class === 'corporate_primary' || source.report_source === true || source.stakeholder_source === true)
+    && (!Array.isArray(source.limitations) || !source.limitations.length)) configProblems.push(`source ${source.id} requires limitations`);
+  if (source.report_source === true && (!Array.isArray(source.report_families) || !source.report_families.length)) configProblems.push(`report source ${source.id} has no report_families`);
 }
-for (const item of news) {
-  if (!sourceForUrl(item.url)) configProblems.push(`existing Signal uses unregistered source: ${item.url}`);
-}
-if (scoutConfig.schema_version !== '1.0') configProblems.push('unsupported scout config schema_version');
-if (scoutConfig.platform !== 'X') configProblems.push('scout platform must be X');
+for (const item of news) if (!sourceForUrl(item.url)) configProblems.push(`existing Signal uses unregistered source: ${item.url}`);
+
+if (scoutConfig.schema_version !== '1.0' || scoutConfig.platform !== 'X') configProblems.push('invalid X scout configuration');
 if (scoutConfig.default_policy?.promotion !== 'discovery_only'
   || scoutConfig.default_policy?.post_as_evidence !== false
-  || scoutConfig.default_policy?.require_canonical_source !== true) {
-  configProblems.push('X scouts must remain discovery-only and require canonical sources');
-}
+  || scoutConfig.default_policy?.require_canonical_source !== true) configProblems.push('X scouts must remain discovery-only');
+const scoutLayers = new Set(scoutConfig.layers || []);
 const scoutIds = new Set();
 const scoutHandles = new Set();
-const scoutLayers = new Set(scoutConfig.layers || []);
 for (const scout of scoutConfig.scouts || []) {
   for (const field of ['id', 'name', 'handle', 'x_url', 'evidence_family', 'promotion_policy']) requireText(scout, field, configProblems);
   if (scoutIds.has(scout.id)) configProblems.push(`duplicate scout id ${scout.id}`);
@@ -155,27 +161,17 @@ for (const scout of scoutConfig.scouts || []) {
   scoutIds.add(scout.id);
   scoutHandles.add(String(scout.handle).toLowerCase());
   if (scout.promotion_policy !== 'discovery_only') configProblems.push(`scout ${scout.id} is not discovery_only`);
-  if (!Array.isArray(scout.layers) || scout.layers.length === 0 || scout.layers.some((layer) => !scoutLayers.has(layer))) {
-    configProblems.push(`scout ${scout.id} has invalid layers`);
-  }
-  if (!Array.isArray(scout.topics) || scout.topics.length === 0) configProblems.push(`scout ${scout.id} has no topics`);
-  if (!Array.isArray(scout.allowed_uses) || scout.allowed_uses.length === 0) configProblems.push(`scout ${scout.id} has no allowed_uses`);
-  if (!Array.isArray(scout.limitations) || scout.limitations.length === 0) configProblems.push(`scout ${scout.id} has no limitations`);
-  if (!Array.isArray(scout.canonical_sources) || scout.canonical_sources.length === 0
-    || scout.canonical_sources.some((url) => !parsedUrlFor(url) || /(^|\.)x\.com$|(^|\.)twitter\.com$/i.test(hostnameFor(url)))) {
-    configProblems.push(`scout ${scout.id} has invalid canonical_sources`);
-  }
-  if (scoutForUrl(scout.x_url)?.id !== scout.id) configProblems.push(`scout ${scout.id} x_url does not match its handle`);
+  if (!Array.isArray(scout.layers) || !scout.layers.length || scout.layers.some((layer) => !scoutLayers.has(layer))) configProblems.push(`scout ${scout.id} has invalid layers`);
+  if (!Array.isArray(scout.canonical_sources) || !scout.canonical_sources.length) configProblems.push(`scout ${scout.id} has no canonical sources`);
 }
-if (discoveryConfig.schema_version !== '1.0') configProblems.push('unsupported discovery config schema_version');
-if (discoveryConfig.timezone !== 'Asia/Shanghai') configProblems.push('discovery timezone must be Asia/Shanghai');
+
+if (discoveryConfig.schema_version !== '1.0' || discoveryConfig.timezone !== 'Asia/Shanghai') configProblems.push('invalid discovery configuration');
 for (const channelId of editionChannelIds) {
   const channelPlan = discoveryConfig.channels?.[channelId];
   if (!channelPlan) {
     configProblems.push(`missing discovery channel ${channelId}`);
     continue;
   }
-  if (!channelPlan.cadence || !Number.isFinite(Number(channelPlan.lookback_days))) configProblems.push(`invalid discovery schedule for ${channelId}`);
   for (const storyline of edition.storylines.filter((item) => item.channel_id === channelId)) {
     const plan = channelPlan.storylines?.[storyline.id];
     if (!plan) {
@@ -183,33 +179,24 @@ for (const channelId of editionChannelIds) {
       continue;
     }
     for (const field of ['source_ids', 'event_types', 'queries', 'counter_queries']) {
-      if (!Array.isArray(plan[field]) || plan[field].length === 0) configProblems.push(`discovery ${storyline.id} has no ${field}`);
+      if (!Array.isArray(plan[field]) || !plan[field].length) configProblems.push(`discovery ${storyline.id} has no ${field}`);
     }
     for (const sourceId of plan.source_ids || []) {
       const source = sourceConfig.sources.find((item) => item.id === sourceId);
       if (!source) configProblems.push(`discovery ${storyline.id} uses unknown source ${sourceId}`);
-      else if (!source.channels.includes(channelId) || !source.storylines.includes(storyline.id)) {
-        configProblems.push(`source ${sourceId} is not routed to ${storyline.id}`);
-      }
+      else if (!source.channels.includes(channelId) || !source.storylines.includes(storyline.id)) configProblems.push(`source ${sourceId} is not routed to ${storyline.id}`);
     }
   }
 }
-if (configProblems.length) throw new Error(`Content source configuration failed:\n- ${configProblems.join('\n- ')}`);
 
+if (configProblems.length) throw new Error(`Content source configuration failed:\n- ${configProblems.join('\n- ')}`);
 if (checkOnly) {
-  console.log(`Content update contract ${workflowConfig.workflow_id}@${workflowConfig.workflow_version} passed: ${sourceConfig.sources.length} trusted sources and ${edition.storylines.length} discovery plans cover ${news.length} existing Signals.`);
+  console.log(`Content evaluator contract passed: ${sourceConfig.sources.length} trusted sources and ${edition.storylines.length} discovery plans cover ${news.length} published Signals; collection cannot publish.`);
   process.exit(0);
 }
 
-const stdin = args.has('stdin');
-
-if (!inputArgument && !stdin) {
-  throw new Error('Missing --input=<candidate-pack.json> or --stdin. The command is dry-run by default; add --apply to promote accepted Signals.');
-}
-if (inputArgument && stdin) {
-  throw new Error('--input and --stdin are mutually exclusive.');
-}
-
+if (!inputArgument && !stdin) throw new Error('Missing --input=<candidate-pack.json> or --stdin. The evaluator is read-only; use apply-content.mjs --apply to queue reviewable Candidates.');
+if (inputArgument && stdin) throw new Error('--input and --stdin are mutually exclusive.');
 let inputText;
 if (stdin) {
   const chunks = [];
@@ -227,152 +214,63 @@ if (stdin) {
 }
 
 let parsedInput;
-try {
-  parsedInput = JSON.parse(inputText);
-} catch {
-  parsedInput = null;
-}
-
+try { parsedInput = JSON.parse(inputText); } catch { parsedInput = null; }
 const candidatePack = (() => {
-  if (parsedInput?.candidates) {
-    return parsedInput;
-  }
-
+  if (parsedInput?.candidates) return parsedInput;
   const now = new Date();
   const coverageStart = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000);
-
+  const run = {
+    as_of: now.toISOString(), coverage_start: coverageStart.toISOString(), coverage_end: now.toISOString(), timezone: 'Asia/Shanghai',
+    actor: { agent_id: 'cli-candidate', runtime: 'NewsFlow CLI', workflow_id: workflowConfig.workflow_id, workflow_version: workflowConfig.workflow_version }
+  };
   if (parsedInput && typeof parsedInput.id === 'string' && typeof parsedInput.title === 'string' && typeof parsedInput.url === 'string') {
-    return {
-      schema_version: '1.0',
-      edition_id: edition.id,
-      run: {
-        as_of: now.toISOString(),
-        coverage_start: coverageStart.toISOString(),
-        coverage_end: now.toISOString(),
-        timezone: 'Asia/Shanghai',
-        actor: {
-          agent_id: 'single-candidate-cli',
-          runtime: 'NewsFlow CLI single-candidate mode',
-          workflow_id: workflowConfig.workflow_id,
-          workflow_version: workflowConfig.workflow_version
-        }
-      },
-      candidates: [parsedInput]
-    };
+    return { schema_version: '1.0', edition_id: edition.id, run, candidates: [parsedInput] };
   }
-
-  const lines = inputText.split('\n').filter((line) => line.trim());
-  if (lines.length) {
-    const candidates = [];
-    for (const [i, line] of lines.entries()) {
-      try {
-        const obj = JSON.parse(line);
-        if (obj && typeof obj.id === 'string' && typeof obj.title === 'string') {
-          candidates.push(obj);
-        }
-      } catch (e) {
-        throw new Error(`NDJSON line ${i + 1} is not valid JSON: ${e.message}`);
-      }
-    }
-    if (candidates.length) {
-      return {
-        schema_version: '1.0',
-        edition_id: edition.id,
-        run: {
-          as_of: now.toISOString(),
-          coverage_start: coverageStart.toISOString(),
-          coverage_end: now.toISOString(),
-          timezone: 'Asia/Shanghai',
-          actor: {
-            agent_id: 'ndjson-cli',
-            runtime: 'NewsFlow CLI NDJSON mode',
-            workflow_id: workflowConfig.workflow_id,
-            workflow_version: workflowConfig.workflow_version
-          }
-        },
-        candidates
-      };
-    }
-  }
-
-  throw new Error(
-    'Input does not match any recognized format. Expected:\n' +
-    '  - A full candidate pack (JSON object with "candidates" key)\n' +
-    '  - A single candidate (JSON object with "id", "title", "url")\n' +
-    '  - NDJSON (one JSON candidate per line)\n' +
-    'For single candidates or NDJSON, the run metadata is auto-generated.'
-  );
+  const candidates = inputText.split('\n').filter((line) => line.trim()).map((line, index) => {
+    try { return JSON.parse(line); } catch (error) { throw new Error(`NDJSON line ${index + 1} is not valid JSON: ${error.message}`); }
+  });
+  if (candidates.length && candidates.every((candidate) => typeof candidate?.id === 'string')) return { schema_version: '1.0', edition_id: edition.id, run, candidates };
+  throw new Error('Input must be a candidate pack, single candidate or NDJSON candidates.');
 })();
 
-const inputTextForHash = JSON.stringify(candidatePack);
 if (!validateCandidatePack(candidatePack)) {
-  const schemaErrors = validateCandidatePack.errors.map((error) =>
-    `${error.instancePath || '<root>'} ${error.message}${error.params ? ` (${JSON.stringify(error.params)})` : ''}`
-  );
-  throw new Error(`Candidate pack failed JSON Schema validation:\n- ${schemaErrors.join('\n- ')}`);
+  const errors = validateCandidatePack.errors.map((error) => `${error.instancePath || '<root>'} ${error.message}`);
+  throw new Error(`Candidate pack failed JSON Schema validation:\n- ${errors.join('\n- ')}`);
 }
 const packProblems = [];
 if (candidatePack.schema_version !== '1.0') packProblems.push('unsupported candidate pack schema_version');
 if (candidatePack.edition_id !== edition.id) packProblems.push(`edition_id must be ${edition.id}`);
-if (!isObject(candidatePack.run)) packProblems.push('missing run');
-if (!Array.isArray(candidatePack.candidates)) packProblems.push('candidates must be an array');
 const actor = candidatePack.run?.actor;
-if (!isObject(actor)) {
-  packProblems.push('missing run.actor');
-} else {
+if (!isObject(actor)) packProblems.push('missing run.actor');
+else {
   for (const field of workflowConfig.exchange_contract.required_actor_fields) requireText(actor, field, packProblems);
   if (actor.workflow_id !== workflowConfig.workflow_id) packProblems.push(`run.actor.workflow_id must be ${workflowConfig.workflow_id}`);
   if (actor.workflow_version !== workflowConfig.workflow_version) packProblems.push(`run.actor.workflow_version must be ${workflowConfig.workflow_version}`);
 }
-
 const asOf = toDate(candidatePack.run?.as_of);
 const coverageStart = toDate(candidatePack.run?.coverage_start);
 const coverageEnd = toDate(candidatePack.run?.coverage_end);
 const now = new Date();
-const dateInShanghai = (date) => {
-  const parts = new Intl.DateTimeFormat('en-US', {
-    timeZone: 'Asia/Shanghai',
-    year: 'numeric',
-    month: '2-digit',
-    day: '2-digit'
-  }).formatToParts(date);
-  const value = Object.fromEntries(parts.map((part) => [part.type, part.value]));
-  return `${value.year}-${value.month}-${value.day}`;
-};
-const formatTimeForError = (date) => {
-  const shanghai = new Intl.DateTimeFormat('en-US', {
-    timeZone: 'Asia/Shanghai',
-    year: 'numeric',
-    month: '2-digit',
-    day: '2-digit',
-    hour: '2-digit',
-    minute: '2-digit',
-    hour12: false
-  }).format(date);
-  const utc = date.toISOString().replace('T', ' ').replace(/\.\d{3}Z$/, '');
-  return `${shanghai} CST (${utc} UTC)`;
-};
 if (!asOf) packProblems.push('invalid run.as_of');
 if (!coverageStart) packProblems.push('invalid run.coverage_start');
 if (!coverageEnd) packProblems.push('invalid run.coverage_end');
 if (candidatePack.run?.timezone !== 'Asia/Shanghai') packProblems.push('run.timezone must be Asia/Shanghai');
 if (asOf && asOf.getTime() > now.getTime() + 300_000) packProblems.push(`as_of (${formatTimeForError(asOf)}) must not be in the future`);
-if (asOf && coverageEnd && coverageEnd > asOf) packProblems.push(`coverage_end (${formatTimeForError(coverageEnd)}) must not be later than as_of (${formatTimeForError(asOf)})`);
-if (coverageStart && coverageEnd && coverageStart > coverageEnd) packProblems.push(`coverage_start (${formatTimeForError(coverageStart)}) must not be later than coverage_end (${formatTimeForError(coverageEnd)})`);
+if (asOf && coverageEnd && coverageEnd > asOf) packProblems.push('coverage_end must not be later than as_of');
+if (coverageStart && coverageEnd && coverageStart > coverageEnd) packProblems.push('coverage_start must not be later than coverage_end');
 if (packProblems.length) throw new Error(`Candidate pack failed:\n- ${packProblems.join('\n- ')}`);
 
 const existingIds = new Set(news.map((item) => item.id));
 const existingUrls = new Set(news.map((item) => normalizeUrl(item.url)));
 const candidateIds = new Set();
 const candidateUrls = new Set();
+const dimensionIds = sourceConfig.score_dimensions.map((dimension) => dimension.id);
 const decisions = [];
 
 for (const candidate of candidatePack.candidates) {
   const rejected = [];
   const review = [];
-  for (const field of ['id', 'channel_id', 'event_type', 'event_date', 'title', 'url', 'published_at', 'retrieved_at', 'short_summary', 'long_summary']) {
-    requireText(candidate, field, rejected);
-  }
+  for (const field of ['id', 'channel_id', 'event_type', 'event_date', 'title', 'url', 'published_at', 'retrieved_at', 'short_summary', 'long_summary']) requireText(candidate, field, rejected);
   if (candidateIds.has(candidate.id)) rejected.push(`duplicate candidate id ${candidate.id}`);
   candidateIds.add(candidate.id);
   const normalizedCandidateUrl = normalizeUrl(candidate.url);
@@ -380,244 +278,143 @@ for (const candidate of candidatePack.candidates) {
   candidateUrls.add(normalizedCandidateUrl);
   if (existingIds.has(candidate.id)) rejected.push(`Signal id already exists: ${candidate.id}`);
   if (!hostnameFor(candidate.url)) rejected.push('url must be a valid HTTPS URL');
-  if (existingUrls.has(normalizeUrl(candidate.url))) rejected.push('source URL already exists');
+  if (existingUrls.has(normalizedCandidateUrl)) rejected.push('source URL already exists');
 
   const registeredSource = sourceForUrl(candidate.url);
   const socialScout = scoutForUrl(candidate.url);
   if (socialScout) rejected.push(`X scout ${socialScout.handle} is discovery-only; use the canonical source`);
   if (!registeredSource) review.push('source domain is not in the trusted registry');
   if (!editionChannelIds.has(candidate.channel_id)) rejected.push(`unknown channel ${candidate.channel_id}`);
-  if (registeredSource && !registeredSource.channels.includes(candidate.channel_id)) {
-    review.push(`source ${registeredSource.id} is not approved for channel ${candidate.channel_id}`);
-  }
+  if (registeredSource && !registeredSource.channels.includes(candidate.channel_id)) review.push(`source ${registeredSource.id} is not approved for channel ${candidate.channel_id}`);
+
   const publishedAt = toDate(candidate.published_at);
   const retrievedAt = toDate(candidate.retrieved_at);
   const eventDate = /^\d{4}-\d{2}-\d{2}$/.test(candidate.event_date || '') ? candidate.event_date : null;
   if (!publishedAt) rejected.push('invalid published_at');
   if (!retrievedAt) rejected.push('invalid retrieved_at');
   if (!eventDate) rejected.push('invalid event_date');
-  if (publishedAt && (publishedAt < coverageStart || publishedAt > coverageEnd)) {
-    rejected.push(`published_at (${formatTimeForError(publishedAt)}) is outside the coverage window (${formatTimeForError(coverageStart)} to ${formatTimeForError(coverageEnd)})`);
-  }
-  if (publishedAt && publishedAt > asOf) rejected.push(`published_at (${formatTimeForError(publishedAt)}) is later than as_of (${formatTimeForError(asOf)})`);
-  if (retrievedAt && retrievedAt > asOf) rejected.push(`retrieved_at (${formatTimeForError(retrievedAt)}) is later than as_of (${formatTimeForError(asOf)})`);
-  if (publishedAt && retrievedAt && retrievedAt < publishedAt) rejected.push(`retrieved_at (${formatTimeForError(retrievedAt)}) is earlier than published_at (${formatTimeForError(publishedAt)})`);
-  if (eventDate && eventDate > dateInShanghai(asOf)) rejected.push(`event_date (${eventDate}) is later than as_of (${dateInShanghai(asOf)} Asia/Shanghai)`);
+  if (publishedAt && coverageStart && coverageEnd && (publishedAt < coverageStart || publishedAt > coverageEnd)) rejected.push('published_at is outside the coverage window');
+  if (publishedAt && asOf && publishedAt > asOf) rejected.push('published_at is later than as_of');
+  if (retrievedAt && asOf && retrievedAt > asOf) rejected.push('retrieved_at is later than as_of');
+  if (publishedAt && retrievedAt && retrievedAt < publishedAt) rejected.push('retrieved_at is earlier than published_at');
+  if (eventDate && asOf && eventDate > dateInShanghai(asOf)) rejected.push('event_date is later than as_of');
 
   if (candidate.verification?.full_text_accessed !== true) rejected.push('verification.full_text_accessed must be true');
-  if (candidate.verification?.summary_supported_sentence_by_sentence !== true) {
-    rejected.push('verification.summary_supported_sentence_by_sentence must be true');
-  }
-  if (registeredSource?.class === 'corporate_primary' && candidate.verification?.attributed_to_source !== true) {
-    rejected.push('corporate disclosure requires verification.attributed_to_source=true');
-  }
+  if (candidate.verification?.summary_supported_sentence_by_sentence !== true) rejected.push('verification.summary_supported_sentence_by_sentence must be true');
+  if (registeredSource?.class === 'corporate_primary' && candidate.verification?.attributed_to_source !== true) rejected.push('corporate disclosure requires verification.attributed_to_source=true');
   if (registeredSource?.report_source === true) {
-    if (candidate.verification?.attributed_to_source !== true) {
-      rejected.push('institutional report requires verification.attributed_to_source=true');
-    }
-    const reportContext = candidate.verification?.report_context;
-    if (!isObject(reportContext)) {
-      rejected.push('institutional report requires verification.report_context');
-    } else {
-      requireText(reportContext, 'report_title', rejected);
-      requireText(reportContext, 'report_version', rejected);
-      if (reportContext.publication_date_verified !== true) rejected.push('report publication date must be verified');
-      requireText(reportContext, 'data_cutoff', rejected);
-      const reportDataCutoff = String(reportContext.data_cutoff || '').trim().toLowerCase();
-      if (reportDataCutoff && reportDataCutoff !== 'not_disclosed' && !/^\d{4}-\d{2}-\d{2}$/.test(reportDataCutoff)) {
-        rejected.push('report data_cutoff must be YYYY-MM-DD or not_disclosed');
-      }
-      if (/^\d{4}-\d{2}-\d{2}$/.test(reportDataCutoff) && reportDataCutoff > dateInShanghai(asOf)) {
-        rejected.push(`report data_cutoff (${reportDataCutoff}) is later than as_of (${dateInShanghai(asOf)} Asia/Shanghai)`);
-      }
-      if (reportContext.methodology_reviewed !== true) rejected.push('report methodology must be reviewed');
-      if (reportContext.observed_and_modeled_separated !== true) rejected.push('report facts and modeled outputs must be separated');
-      if (reportDataCutoff === 'not_disclosed') {
-        review.push('report data cutoff is not disclosed');
-      }
+    if (candidate.verification?.attributed_to_source !== true) rejected.push('institutional report requires verification.attributed_to_source=true');
+    const context = candidate.verification?.report_context;
+    if (!isObject(context)) rejected.push('institutional report requires verification.report_context');
+    else {
+      for (const field of ['report_title', 'report_version', 'data_cutoff']) requireText(context, field, rejected);
+      if (context.publication_date_verified !== true) rejected.push('report publication date must be verified');
+      if (context.methodology_reviewed !== true) rejected.push('report methodology must be reviewed');
+      if (context.observed_and_modeled_separated !== true) rejected.push('report facts and modeled outputs must be separated');
+      const cutoff = String(context.data_cutoff || '').trim().toLowerCase();
+      if (cutoff === 'not_disclosed') review.push('report data cutoff is not disclosed');
+      else if (cutoff && !/^\d{4}-\d{2}-\d{2}$/.test(cutoff)) rejected.push('report data_cutoff must be YYYY-MM-DD or not_disclosed');
     }
   }
-  if (registeredSource?.stakeholder_source === true && candidate.verification?.stakeholder_position_attributed !== true) {
-    rejected.push('stakeholder report requires verification.stakeholder_position_attributed=true');
-  }
+  if (registeredSource?.stakeholder_source === true && candidate.verification?.stakeholder_position_attributed !== true) rejected.push('stakeholder report requires verification.stakeholder_position_attributed=true');
 
-  if (!Array.isArray(candidate.tags) || candidate.tags.length === 0 || candidate.tags.some((tag) => typeof tag !== 'string' || !tag.trim())) {
-    rejected.push('tags must contain at least one non-empty string');
-  }
-  if (!Array.isArray(candidate.storyline_ids) || candidate.storyline_ids.length === 0) {
-    rejected.push('storyline_ids must contain at least one Storyline');
-  } else {
+  if (!Array.isArray(candidate.tags) || !candidate.tags.length || candidate.tags.some((tag) => typeof tag !== 'string' || !tag.trim())) rejected.push('tags must contain at least one non-empty string');
+  if (!Array.isArray(candidate.storyline_ids) || !candidate.storyline_ids.length) rejected.push('storyline_ids must contain at least one Storyline');
+  else {
     for (const id of candidate.storyline_ids) {
-      if (!storylineIds.has(id)) rejected.push(`unknown Storyline ${id}`);
       const storyline = storylines.find((item) => item.id === id);
-      if (storyline && storyline.channel_id !== candidate.channel_id) rejected.push(`Storyline ${id} does not belong to channel ${candidate.channel_id}`);
-      if (storyline?.status === 'retired') rejected.push(`Storyline ${id} is retired`);
+      if (!storyline) rejected.push(`unknown Storyline ${id}`);
+      else if (storyline.channel_id !== candidate.channel_id) rejected.push(`Storyline ${id} does not belong to channel ${candidate.channel_id}`);
+      else if (storyline.status === 'retired') rejected.push(`Storyline ${id} is retired`);
       if (registeredSource && !registeredSource.storylines.includes(id)) review.push(`source ${registeredSource.id} is not approved for Storyline ${id}`);
     }
   }
-
   const matchingPlans = (candidate.storyline_ids || []).flatMap((id) => {
     const plan = discoveryConfig.channels?.[candidate.channel_id]?.storylines?.[id];
     return plan ? [plan] : [];
   });
-  if (matchingPlans.length && !matchingPlans.some((plan) => plan.event_types.includes(candidate.event_type))) {
-    review.push(`event_type ${candidate.event_type} is not defined for the selected Storylines`);
-  }
+  if (matchingPlans.length && !matchingPlans.some((plan) => plan.event_types.includes(candidate.event_type))) review.push(`event_type ${candidate.event_type} is not defined for the selected Storylines`);
 
-  const dimensionIds = sourceConfig.score_dimensions.map((d) => d.id);
   const scores = candidate.scores;
-  if (!isObject(scores)) {
-    rejected.push('missing scores');
-  } else {
-    const scoreValues = [];
-    for (const dim of dimensionIds) {
-      const value = Number(scores[dim]);
-      if (!Number.isFinite(value) || value < 0 || value > 5) {
-        rejected.push(`score ${dim} must be between 0 and 5`);
-      } else if (value < sourceConfig.thresholds.score_min_per_dimension) {
-        rejected.push(`score ${dim} is below minimum ${sourceConfig.thresholds.score_min_per_dimension}`);
-      } else {
+  const scoreValues = [];
+  if (!isObject(scores)) rejected.push('missing scores');
+  else {
+    for (const dimension of dimensionIds) {
+      const value = Number(scores[dimension]);
+      if (!Number.isFinite(value) || value < 0 || value > 5) rejected.push(`score ${dimension} must be between 0 and 5`);
+      else {
         scoreValues.push(value);
+        if (value < sourceConfig.thresholds.score_min_per_dimension) rejected.push(`score ${dimension} is below minimum ${sourceConfig.thresholds.score_min_per_dimension}`);
       }
     }
-    const scoreMean = scoreValues.length === dimensionIds.length
-      ? scoreValues.reduce((sum, v) => sum + v, 0) / scoreValues.length
-      : null;
-    if (scoreMean !== null && scoreMean < sourceConfig.thresholds.score_mean_min) {
-      rejected.push(`score mean ${scoreMean.toFixed(1)} is below threshold ${sourceConfig.thresholds.score_mean_min}`);
+    if (scoreValues.length === dimensionIds.length) {
+      const mean = scoreValues.reduce((sum, value) => sum + value, 0) / scoreValues.length;
+      if (mean < sourceConfig.thresholds.score_mean_min) rejected.push(`score mean ${mean.toFixed(1)} is below threshold ${sourceConfig.thresholds.score_mean_min}`);
     }
   }
 
-  if (!Array.isArray(candidate.evidence) || candidate.evidence.length === 0) {
-    rejected.push('evidence must contain at least one claim-level citation');
-  } else {
+  if (!Array.isArray(candidate.evidence) || !candidate.evidence.length) rejected.push('evidence must contain at least one claim-level citation');
+  else {
     for (const [index, evidence] of candidate.evidence.entries()) {
-      requireText(evidence, 'claim', rejected);
-      requireText(evidence, 'source_excerpt', rejected);
-      requireText(evidence, 'source_url', rejected);
-      if (String(evidence.source_excerpt || '').length > sourceConfig.thresholds.max_evidence_excerpt_chars) {
-        rejected.push(`evidence ${index + 1} excerpt is too long`);
-      }
+      for (const field of ['claim', 'source_excerpt', 'source_url']) requireText(evidence, field, rejected);
+      if (String(evidence.source_excerpt || '').length > sourceConfig.thresholds.max_evidence_excerpt_chars) rejected.push(`evidence ${index + 1} excerpt is too long`);
       if (!hostnameFor(evidence.source_url)) rejected.push(`evidence ${index + 1} source_url must be HTTPS`);
       const evidenceScout = scoutForUrl(evidence.source_url);
       if (evidenceScout) rejected.push(`evidence ${index + 1} uses discovery-only X scout ${evidenceScout.handle}`);
       if (!sourceForUrl(evidence.source_url)) review.push(`evidence ${index + 1} source is not trusted`);
     }
-    if (!candidate.evidence.some((evidence) => normalizeUrl(evidence.source_url) === normalizeUrl(candidate.url))) {
-      rejected.push('at least one claim-level citation must point to the candidate source URL');
-    }
+    if (!candidate.evidence.some((evidence) => normalizeUrl(evidence.source_url) === normalizedCandidateUrl)) rejected.push('at least one claim-level citation must point to the candidate source URL');
     const independentEvidence = candidate.evidence.some((evidence) => {
       const evidenceSource = sourceForUrl(evidence.source_url);
       return evidenceSource && registeredSource && evidenceSource.id !== registeredSource.id && evidenceSource.class !== 'corporate_primary';
     });
-    const factsScore = Number(scores?.facts);
-    if (registeredSource?.class === 'corporate_primary' && factsScore > 4.5 && !independentEvidence) {
-      review.push('corporate disclosure needs independent evidence for facts score above 4.5');
-    }
+    if (registeredSource?.class === 'corporate_primary' && Number(scores?.facts) > 4.5 && !independentEvidence) review.push('corporate disclosure needs independent evidence for facts score above 4.5');
   }
 
-  const closest = news
-    .map((item) => ({ id: item.id, similarity: titleSimilarity(candidate.title, item.title) }))
-    .sort((a, b) => b.similarity - a.similarity)[0];
-  if (closest && closest.similarity >= sourceConfig.thresholds.title_similarity_review) {
-    review.push(`title resembles existing Signal ${closest.id} (${closest.similarity.toFixed(2)})`);
-  }
+  const closest = news.map((item) => ({ id: item.id, similarity: titleSimilarity(candidate.title, item.title) })).sort((a, b) => b.similarity - a.similarity)[0];
+  if (closest && closest.similarity >= sourceConfig.thresholds.title_similarity_review) review.push(`title resembles existing Signal ${closest.id} (${closest.similarity.toFixed(2)})`);
 
-  const scoreValues = dimensionIds.map((dim) => Number(scores?.[dim])).filter(Number.isFinite);
   const scoreMean = scoreValues.length === dimensionIds.length
-    ? scoreValues.reduce((sum, v) => sum + v, 0) / scoreValues.length
-    : 0;
+    ? scoreValues.reduce((sum, value) => sum + value, 0) / scoreValues.length
+    : null;
   const status = rejected.length ? 'rejected' : review.length ? 'needs_review' : 'accepted';
-  const projectedSignal = status === 'accepted' ? {
-    id: candidate.id,
-    channel_id: candidate.channel_id,
-    storyline_ids: [...new Set(candidate.storyline_ids)],
-    event_type: candidate.event_type,
-    event_date: candidate.event_date,
-    title: candidate.title.trim(),
-    url: normalizeUrl(candidate.url),
-    source: registeredSource.name,
-    published_at: new Date(candidate.published_at).toISOString(),
-    quality_index: Math.round(scoreMean * 20) / 10,
-    source_tier: registeredSource.tier,
-    short_summary: candidate.short_summary.trim(),
-    long_summary: candidate.long_summary.trim(),
-    key_quote: '',
-    supporting_quotes: [],
-    tags: [...new Set(candidate.tags.map((tag) => tag.trim()))]
-  } : null;
   decisions.push({
     id: candidate.id || null,
     status,
     source_id: registeredSource?.id || null,
     reasons: [...rejected, ...review],
-    scores: Object.fromEntries(dimensionIds.map((dim) => [dim, Number(scores?.[dim]) || null])),
-    score_mean: scoreValues.length === dimensionIds.length ? Math.round(scoreMean * 10) / 10 : null,
+    scores: Object.fromEntries(dimensionIds.map((dimension) => [dimension, Number(scores?.[dimension]) || null])),
+    score_mean: scoreMean === null ? null : Math.round(scoreMean * 10) / 10,
     storyline_ids: candidate.storyline_ids || [],
     verification: candidate.verification || null,
-    evidence: candidate.evidence || [],
-    projected_signal: projectedSignal
+    evidence: candidate.evidence || []
   });
 }
 
-const acceptedSignals = decisions.flatMap((decision) => decision.projected_signal ? [decision.projected_signal] : []);
-
 const duplicateCandidates = [];
-for (let i = 0; i < candidatePack.candidates.length; i++) {
-  for (let j = i + 1; j < candidatePack.candidates.length; j++) {
+for (let i = 0; i < candidatePack.candidates.length; i += 1) {
+  for (let j = i + 1; j < candidatePack.candidates.length; j += 1) {
     const a = candidatePack.candidates[i];
     const b = candidatePack.candidates[j];
     if (!a?.title || !b?.title) continue;
     const similarity = titleSimilarity(a.title, b.title);
-    if (similarity >= sourceConfig.thresholds.title_similarity_review) {
-      duplicateCandidates.push({
-        candidate_a: a.id || `index-${i}`,
-        candidate_b: b.id || `index-${j}`,
-        similarity: Math.round(similarity * 100) / 100
-      });
-    }
+    if (similarity >= sourceConfig.thresholds.title_similarity_review) duplicateCandidates.push({ candidate_a: a.id, candidate_b: b.id, similarity: Math.round(similarity * 100) / 100 });
   }
 }
 
-const report = {
+console.log(JSON.stringify({
   schema_version: '1.0',
   edition_id: edition.id,
-  workflow: {
-    id: workflowConfig.workflow_id,
-    version: workflowConfig.workflow_version,
-    actor
-  },
+  workflow: { id: workflowConfig.workflow_id, version: workflowConfig.workflow_version, actor },
   run: candidatePack.run,
-  applied: apply,
+  applied: false,
+  publication_effect: 'none',
   summary: {
     candidate_count: decisions.length,
-    accepted_count: acceptedSignals.length,
+    accepted_count: decisions.filter((decision) => decision.status === 'accepted').length,
     needs_review_count: decisions.filter((decision) => decision.status === 'needs_review').length,
     rejected_count: decisions.filter((decision) => decision.status === 'rejected').length
   },
   duplicate_candidates: duplicateCandidates,
   decisions
-};
-
-if (!apply) {
-  console.log(JSON.stringify(report, null, 2));
-  process.exit(0);
-}
-
-const inputHash = createHash('sha256').update(inputTextForHash).digest('hex').slice(0, 10);
-const compactTime = asOf.toISOString().replace(/[-:]/g, '').replace('.000Z', 'Z');
-const reportPath = resolve(root, 'content', 'runs', `${compactTime}-${inputHash}.json`);
-await mkdir(dirname(reportPath), { recursive: true });
-try {
-  await access(reportPath);
-  throw new Error(`This candidate pack was already applied: ${reportPath}`);
-} catch (error) {
-  if (error.code !== 'ENOENT') throw error;
-}
-const nextNews = [...acceptedSignals, ...news]
-  .sort((a, b) => new Date(b.published_at).getTime() - new Date(a.published_at).getTime());
-if (acceptedSignals.length) {
-  await writeFile(resolve(root, 'public/data/news.json'), `${JSON.stringify(nextNews, null, 2)}\n`, 'utf8');
-}
-await writeFile(reportPath, `${JSON.stringify(report, null, 2)}\n`, 'utf8');
-console.log(`Content update applied: ${acceptedSignals.length}/${decisions.length} Signals accepted. Audit: ${reportPath}`);
+}, null, 2));

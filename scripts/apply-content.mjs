@@ -1,11 +1,11 @@
-import { spawnSync } from 'node:child_process';
-import { mkdir, readFile, writeFile } from 'node:fs/promises';
-import { basename, dirname, resolve } from 'node:path';
+import { createHash } from 'node:crypto';
+import { access, mkdir, readFile, writeFile } from 'node:fs/promises';
+import { dirname, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { spawnSync } from 'node:child_process';
 
 const root = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 const evaluatorPath = resolve(root, 'scripts/update-content.mjs');
-const aggregatePath = resolve(root, 'scripts/aggregate-pipeline-reviews.mjs');
 const queuePath = resolve(root, 'content/state/pipeline-review-queue.json');
 const rawArgs = process.argv.slice(2);
 const apply = rawArgs.includes('--apply');
@@ -17,7 +17,7 @@ const readStdin = async () => {
   return Buffer.concat(chunks).toString('utf8');
 };
 
-const runNode = (script, args, input = undefined) => spawnSync(process.execPath, [script, ...args], {
+const runEvaluator = (args, input = undefined) => spawnSync(process.execPath, [evaluatorPath, ...args], {
   cwd: root,
   encoding: 'utf8',
   input,
@@ -37,17 +37,15 @@ const sourceText = stdinMode
       return readFile(resolve(root, inputArgument.slice('--input='.length)), 'utf8');
     })();
 
-if (!apply) {
-  const result = runNode(evaluatorPath, rawArgs, stdinMode ? sourceText : undefined);
-  printResult(result);
-  process.exit(result.status ?? 1);
-}
-
 const dryArgs = rawArgs.filter((entry) => entry !== '--apply');
-const dryRun = runNode(evaluatorPath, dryArgs, stdinMode ? sourceText : undefined);
+const dryRun = runEvaluator(dryArgs, stdinMode ? sourceText : undefined);
 if (dryRun.status !== 0) {
   printResult(dryRun);
   process.exit(dryRun.status ?? 1);
+}
+if (!apply) {
+  printResult(dryRun);
+  process.exit(0);
 }
 
 let report;
@@ -77,20 +75,9 @@ const parseCandidates = (text) => {
   }
   throw new Error('Apply requires a candidate pack, a single JSON candidate or NDJSON candidates.');
 };
+
 const candidates = parseCandidates(sourceText);
-const normalizedPack = {
-  schema_version: '1.0',
-  edition_id: report.edition_id,
-  run: report.run,
-  candidates
-};
-
-const applied = runNode(evaluatorPath, ['--stdin', '--apply'], `${JSON.stringify(normalizedPack)}\n`);
-if (applied.status !== 0) {
-  printResult(applied);
-  process.exit(applied.status ?? 1);
-}
-
+const candidateById = new Map(candidates.map((candidate) => [String(candidate.id || ''), candidate]));
 let queue = {
   schema_version: '1.0',
   edition_id: report.edition_id,
@@ -100,23 +87,19 @@ let queue = {
 try {
   queue = JSON.parse(await readFile(queuePath, 'utf8'));
 } catch {
-  // The queue is created on first applied review candidate.
+  // The private review queue is created on first applied candidate pack.
 }
 
 const byId = new Map((Array.isArray(queue.items) ? queue.items : []).map((item) => [String(item.id), item]));
-const candidateById = new Map(candidates.map((candidate) => [String(candidate.id || ''), candidate]));
-const auditMatch = applied.stdout.match(/Audit:\s*(.+\.json)\s*$/m);
-const runId = auditMatch ? basename(auditMatch[1], '.json') : String(report.run.as_of || '').replace(/[-:]/g, '');
-
 for (const decision of report.decisions || []) {
   const id = String(decision.id || '');
   if (!id) continue;
-  if (decision.status !== 'needs_review') {
+  if (decision.status === 'rejected') {
     byId.delete(id);
     continue;
   }
   const candidate = candidateById.get(id);
-  if (!candidate) throw new Error(`Missing candidate snapshot for needs_review item ${id}.`);
+  if (!candidate) throw new Error(`Missing candidate snapshot for reviewable item ${id}.`);
   byId.set(id, {
     id,
     manuscript_key: id.slice(-8).toUpperCase(),
@@ -128,7 +111,6 @@ for (const decision of report.decisions || []) {
       score_mean: decision.score_mean
     },
     run: {
-      id: runId,
       as_of: report.run.as_of,
       coverage_start: report.run.coverage_start,
       coverage_end: report.run.coverage_end,
@@ -149,12 +131,25 @@ queue = {
 await mkdir(dirname(queuePath), { recursive: true });
 await writeFile(queuePath, `${JSON.stringify(queue, null, 2)}\n`, 'utf8');
 
-const aggregation = runNode(aggregatePath, []);
-if (aggregation.status !== 0) {
-  printResult(aggregation);
-  process.exit(aggregation.status ?? 1);
+const appliedReport = {
+  ...report,
+  applied: true,
+  publication_effect: 'none',
+  editorial_effect: 'candidate_queue_only'
+};
+const inputHash = createHash('sha256').update(JSON.stringify({ report: appliedReport, candidates })).digest('hex').slice(0, 10);
+const asOf = new Date(report.run.as_of);
+if (Number.isNaN(asOf.getTime())) throw new Error('Content report has invalid run.as_of.');
+const compactTime = asOf.toISOString().replace(/[-:]/g, '').replace('.000Z', 'Z');
+const reportPath = resolve(root, 'content', 'runs', `${compactTime}-${inputHash}.json`);
+await mkdir(dirname(reportPath), { recursive: true });
+try {
+  await access(reportPath);
+  throw new Error(`This candidate pack was already applied: ${reportPath}`);
+} catch (error) {
+  if (error.code !== 'ENOENT') throw error;
 }
+await writeFile(reportPath, `${JSON.stringify(appliedReport, null, 2)}\n`, 'utf8');
 
-printResult(applied);
-if (aggregation.stdout) process.stdout.write(aggregation.stdout);
-console.log(`Human preflight queue updated: ${queue.items.length} item(s).`);
+const reviewableCount = (report.decisions || []).filter((decision) => decision.status !== 'rejected').length;
+console.log(`Content candidate pack applied: ${reviewableCount}/${report.decisions?.length || 0} item(s) entered the private editorial queue; no Reader publication changed. Audit: ${reportPath}`);
