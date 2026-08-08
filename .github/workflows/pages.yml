@@ -15,6 +15,7 @@ on:
       - 'content/state/governance-sync.json'
       - 'config/**'
       - 'scripts/**'
+      - 'tests/browser-smoke.mjs'
       - 'supabase/newsflow-editorial.sql'
       - 'package.json'
       - 'package-lock.json'
@@ -32,6 +33,7 @@ on:
       - 'content/state/governance-sync.json'
       - 'config/**'
       - 'scripts/**'
+      - 'tests/browser-smoke.mjs'
       - 'supabase/newsflow-editorial.sql'
       - 'package.json'
       - 'package-lock.json'
@@ -73,6 +75,28 @@ jobs:
           NEWSFLOW_SUPABASE_URL: ${{ vars.NEWSFLOW_SUPABASE_URL || '' }}
           NEWSFLOW_SUPABASE_PUBLISHABLE_KEY: ${{ vars.NEWSFLOW_SUPABASE_PUBLISHABLE_KEY || '' }}
         run: npm run build
+
+      - name: Install browser-smoke runner
+        run: npm install --no-save --package-lock=false --ignore-scripts --no-audit --no-fund @playwright/test@1.61.1
+
+      - name: Start validated preview
+        run: |
+          python3 -m http.server 4173 --directory dist > /tmp/newsflow-preview.log 2>&1 &
+          for attempt in {1..30}; do
+            if curl --fail --silent http://127.0.0.1:4173/ > /dev/null; then
+              exit 0
+            fi
+            sleep 1
+          done
+          cat /tmp/newsflow-preview.log
+          exit 1
+
+      - name: Browser acceptance smoke
+        run: |
+          CHROME_BIN="$(command -v google-chrome || command -v chromium || command -v chromium-browser)"
+          test -n "$CHROME_BIN"
+          export CHROME_BIN
+          node tests/browser-smoke.mjs
 
       - name: Configure GitHub Pages
         if: github.event_name != 'pull_request'
