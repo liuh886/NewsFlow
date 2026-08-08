@@ -7,6 +7,7 @@ on:
   push:
     branches: [main]
     paths:
+      - 'package.json'
       - 'scripts/sync-editorial-governance.mjs'
       - 'scripts/sync-adopted-signals.mjs'
       - 'scripts/sync-live-issue.mjs'
