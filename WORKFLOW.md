@@ -1,39 +1,38 @@
 # NewsFlow portable content-update workflow
 
-This is the canonical, vendor-neutral procedure for updating NewsFlow evidence. Codex, Antigravity and other agents execute this file rather than inventing a tool-specific process.
+This is the canonical, vendor-neutral procedure for updating NewsFlow evidence. Candidate packs conform to `schemas/content-candidate-pack.schema.json`; the machine-readable companion is `config/content-workflow.json`.
 
-The machine-readable companion is `config/content-workflow.json`. Candidate packs conform to `schemas/content-candidate-pack.schema.json`.
+## One publication boundary
 
-## Two different acceptance boundaries
+NewsFlow has one decisive publication gate:
 
-NewsFlow deliberately distinguishes **evidence promotion** from **formal Issue adoption**:
+> **Only the Editor-in-Chief decides what becomes NewsFlow public content.**
 
-1. the content workflow decides whether a sourced item is good enough to become a Reader/Editorial-Desk Signal or a review candidate;
-2. the Editor Review Game decides whether that candidate receives 封面文章、录用、小修、大修 or 拒稿;
-3. only an active owner's **封面文章 / 录用** decision can enter the next formal Issue.
+The stages are deliberately separate:
 
-A content-pipeline `accepted` result therefore does **not** mean “published in the formal Issue”. It means the evidence has passed the repository's sourcing/attention contract and may be shown or reviewed.
+1. automated/manual research discovers and verifies evidence;
+2. deterministic preflight decides whether an item is fit to become a **private Candidate**;
+3. Editors produce advisory five-state opinions;
+4. the Editor-in-Chief produces the final five-state decision;
+5. only chief **封面文章 / 录用** becomes public adoption;
+6. adopted Signals enter Reader Latest and can later freeze into a formal Issue.
 
-## Invocation
-
-An operator may say:
-
-> Read `WORKFLOW.md` and run `newsflow-content-update` for the current Edition. Use agent ID `<agent-id>`. Research and validate first; apply only if I explicitly authorize repository updates.
-
-If the operator requests a content update, that authorizes research and creation of a candidate pack. It authorizes `--apply` only when the request clearly asks to update repository evidence. Dry-run is otherwise the default.
+A content-pipeline `accepted` result therefore means only **passed preflight for editorial review**. It never means Reader publication.
 
 ## Authority order
 
-1. `editions/reference/edition.yaml` defines editorial intent and scope.
-2. `config/content-workflow.json` defines the portable evidence-processing contract.
-3. Source, discovery and scout registries define where and how to search.
-4. The JSON Schema defines the exchange format.
-5. `scripts/update-content.mjs` makes deterministic evidence-promotion decisions.
-6. `scripts/apply-content.mjs` applies those decisions and persists durable human-preflight state.
-7. the Review Game owns five-state editorial judgment;
-8. active-owner Cover/Accept projection owns formal Issue adoption;
-9. `scripts/publish-edition.mjs` compiles the 1st/15th formal Issue.
-10. Agent-specific files are adapters only; they may not weaken or extend this workflow.
+1. `public/data/edition.json` is the single canonical Edition constitution.
+2. `config/content-workflow.json` defines the evidence-processing contract.
+3. `config/content-sources.json`, discovery and scout registries define search/verification boundaries.
+4. the JSON Schema defines the candidate exchange format.
+5. `scripts/update-content.mjs` is a deterministic, read-only evaluator.
+6. `scripts/apply-content.mjs` records reviewable Candidates and the run audit; it cannot publish.
+7. Supabase `newsflow_candidates` is the private online Candidate catalog.
+8. Supabase `newsflow_editorial_reviews` stores normalized Editor/Chief five-state records.
+9. only the active owner / Editor-in-Chief review can create `newsflow_editorial_adoptions`.
+10. `scripts/sync-adopted-signals.mjs` promotes chief-adopted Candidates to public Latest.
+11. `scripts/publish-edition.mjs` freezes the 1st/15th formal Issue.
+12. Agent-specific adapters may not weaken or extend this chain.
 
 If two layers conflict, stop before applying and report the conflict.
 
@@ -41,43 +40,57 @@ If two layers conflict, stop before applying and report the conflict.
 
 ### 1. Establish the run
 
-- Read the Edition, current Signals and Storylines, then every file listed under `required_inputs` in the workflow manifest.
-- Use the generated reader profile to prioritize search and rank only; it may never weaken evidence or attention gates.
+- Read `public/data/edition.json`, current public Signals, Storylines and every `required_inputs` file.
+- Reader profile can prioritize search only; it may never weaken sourcing/evidence thresholds.
 - Declare `as_of`, `coverage_start`, `coverage_end` and `Asia/Shanghai` before searching.
-- Record `run.actor.agent_id`, `run.actor.runtime`, `run.actor.workflow_id` and `run.actor.workflow_version` exactly as required by the manifest.
+- Record the required actor fields exactly.
 
 ### 2. Discover broadly, verify narrowly
 
-- Search each active Storyline using normal and counter-evidence queries.
-- Prefer primary records; use registered institutions and mainstream reporting for context or independent confirmation.
-- Track leading companies and recurring CCUS institutional reports.
-- Use registered social accounts only as discovery scouts. Follow leads to the canonical source; never submit a social URL as final evidence when a primary source exists.
-- Access the full source and verify dates, publication version, data cutoff, methodology and project status where applicable.
+- Search every active Storyline using normal and counter-evidence queries.
+- Prefer primary records; use registered institutional/mainstream sources for context or corroboration.
+- Social scouts are discovery-only; follow them to canonical evidence.
+- Access full source material and verify dates, version, cutoff, methodology and project status where relevant.
 
-### 3. Earn attention
+### 3. Earn editorial attention
 
-- Compare each item with existing Signals and state the precise information delta.
-- Score each candidate on facts, source, timeliness, news quality and industry impact per `docs/attention-policy.md`.
-- Reject an item when it does not change a material decision, scale, economics, constraint, demand signal, rule or prior belief.
-- A zero-candidate pack is a valid outcome.
+- Compare against existing **public** Signals and state the information delta.
+- Score facts, source, timeliness, news quality and industry impact.
+- Reject immaterial/repeated items.
+- A zero-candidate pack is valid.
 
-### 4. Produce the exchange artifact
+### 4. Produce the Candidate pack
 
-- Write one JSON candidate pack to `content/inbox/` using `schemas/content-candidate-pack.schema.json`.
-- Include claim-level evidence and short excerpts from the same canonical URL.
-- Do not edit the Edition worldview, `public/data/issues.json` or formal editorial decisions directly.
+Write one candidate pack to `content/inbox/`.
 
-### 5. Validate and apply evidence
+Include:
 
-Run the deterministic dry-run:
+- canonical source URL;
+- short/long summary;
+- Section + Storyline routing;
+- verification state;
+- claim-level evidence;
+- five preflight score dimensions.
+
+Do not edit Edition judgment, Issues, public Signals or editorial decisions directly.
+
+### 5. Deterministic preflight
+
+Dry-run:
 
 ```bash
 npm run content:update -- --input=content/inbox/<candidate-pack>.json
 ```
 
-Inspect every `accepted`, `needs_review` and `rejected` decision. Never reinterpret `needs_review` as accepted.
+Possible preflight states:
 
-Only with explicit update authorization:
+- `accepted` — passed deterministic gates and may enter private editorial review;
+- `needs_review` — potentially material but requires human preflight attention;
+- `rejected` — cannot enter the active Candidate set.
+
+The evaluator is read-only. `scripts/update-content.mjs --apply` is retired and intentionally errors.
+
+To persist reviewable Candidates:
 
 ```bash
 npm run content:update -- --input=content/inbox/<candidate-pack>.json --apply
@@ -85,11 +98,24 @@ npm run check
 npm run build
 ```
 
-The apply command may promote evidence to the continuous Signal set and synchronizes durable human-preflight state. A `needs_review` candidate stays available to the Editor Review Game after transient inbox cleanup.
+`apply-content.mjs` updates only the private review queue and audit record. It never writes `public/data/news.json`.
 
-### 6. Editorial judgment
+### 6. Repository → private Supabase sync
 
-The Editor Review Game presents pending real candidates newest first. The editor chooses exactly one of:
+Relevant changes on `main` trigger `.github/workflows/supabase-sync.yml`.
+
+The server-side workflow:
+
+- syncs public Signal catalog metadata;
+- loads non-public Candidate snapshots from inbox/review state;
+- preserves full candidate payload privately in `newsflow_candidates`;
+- marks Candidates that disappear from the repository working set inactive.
+
+The service-role key exists only in GitHub Actions.
+
+### 7. Editor opinions
+
+Appointed Editors enter the same Review Game and choose exactly one:
 
 - 封面文章;
 - 录用;
@@ -97,31 +123,75 @@ The Editor Review Game presents pending real candidates newest first. The editor
 - 大修;
 - 拒稿.
 
-All five decisions can be preserved in the editor's private NewsFlow account state. Only active-owner `封面文章` and `录用` are projected to `newsflow_editorial_adoptions` for formal publication. Guest and non-authoritative editor opinions do not gain publication authority.
+Their row in `newsflow_editorial_reviews` is advisory only. Editors can revise/undo their own opinion. They do not create adoption and do not see another individual's review record.
 
-### 7. Formal Issue publication
+### 8. Editor-in-Chief decision
+
+The chief reviews the same Candidate and may see aggregate opinion counts from Editors.
+
+The chief's five-state row is final editorial judgment:
+
+- `cover_story` / `accept` → database trigger creates/updates `newsflow_editorial_adoptions`;
+- `minor_revision` / `major_revision` / `reject` → any pre-Issue adoption is removed.
+
+No majority vote, recommendation score or automatic fallback can override the chief.
+
+### 9. Chief adoption → Reader Latest
+
+`.github/workflows/editorial-sync.yml` checks hourly.
+
+`scripts/sync-adopted-signals.mjs`:
+
+- reads chief adoption + private Candidate payload server-side;
+- validates the registered source;
+- promotes current adoption to `public/data/news.json`;
+- withdraws a previously managed pre-Issue Signal if the chief reverses adoption;
+- never deletes content already frozen into a historical Issue.
+
+This gives the website continuous publication without exposing unadopted material.
+
+### 10. Formal Issue publication
 
 On the 1st and 15th, `scripts/publish-edition.mjs`:
 
-- calculates the half-month coverage window;
-- reads the public owner-adoption projection;
-- admits only Cover/Accept candidates in that window;
-- respects Edition Issue/channel caps;
-- persists the selected cover as `cover_signal_id`;
-- promotes selected inbox evidence to `public/data/news.json` when needed;
-- freezes the formal Issue in `public/data/issues.json`;
-- emits a valid no-change Issue when there is no eligible owner adoption.
+- calculates the half-month window;
+- reads `newsflow_editorial_adoptions`;
+- admits only chief Cover/Accept decisions in-window;
+- respects Issue/channel caps;
+- persists Cover as `cover_signal_id`;
+- ensures adopted Candidate data exists in public Signal state;
+- freezes `public/data/issues.json`;
+- permits a valid no-change Issue.
 
-There is no quality-score fallback that silently substitutes for the owner's formal adoption decision.
+There is no quality-score publication fallback.
 
-### 8. Handoff
+### 11. Chief governance changes
 
-Report the time window, agent identity and workflow version; sources and Storylines checked; evidence promotion/review/rejection counts; files changed; unresolved uncertainty; and validation results. An applied run leaves its audit under `content/runs/` when the existing content pipeline requires one.
+The chief can edit Edition judgment, active Storylines and trusted sources in **Publication Settings**.
+
+- **Save draft** → private Supabase `newsflow_governance_drafts`, no Reader effect.
+- **发布到 GitHub** → immutable-ish `newsflow_governance_publications` queue row.
+- hourly editorial sync validates and applies the change to canonical GitHub files, runs checks/build, commits `main`, then normal Pages deployment follows.
+
+The browser never carries a GitHub token or Supabase service-role key.
+
+## Handoff
+
+Report:
+
+- run window + actor/workflow version;
+- sources and Storylines checked;
+- preflight counts;
+- Candidates persisted;
+- unresolved evidence uncertainty;
+- validation/build status.
+
+Do not report a Candidate as published unless the chief adoption/public GitHub state proves it.
 
 ## Terminal outcomes
 
-- `completed_no_material_change`: research completed, but no candidate earned attention.
-- `completed_dry_run`: candidate pack and decision report produced; repository evidence not changed.
-- `completed_applied`: evidence update applied and checks passed; formal Issue adoption still awaits editor decisions.
-- `needs_human_review`: at least one material candidate remains for Editor Review Game judgment.
-- `blocked`: required evidence, access or contract inputs are unavailable; do not fabricate a substitute.
+- `completed_no_material_change` — research complete; no Candidate earned attention.
+- `completed_dry_run` — Candidate pack evaluated; nothing persisted.
+- `completed_applied` — reviewable Candidates persisted; no Reader publication implied.
+- `needs_human_review` — at least one Candidate requires editorial judgment.
+- `blocked` — required evidence/access/contract inputs unavailable; never fabricate a substitute.
