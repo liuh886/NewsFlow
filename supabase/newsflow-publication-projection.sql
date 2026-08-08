@@ -129,3 +129,16 @@ revoke all on function private.newsflow_sync_chief_adoption() from public, anon,
 update public.newsflow_editorial_adoptions
 set publication = private.newsflow_publication_snapshot(candidate_id),
     updated_at = now();
+
+-- Governance rows exist only after the Editor-in-Chief explicitly publishes a
+-- change. They are already destined for public GitHub files, so the publication
+-- worker can read this queue with the same publishable key as article adoptions.
+grant select on table public.newsflow_governance_publications to anon, authenticated;
+
+drop policy if exists "Service role reads NewsFlow governance publications" on public.newsflow_governance_publications;
+drop policy if exists "Public reads published NewsFlow governance changes" on public.newsflow_governance_publications;
+create policy "Public reads published NewsFlow governance changes"
+on public.newsflow_governance_publications
+for select
+to anon, authenticated
+using (true);
