@@ -75,6 +75,7 @@
     const preferences = account.productAccount?.preferences && typeof account.productAccount.preferences === 'object'
       ? account.productAccount.preferences
       : {};
+    if (preferences[MODE_FIELD] === mode) return;
     try {
       await window.HaoAccount.saveProductData({ preferences: { ...preferences, [MODE_FIELD]: mode } });
     } catch (error) {
@@ -176,9 +177,9 @@
     }
     state.mode = 'editor';
     localStorage.setItem(modeStorageKey(), 'editor');
-    void syncModePreference('editor');
-    window.NewsFlowReviewGame?.openFormal?.();
     mountModeTrigger();
+    if (window.NewsFlowReviewGame?.isOpen?.()) return;
+    window.NewsFlowReviewGame?.openFormal?.();
   };
 
   const openGovernance = () => {
@@ -294,9 +295,7 @@
     state.mode = requestedMode === 'editor' && !isEditorialMember() ? 'reader' : requestedMode;
 
     const userId = accountUserId();
-    if (isEditorialMember() && state.mode === 'editor') {
-      window.setTimeout(openEditorGame, 120);
-    } else if (userId && state.promptedForUser !== userId && isEditorialMember()) {
+    if (userId && state.promptedForUser !== userId && isEditorialMember() && state.mode !== 'editor') {
       state.promptedForUser = userId;
       window.setTimeout(() => {
         state.dialogOpen = true;
