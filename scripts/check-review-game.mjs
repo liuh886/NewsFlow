@@ -7,22 +7,24 @@ const root = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 const read = (path) => readFile(resolve(root, path), 'utf8');
 const required = [
   'public/review-game.js', 'public/review-game.css', 'public/editorial-office.js',
-  'public/editorial-mode.css', 'public/data/editorial-reactions.json'
+  'public/editorial-mode.css', 'public/editorial-loader.js', 'public/data/editorial-reactions.json'
 ];
 for (const file of required) await access(resolve(root, file));
 
-const [index, game, gameCss, mode, modeCss, sw, reactionsText] = await Promise.all([
-  read('index.html'), read('public/review-game.js'), read('public/review-game.css'),
+const [index, loader, game, gameCss, mode, modeCss, sw, reactionsText] = await Promise.all([
+  read('index.html'), read('public/editorial-loader.js'), read('public/review-game.js'), read('public/review-game.css'),
   read('public/editorial-office.js'), read('public/editorial-mode.css'), read('public/sw.js'),
   read('public/data/editorial-reactions.json')
 ]);
-for (const file of ['public/review-game.js', 'public/editorial-office.js', 'public/sw.js']) {
+for (const file of ['public/editorial-loader.js', 'public/review-game.js', 'public/editorial-office.js', 'public/sw.js']) {
   const syntax = spawnSync(process.execPath, ['--check', resolve(root, file)], { encoding: 'utf8' });
   if (syntax.status !== 0) throw new Error(`${file} syntax failed:\n${syntax.stderr}`);
 }
 
-for (const asset of ['./editorial-mode.css?v=2.10.0', './review-game.css?v=2.10.0', './review-game.js?v=2.10.0', './editorial-office.js?v=2.10.0']) {
-  if (!index.includes(asset)) throw new Error(`index is missing ${asset}`);
+if (!index.includes('./editorial-loader.js?v=__NEWSFLOW_VERSION__')) throw new Error('index must load the small editorial runtime loader.');
+for (const eagerAsset of ['./editorial-mode.css', './review-game.css', './review-game.js', './editorial-office.js']) {
+  if (index.includes(eagerAsset)) throw new Error(`Reader must not eagerly load editor-only asset: ${eagerAsset}`);
+  if (!loader.includes(eagerAsset)) throw new Error(`editorial-loader is missing ${eagerAsset}`);
 }
 for (const retired of ['guest-editor', 'review-candidates.json', 'pipeline-reviews.json', 'guest-editor-invites.json', 'newsflow_review_game_v4_guest']) {
   if (index.includes(retired) || sw.includes(retired) || game.includes(retired)) throw new Error(`retired/public editorial path still referenced: ${retired}`);
@@ -64,14 +66,15 @@ for (const selector of [
 if (gameCss.includes('.nf-settlement')) throw new Error('Retired local Issue settlement CSS must be deleted.');
 for (const selector of ['.nf-mode-trigger', '.nf-mode-dialog', '.nf-mode-grid', '@media (max-width: 720px)']) if (!modeCss.includes(selector)) throw new Error(`mode CSS missing ${selector}`);
 
-for (const asset of ['./review-game.js', './review-game.css', './editorial-office.js', './editorial-mode.css', './data/editorial-reactions.json']) {
-  if (!sw.includes(asset)) throw new Error(`service worker missing ${asset}`);
+if (!sw.includes("versioned('./editorial-loader.js')")) throw new Error('service worker must cache the small editorial loader.');
+for (const editorAsset of ["versioned('./review-game.js')", "versioned('./review-game.css')", "versioned('./editorial-office.js')", "versioned('./editorial-mode.css')"]) {
+  if (sw.includes(editorAsset)) throw new Error(`Reader app shell must not precache editor-only asset: ${editorAsset}`);
 }
 for (const forbidden of ['./data/review-candidates.json', './data/pipeline-reviews.json', './data/guest-editor-invites.json']) if (sw.includes(forbidden)) throw new Error(`service worker must not cache private editorial data: ${forbidden}`);
-if (!sw.includes("const ASSET_VERSION = '2.10.0'") || !sw.includes('editorial-governance-v2.10.0')) throw new Error('service worker cache must identify the current Governance v2 release.');
+if (!sw.includes("const ASSET_VERSION = '__NEWSFLOW_VERSION__'")) throw new Error('service worker version must come from package.json at build time.');
 
 const reactions = JSON.parse(reactionsText);
 for (const decision of ['cover_story', 'accept', 'minor_revision', 'major_revision', 'reject']) {
   if (!Array.isArray(reactions[decision]) || reactions[decision].length < 4) throw new Error(`reaction library is too shallow for ${decision}.`);
 }
-console.log('NewsFlow review game contract passed: stable one-shot Editor entry, permanent membership, advisory reviews, chief-only authority and three-second five-state review.');
+console.log('NewsFlow review game contract passed: lazy editor runtime, permanent membership, advisory reviews, chief-only authority and three-second five-state review.');
