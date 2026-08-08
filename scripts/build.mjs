@@ -9,7 +9,12 @@ const dist = resolve(root, 'dist');
 await rm(dist, { recursive: true, force: true });
 await mkdir(dist, { recursive: true });
 
-const index = await readFile(resolve(root, 'index.html'), 'utf8');
+let index = await readFile(resolve(root, 'index.html'), 'utf8');
+const cloudflareAnalyticsToken = process.env.CLOUDFLARE_WEB_ANALYTICS_TOKEN?.trim() || '';
+if (cloudflareAnalyticsToken) {
+  const beacon = `    <script type="module" src="https://static.cloudflareinsights.com/beacon.min.js" data-cf-beacon='${JSON.stringify({ token: cloudflareAnalyticsToken })}'></script>`;
+  index = index.replace('  </head>', `${beacon}\n  </head>`);
+}
 await writeFile(resolve(dist, 'index.html'), index, 'utf8');
 await cp(resolve(root, 'src/editorial-app.js'), resolve(dist, 'editorial-app.js'));
 await cp(resolve(root, 'src/polish.js'), resolve(dist, 'polish.js'));
@@ -64,4 +69,4 @@ await build({
   outfile: resolve(dist, 'supabase-feedback.js')
 });
 
-console.log(`NewsFlow build complete: public Reader artifact contains adopted publication data only; Supabase sync ${supabaseConfig.enabled ? 'enabled' : 'disabled'}.`);
+console.log(`NewsFlow build complete: public Reader artifact contains adopted publication data only; Supabase sync ${supabaseConfig.enabled ? 'enabled' : 'disabled'}; Cloudflare RUM ${cloudflareAnalyticsToken ? 'enabled' : 'disabled'}.`);
