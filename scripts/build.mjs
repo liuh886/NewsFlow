@@ -5,11 +5,203 @@ import { build } from 'esbuild';
 
 const root = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 const dist = resolve(root, 'dist');
+const packageJson = JSON.parse(await readFile(resolve(root, 'package.json'), 'utf8'));
+const appVersion = String(packageJson.version || '').trim();
+const PUBLIC_BASE_URL = 'https://liuh886.github.io/NewsFlow/';
+const PUBLICATION_NAME = 'Frontier Systems Review';
+
+if (!/^\d+\.\d+\.\d+$/.test(appVersion)) throw new Error(`Invalid package version: ${appVersion}`);
+
+const escapeHtml = (value = '') => String(value)
+  .replaceAll('&', '&amp;')
+  .replaceAll('<', '&lt;')
+  .replaceAll('>', '&gt;')
+  .replaceAll('"', '&quot;')
+  .replaceAll("'", '&#039;');
+
+const escapeXml = (value = '') => String(value)
+  .replaceAll('&', '&amp;')
+  .replaceAll('<', '&lt;')
+  .replaceAll('>', '&gt;')
+  .replaceAll('"', '&quot;')
+  .replaceAll("'", '&apos;');
+
+const safePublicSegment = (value) => {
+  const segment = String(value || '').trim();
+  if (!segment || !/^[A-Za-z0-9._-]+$/.test(segment)) throw new Error(`Unsafe public route segment: ${segment}`);
+  return segment;
+};
+
+const absoluteUrl = (path = '') => new URL(path, PUBLIC_BASE_URL).href;
+const articleUrl = (id) => absoluteUrl(`articles/${safePublicSegment(id)}/`);
+const issueUrl = (issueNumber) => absoluteUrl(`issues/${safePublicSegment(issueNumber)}/`);
+const concise = (value = '', limit = 180) => {
+  const text = String(value || '').replace(/\s+/g, ' ').trim();
+  return text.length > limit ? `${text.slice(0, limit - 1).trimEnd()}…` : text;
+};
+
+const formatDate = (value) => {
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return '';
+  return new Intl.DateTimeFormat('zh-CN', { year: 'numeric', month: 'long', day: 'numeric', timeZone: 'UTC' }).format(date);
+};
+
+const pageStyles = `
+:root{color-scheme:light dark;--paper:#f4f1ea;--ink:#171714;--soft:#5d5a52;--line:#cbc5b8;--signal:#8f2f21;--max:1120px;--read:760px}
+*{box-sizing:border-box}html{font-family:"DM Sans",system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;background:var(--paper);color:var(--ink)}body{margin:0;background:var(--paper);color:var(--ink)}a{color:inherit}.pub-shell{width:min(var(--max),calc(100% - 40px));margin:0 auto}.pub-head{min-height:76px;display:flex;align-items:center;justify-content:space-between;gap:20px;border-bottom:1px solid var(--ink);font-size:12px}.pub-brand{font-family:"Newsreader",Georgia,serif;font-size:22px;font-weight:600;text-decoration:none}.pub-head span{color:var(--soft)}main{padding:clamp(58px,8vw,104px) 0 110px}.pub-article,.pub-issue{width:min(var(--read),100%);margin:0 auto}.pub-meta{display:flex;flex-wrap:wrap;gap:8px 16px;color:var(--soft);font-size:11px}.pub-kicker{margin:0 0 16px;color:var(--signal);font-size:11px;font-weight:700;letter-spacing:.08em;text-transform:uppercase}h1{margin:18px 0 0;font-family:"Newsreader",Georgia,serif;font-size:clamp(44px,7vw,76px);font-weight:600;line-height:.98;letter-spacing:-.045em;text-wrap:balance}.standfirst{margin:28px 0 0;color:var(--soft);font-family:"Newsreader",Georgia,serif;font-size:clamp(21px,2.6vw,27px);line-height:1.48}.byline{margin-top:28px;padding-bottom:28px;border-bottom:1px solid var(--ink);color:var(--soft);font-size:12px}.pub-section{padding-top:40px}.pub-section+.pub-section{margin-top:40px;border-top:1px solid var(--line)}.pub-section h2{margin:0 0 16px;font-family:"Newsreader",Georgia,serif;font-size:32px;line-height:1.08}.pub-section p,.pub-section li{font-size:18px;line-height:1.78}.pub-section blockquote{margin:24px 0;padding-left:22px;border-left:2px solid var(--signal);color:var(--soft);font-family:"Newsreader",Georgia,serif;font-size:22px;line-height:1.5}.pub-action{display:inline-block;margin-top:18px;padding-bottom:3px;border-bottom:1px solid currentColor;color:var(--signal);font-weight:700;text-decoration:none}.issue-list{margin-top:22px;border-top:3px solid var(--ink)}.issue-item{display:grid;grid-template-columns:44px minmax(0,1fr);gap:16px;padding:22px 0;border-bottom:1px solid var(--line);text-decoration:none}.issue-item span{color:var(--soft);font-size:11px}.issue-item strong{font-family:"Newsreader",Georgia,serif;font-size:24px;line-height:1.12}.watch-list{padding-left:20px}.pub-foot{margin-top:70px;padding:24px 0 60px;border-top:1px solid var(--ink);color:var(--soft);font-size:12px}@media(max-width:640px){.pub-shell{width:min(100% - 30px,var(--max))}.pub-head{align-items:flex-start;flex-direction:column;justify-content:center;padding:16px 0}main{padding-top:50px}h1{font-size:clamp(42px,13vw,60px)}.pub-section p,.pub-section li{font-size:17px}}
+`;
+
+const htmlDocument = ({ title, description, canonical, type = 'website', publishedAt = '', structuredData = null, body }) => `<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <meta name="theme-color" content="#f4f1ea" />
+  <meta name="description" content="${escapeHtml(description)}" />
+  <meta name="robots" content="index,follow,max-image-preview:large" />
+  <link rel="canonical" href="${escapeHtml(canonical)}" />
+  <link rel="alternate" type="application/atom+xml" title="${PUBLICATION_NAME}" href="${absoluteUrl('feed.xml')}" />
+  <link rel="icon" href="${absoluteUrl('icon.svg')}" type="image/svg+xml" />
+  <meta property="og:type" content="${type}" />
+  <meta property="og:locale" content="zh_CN" />
+  <meta property="og:site_name" content="${PUBLICATION_NAME}" />
+  <meta property="og:title" content="${escapeHtml(title)}" />
+  <meta property="og:description" content="${escapeHtml(description)}" />
+  <meta property="og:url" content="${escapeHtml(canonical)}" />
+  ${publishedAt ? `<meta property="article:published_time" content="${escapeHtml(publishedAt)}" />` : ''}
+  <meta name="twitter:card" content="summary" />
+  <meta name="twitter:title" content="${escapeHtml(title)}" />
+  <meta name="twitter:description" content="${escapeHtml(description)}" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Newsreader:opsz,wght@6..72,500;6..72,600;6..72,700&display=swap" />
+  <style>${pageStyles}</style>
+  ${structuredData ? `<script type="application/ld+json">${JSON.stringify(structuredData).replaceAll('<', '\\u003c')}</script>` : ''}
+  <title>${escapeHtml(title)} — ${PUBLICATION_NAME}</title>
+</head>
+<body>
+  <div class="pub-shell">
+    <header class="pub-head"><a class="pub-brand" href="${PUBLIC_BASE_URL}">${PUBLICATION_NAME}</a><span>Published with NewsFlow</span></header>
+    ${body}
+    <footer class="pub-foot"><a href="${PUBLIC_BASE_URL}">返回 ${PUBLICATION_NAME}</a></footer>
+  </div>
+</body>
+</html>`;
+
+const generatePublicationPages = async () => {
+  const [edition, news, issues] = await Promise.all([
+    readFile(resolve(root, 'public/data/edition.json'), 'utf8').then(JSON.parse),
+    readFile(resolve(root, 'public/data/news.json'), 'utf8').then(JSON.parse),
+    readFile(resolve(root, 'public/data/issues.json'), 'utf8').then(JSON.parse)
+  ]);
+  const publicNews = Array.isArray(news) ? news : [];
+  const publishedIssues = (Array.isArray(issues) ? issues : []).filter((issue) => issue?.status === 'published');
+  const channelName = (id) => (edition.channels || []).find((channel) => channel.id === id)?.name || 'Editorial Signal';
+  const byId = new Map(publicNews.map((item) => [String(item.id), item]));
+
+  for (const item of publicNews) {
+    const id = safePublicSegment(item.id);
+    const canonical = articleUrl(id);
+    const shortSummary = String(item.short_summary || item.summary || '');
+    const longSummary = String(item.long_summary || shortSummary);
+    const description = concise(shortSummary || longSummary || item.title);
+    const quotes = [item.key_quote, ...(Array.isArray(item.supporting_quotes) ? item.supporting_quotes : [])].filter(Boolean);
+    const structuredData = {
+      '@context': 'https://schema.org',
+      '@type': 'NewsArticle',
+      headline: String(item.title || ''),
+      description,
+      datePublished: item.published_at || undefined,
+      dateModified: item.adopted_at || item.published_at || undefined,
+      mainEntityOfPage: canonical,
+      url: canonical,
+      publisher: { '@type': 'Organization', name: 'NewsFlow', url: PUBLIC_BASE_URL },
+      isPartOf: { '@type': 'Periodical', name: edition.name || PUBLICATION_NAME, url: PUBLIC_BASE_URL }
+    };
+    const body = `<main><article class="pub-article">
+      <div class="pub-meta"><span>${escapeHtml(channelName(item.channel_id))}</span><span>${escapeHtml(formatDate(item.published_at))}</span><span>${escapeHtml(item.source || '')}</span></div>
+      <h1>${escapeHtml(item.title)}</h1>
+      <p class="standfirst">${escapeHtml(shortSummary)}</p>
+      <div class="byline">NewsFlow Editorial Desk</div>
+      <section class="pub-section"><h2>发生了什么</h2><p>${escapeHtml(shortSummary)}</p></section>
+      ${longSummary && longSummary !== shortSummary ? `<section class="pub-section"><h2>为什么重要</h2><p>${escapeHtml(longSummary)}</p></section>` : ''}
+      <section class="pub-section"><h2>证据与来源</h2>${quotes.length ? quotes.map((quote) => `<blockquote>${escapeHtml(quote)}</blockquote>`).join('') : '<p>当前公开记录未附加可摘录引文，请以原始来源为准。</p>'}<p>${escapeHtml(item.source || '')}${item.source_tier ? ` · ${escapeHtml(item.source_tier)}` : ''}</p><a class="pub-action" href="${escapeHtml(item.url || '#')}" target="_blank" rel="noopener noreferrer">查看原始来源 →</a></section>
+    </article></main>`;
+    const articleDir = resolve(dist, 'articles', id);
+    await mkdir(articleDir, { recursive: true });
+    await writeFile(resolve(articleDir, 'index.html'), htmlDocument({
+      title: String(item.title || PUBLICATION_NAME),
+      description,
+      canonical,
+      type: 'article',
+      publishedAt: item.published_at || '',
+      structuredData,
+      body
+    }), 'utf8');
+  }
+
+  for (const issue of publishedIssues) {
+    const number = safePublicSegment(issue.issue_number);
+    const canonical = issueUrl(number);
+    const description = concise(issue.standfirst || issue.judgment || issue.title);
+    const issueItems = (issue.signal_ids || []).map((id) => byId.get(String(id))).filter(Boolean);
+    const structuredData = {
+      '@context': 'https://schema.org',
+      '@type': 'PublicationIssue',
+      name: String(issue.title || ''),
+      issueNumber: String(issue.issue_number || ''),
+      datePublished: issue.published_at || issue.coverage_start || undefined,
+      url: canonical,
+      isPartOf: { '@type': 'Periodical', name: edition.name || PUBLICATION_NAME, url: PUBLIC_BASE_URL },
+      hasPart: issueItems.map((item) => ({ '@type': 'NewsArticle', headline: String(item.title || ''), url: articleUrl(item.id) }))
+    };
+    const body = `<main><article class="pub-issue">
+      <p class="pub-kicker">Issue ${escapeHtml(issue.issue_number)}${issue.lifecycle === 'live' ? ' · Current' : ''}</p>
+      <div class="pub-meta"><span>${escapeHtml(formatDate(issue.coverage_start || issue.published_at))}${issue.coverage_end ? `—${escapeHtml(formatDate(issue.coverage_end))}` : ''}</span><span>${issueItems.length} 篇</span></div>
+      <h1>${escapeHtml(issue.title)}</h1>
+      <p class="standfirst">${escapeHtml(issue.standfirst || '')}</p>
+      <section class="pub-section"><h2>${issue.lifecycle === 'live' ? '当前判断' : '本期判断'}</h2><p>${escapeHtml(issue.judgment || '')}</p></section>
+      <section class="pub-section"><h2>本期文章</h2><div class="issue-list">${issueItems.map((item, index) => `<a class="issue-item" href="${articleUrl(item.id)}"><span>${String(index + 1).padStart(2, '0')}</span><strong>${escapeHtml(item.title)}</strong></a>`).join('') || '<p>本期文章正在整理。</p>'}</div></section>
+      ${Array.isArray(issue.what_to_watch) && issue.what_to_watch.length ? `<section class="pub-section"><h2>接下来关注</h2><ul class="watch-list">${issue.what_to_watch.map((item) => `<li>${escapeHtml(item)}</li>`).join('')}</ul></section>` : ''}
+    </article></main>`;
+    const issueDir = resolve(dist, 'issues', number);
+    await mkdir(issueDir, { recursive: true });
+    await writeFile(resolve(issueDir, 'index.html'), htmlDocument({
+      title: `Issue ${issue.issue_number} · ${issue.title}`,
+      description,
+      canonical,
+      type: 'website',
+      publishedAt: issue.published_at || issue.coverage_start || '',
+      structuredData,
+      body
+    }), 'utf8');
+  }
+
+  const latestUpdated = [...publicNews]
+    .map((item) => item.adopted_at || item.published_at)
+    .filter(Boolean)
+    .sort()
+    .at(-1) || new Date(0).toISOString();
+  const feedEntries = [...publicNews]
+    .sort((a, b) => new Date(b.adopted_at || b.published_at || 0).getTime() - new Date(a.adopted_at || a.published_at || 0).getTime())
+    .map((item) => `<entry><id>${escapeXml(articleUrl(item.id))}</id><title>${escapeXml(item.title)}</title><link href="${escapeXml(articleUrl(item.id))}"/><link rel="related" href="${escapeXml(item.url || articleUrl(item.id))}"/><updated>${escapeXml(item.adopted_at || item.published_at || latestUpdated)}</updated><published>${escapeXml(item.published_at || item.adopted_at || latestUpdated)}</published><summary>${escapeXml(concise(item.short_summary || item.long_summary || ''))}</summary></entry>`)
+    .join('');
+  await writeFile(resolve(dist, 'feed.xml'), `<?xml version="1.0" encoding="utf-8"?>\n<feed xmlns="http://www.w3.org/2005/Atom"><id>${PUBLIC_BASE_URL}</id><title>${PUBLICATION_NAME}</title><subtitle>AI 基建、CCUS 与能源转型的专业半月刊</subtitle><link href="${PUBLIC_BASE_URL}"/><link rel="self" href="${absoluteUrl('feed.xml')}"/><updated>${escapeXml(latestUpdated)}</updated>${feedEntries}</feed>\n`, 'utf8');
+
+  const sitemapEntries = [
+    { loc: PUBLIC_BASE_URL, lastmod: latestUpdated },
+    ...publishedIssues.map((issue) => ({ loc: issueUrl(issue.issue_number), lastmod: issue.updated_at || issue.published_at || issue.coverage_end || issue.coverage_start })),
+    ...publicNews.map((item) => ({ loc: articleUrl(item.id), lastmod: item.adopted_at || item.published_at }))
+  ];
+  await writeFile(resolve(dist, 'sitemap.xml'), `<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">${sitemapEntries.map(({ loc, lastmod }) => `<url><loc>${escapeXml(loc)}</loc>${lastmod ? `<lastmod>${escapeXml(String(lastmod).slice(0, 10))}</lastmod>` : ''}</url>`).join('')}</urlset>\n`, 'utf8');
+  await writeFile(resolve(dist, 'robots.txt'), `User-agent: *\nAllow: /NewsFlow/\nSitemap: ${absoluteUrl('sitemap.xml')}\n`, 'utf8');
+};
 
 await rm(dist, { recursive: true, force: true });
 await mkdir(dist, { recursive: true });
 
 let index = await readFile(resolve(root, 'index.html'), 'utf8');
+index = index.replaceAll('__NEWSFLOW_VERSION__', appVersion);
 const cloudflareAnalyticsToken = process.env.CLOUDFLARE_WEB_ANALYTICS_TOKEN?.trim() || '';
 if (cloudflareAnalyticsToken) {
   const beacon = `    <script type="module" src="https://static.cloudflareinsights.com/beacon.min.js" data-cf-beacon='${JSON.stringify({ token: cloudflareAnalyticsToken })}'></script>`;
@@ -23,6 +215,10 @@ await cp(resolve(root, 'src/styles.css'), resolve(dist, 'styles.css'));
 await cp(resolve(root, 'src/polish.css'), resolve(dist, 'polish.css'));
 await cp(resolve(root, 'src/edition-layer.css'), resolve(dist, 'edition-layer.css'));
 await cp(resolve(root, 'public'), dist, { recursive: true });
+
+const swPath = resolve(dist, 'sw.js');
+const sw = (await readFile(swPath, 'utf8')).replaceAll('__NEWSFLOW_VERSION__', appVersion);
+await writeFile(swPath, sw, 'utf8');
 
 // Source governance is public publication metadata. Unpublished manuscripts are not.
 const sourceConfig = JSON.parse(await readFile(resolve(root, 'config/content-sources.json'), 'utf8'));
@@ -68,5 +264,6 @@ await build({
   target: ['es2022'],
   outfile: resolve(dist, 'supabase-feedback.js')
 });
+await generatePublicationPages();
 
-console.log(`NewsFlow build complete: public Reader artifact contains adopted publication data only; Supabase sync ${supabaseConfig.enabled ? 'enabled' : 'disabled'}; Cloudflare RUM ${cloudflareAnalyticsToken ? 'enabled' : 'disabled'}.`);
+console.log(`NewsFlow build complete: v${appVersion}; static article/issue pages + Atom feed + sitemap generated; public Reader contains adopted publication data only; Supabase sync ${supabaseConfig.enabled ? 'enabled' : 'disabled'}; Cloudflare RUM ${cloudflareAnalyticsToken ? 'enabled' : 'disabled'}.`);
