@@ -1,0 +1,112 @@
+name: Sync publication state
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: '17,47 * * * *'
+  push:
+    branches: [main]
+    paths:
+      - 'scripts/sync-editorial-governance.mjs'
+      - 'scripts/sync-adopted-signals.mjs'
+      - 'scripts/sync-live-issue.mjs'
+      - 'scripts/update-data-status.mjs'
+      - '.github/workflows/publication-sync.yml'
+
+permissions:
+  contents: write
+
+concurrency:
+  group: newsflow-publication-writer
+  cancel-in-progress: false
+
+jobs:
+  sync:
+    name: Apply editorial state and live issue
+    runs-on: ubuntu-24.04
+    timeout-minutes: 12
+    outputs:
+      changed: ${{ steps.sync.outputs.changed }}
+    env:
+      SUPABASE_URL: ${{ vars.NEWSFLOW_SUPABASE_URL || '' }}
+      SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY || '' }}
+      NEWSFLOW_SUPABASE_URL: ${{ vars.NEWSFLOW_SUPABASE_URL || '' }}
+      NEWSFLOW_SUPABASE_PUBLISHABLE_KEY: ${{ vars.NEWSFLOW_SUPABASE_PUBLISHABLE_KEY || '' }}
+      CLOUDFLARE_WEB_ANALYTICS_TOKEN: ${{ vars.CLOUDFLARE_WEB_ANALYTICS_TOKEN || '' }}
+    steps:
+      - name: Require publication synchronization credentials
+        if: env.SUPABASE_URL == '' || env.SUPABASE_SERVICE_ROLE_KEY == '' || env.NEWSFLOW_SUPABASE_PUBLISHABLE_KEY == ''
+        run: |
+          echo "NEWSFLOW_SUPABASE_URL, NEWSFLOW_SUPABASE_PUBLISHABLE_KEY and SUPABASE_SERVICE_ROLE_KEY are required." >&2
+          exit 1
+
+      - name: Checkout main
+        uses: actions/checkout@v6
+        with:
+          ref: main
+          fetch-depth: 0
+
+      - name: Set up Node
+        uses: actions/setup-node@v6
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Install locked toolchain
+        run: npm ci --no-audit --no-fund
+
+      - name: Synchronize publication state
+        id: sync
+        run: |
+          npm run editorial:sync
+          npm run issue:sync
+          npm run content:status
+          if git diff --quiet; then
+            echo "changed=false" >> "$GITHUB_OUTPUT"
+          else
+            echo "changed=true" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Validate changed publication state
+        if: steps.sync.outputs.changed == 'true'
+        run: |
+          npm run check
+          npm run build
+
+      - name: Commit publication state
+        if: steps.sync.outputs.changed == 'true'
+        run: |
+          git config user.name "newsflow-editorial-bot"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add public/data/news.json public/data/issues.json public/data/data-status.json public/data/edition.json public/data/storylines.json public/data/governance-status.json config/content-sources.json config/content-discovery.json content/state/governance-sync.json content/state/adoption-sync.json
+          git commit -m "editorial: sync live issue"
+          git pull --rebase origin main
+          git push origin HEAD:main
+
+      - name: Configure GitHub Pages
+        if: steps.sync.outputs.changed == 'true'
+        uses: actions/configure-pages@v6
+
+      - name: Upload GitHub Pages artifact
+        if: steps.sync.outputs.changed == 'true'
+        uses: actions/upload-pages-artifact@v4
+        with:
+          path: dist
+
+  deploy:
+    name: Deploy synced publication state
+    if: needs.sync.outputs.changed == 'true'
+    needs: sync
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    permissions:
+      contents: read
+      pages: write
+      id-token: write
+    steps:
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
