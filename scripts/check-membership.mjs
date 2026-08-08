@@ -22,10 +22,10 @@ const [index, config, integration, styles] = await Promise.all([
 ]);
 
 for (const reference of [
-  'https://liuh886.github.io/admin/shared/account-shell.css?v=3',
+  'https://liuh886.github.io/admin/shared/account-shell.css?v=4',
   './account-integration.css',
   './membership-config.js',
-  'https://liuh886.github.io/admin/shared/account-shell.js?v=3',
+  'https://liuh886.github.io/admin/shared/account-shell.js?v=4',
   './account-integration.js',
 ]) {
   if (!index.includes(reference)) throw new Error(`index.html is missing ${reference}`);
@@ -71,4 +71,4 @@ if (combined.includes('membership-widget.js') || combined.includes('membership-w
   throw new Error('NewsFlow must not load the retired local membership widget');
 }
 
-console.log('NewsFlow account uses the native topbar mount and Turnstile-enabled shared shell v3.');
+console.log('NewsFlow account uses the native topbar mount and shared Google/GitHub/X account shell v4.');
