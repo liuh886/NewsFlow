@@ -164,9 +164,11 @@ create table if not exists public.newsflow_candidates (
   storyline_ids text[] not null default '{}',
   event_type text not null default '',
   published_at timestamptz,
+  payload jsonb not null default '{}'::jsonb check (jsonb_typeof(payload) = 'object'),
   active boolean not null default true,
   synced_at timestamptz not null default now()
 );
+alter table public.newsflow_candidates add column if not exists payload jsonb not null default '{}'::jsonb;
 create index if not exists newsflow_candidates_active_published_idx on public.newsflow_candidates (active, published_at desc);
 alter table public.newsflow_candidates enable row level security;
 revoke all on table public.newsflow_candidates from anon, authenticated;
