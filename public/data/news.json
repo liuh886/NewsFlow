@@ -1,51 +1,92 @@
 [
   {
-    "id": "test-candidate-tsmc-3nm",
+    "id": "nvidia-lancium-stargate-power-investment-2026",
     "channel_id": "ai-infrastructure",
     "storyline_ids": [
-      "ai-chip-layer"
+      "ai-energy-foundation",
+      "ai-infrastructure-layer"
     ],
-    "event_type": "foundry_capacity",
-    "event_date": "2026-08-03",
-    "title": "台积电 3nm 产能利用率突破 90%，AI 加速器订单推动下半年满载",
-    "url": "https://investor.tsmc.com/english/",
-    "source": "TSMC Investor Relations",
-    "published_at": "2026-08-03T00:00:00.000Z",
-    "quality_index": 8.8,
+    "event_type": "financing",
+    "event_date": "2026-08-08",
+    "title": "Nvidia 拟向 Lancium 投资至多 30 亿美元，AI 芯片厂商开始直接押注 Stargate 的电力与并网资产",
+    "url": "https://www.reuters.com/business/nvidia-invest-up-3-billion-lancium-information-reports-2026-08-08/",
+    "source": "Reuters",
+    "published_at": "2026-08-08T01:42:00Z",
+    "quality_index": 8.5,
     "source_tier": "Tier A",
-    "short_summary": "台积电披露先进制程产能利用率持续上升，AI/HPC 订单成为主要驱动力。",
-    "long_summary": "第三季度来自 AI 加速器的晶圆需求持续增长，3nm 节点预计在年底前达到满载。分析师认为这意味着先进封装和高带宽内存的供应将成为下一个瓶颈。",
+    "short_summary": "Reuters 转述 The Information 称，Nvidia 拟向 Lancium 投资至多 30 亿美元；Lancium 持有 Stargate 首个运营站点相关土地与电力连接资源，追加投资还与并网等里程碑挂钩。",
+    "long_summary": "如果交易按报道落地，它把 Nvidia 的基础设施角色从 GPU 供应继续推进到数据中心电力和并网资源的资本配置。初始约 20% 股权投资与后续并网条件意味着，芯片供给商正在把电力接入视为保障 AI 系统部署速度的战略资产。由于 Reuters 未获得 Nvidia 或 Lancium 的直接确认，这条信息应由编辑部保留来源限制，并在后续公司披露中复核。",
     "key_quote": "",
     "supporting_quotes": [],
     "tags": [
       "AI & Tech",
-      "Chip",
-      "Manufacturing"
-    ]
+      "Data Center",
+      "Power Infrastructure",
+      "Stargate",
+      "Nvidia"
+    ],
+    "editorial_status": "adopted",
+    "editorial_decision": "accept",
+    "adopted_at": "2026-08-08T16:03:14.409+00:00"
   },
   {
-    "id": "test-candidate-ccus-pipeline-600",
-    "channel_id": "ccus-energy-transition",
+    "id": "openai-astra-critical-cyber-deployment-controls-2026",
+    "channel_id": "ai-infrastructure",
     "storyline_ids": [
-      "ccus-project-delivery"
+      "ai-model-layer",
+      "ai-infrastructure-layer"
     ],
-    "event_type": "industry_status_report",
-    "event_date": "2026-08-01",
-    "title": "全球 CCUS 项目管道突破 600 个，但运营率不足 15%",
-    "url": "https://globalccsinstitute.com",
-    "source": "Global CCS Institute",
-    "published_at": "2026-08-01T00:00:00.000Z",
-    "quality_index": 8.1,
+    "event_type": "deployment_requirement",
+    "event_date": "2026-08-08",
+    "title": "OpenAI 称 Astra 不能排除达到‘关键’网络安全能力，模型能力提升开始直接改变部署与隔离要求",
+    "url": "https://www.reuters.com/legal/litigation/openai-flags-possible-critical-cybersecurity-risk-upcoming-model-tightens-2026-08-07/",
+    "source": "Reuters",
+    "published_at": "2026-08-07T17:46:00Z",
+    "quality_index": 9.3,
     "source_tier": "Tier A",
-    "short_summary": "新报告显示宣布的 CCUS 项目数继续快速增长，但进入运营阶段的比例仍然很低。",
-    "long_summary": "全球 CCUS 项目管道在 2026 年年中达到 612 个，相比 2024 年增长了约 40%。然而从 FID 到实际运营的转化仍然缓慢，大多数项目集中在北美和欧洲的枢纽地区。报告建议将注意力从宣布的项目总数转向已获得融资和许可的项目。",
+    "short_summary": "OpenAI 表示其即将发布的 Astra 模型初步评估强到无法排除达到‘critical’网络安全能力门槛，并因此暂停部分内部活动、强化安全控制，把开发迁入受限网络和沙箱隔离环境。",
+    "long_summary": "这条信息的重要性不在于又一次模型能力提升，而在于能力提升开始改变模型的工程部署条件。若模型可能自主发现和利用严重漏洞，开发者就需要把网络隔离、沙箱执行、访问控制和外部评估作为模型发布路径的一部分。它为 AI 模型层提供了一个新的基础设施约束：能力越强，安全隔离和运行环境本身越可能成为部署成本与发布节奏的重要组成部分。",
     "key_quote": "",
     "supporting_quotes": [],
     "tags": [
-      "Energy & Transition",
-      "CCUS",
-      "Project Pipeline"
-    ]
+      "AI & Tech",
+      "Model Deployment",
+      "Cybersecurity",
+      "OpenAI"
+    ],
+    "editorial_status": "adopted",
+    "editorial_decision": "accept",
+    "adopted_at": "2026-08-08T16:03:39.39+00:00"
+  },
+  {
+    "id": "texas-data-center-grid-deposit-risk-2026",
+    "channel_id": "ai-infrastructure",
+    "storyline_ids": [
+      "ai-energy-foundation",
+      "ai-infrastructure-layer"
+    ],
+    "event_type": "grid_interconnection",
+    "event_date": "2026-08-08",
+    "title": "得州数据中心并网暂停开始转化为真实资本风险：巨额押金面临长期冻结与更高不可退比例",
+    "url": "https://www.reuters.com/legal/litigation/hundreds-millions-grid-deposits-linger-uncertainty-following-texas-data-center-2026-08-07/",
+    "source": "Reuters",
+    "published_at": "2026-08-07T16:44:33Z",
+    "quality_index": 9.7,
+    "source_tier": "Tier A",
+    "short_summary": "得州暂停数据中心并网审批后，Batch Zero 项目此前按每兆瓦 5 万美元缴纳的并网担保资金面临不确定性；监管草案还可能把部分项目押金的不可退比例从 20% 提高到 80%。",
+    "long_summary": "这条更新不是重复此前的‘得州暂停并网’事实，而是把监管不确定性量化成项目级资本风险。对于超大规模 AI 数据中心，电网审批现在不仅决定投产时间，还可能锁住数千万甚至上亿美元前期资金，并改变项目继续推进或退出的经济性。它强化了 NewsFlow 对 AI 能源层的判断：并网权、审批节奏和监管条款正在成为与电源容量同等重要的基础设施约束。",
+    "key_quote": "",
+    "supporting_quotes": [],
+    "tags": [
+      "AI & Tech",
+      "Data Center",
+      "Grid Interconnection",
+      "Texas",
+      "Regulation"
+    ],
+    "editorial_status": "adopted",
+    "editorial_decision": "accept",
+    "adopted_at": "2026-08-08T16:03:53.62+00:00"
   },
   {
     "id": "microsoft-ai-cloud-demand-2026",
@@ -136,7 +177,7 @@
     "url": "https://www.gov.uk/government/publications/carbon-capture-usage-and-storage-ccus-business-models",
     "source": "UK Department for Energy Security and Net Zero",
     "published_at": "2026-07-22T00:00:00Z",
-    "quality_index": 9.0,
+    "quality_index": 9,
     "source_tier": "Tier A",
     "short_summary": "英国政府发布 Transition Access Agreement Policy Position Statement，进一步明确面向不需要完整 CCUS Business Model 支持的项目如何接入 CO₂ 运输与封存网络。",
     "long_summary": "TAA 的核心不是再增加一层补贴，而是为市场从政府主导的早期集群走向更低干预的商业化阶段建立接入合同。政策把网络接入、费用承担、有限风险支持和合同期限等问题显式化，意味着 CCUS 规模化的竞争焦点正从单个捕集项目转向谁能在可预测的商业规则下获得运输封存容量。它强化了 Edition 对“共享网络、合同结构与责任边界决定可融资性”的判断。",
@@ -162,7 +203,7 @@
     "url": "https://www.gov.uk/government/publications/independent-review-on-greenhouse-gas-removals-government-response/independent-review-on-greenhouse-gas-removals-government-response",
     "source": "UK Government",
     "published_at": "2026-07-17T00:00:00Z",
-    "quality_index": 9.0,
+    "quality_index": 9,
     "source_tier": "Tier A",
     "short_summary": "英国政府回应 GGR 独立评审时明确：工程化碳移除将依靠收入确定性机制，并由相关商业模式覆盖使用 CCUS 运输封存网络的成本，同时保护项目免受网络未就绪或临时不可用等跨链风险。",
     "long_summary": "这份政策回应把此前分散的几个问题连在了一起：高完整性移除信用需要稳定需求，项目需要可预测收入，BECCS/DACCS 等技术又依赖可靠的 CO₂ 运输封存网络。政府同时推进 East Coast Cluster 非管输 Pathfinder，使卡车、铁路和船运也能申请接入地质封存。对 CCUS 来说，这意味着网络可靠性、费用和跨链责任正在被正式纳入项目经济性，而不是留给单个项目自行消化。",
@@ -198,228 +239,6 @@
       "Semiconductor",
       "Advanced Packaging",
       "Foundry"
-    ]
-  },
-  {
-    "id": "signal-global-ccs-forum-2026",
-    "channel_id": "ccus-energy-transition",
-    "storyline_ids": [
-      "ccus-network-economics",
-      "evidence-governance"
-    ],
-    "event_type": "tariff_or_business_model",
-    "event_date": "2026-06-11",
-    "title": "CCS 商业化讨论从单一项目转向网络、长期责任与跨主体接口",
-    "url": "https://www.globalccsinstitute.com/2026-americas-forum-recap/",
-    "source": "Global CCS Institute",
-    "published_at": "2026-06-11T00:00:00Z",
-    "quality_index": 8.7,
-    "source_tier": "Tier A",
-    "short_summary": "2026 Americas Forum 的讨论显示，CCS 扩张越来越依赖共享运输封存网络、政策确定性、责任安排和可融资合同，而不只是单点捕集技术成熟度。",
-    "long_summary": "当项目进入集群化阶段，价值链中的每一个接口都会影响投资决策：排放源是否按期交付、管网容量如何分配、注入与封存风险如何计价、长期责任如何移交。治理与证据接口因此成为规模化部署的一部分。",
-    "key_quote": "",
-    "supporting_quotes": [],
-    "tags": [
-      "Energy & Transition",
-      "CCUS",
-      "Infrastructure"
-    ]
-  },
-  {
-    "id": "signal-token-burn",
-    "channel_id": "ai-infrastructure",
-    "storyline_ids": [
-      "ai-application-layer"
-    ],
-    "event_type": "legacy_signal",
-    "event_date": "2026-05-27",
-    "title": "你今天烧掉了多少 Token？别让易计算指标替代真实生产力",
-    "url": "https://idiallo.com/blog/how-many-tokens-did-you-burn-today",
-    "source": "Ibrahim Diallo",
-    "published_at": "2026-05-27T00:00:00Z",
-    "quality_index": 8.1,
-    "source_tier": "Tier B",
-    "short_summary": "用 Token 数衡量开发者价值，和过去用代码行数评价产出一样危险：指标越容易计算，越可能替代真正需要判断的工作质量。",
-    "long_summary": "文章借用管理者统计代码行数的案例，提醒团队不要把模型调用量直接当作 AI 生产力。更有效的衡量方式应关注任务完成、缺陷率、复用程度、维护成本和对用户结果的影响。",
-    "key_quote": "",
-    "supporting_quotes": [],
-    "tags": [
-      "AI & Tech",
-      "Productivity",
-      "Metrics"
-    ]
-  },
-  {
-    "id": "signal-prompts-technical-debt",
-    "channel_id": "ai-infrastructure",
-    "storyline_ids": [
-      "ai-model-layer"
-    ],
-    "event_type": "legacy_signal",
-    "event_date": "2026-05-20",
-    "title": "提示词也是技术债务",
-    "url": "https://www.seangoedecke.com/prompts-are-technical-debt-too/",
-    "source": "Sean Goedecke",
-    "published_at": "2026-05-20T00:00:00Z",
-    "quality_index": 8.6,
-    "source_tier": "Tier B",
-    "short_summary": "提示词并不是一次性配置。随着系统增长，它们会形成隐性依赖、行为耦合与回归风险，需要像代码一样被版本化、测试和维护。",
-    "long_summary": "文章把提示词视为软件系统的一部分，而不是模型调用之外的临时文本。每增加约束、例外或示例，都会扩大后续修改的影响面。生产级 AI 产品应为提示词建立版本、评估集、回归测试与清晰责任边界。",
-    "key_quote": "",
-    "supporting_quotes": [],
-    "tags": [
-      "AI & Tech",
-      "Engineering",
-      "LLM"
-    ]
-  },
-  {
-    "id": "signal-space-datacentres",
-    "channel_id": "ai-infrastructure",
-    "storyline_ids": [
-      "ai-energy-foundation",
-      "ai-infrastructure-layer"
-    ],
-    "event_type": "technical_reference_design",
-    "event_date": "2026-05-13",
-    "title": "太空 AI 数据中心的散热并非直觉问题，真正门槛在系统级经济性",
-    "url": "https://www.seangoedecke.com/space-ai-datacenters-do-not-have-a-cooling-problem/",
-    "source": "Sean Goedecke",
-    "published_at": "2026-05-13T00:00:00Z",
-    "quality_index": 8.4,
-    "source_tier": "Tier B",
-    "short_summary": "太空环境并不意味着热量无法排出。需要比较的是辐射散热面积、工作温度、供电、发射成本与维护难度的组合。",
-    "long_summary": "讨论把一个看似直觉的问题拆成工程系统：散热依赖辐射面积和工作温度，太阳能供电与轨道环境改变能源条件。即使热管理可解，发射、通信、升级和维修仍可能构成更大的经济门槛。",
-    "key_quote": "",
-    "supporting_quotes": [],
-    "tags": [
-      "AI & Tech",
-      "Energy & Transition",
-      "Data Center"
-    ]
-  },
-  {
-    "id": "signal-raspberry-connect-windows",
-    "channel_id": "ai-infrastructure",
-    "storyline_ids": [
-      "production-ai-engineering"
-    ],
-    "status": "archived",
-    "event_type": "legacy_signal",
-    "event_date": "2026-04-29",
-    "title": "Raspberry Pi Connect 可能扩展到 Windows，远程访问服务开始跨出设备生态边界",
-    "url": "https://www.jeffgeerling.com/blog/2026/raspberry-pi-connect-may-control-windows-soon/",
-    "source": "Jeff Geerling",
-    "published_at": "2026-04-29T00:00:00Z",
-    "quality_index": 7.9,
-    "source_tier": "Tier B",
-    "short_summary": "Pi Connect 最初用于解决树莓派在 Wayland 环境下的远程访问问题。若 Windows 支持落地，产品会从设备附属功能走向更通用的远程工作入口。",
-    "long_summary": "跨平台扩张会提高服务价值，也会把身份验证、设备授权、端到端安全与企业管理推到更重要的位置。真正的产品升级不只是增加一个客户端，而是建立可信的跨设备控制边界。",
-    "key_quote": "",
-    "supporting_quotes": [],
-    "tags": [
-      "AI & Tech",
-      "Raspberry Pi",
-      "Remote Access"
-    ]
-  },
-  {
-    "id": "signal-iea-datacentres-2026",
-    "channel_id": "ai-infrastructure",
-    "storyline_ids": [
-      "ai-energy-foundation",
-      "ai-infrastructure-layer"
-    ],
-    "event_type": "load_forecast",
-    "event_date": "2026-04-16",
-    "title": "数据中心用电在 2025 年显著跃升，电力瓶颈正反向塑造 AI 基础设施布局",
-    "url": "https://www.iea.org/news/data-centre-electricity-use-surged-in-2025-even-with-tightening-bottlenecks-driving-a-scramble-for-solutions",
-    "source": "International Energy Agency",
-    "published_at": "2026-04-16T00:00:00Z",
-    "quality_index": 9,
-    "source_tier": "Tier A",
-    "short_summary": "IEA 指出数据中心用电继续快速增长，而并网与设备供应瓶颈迫使运营商同时寻找更快的电源、网络和效率方案。AI 资本开支正在与电力基础设施形成更直接的耦合。",
-    "long_summary": "数据中心扩张不再只是算力设备采购问题。可获得的电力容量、项目投产时间、网络约束和能源组合会决定设施选址与建设节奏。对投资者和政策制定者而言，算力增长需要被视作电力系统规划的一部分，而不是孤立的科技周期。",
-    "key_quote": "",
-    "supporting_quotes": [],
-    "tags": [
-      "AI & Tech",
-      "Energy & Transition",
-      "Data Center"
-    ]
-  },
-  {
-    "id": "signal-framework-arm",
-    "channel_id": "ai-infrastructure",
-    "storyline_ids": [
-      "deployment-bottlenecks"
-    ],
-    "status": "archived",
-    "event_type": "legacy_signal",
-    "event_date": "2026-04-15",
-    "title": "Framework 的 Arm 主板让处理器架构选择与整机生命周期进一步解耦",
-    "url": "https://www.jeffgeerling.com/blog/2026/arm-mainboard-for-framework-laptop/",
-    "source": "Jeff Geerling",
-    "published_at": "2026-04-15T00:00:00Z",
-    "quality_index": 8.3,
-    "source_tier": "Tier B",
-    "short_summary": "Framework 13 在同一可维修平台上容纳 x86、RISC-V 与 Arm 主板，说明模块化设计可以把处理器路线切换从整机更换中拆分出来。",
-    "long_summary": "这项测试的价值不只在性能比较，也在于验证可替换主板能否延长设备生命周期。Arm 主板带来功耗、兼容性和软件生态之间的新取舍，同时为可维修硬件提供更清晰的架构升级路径。",
-    "key_quote": "",
-    "supporting_quotes": [],
-    "tags": [
-      "AI & Tech",
-      "Hardware",
-      "Arm"
-    ]
-  },
-  {
-    "id": "signal-patch-tuesday-2026-03",
-    "channel_id": "ai-infrastructure",
-    "storyline_ids": [
-      "production-ai-engineering"
-    ],
-    "status": "archived",
-    "event_type": "reliability_event",
-    "event_date": "2026-03-10",
-    "title": "微软 2026 年 3 月安全更新修复至少 77 个漏洞，补丁优先级仍需按暴露面判断",
-    "url": "https://krebsonsecurity.com/2026/03/microsoft-patch-tuesday-march-2026-edition/",
-    "source": "Krebs on Security",
-    "published_at": "2026-03-10T00:00:00Z",
-    "quality_index": 8.2,
-    "source_tier": "Tier B",
-    "short_summary": "本月更新覆盖至少 77 个安全问题。即使没有被广泛利用的紧急零日漏洞，组织仍需根据互联网暴露、权限提升和关键业务系统确定修复顺序。",
-    "long_summary": "补丁数量本身不是风险排序。更可靠的处置方式是把漏洞类型、可利用性、资产暴露、业务影响和可用缓解措施结合起来，并在发布后持续观察兼容性与攻击活动变化。",
-    "key_quote": "",
-    "supporting_quotes": [],
-    "tags": [
-      "AI & Tech",
-      "Cybersecurity",
-      "Windows"
-    ]
-  },
-  {
-    "id": "signal-cbam-definitive-regime",
-    "channel_id": "ccus-energy-transition",
-    "storyline_ids": [
-      "evidence-governance"
-    ],
-    "event_type": "regulatory_revision",
-    "event_date": "2026-01-01",
-    "title": "欧盟 CBAM 进入正式实施阶段，设施级排放数据从披露要求变成贸易成本输入",
-    "url": "https://taxation-customs.ec.europa.eu/carbon-border-adjustment-mechanism/cbam-definitive-regime_en",
-    "source": "European Commission",
-    "published_at": "2026-01-01T00:00:00Z",
-    "quality_index": 9.1,
-    "source_tier": "Tier A",
-    "short_summary": "CBAM 正式制度自 2026 年起适用。进口商需要围绕产品、设施与嵌入排放形成可核验的数据链条，碳数据质量将直接影响跨境合规与成本。",
-    "long_summary": "正式实施把碳核算从年度报告扩展到交易执行。企业需要将供应商数据、设施边界、核算方法和验证记录连接起来，减少重复口径与无法追溯的数据。高质量碳数据因而从合规成本转化为贸易与采购决策的基础设施。",
-    "key_quote": "",
-    "supporting_quotes": [],
-    "tags": [
-      "Energy & Transition",
-      "CBAM",
-      "Carbon Accounting"
     ]
   }
 ]

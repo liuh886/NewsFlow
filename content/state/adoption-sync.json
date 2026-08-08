@@ -1,6 +1,11 @@
 {
   "schema_version": "1.0",
-  "managed_signal_ids": [],
-  "current_adoption_count": 0,
-  "last_synced_at": null
+  "managed_signal_ids": [
+    "nvidia-lancium-stargate-power-investment-2026",
+    "openai-astra-critical-cyber-deployment-controls-2026",
+    "texas-data-center-grid-deposit-risk-2026"
+  ],
+  "current_adoption_count": 3,
+  "formal_issue_signal_count": 6,
+  "last_synced_at": "2026-08-08T17:23:37.660Z"
 }

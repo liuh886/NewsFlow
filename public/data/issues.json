@@ -1,5 +1,53 @@
 [
   {
+    "id": "frontier-systems-review-2026-16",
+    "issue_number": 16,
+    "published_at": "2026-08-01T00:00:00+08:00",
+    "coverage_start": "2026-08-01",
+    "coverage_end": "2026-08-14",
+    "status": "published",
+    "lifecycle": "live",
+    "frozen_at": null,
+    "auto_generated": true,
+    "selection_mode": "live_editorial_ranking",
+    "edition_version": "1.2",
+    "title": "得州数据中心并网暂停开始转化为真实资本风险：巨额押金面临长期冻结与更高不可退比例",
+    "standfirst": "得州暂停数据中心并网审批后，Batch Zero 项目此前按每兆瓦 5 万美元缴纳的并网担保资金面临不确定性；监管草案还可能把部分项目押金的不可退比例从 20% 提高到 80%。 本期持续追踪相关进展，封面与篇目将随重要性更新。",
+    "judgment": "本期关注正在发生的关键变化；当前封面聚焦此刻最具影响力的进展，后续重大事件可能改变版面重点。",
+    "cover_signal_id": "texas-data-center-grid-deposit-risk-2026",
+    "signal_ids": [
+      "texas-data-center-grid-deposit-risk-2026",
+      "openai-astra-critical-cyber-deployment-controls-2026",
+      "nvidia-lancium-stargate-power-investment-2026"
+    ],
+    "storyline_updates": [],
+    "what_to_watch": [
+      "大型负荷并网",
+      "发电与储能",
+      "长期购电协议"
+    ],
+    "ranking": {
+      "version": "live-v1",
+      "policy": "chief_cover_then_quality_then_recency",
+      "future_inputs": [
+        "editor_consensus",
+        "reader_preference"
+      ]
+    },
+    "methodology": {
+      "candidate_count": 3,
+      "selected_count": 3,
+      "editorial_adoption_count": 3,
+      "cover_story_count": 0,
+      "selected_by_channel": {
+        "ai-infrastructure": 3
+      },
+      "fixed_length": false,
+      "editorial_view_changed": false
+    },
+    "updated_at": "2026-08-08T17:23:37.862Z"
+  },
+  {
     "id": "frontier-systems-review-2026-15",
     "issue_number": 15,
     "published_at": "2026-08-01T09:15:00+08:00",
