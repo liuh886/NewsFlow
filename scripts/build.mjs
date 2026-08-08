@@ -1,4 +1,4 @@
-import { cp, mkdir, readdir, readFile, rm, writeFile } from 'node:fs/promises';
+import { cp, mkdir, readFile, rm, writeFile } from 'node:fs/promises';
 import { dirname, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { build } from 'esbuild';
@@ -19,79 +19,27 @@ await cp(resolve(root, 'src/polish.css'), resolve(dist, 'polish.css'));
 await cp(resolve(root, 'src/edition-layer.css'), resolve(dist, 'edition-layer.css'));
 await cp(resolve(root, 'public'), dist, { recursive: true });
 
-const reviewCandidatesById = new Map();
-const addReviewCandidate = (candidate, context = {}) => {
-  const id = String(candidate?.id || '');
-  if (!id) return;
-  reviewCandidatesById.set(id, {
-    id,
-    title: candidate.title,
-    url: candidate.url,
-    channel_id: candidate.channel_id,
-    event_type: candidate.event_type,
-    event_date: candidate.event_date,
-    published_at: candidate.published_at,
-    short_summary: candidate.short_summary,
-    tags: candidate.tags || [],
-    storyline_ids: candidate.storyline_ids || [],
-    scores: candidate.scores || {},
-    source: context.source || candidate.source || '',
-    edition_id: context.edition_id || '',
-    coverage_start: context.coverage_start || '',
-    coverage_end: context.coverage_end || ''
-  });
-};
-
-// Merge transient inbox packs for candidates that have not yet been applied.
-const inboxDir = resolve(root, 'content', 'inbox');
-try {
-  const inboxFiles = (await readdir(inboxDir)).filter((file) => file.endsWith('.json')).sort();
-  for (const file of inboxFiles) {
-    const pack = JSON.parse(await readFile(resolve(inboxDir, file), 'utf8'));
-    for (const candidate of pack.candidates || []) {
-      addReviewCandidate(candidate, {
-        edition_id: pack.edition_id || '',
-        coverage_start: pack.run?.coverage_start || '',
-        coverage_end: pack.run?.coverage_end || ''
-      });
-    }
-  }
-
-  const distInboxDir = resolve(dist, 'data', 'inbox');
-  await mkdir(distInboxDir, { recursive: true });
-  for (const file of inboxFiles) {
-    await cp(resolve(inboxDir, file), resolve(distInboxDir, file));
-  }
-} catch {
-  // A repository may have no transient inbox.
-}
-
-// Durable needs_review items remain available after inbox cleanup.
-try {
-  const queue = JSON.parse(await readFile(resolve(root, 'content/state/pipeline-review-queue.json'), 'utf8'));
-  for (const item of queue.items || []) {
-    addReviewCandidate(item.candidate, {
-      source: item.decision?.source_id || '',
-      edition_id: queue.edition_id || '',
-      coverage_start: item.run?.coverage_start || '',
-      coverage_end: item.run?.coverage_end || ''
-    });
-  }
-} catch {
-  // The durable queue is created on first applied needs_review candidate.
-}
-
-const reviewCandidates = [...reviewCandidatesById.values()].sort((left, right) =>
-  String(right.published_at || '').localeCompare(String(left.published_at || ''))
-    || left.id.localeCompare(right.id)
-);
+// Source governance is public publication metadata. Unpublished manuscripts are not.
+const sourceConfig = JSON.parse(await readFile(resolve(root, 'config/content-sources.json'), 'utf8'));
+const sourceRegistry = (sourceConfig.sources || []).map((source) => ({
+  id: source.id,
+  name: source.name,
+  domain: source.domain,
+  path_prefixes: source.path_prefixes || [],
+  class: source.class,
+  tier: source.tier,
+  channels: source.channels || [],
+  storylines: source.storylines || [],
+  allowed_uses: source.allowed_uses || [],
+  limitations: source.limitations || [],
+  report_source: Boolean(source.report_source),
+  stakeholder_source: Boolean(source.stakeholder_source),
+  report_families: source.report_families || [],
+  leader_watch: source.leader_watch || null
+}));
 const distDataDir = resolve(dist, 'data');
 await mkdir(distDataDir, { recursive: true });
-await writeFile(
-  resolve(distDataDir, 'review-candidates.json'),
-  `${JSON.stringify(reviewCandidates, null, 2)}\n`,
-  'utf8'
-);
+await writeFile(resolve(distDataDir, 'source-registry.json'), `${JSON.stringify(sourceRegistry, null, 2)}\n`, 'utf8');
 
 const publicSupabaseConfigPath = resolve(root, 'public/data/supabase-config.json');
 const supabaseConfig = JSON.parse(await readFile(publicSupabaseConfigPath, 'utf8'));
@@ -116,4 +64,4 @@ await build({
   outfile: resolve(dist, 'supabase-feedback.js')
 });
 
-console.log(`NewsFlow build complete: dist/ with ${reviewCandidates.length} editorial candidate(s) and Supabase sync ${supabaseConfig.enabled ? 'enabled' : 'disabled'}.`);
+console.log(`NewsFlow build complete: public Reader artifact contains adopted publication data only; Supabase sync ${supabaseConfig.enabled ? 'enabled' : 'disabled'}.`);
