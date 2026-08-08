@@ -1,38 +1,7 @@
 {
   "schema_version": "2.0",
   "source": "content-state",
-  "latest_run_at": "2026-08-06T12:00:00+08:00",
-  "candidate_count": 1,
-  "candidates": [
-    {
-      "id": "uk-ccs-east-coast-cluster-8bn-financing-2026",
-      "manuscript_key": "ING-2026",
-      "title": "英国东海岸 CCUS 集群完成约 80 亿英镑项目融资，Track-1 模式证明政府收入支撑可撬动商业资本",
-      "channel_id": "ccus-energy-transition",
-      "source_id": "global-ccs-institute",
-      "score_mean": 4.3,
-      "reasons": [
-        "report data cutoff is not disclosed"
-      ],
-      "evidence": [
-        {
-          "claim": "Northern Endurance Partnership 与 Net Zero Teesside Power 获得约 80 亿英镑项目融资。",
-          "source_excerpt": "These mechanisms underpinned ~£8 billion in project financing for NEP and Net Zero Teesside Power.",
-          "source_url": "https://www.globalccsinstitute.com/lcaw2026recap/"
-        },
-        {
-          "claim": "英国 CCS 商业模式包括受监管的运输封存安排和 Carbon Capture Contracts for Difference。",
-          "source_excerpt": "UK's CCS business models include regulated transport/storage arrangements and Carbon Capture Contracts for Difference.",
-          "source_url": "https://www.globalccsinstitute.com/lcaw2026recap/"
-        },
-        {
-          "claim": "CCS 银行可融资性取决于稳定政策、清晰责任边界和可预测收入模型。",
-          "source_excerpt": "CCS bankability depends on stable policy, clear long-term storage obligations, and predictable revenue models — less on the technology itself than on stable policy and regulatory frameworks.",
-          "source_url": "https://www.globalccsinstitute.com/lcaw2026recap/"
-        }
-      ],
-      "run_id": "20260806T040000Z-8e1a36ce37",
-      "run_time": "2026-08-06T12:00:00+08:00"
-    }
-  ]
+  "latest_run_at": "2026-08-08T09:28:00+08:00",
+  "candidate_count": 0,
+  "candidates": []
 }

@@ -6,33 +6,66 @@
     "coverage_start": "2026-07-16",
     "coverage_end": "2026-07-31",
     "status": "published",
-    "auto_generated": true,
+    "auto_generated": false,
+    "selection_mode": "owner_editorial_decisions",
     "edition_version": "1.0",
-    "title": "电力系统正在成为算力扩张的显性约束",
-    "standfirst": "本期只有一项达到正式出版阈值。固定节奏不意味着固定篇幅；证据不足时，刊物应保持克制。",
-    "judgment": "新增证据强化了算力增长与电力系统约束之间的联系，但尚不足以改写 Edition 文件中的主编判断。",
-    "signal_ids": ["signal-iea-electricity-2026"],
+    "editorially_revised_at": "2026-08-08T09:28:00+08:00",
+    "revision_note": "主编补充审阅 2026-07-16 至 2026-07-31 的候选证据，按现行 Edition 阈值重编 Issue #15。",
+    "title": "AI 基础设施开始从单点扩张变成系统级约束",
+    "standfirst": "从台积电先进制程、Microsoft 云需求到 Paducah 1.8GW 算力园区，AI 的约束正同时落在芯片、电力与资本交付；英国 CCUS 则开始用更明确的网络接入与跨链风险安排推动市场化。",
+    "judgment": "本期证据强化了两个判断：AI 产业栈已经进入“需求仍强，但能源、芯片和资本必须同步交付”的阶段；CCUS 的下一步瓶颈正从技术可行性转向运输封存接入、跨链风险与收入机制。两条主线都说明，真正稀缺的是可融资、可接入、可持续运行的系统能力，而不是新增公告。",
+    "cover_signal_id": "doe-paducah-ai-energy-campus-2026",
+    "signal_ids": [
+      "doe-paducah-ai-energy-campus-2026",
+      "signal-iea-electricity-2026",
+      "tsmc-q2-ai-capacity-2026",
+      "microsoft-ai-cloud-demand-2026",
+      "uk-ccus-transition-access-agreement-2026",
+      "uk-ggr-ccus-network-policy-2026"
+    ],
     "storyline_updates": [
       {
-        "storyline_id": "compute-power-coupling",
+        "storyline_id": "ai-energy-foundation",
         "movement": "strengthened",
-        "note": "IEA 对 2026—2027 年电力需求的判断，使数据中心负荷与电网约束之间的联系更加明确。"
+        "note": "IEA 的负荷预测与 Paducah 1.8GW AI 园区共同强化了能源供给、并网与算力扩张之间的系统耦合。"
       },
       {
-        "storyline_id": "deployment-bottlenecks",
-        "movement": "unchanged",
-        "note": "本期没有足够的新证据改变对项目周期和供应链瓶颈的判断。"
+        "storyline_id": "ai-chip-layer",
+        "movement": "strengthened",
+        "note": "TSMC 二季度先进制程收入结构与资本开支继续表明，领先制程和先进封装仍需持续扩产才能匹配 AI 需求。"
+      },
+      {
+        "storyline_id": "ai-infrastructure-layer",
+        "movement": "strengthened",
+        "note": "Paducah 的电源—储能—算力园区与 Microsoft 的云需求、资本开支和长期数据中心租约共同显示，AI 工厂正在成为跨电力、地产与云服务的长期资产系统。"
+      },
+      {
+        "storyline_id": "ai-application-layer",
+        "movement": "strengthened",
+        "note": "Azure 增长、云合同积压与 Microsoft 365 Copilot 付费席位为企业 AI 需求提供了比产品发布更直接的商业化证据。"
+      },
+      {
+        "storyline_id": "ccus-network-economics",
+        "movement": "strengthened",
+        "note": "英国 Transition Access Agreement 与 GGR 政策回应把运输封存接入、网络费用和跨链风险进一步写入商业模式，强化了共享网络决定项目可融资性的判断。"
+      },
+      {
+        "storyline_id": "evidence-governance",
+        "movement": "strengthened",
+        "note": "英国 GGR 政策把收入确定性、网络成本与网络延迟或不可用的风险保护连接起来，使责任和合同接口更接近可执行制度安排。"
       }
     ],
     "what_to_watch": [
-      "主要市场的数据中心并网等待时间是否继续拉长",
-      "运营商是否扩大长期购电、核电或自备电源安排",
-      "模型与芯片效率改善能否显著降低单位任务能耗"
+      "超大规模云厂商的合同积压与长期数据中心租约能否转化为持续高利用率和足够资本回报",
+      "大型 AI 园区的电源、并网、储能和建设进度是否按计划交付",
+      "领先制程与先进封装扩产能否实质缓解 AI 芯片层的供给约束",
+      "Transition Access Agreement 是否产生在更低政府支持下实际接入英国运输封存网络的项目",
+      "非管输与工程化碳移除项目能否把政策支持转化为合同、融资和真实封存容量"
     ],
     "methodology": {
-      "candidate_count": 1,
-      "selected_count": 1,
-      "primary_source_count": 1,
+      "candidate_count": 8,
+      "selected_count": 6,
+      "primary_source_count": 5,
       "fixed_length": false,
       "editorial_view_changed": false
     }

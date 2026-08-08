@@ -48,6 +48,32 @@
     ]
   },
   {
+    "id": "microsoft-ai-cloud-demand-2026",
+    "channel_id": "ai-infrastructure",
+    "storyline_ids": [
+      "ai-infrastructure-layer",
+      "ai-application-layer"
+    ],
+    "event_type": "cloud_demand_and_capex",
+    "event_date": "2026-07-29",
+    "title": "Microsoft Azure 增长 43%，云合同积压升至 6780 亿美元，AI 基建投入开始得到需求侧验证",
+    "url": "https://www.reuters.com/business/microsoft-tops-quarterly-cloud-growth-estimates-easing-spending-concerns-2026-07-29/",
+    "source": "Reuters",
+    "published_at": "2026-07-29T20:04:00Z",
+    "quality_index": 9.1,
+    "source_tier": "Tier A",
+    "short_summary": "Microsoft 披露 Azure 季度收入增长 43%，云业务合同积压达到 6780 亿美元；公司预计 2026 日历年资本开支约 1750 亿美元，同时 M365 Copilot 付费席位超过 3000 万。",
+    "long_summary": "这组结果提供了少见的端到端证据：上游资本开支仍然极高，但 Azure 增长、云合同积压和 Copilot 付费席位说明部分 AI 基础设施已经对应到真实企业需求。与此同时，Microsoft 尚未开始的长期数据中心租约达到 3291 亿美元，说明未来供给扩张已经形成巨大的长期资本承诺。判断 AI 投资是否可持续，关键将从“有没有需求”进一步转向这些长期资产能否维持高利用率和足够回报。",
+    "key_quote": "",
+    "supporting_quotes": [],
+    "tags": [
+      "AI & Tech",
+      "Cloud",
+      "Data Center",
+      "Enterprise AI"
+    ]
+  },
+  {
     "id": "doe-paducah-ai-energy-campus-2026",
     "channel_id": "ai-infrastructure",
     "storyline_ids": [
@@ -95,6 +121,83 @@
       "Energy & Transition",
       "Electricity",
       "Data Center"
+    ]
+  },
+  {
+    "id": "uk-ccus-transition-access-agreement-2026",
+    "channel_id": "ccus-energy-transition",
+    "storyline_ids": [
+      "ccus-network-economics",
+      "evidence-governance"
+    ],
+    "event_type": "business_model_revision",
+    "event_date": "2026-07-22",
+    "title": "英国明确 CCUS Transition Access Agreement 政策立场，运输封存网络开始为低补贴与未来商业化用户设计接入机制",
+    "url": "https://www.gov.uk/government/publications/carbon-capture-usage-and-storage-ccus-business-models",
+    "source": "UK Department for Energy Security and Net Zero",
+    "published_at": "2026-07-22T00:00:00Z",
+    "quality_index": 9.0,
+    "source_tier": "Tier A",
+    "short_summary": "英国政府发布 Transition Access Agreement Policy Position Statement，进一步明确面向不需要完整 CCUS Business Model 支持的项目如何接入 CO₂ 运输与封存网络。",
+    "long_summary": "TAA 的核心不是再增加一层补贴，而是为市场从政府主导的早期集群走向更低干预的商业化阶段建立接入合同。政策把网络接入、费用承担、有限风险支持和合同期限等问题显式化，意味着 CCUS 规模化的竞争焦点正从单个捕集项目转向谁能在可预测的商业规则下获得运输封存容量。它强化了 Edition 对“共享网络、合同结构与责任边界决定可融资性”的判断。",
+    "key_quote": "",
+    "supporting_quotes": [],
+    "tags": [
+      "Energy & Transition",
+      "CCUS",
+      "Transport & Storage",
+      "Business Model"
+    ]
+  },
+  {
+    "id": "uk-ggr-ccus-network-policy-2026",
+    "channel_id": "ccus-energy-transition",
+    "storyline_ids": [
+      "ccus-network-economics",
+      "evidence-governance"
+    ],
+    "event_type": "policy_response",
+    "event_date": "2026-07-17",
+    "title": "英国把工程化碳移除的收入确定性、CCUS 网络费用与跨链风险放进同一政策框架",
+    "url": "https://www.gov.uk/government/publications/independent-review-on-greenhouse-gas-removals-government-response/independent-review-on-greenhouse-gas-removals-government-response",
+    "source": "UK Government",
+    "published_at": "2026-07-17T00:00:00Z",
+    "quality_index": 9.0,
+    "source_tier": "Tier A",
+    "short_summary": "英国政府回应 GGR 独立评审时明确：工程化碳移除将依靠收入确定性机制，并由相关商业模式覆盖使用 CCUS 运输封存网络的成本，同时保护项目免受网络未就绪或临时不可用等跨链风险。",
+    "long_summary": "这份政策回应把此前分散的几个问题连在了一起：高完整性移除信用需要稳定需求，项目需要可预测收入，BECCS/DACCS 等技术又依赖可靠的 CO₂ 运输封存网络。政府同时推进 East Coast Cluster 非管输 Pathfinder，使卡车、铁路和船运也能申请接入地质封存。对 CCUS 来说，这意味着网络可靠性、费用和跨链责任正在被正式纳入项目经济性，而不是留给单个项目自行消化。",
+    "key_quote": "",
+    "supporting_quotes": [],
+    "tags": [
+      "Energy & Transition",
+      "CCUS",
+      "GGR",
+      "Non-Pipeline Transport"
+    ]
+  },
+  {
+    "id": "tsmc-q2-ai-capacity-2026",
+    "channel_id": "ai-infrastructure",
+    "storyline_ids": [
+      "ai-chip-layer"
+    ],
+    "event_type": "semiconductor_capacity",
+    "event_date": "2026-07-16",
+    "title": "台积电二季度美元营收增长 33.7%，先进制程占晶圆收入 77%，AI 需求继续把产能约束推向制造与封装",
+    "url": "https://investor.tsmc.com/english/quarterly-results/2026/q2",
+    "source": "TSMC Investor Relations",
+    "published_at": "2026-07-16T00:00:00Z",
+    "quality_index": 9.2,
+    "source_tier": "Tier A",
+    "short_summary": "TSMC 二季度美元营收达到 402 亿美元，同比增长 33.7%；7nm 及更先进制程贡献 77% 的晶圆收入。同期管理层将 2026 年资本开支预期提高到 600–640 亿美元，称 AI 相关需求仍极其强劲。",
+    "long_summary": "TSMC 的数据把 AI 芯片需求从订单叙事落实到制造端：先进制程收入占比继续提高，同时公司把更多资本投入领先制程、先进封装与海外产能。对五层 AI 产业栈而言，这说明芯片层并没有因为巨额扩产而立即转为宽松供给；先进逻辑、封装与配套制造能力仍需要持续建设才能匹配云厂商和模型公司的算力需求。",
+    "key_quote": "",
+    "supporting_quotes": [],
+    "tags": [
+      "AI & Tech",
+      "Semiconductor",
+      "Advanced Packaging",
+      "Foundry"
     ]
   },
   {
