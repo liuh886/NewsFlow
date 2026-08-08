@@ -19,10 +19,7 @@ const requireText = (value, label) => {
 };
 
 const response = await fetch(`${supabaseUrl}/rest/v1/newsflow_governance_publications?select=id,kind,target_id,payload,published_at&order=published_at.asc,id.asc`, {
-  headers: {
-    apikey: serviceRoleKey,
-    Authorization: `Bearer ${serviceRoleKey}`
-  }
+  headers: { apikey: serviceRoleKey, Authorization: `Bearer ${serviceRoleKey}` }
 });
 if (!response.ok) throw new Error(`Governance publication fetch failed: ${response.status} ${await response.text()}`);
 const publications = await response.json();
@@ -38,22 +35,35 @@ if (!pending.length) {
 const edition = await readJson('public/data/edition.json');
 const storylines = await readJson('public/data/storylines.json');
 const sourceConfig = await readJson('config/content-sources.json');
-if (!Array.isArray(edition.storylines) || !Array.isArray(storylines) || !Array.isArray(sourceConfig.sources)) {
+const discoveryConfig = await readJson('config/content-discovery.json');
+if (!Array.isArray(edition.storylines) || !Array.isArray(storylines) || !Array.isArray(sourceConfig.sources) || !discoveryConfig.channels) {
   throw new Error('Governance canonical files are malformed.');
 }
 
+const channelIds = new Set((edition.channels || []).map((item) => String(item.id)));
+const storylineById = new Map(edition.storylines.map((item) => [String(item.id), item]));
 const allowedSourceFields = new Set([
   'name', 'domain', 'path_prefixes', 'class', 'tier', 'channels', 'storylines', 'allowed_uses',
   'limitations', 'report_source', 'stakeholder_source', 'report_families', 'leader_watch'
 ]);
 
+const syncDiscoveryRouting = (source) => {
+  const selectedStorylines = new Set(source.storylines || []);
+  for (const [channelId, channelPlan] of Object.entries(discoveryConfig.channels || {})) {
+    for (const [storylineId, plan] of Object.entries(channelPlan.storylines || {})) {
+      const current = new Set(Array.isArray(plan.source_ids) ? plan.source_ids.map(String) : []);
+      current.delete(source.id);
+      if (source.channels.includes(channelId) && selectedStorylines.has(storylineId)) current.add(source.id);
+      plan.source_ids = [...current].sort();
+    }
+  }
+};
+
 for (const publication of pending) {
   const id = requireText(publication.id, 'publication id');
   const kind = requireText(publication.kind, 'publication kind');
   const targetId = requireText(publication.target_id, 'publication target');
-  const payload = publication.payload && typeof publication.payload === 'object' && !Array.isArray(publication.payload)
-    ? publication.payload
-    : {};
+  const payload = publication.payload && typeof publication.payload === 'object' && !Array.isArray(publication.payload) ? publication.payload : {};
   const publishedDay = String(publication.published_at || new Date().toISOString()).slice(0, 10);
 
   if (kind === 'edition') {
@@ -68,9 +78,7 @@ for (const publication of pending) {
   } else if (kind === 'storyline') {
     const editionItem = edition.storylines.find((item) => item.id === targetId);
     const runtimeItem = storylines.find((item) => item.id === targetId);
-    if (!editionItem || !runtimeItem || runtimeItem.status === 'retired') {
-      throw new Error(`Only active existing Storylines can be edited: ${targetId}`);
-    }
+    if (!editionItem || !runtimeItem || runtimeItem.status === 'retired') throw new Error(`Only active existing Storylines can be edited: ${targetId}`);
     const title = requireText(payload.title ?? editionItem.title, `${targetId}.title`);
     const question = requireText(payload.question ?? editionItem.question, `${targetId}.question`);
     const currentView = requireText(payload.current_view ?? editionItem.baseline_view, `${targetId}.current_view`);
@@ -92,12 +100,11 @@ for (const publication of pending) {
     runtimeItem.falsifiers = falsifiers;
     runtimeItem.last_updated = publishedDay;
   } else if (kind === 'source') {
+    if (!/^[a-z0-9][a-z0-9-]*$/.test(targetId)) throw new Error(`Invalid source id: ${targetId}`);
     const existingIndex = sourceConfig.sources.findIndex((item) => item.id === targetId);
     const existing = existingIndex >= 0 ? sourceConfig.sources[existingIndex] : { id: targetId };
     const next = { ...existing, id: targetId };
-    for (const [key, value] of Object.entries(payload)) {
-      if (allowedSourceFields.has(key)) next[key] = value;
-    }
+    for (const [key, value] of Object.entries(payload)) if (allowedSourceFields.has(key)) next[key] = value;
     next.name = requireText(next.name, `${targetId}.name`);
     next.domain = requireText(next.domain, `${targetId}.domain`).toLowerCase().replace(/^https?:\/\//, '').replace(/\/$/, '');
     next.class = requireText(next.class, `${targetId}.class`);
@@ -105,14 +112,19 @@ for (const publication of pending) {
     next.channels = asLines(next.channels);
     next.storylines = asLines(next.storylines);
     next.allowed_uses = asLines(next.allowed_uses);
-    if (!next.channels.length || !next.storylines.length || !next.allowed_uses.length) {
-      throw new Error(`${targetId} requires channels, storylines and allowed_uses.`);
+    if (!next.channels.length || !next.storylines.length || !next.allowed_uses.length) throw new Error(`${targetId} requires channels, storylines and allowed_uses.`);
+    for (const channelId of next.channels) if (!channelIds.has(channelId)) throw new Error(`${targetId} uses unknown channel ${channelId}.`);
+    for (const storylineId of next.storylines) {
+      const storyline = storylineById.get(storylineId);
+      if (!storyline) throw new Error(`${targetId} uses unknown Storyline ${storylineId}.`);
+      if (!next.channels.includes(storyline.channel_id)) throw new Error(`${targetId} routes ${storylineId} outside its channel list.`);
     }
     if (next.path_prefixes) next.path_prefixes = asLines(next.path_prefixes);
     if (next.limitations) next.limitations = asLines(next.limitations);
     if (next.report_families) next.report_families = asLines(next.report_families);
     if (existingIndex >= 0) sourceConfig.sources[existingIndex] = next;
     else sourceConfig.sources.push(next);
+    syncDiscoveryRouting(next);
   } else {
     throw new Error(`Unsupported governance kind: ${kind}`);
   }
@@ -129,6 +141,7 @@ sourceConfig.sources.sort((left, right) => String(left.id).localeCompare(String(
 await writeJson('public/data/edition.json', edition);
 await writeJson('public/data/storylines.json', storylines);
 await writeJson('config/content-sources.json', sourceConfig);
+await writeJson('config/content-discovery.json', discoveryConfig);
 await writeJson('content/state/governance-sync.json', syncState);
 await writeJson('public/data/governance-status.json', {
   schema_version: '1.0',
