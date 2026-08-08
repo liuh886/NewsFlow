@@ -5,21 +5,25 @@ import { spawnSync } from 'node:child_process';
 
 const root = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 const read = (path) => readFile(resolve(root, path), 'utf8');
-const [index, appJs, editionJs, editionCss, readingJs, readingCss, startupJs, gameJs, gameCss, governanceJs, governanceCss, serviceWorker, statusText, reactionsText] = await Promise.all([
-  read('index.html'), read('src/editorial-app.js'), read('src/edition-layer.js'), read('src/edition-layer.css'),
+const [index, loader, appJs, polishJs, editionJs, editionCss, readingJs, readingCss, startupJs, gameJs, gameCss, governanceJs, governanceCss, serviceWorker, statusText, reactionsText] = await Promise.all([
+  read('index.html'), read('public/editorial-loader.js'), read('src/editorial-app.js'), read('src/polish.js'), read('src/edition-layer.js'), read('src/edition-layer.css'),
   read('public/reading-surface.js'), read('public/reading-surface.css'), read('public/startup-resilience.js'),
   read('public/review-game.js'), read('public/review-game.css'), read('public/editorial-governance.js'), read('public/editorial-governance.css'),
   read('public/sw.js'), read('public/data/data-status.json'), read('public/data/editorial-reactions.json')
 ]);
 
-for (const reference of ['./startup-resilience.js', './review-game.css', './review-game.js', './reading-surface.css', './reading-surface.js', './editorial-governance.css', './editorial-governance.js']) {
-  if (!index.includes(reference)) throw new Error(`index.html is missing ${reference}`);
-  if (!serviceWorker.includes(reference)) throw new Error(`service worker is missing ${reference}`);
+for (const reference of ['./startup-resilience.js', './reading-surface.css', './reading-surface.js', './editorial-loader.js']) {
+  if (!index.includes(reference)) throw new Error(`index.html is missing Reader reference ${reference}`);
+  if (!serviceWorker.includes(reference)) throw new Error(`service worker is missing Reader reference ${reference}`);
+}
+for (const editorAsset of ['./review-game.css', './review-game.js', './editorial-governance.css', './editorial-governance.js']) {
+  if (index.includes(editorAsset)) throw new Error(`Reader must not eagerly load ${editorAsset}`);
+  if (!loader.includes(editorAsset)) throw new Error(`editorial-loader is missing ${editorAsset}`);
 }
 if (index.indexOf('./startup-resilience.js') > index.indexOf('./editorial-app.js')) throw new Error('startup-resilience.js must run before editorial-app.js');
 if (!serviceWorker.includes('./data/data-status.json')) throw new Error('Service worker is missing data-status.json.');
 
-for (const path of ['src/editorial-app.js', 'src/edition-layer.js', 'public/reading-surface.js', 'public/startup-resilience.js', 'public/review-game.js', 'public/editorial-governance.js', 'public/sw.js']) {
+for (const path of ['src/editorial-app.js', 'src/polish.js', 'src/edition-layer.js', 'public/reading-surface.js', 'public/startup-resilience.js', 'public/editorial-loader.js', 'public/review-game.js', 'public/editorial-governance.js', 'public/sw.js']) {
   const syntax = spawnSync(process.execPath, ['--check', resolve(root, path)], { encoding: 'utf8' });
   if (syntax.status !== 0) throw new Error(`${path} syntax failed:\n${syntax.stderr}`);
 }
@@ -35,8 +39,11 @@ for (const contract of ['按时间排序', "(validDate(b.published_at)?.getTime(
 for (const forbidden of ['verifiedFallbackItems', './data/ai_digest.json', '信号评分', '高置信度', '评分 ${getQuality']) {
   if (appJs.includes(forbidden)) throw new Error(`Reader must not expose or synthesize internal editorial content: ${forbidden}`);
 }
-for (const contract of ['NETWORK_TIMEOUT_MS = 5000', 'fetchWithTimeout', 'warmAppShell', 'editorial-governance-v2.10.0']) {
+for (const contract of ['NETWORK_TIMEOUT_MS = 5000', 'fetchWithTimeout', 'warmAppShell', "const ASSET_VERSION = '__NEWSFLOW_VERSION__'", 'newsflow-reader-v${ASSET_VERSION}']) {
   if (!serviceWorker.includes(contract)) throw new Error(`Service worker startup contract is missing ${contract}`);
+}
+for (const contract of ['ensureMobileReaderSearch', 'syncEditionDialogAccessibility', 'trapEditionFocus']) {
+  if (!polishJs.includes(contract)) throw new Error(`Reader interaction polish is missing ${contract}`);
 }
 
 for (const contract of [
@@ -58,7 +65,7 @@ for (const selector of ['.issue-hero-copy h2', 'font-size: clamp(48px, 6.2vw, 76
 if (!editionCss.includes('.source-verification')) throw new Error('Reader source provenance styling is missing.');
 
 for (const contract of [
-  "const ROOT_ID = 'newsflow-reading-surface-root'", '#read/', 'NewsFlow Editorial Desk', '发生了什么', '为什么重要',
+  "const ROOT_ID = 'newsflow-reading-surface-root'", '#read/', 'canonicalArticleUrl', 'NewsFlow Editorial Desk', '发生了什么', '为什么重要',
   '证据与来源', '长期议题', '相关阅读', 'decorateReadingLinks', "window.addEventListener('newsflow:rendered'",
   "window.addEventListener('newsflow:edition-rendered'", "surface: 'reading_surface'"
 ]) if (!readingJs.includes(contract)) throw new Error(`Reading Surface is missing ${contract}`);
@@ -89,4 +96,4 @@ if (!Number.isInteger(status.signal_count) || status.signal_count < 1) throw new
 const statusCheck = spawnSync(process.execPath, [resolve(root, 'scripts/update-data-status.mjs'), '--check'], { encoding: 'utf8' });
 if (statusCheck.status !== 0) throw new Error(statusCheck.stderr || statusCheck.stdout);
 
-console.log('NewsFlow product polish passed: premium publication-only Reader, private editorial game, chief governance surface and live freshness.');
+console.log('NewsFlow product polish passed: premium publication-only Reader, lazy private editorial runtime, chief governance surface and live freshness.');

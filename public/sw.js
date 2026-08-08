@@ -1,5 +1,5 @@
-const ASSET_VERSION = '2.10.0';
-const CACHE_NAME = 'newsflow-editorial-governance-v2.10.0';
+const ASSET_VERSION = '__NEWSFLOW_VERSION__';
+const CACHE_NAME = `newsflow-reader-v${ASSET_VERSION}`;
 const NETWORK_TIMEOUT_MS = 5000;
 const versioned = (path) => `${path}?v=${ASSET_VERSION}`;
 const APP_SHELL = [
@@ -11,9 +11,6 @@ const APP_SHELL = [
   versioned('./magazine-polish.css'),
   versioned('./reading-surface.css'),
   versioned('./account-integration.css'),
-  versioned('./editorial-mode.css'),
-  versioned('./review-game.css'),
-  versioned('./editorial-governance.css'),
   versioned('./startup-resilience.js'),
   versioned('./editorial-app.js'),
   versioned('./polish.js'),
@@ -23,11 +20,10 @@ const APP_SHELL = [
   versioned('./supabase-feedback.js'),
   versioned('./membership-config.js'),
   versioned('./account-integration.js'),
-  versioned('./review-game.js'),
-  versioned('./editorial-governance.js'),
-  versioned('./editorial-office.js'),
+  versioned('./editorial-loader.js'),
   './icon.svg',
   './manifest.webmanifest',
+  './feed.xml',
   './data/topics.json',
   './data/news.json',
   './data/edition.json',
@@ -57,7 +53,7 @@ const warmAppShell = async () => {
       const response = await fetchWithTimeout(request);
       if (response.ok) await cache.put(request, response);
     } catch {
-      // A missed optional asset must not block activation.
+      // Optional app-shell assets must not block activation.
     }
   }));
 };
@@ -104,7 +100,7 @@ self.addEventListener('fetch', (event) => {
     event.respondWith(networkFirst(event.request, './index.html'));
     return;
   }
-  if (url.pathname.includes('/data/')) {
+  if (url.pathname.includes('/data/') || url.pathname.endsWith('/feed.xml')) {
     event.respondWith(networkFirst(event.request));
     return;
   }

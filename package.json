@@ -4,7 +4,7 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "check": "node scripts/check.mjs && node scripts/check-frontend-architecture.mjs && node scripts/check-language.mjs && node scripts/check-membership.mjs && node scripts/check-magazine-polish.mjs && node scripts/check-review-game.mjs && node scripts/check-editorial-governance.mjs && node scripts/check-product-polish.mjs && node scripts/check-ga4.mjs",
+    "check": "node scripts/check.mjs && node scripts/check-frontend-architecture.mjs && node scripts/check-language.mjs && node scripts/check-membership.mjs && node scripts/check-magazine-polish.mjs && node scripts/check-review-game.mjs && node scripts/check-editorial-governance.mjs && node scripts/check-product-polish.mjs && node scripts/check-ga4.mjs && node scripts/check-web-standards.mjs",
     "build": "node scripts/build.mjs",
     "issue:sync": "node scripts/sync-live-issue.mjs",
     "content:check": "node scripts/update-content.mjs --check",

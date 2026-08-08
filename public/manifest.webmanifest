@@ -1,8 +1,8 @@
 {
   "id": "./",
-  "name": "NewsFlow — 编辑信号台",
+  "name": "Frontier Systems Review",
   "short_name": "NewsFlow",
-  "description": "将高频新闻整理为可筛选、可追溯、可深读的专业信号流与自动半月刊。",
+  "description": "聚焦 AI 基建、CCUS 与能源转型的专业半月刊，由 NewsFlow 持续更新证据与长期议题。",
   "lang": "zh-CN",
   "dir": "ltr",
   "start_url": "./",
@@ -18,7 +18,13 @@
       "src": "./icon.svg",
       "sizes": "any",
       "type": "image/svg+xml",
-      "purpose": "any maskable"
+      "purpose": "any"
+    },
+    {
+      "src": "./icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "maskable"
     }
   ]
 }

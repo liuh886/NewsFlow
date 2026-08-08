@@ -6,23 +6,27 @@ import { fileURLToPath } from 'node:url';
 const root = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 const read = (path) => readFile(resolve(root, path), 'utf8');
 for (const file of [
-  'public/editorial-governance.js', 'public/editorial-governance.css',
+  'public/editorial-loader.js', 'public/editorial-governance.js', 'public/editorial-governance.css',
   'scripts/sync-editorial-governance.mjs', 'scripts/sync-adopted-signals.mjs',
   'content/state/governance-sync.json', 'content/state/adoption-sync.json',
   'public/data/governance-status.json', 'supabase/newsflow-publication-projection.sql'
 ]) await access(resolve(root, file));
 
-const [index, governance, css, game, mode, build, sw, governanceSync, adoptionSync, sql, projectionSql] = await Promise.all([
-  read('index.html'), read('public/editorial-governance.js'), read('public/editorial-governance.css'),
+const [index, loader, governance, css, game, mode, build, sw, governanceSync, adoptionSync, sql, projectionSql] = await Promise.all([
+  read('index.html'), read('public/editorial-loader.js'), read('public/editorial-governance.js'), read('public/editorial-governance.css'),
   read('public/review-game.js'), read('public/editorial-office.js'), read('scripts/build.mjs'), read('public/sw.js'),
   read('scripts/sync-editorial-governance.mjs'), read('scripts/sync-adopted-signals.mjs'), read('supabase/newsflow-editorial.sql'),
   read('supabase/newsflow-publication-projection.sql')
 ]);
-for (const file of ['public/editorial-governance.js', 'scripts/sync-editorial-governance.mjs', 'scripts/sync-adopted-signals.mjs']) {
+for (const file of ['public/editorial-loader.js', 'public/editorial-governance.js', 'scripts/sync-editorial-governance.mjs', 'scripts/sync-adopted-signals.mjs']) {
   const syntax = spawnSync(process.execPath, ['--check', resolve(root, file)], { encoding: 'utf8' });
   if (syntax.status !== 0) throw new Error(`${file} syntax failed:\n${syntax.stderr}`);
 }
-for (const asset of ['./editorial-governance.css?v=2.10.0', './editorial-governance.js?v=2.10.0']) if (!index.includes(asset)) throw new Error(`index is missing ${asset}`);
+if (!index.includes('./editorial-loader.js?v=__NEWSFLOW_VERSION__')) throw new Error('index must load the lazy editorial runtime entrypoint.');
+for (const asset of ['./editorial-governance.css', './editorial-governance.js']) {
+  if (index.includes(asset)) throw new Error(`Reader must not eagerly load ${asset}`);
+  if (!loader.includes(asset)) throw new Error(`editorial-loader is missing ${asset}`);
+}
 
 for (const contract of [
   "{ id: 'edition', label: '刊物判断'", "{ id: 'storyline', label: '长期议题'", "{ id: 'source', label: '信源'", "{ id: 'editorial', label: '编辑部'",
@@ -43,7 +47,8 @@ for (const contract of ["from('newsflow_editorial_members')", "const INVITE_PARA
 for (const forbidden of ['review-candidates.json', 'pipeline-reviews.json', 'guest-editor-invites.json']) {
   if (build.includes(forbidden) || sw.includes(forbidden)) throw new Error(`Reader bundle exposes private editorial data: ${forbidden}`);
 }
-for (const publicAsset of ['source-registry.json', 'governance-status.json', 'editorial-governance.js', 'editorial-governance.css']) if (!sw.includes(publicAsset)) throw new Error(`PWA governance asset missing ${publicAsset}`);
+for (const publicAsset of ['source-registry.json', 'governance-status.json']) if (!sw.includes(publicAsset)) throw new Error(`PWA Reader data asset missing ${publicAsset}`);
+for (const editorAsset of ["versioned('./editorial-governance.js')", "versioned('./editorial-governance.css')"]) if (sw.includes(editorAsset)) throw new Error(`PWA Reader shell must not precache editor-only asset ${editorAsset}`);
 
 for (const contract of [
   'newsflow_governance_publications', 'public/data/edition.json', 'public/data/storylines.json',
@@ -72,4 +77,4 @@ for (const contract of [
 ]) if (!projectionSql.includes(contract)) throw new Error(`public projection schema missing ${contract}`);
 if (projectionSql.includes('grant select on table public.newsflow_candidates to anon')) throw new Error('Private Candidate manuscripts must remain inaccessible to anonymous Reader clients.');
 
-console.log('NewsFlow editorial governance contract passed: chief-only decisions, private Candidate lifecycle, sanitized public publication projection and publishable-key GitHub synchronization.');
+console.log('NewsFlow editorial governance contract passed: lazy chief governance UI, private Candidate lifecycle, sanitized public publication projection and publishable-key GitHub synchronization.');
