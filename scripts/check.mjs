@@ -90,7 +90,7 @@ if (contentContract.status !== 0) throw new Error(`content evaluator contract fa
 const evaluatorSource = await read('scripts/update-content.mjs');
 if (evaluatorSource.includes("writeFile(resolve(root, 'public/data/news.json')") || !evaluatorSource.includes('Direct evaluator apply is retired')) throw new Error('Content evaluator must remain read-only.');
 const applySource = await read('scripts/apply-content.mjs');
-for (const required of ["from('newsflow_candidates')", 'SUPABASE_SERVICE_ROLE_KEY', 'sanitized public scan audit']) {
+for (const required of ["from('newsflow_candidates')", 'SUPABASE_SERVICE_ROLE_KEY', "editorial_effect: 'supabase_private_candidates_only'"]) {
   if (!applySource.includes(required)) throw new Error(`Candidate apply missing private-store contract: ${required}`);
 }
 for (const forbidden of ['public/data/news.json', 'pipeline-review-queue.json']) if (applySource.includes(forbidden)) throw new Error(`Candidate apply contains retired public write: ${forbidden}`);
