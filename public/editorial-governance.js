@@ -142,7 +142,14 @@
   const renderDraftStatus = (kind, targetId) => {
     const draft = state.drafts.get(draftKey(kind, targetId));
     if (!draft) return '<span class="nf-gov-status">GitHub 当前版本</span>';
-    if (draft.status === 'published') return '<span class="nf-gov-status is-queued">已发布 · 等待 GitHub 同步</span>';
+    if (draft.status === 'published') {
+      const appliedAt = Date.parse(state.governanceStatus?.last_applied_at || '');
+      const publishedAt = Date.parse(draft.published_at || '');
+      if (Number.isFinite(appliedAt) && Number.isFinite(publishedAt) && appliedAt >= publishedAt) {
+        return '<span class="nf-gov-status is-synced">已同步 GitHub</span>';
+      }
+      return '<span class="nf-gov-status is-queued">已发布 · 等待 GitHub 同步</span>';
+    }
     return '<span class="nf-gov-status is-draft">私有草稿</span>';
   };
 
@@ -250,6 +257,7 @@
 
   const validatePayload = (kind, targetId, payload) => {
     if (!targetId) throw new Error('缺少稳定 ID。');
+    if (kind === 'source' && !/^[a-z0-9][a-z0-9-]*$/.test(targetId)) throw new Error('Source ID 只能使用小写字母、数字和连字符。');
     if (kind === 'edition' && (!payload.reader_promise || !payload.editorial_view || !payload.core_questions.length)) throw new Error('刊物判断字段不能为空。');
     if (kind === 'storyline' && (!payload.title || !payload.question || !payload.current_view || !payload.watch_for.length || !payload.falsifiers.length)) throw new Error('长期议题需要完整的问题、判断、观察项和反证条件。');
     if (kind === 'source' && (!payload.name || !payload.domain || !payload.class || !payload.tier || !payload.channels.length || !payload.storylines.length || !payload.allowed_uses.length)) throw new Error('信源需要 Name、Domain、Class、Tier、Channels、Storylines 和 Allowed uses。');
