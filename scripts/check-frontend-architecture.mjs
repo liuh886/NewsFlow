@@ -13,6 +13,7 @@ const runtimeFiles = [
   'public/reading-surface.js',
   'public/editorial-office.js',
   'public/review-game.js',
+  'public/editorial-governance.js',
   'public/account-integration.js',
   'public/startup-resilience.js'
 ];
@@ -42,34 +43,54 @@ for (const contract of [
 
 const mode = sources['public/editorial-office.js'];
 for (const contract of [
-  "const ROLE_STORAGE_KEY = 'newsflow_role_v2'",
-  "const EDITORIAL_STATE_FIELD = 'newsflow_editorial'",
-  'syncFormalEditorialState',
+  "const MODE_STORAGE_KEY = 'newsflow_mode_v3'",
+  "const INVITE_PARAM = 'editor-invite'",
+  "from('newsflow_editorial_members')",
+  "from('newsflow_editorial_invitations')",
+  'createEditorInvite',
+  'openGovernance',
+  '编辑模式需要主编任命',
   "window.NewsFlowReviewGame?.openFormal?.()",
-  "window.addEventListener('newsflow:formal-editorial-state'",
   "window.addEventListener('newsflow:rendered', mountModeTrigger)",
-  "window.addEventListener('newsflow:switch-role'"
+  "window.addEventListener('newsflow:switch-role'",
+  'window.NewsFlowMode'
 ]) {
   if (!mode.includes(contract)) throw new Error(`editor mode controller missing contract: ${contract}`);
 }
-for (const retired of ['renderDesk', 'renderIssueDesk', 'officeTab', "id: 'accept'", 'AUTOMATED PRE-REVIEW']) {
-  if (mode.includes(retired)) throw new Error(`editor mode controller still owns retired review UI: ${retired}`);
+for (const retired of ['renderDesk', 'renderIssueDesk', 'officeTab', "id: 'accept'", 'AUTOMATED PRE-REVIEW', 'syncFormalEditorialState', 'newsflow_editorial']) {
+  if (mode.includes(retired)) throw new Error(`editor mode controller still owns retired authority/review UI: ${retired}`);
 }
 
 const game = sources['public/review-game.js'];
 for (const contract of [
-  'const openFormal = async () =>',
-  'const openGuest = async',
+  'const openFormal = async',
   'const renderReview = () =>',
   'const renderDecisionBar = () =>',
-  "client.rpc('newsflow_is_authoritative_editor')",
-  "new CustomEvent('newsflow:formal-editorial-state'",
+  "from('newsflow_candidates')",
+  "from('newsflow_editorial_reviews')",
+  "state.editorialRole === 'editor_in_chief'",
+  'opinionCounts',
   'window.NewsFlowReviewGame'
 ]) {
   if (!game.includes(contract)) throw new Error(`review game missing architecture contract: ${contract}`);
 }
-for (const retired of ['openSettlement', 'closeIssue', 'issueDraft', 'CLOSE ISSUE']) {
-  if (game.includes(retired)) throw new Error(`review game still contains retired local publication step: ${retired}`);
+for (const retired of ['openGuest', 'GUEST_STORAGE_PREFIX', 'FORMAL_STORAGE_KEY', 'openSettlement', 'closeIssue', 'issueDraft', 'CLOSE ISSUE', 'saveProductData']) {
+  if (game.includes(retired)) throw new Error(`review game still contains retired duplicate/private authority path: ${retired}`);
+}
+
+const governance = sources['public/editorial-governance.js'];
+for (const contract of [
+  "{ id: 'edition', label: '刊物判断'",
+  "{ id: 'storyline', label: '长期议题'",
+  "{ id: 'source', label: '信源'",
+  "{ id: 'editorial', label: '编辑部'",
+  "from('newsflow_governance_drafts')",
+  "from('newsflow_editorial_members')",
+  '发布到 GitHub',
+  '主编当前判断',
+  'window.NewsFlowGovernance'
+]) {
+  if (!governance.includes(contract)) throw new Error(`governance surface missing architecture contract: ${contract}`);
 }
 
 const edition = sources['src/edition-layer.js'];
@@ -130,11 +151,12 @@ for (const contract of [
 
 for (const contract of [
   'data-startup-shell="true"',
-  './startup-resilience.js?v=2.7.0',
-  './editorial-app.js?v=2.7.0',
-  './reading-surface.js?v=2.7.0',
-  './review-game.js?v=2.7.0',
-  './editorial-office.js?v=2.7.0',
+  './startup-resilience.js?v=2.8.0',
+  './editorial-app.js?v=2.8.0',
+  './reading-surface.js?v=2.8.0',
+  './review-game.js?v=2.8.0',
+  './editorial-governance.js?v=2.8.0',
+  './editorial-office.js?v=2.8.0',
   '<script async src="https://liuh886.github.io/admin/shared/account-shell.js?v=2"></script>'
 ]) {
   if (!index.includes(contract)) throw new Error(`index startup shell missing contract: ${contract}`);
@@ -145,14 +167,22 @@ for (const retiredPath of ['./guest-editor.js', './editorial-delight.js', './edi
     throw new Error(`retired runtime layer still referenced: ${retiredPath}`);
   }
 }
+for (const privateArtifact of ['review-candidates.json', 'pipeline-reviews.json', 'guest-editor-invites.json']) {
+  if (index.includes(privateArtifact) || serviceWorker.includes(privateArtifact) || buildSource.includes(privateArtifact)) {
+    throw new Error(`Reader artifact exposes private editorial data: ${privateArtifact}`);
+  }
+}
 
 for (const contract of [
-  "const ASSET_VERSION = '2.7.0'",
-  'reader-editor-modes',
-  'reader-v3-c',
+  "const ASSET_VERSION = '2.8.0'",
+  'editorial-governance-v2.8.0',
   'event.respondWith(networkFirst(event.request))',
   "versioned('./reading-surface.css')",
-  "versioned('./reading-surface.js')"
+  "versioned('./reading-surface.js')",
+  "versioned('./editorial-governance.css')",
+  "versioned('./editorial-governance.js')",
+  './data/source-registry.json',
+  './data/governance-status.json'
 ]) {
   if (!serviceWorker.includes(contract)) throw new Error(`service worker release coherence missing: ${contract}`);
 }
@@ -160,4 +190,4 @@ if (!pagesWorkflow.includes("cancel-in-progress: ${{ github.event_name == 'pull_
   throw new Error('Pages may cancel superseded PR runs, but active main deployments must be preserved.');
 }
 
-console.log('NewsFlow frontend architecture contract passed: Issue-first Reader, explicit sections, modular Reading Surface, one review game and secure owner publication queue.');
+console.log('NewsFlow frontend architecture contract passed: publication-only Reader, private candidate Review Game, chief governance surface and one Editor-in-Chief authority.');
