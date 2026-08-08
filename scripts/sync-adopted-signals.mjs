@@ -15,6 +15,12 @@ const writeJson = async (path, value) => writeFile(resolve(root, path), `${JSON.
 const news = await readJson('public/data/news.json');
 const issues = await readJson('public/data/issues.json');
 const sourceConfig = await readJson('config/content-sources.json');
+let previousSync = {};
+try {
+  previousSync = await readJson('content/state/adoption-sync.json');
+} catch {
+  previousSync = {};
+}
 const client = createClient(supabaseUrl, serviceRoleKey, {
   auth: { persistSession: false, autoRefreshToken: false }
 });
@@ -125,15 +131,27 @@ const nextNews = [...nextById.values()].sort((left, right) =>
     || String(left.id || '').localeCompare(String(right.id || ''))
 );
 const nextManaged = [...currentAdoptionIds].sort();
-const changed = JSON.stringify(nextNews) !== JSON.stringify(news);
-
-if (changed) await writeJson('public/data/news.json', nextNews);
-await writeJson('content/state/adoption-sync.json', {
+const newsChanged = JSON.stringify(nextNews) !== JSON.stringify(news);
+const semanticSync = {
   schema_version: '1.0',
   managed_signal_ids: nextManaged,
   current_adoption_count: currentAdoptionIds.size,
-  formal_issue_signal_count: issueSignalIds.size,
-  last_synced_at: new Date().toISOString()
-});
+  formal_issue_signal_count: issueSignalIds.size
+};
+const previousSemanticSync = {
+  schema_version: previousSync.schema_version || '1.0',
+  managed_signal_ids: Array.isArray(previousSync.managed_signal_ids) ? previousSync.managed_signal_ids : [],
+  current_adoption_count: Number(previousSync.current_adoption_count || 0),
+  formal_issue_signal_count: Number(previousSync.formal_issue_signal_count || 0)
+};
+const stateChanged = JSON.stringify(semanticSync) !== JSON.stringify(previousSemanticSync);
 
-console.log(`Editorial adoption sync: ${currentAdoptionIds.size} current adoption(s), ${issueSignalIds.size} frozen Issue Signal(s), ${removedLegacyOrWithdrawn.length} non-authoritative public Signal(s) removed, ${changed ? 'Reader data changed' : 'no Reader change'}.`);
+if (newsChanged) await writeJson('public/data/news.json', nextNews);
+if (stateChanged) {
+  await writeJson('content/state/adoption-sync.json', {
+    ...semanticSync,
+    last_synced_at: new Date().toISOString()
+  });
+}
+
+console.log(`Editorial adoption sync: ${currentAdoptionIds.size} current adoption(s), ${issueSignalIds.size} frozen Issue Signal(s), ${removedLegacyOrWithdrawn.length} non-authoritative public Signal(s) removed, ${newsChanged || stateChanged ? 'state changed' : 'no semantic change'}.`);

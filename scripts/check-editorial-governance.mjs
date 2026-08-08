@@ -21,7 +21,7 @@ for (const file of ['public/editorial-governance.js', 'scripts/sync-editorial-go
   const syntax = spawnSync(process.execPath, ['--check', resolve(root, file)], { encoding: 'utf8' });
   if (syntax.status !== 0) throw new Error(`${file} syntax failed:\n${syntax.stderr}`);
 }
-for (const asset of ['./editorial-governance.css?v=2.8.0', './editorial-governance.js?v=2.8.0']) if (!index.includes(asset)) throw new Error(`index is missing ${asset}`);
+for (const asset of ['./editorial-governance.css?v=2.9.0', './editorial-governance.js?v=2.9.0']) if (!index.includes(asset)) throw new Error(`index is missing ${asset}`);
 
 for (const contract of [
   "{ id: 'edition', label: '刊物判断'", "{ id: 'storyline', label: '长期议题'", "{ id: 'source', label: '信源'", "{ id: 'editorial', label: '编辑部'",
@@ -59,5 +59,6 @@ for (const contract of [
   'newsflow_governance_drafts', 'newsflow_governance_publications', 'newsflow_sync_chief_adoption'
 ]) if (!sql.includes(contract)) throw new Error(`Supabase governance schema missing ${contract}`);
 if (!sql.includes("role = 'owner'")) throw new Error('Only the shared owner may be Editor-in-Chief publication authority.');
+if (!sql.includes('update public.newsflow_candidates set active = false') || !sql.includes('update public.newsflow_candidates set active = true')) throw new Error('Chief Candidate lifecycle contract is missing.');
 
-console.log('NewsFlow editorial governance contract passed: chief-only publication/governance, governed source discovery routing, advisory Editors and authoritative-only Reader Signals.');
+console.log('NewsFlow editorial governance contract passed: chief-only publication/governance, private Candidate lifecycle, governed source discovery routing and authoritative-only Reader Signals.');

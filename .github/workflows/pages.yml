@@ -1,7 +1,7 @@
 name: NewsFlow Frontend
 
-# Server-side Supabase/editorial synchronization is intentionally isolated from the Reader build.
-# supabase-sync.yml owns repository → private workflow sync; editorial-sync.yml owns chief state → GitHub/Pages.
+# Reader deployment consumes only canonical public publication state.
+# Private Candidates live in Supabase; editorial-sync.yml owns chief state → GitHub/Pages.
 
 on:
   pull_request:
@@ -10,36 +10,34 @@ on:
       - 'index.html'
       - 'src/**'
       - 'public/**'
-      - 'content/inbox/**'
-      - 'content/state/pipeline-review-queue.json'
+      - 'content/runs/**'
       - 'content/state/adoption-sync.json'
       - 'content/state/governance-sync.json'
       - 'config/**'
-      - 'data/**'
       - 'scripts/**'
+      - 'supabase/newsflow-editorial.sql'
       - 'package.json'
       - 'package-lock.json'
       - '.github/workflows/pages.yml'
       - '.github/workflows/editorial-sync.yml'
-      - '.github/workflows/supabase-sync.yml'
+      - '.github/workflows/publish-edition.yml'
   push:
     branches: [main]
     paths:
       - 'index.html'
       - 'src/**'
       - 'public/**'
-      - 'content/inbox/**'
-      - 'content/state/pipeline-review-queue.json'
+      - 'content/runs/**'
       - 'content/state/adoption-sync.json'
       - 'content/state/governance-sync.json'
       - 'config/**'
-      - 'data/**'
       - 'scripts/**'
+      - 'supabase/newsflow-editorial.sql'
       - 'package.json'
       - 'package-lock.json'
       - '.github/workflows/pages.yml'
       - '.github/workflows/editorial-sync.yml'
-      - '.github/workflows/supabase-sync.yml'
+      - '.github/workflows/publish-edition.yml'
   workflow_dispatch:
 
 permissions:

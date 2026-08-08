@@ -30,13 +30,17 @@
       "workflow_version"
     ]
   },
-  "allowed_draft_writes": [
-    "content/inbox/*.json"
-  ],
+  "candidate_draft": {
+    "path": "content/inbox/*.json",
+    "git_tracked": false,
+    "lifetime": "transient"
+  },
+  "private_candidate_store": "supabase:public.newsflow_candidates",
   "apply_writes": [
-    "content/state/pipeline-review-queue.json",
-    "content/runs/*.json"
+    "supabase:public.newsflow_candidates",
+    "content/runs/*.json (sanitized counts and run metadata only)"
   ],
+  "public_audit_excludes_candidate_content": true,
   "forbidden_direct_writes": [
     "public/data/edition.json",
     "public/data/storylines.json",
@@ -47,8 +51,8 @@
   ],
   "commands": {
     "contract_check": "npm run content:check",
-    "dry_run": "node scripts/update-content.mjs --input=<candidate-pack.json>",
-    "apply": "node scripts/apply-content.mjs --input=<candidate-pack.json> --apply",
+    "dry_run": "node scripts/update-content.mjs --input=content/inbox/<candidate-pack.json>",
+    "apply": "SUPABASE_URL=... SUPABASE_SERVICE_ROLE_KEY=... node scripts/apply-content.mjs --input=content/inbox/<candidate-pack.json> --apply",
     "verify": [
       "npm run check",
       "npm run build"

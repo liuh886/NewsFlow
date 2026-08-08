@@ -311,8 +311,11 @@ begin
 
   if tg_op = 'DELETE' then
     delete from public.newsflow_editorial_adoptions where candidate_id = review_candidate;
+    update public.newsflow_candidates set active = true, synced_at = now() where candidate_id = review_candidate;
     return old;
   end if;
+
+  update public.newsflow_candidates set active = false, synced_at = now() where candidate_id = new.candidate_id;
 
   if new.decision in ('cover_story', 'accept') then
     insert into public.newsflow_editorial_adoptions (candidate_id, decision, decided_at, updated_at)

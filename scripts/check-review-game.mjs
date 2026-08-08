@@ -5,13 +5,9 @@ import { spawnSync } from 'node:child_process';
 
 const root = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 const read = (path) => readFile(resolve(root, path), 'utf8');
-
 const required = [
-  'public/review-game.js',
-  'public/review-game.css',
-  'public/editorial-office.js',
-  'public/editorial-mode.css',
-  'public/data/editorial-reactions.json'
+  'public/review-game.js', 'public/review-game.css', 'public/editorial-office.js',
+  'public/editorial-mode.css', 'public/data/editorial-reactions.json'
 ];
 for (const file of required) await access(resolve(root, file));
 
@@ -20,13 +16,12 @@ const [index, game, gameCss, mode, modeCss, sw, reactionsText] = await Promise.a
   read('public/editorial-office.js'), read('public/editorial-mode.css'), read('public/sw.js'),
   read('public/data/editorial-reactions.json')
 ]);
-
 for (const file of ['public/review-game.js', 'public/editorial-office.js', 'public/sw.js']) {
   const syntax = spawnSync(process.execPath, ['--check', resolve(root, file)], { encoding: 'utf8' });
   if (syntax.status !== 0) throw new Error(`${file} syntax failed:\n${syntax.stderr}`);
 }
 
-for (const asset of ['./editorial-mode.css?v=2.8.0', './review-game.css?v=2.8.0', './review-game.js?v=2.8.0', './editorial-office.js?v=2.8.0']) {
+for (const asset of ['./editorial-mode.css?v=2.9.0', './review-game.css?v=2.9.0', './review-game.js?v=2.9.0', './editorial-office.js?v=2.9.0']) {
   if (!index.includes(asset)) throw new Error(`index is missing ${asset}`);
 }
 for (const retired of ['guest-editor', 'review-candidates.json', 'pipeline-reviews.json', 'guest-editor-invites.json', 'newsflow_review_game_v4_guest']) {
@@ -44,7 +39,6 @@ if (game.includes('localStorage') || game.includes('saveProductData') || game.in
   throw new Error('Review decisions must live only in normalized Supabase review rows.');
 }
 if (game.includes('openSettlement') || game.includes('closeIssue') || game.includes('issueDraft')) throw new Error('Retired local Issue settlement must not return.');
-
 for (const [id, key] of [['cover_story','1'],['accept','2'],['minor_revision','3'],['major_revision','4'],['reject','5']]) {
   if (!game.includes(`id: '${id}'`) || !game.includes(`key: '${key}'`)) throw new Error(`decision ${id} must use key ${key}`);
 }
@@ -74,11 +68,10 @@ for (const asset of ['./review-game.js', './review-game.css', './editorial-offic
   if (!sw.includes(asset)) throw new Error(`service worker missing ${asset}`);
 }
 for (const forbidden of ['./data/review-candidates.json', './data/pipeline-reviews.json', './data/guest-editor-invites.json']) if (sw.includes(forbidden)) throw new Error(`service worker must not cache private editorial data: ${forbidden}`);
-if (!sw.includes("const ASSET_VERSION = '2.8.0'") || !sw.includes('editorial-governance-v2.8.0')) throw new Error('service worker cache must identify the Governance v2 release.');
+if (!sw.includes("const ASSET_VERSION = '2.9.0'") || !sw.includes('editorial-governance-v2.9.0')) throw new Error('service worker cache must identify the current Governance v2 release.');
 
 const reactions = JSON.parse(reactionsText);
 for (const decision of ['cover_story', 'accept', 'minor_revision', 'major_revision', 'reject']) {
   if (!Array.isArray(reactions[decision]) || reactions[decision].length < 4) throw new Error(`reaction library is too shallow for ${decision}.`);
 }
-
 console.log('NewsFlow review game contract passed: stable one-shot Editor entry, permanent membership, advisory reviews, chief-only authority and three-second five-state review.');

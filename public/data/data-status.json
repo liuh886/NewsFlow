@@ -3,8 +3,8 @@
   "edition_id": "frontier-systems-review",
   "updated_at": "2026-08-08T03:22:00.000Z",
   "timezone": "Asia/Shanghai",
-  "source": "content-scan",
+  "source": "content-run",
   "signal_count": 17,
   "latest_signal_at": "2026-08-03T00:00:00.000Z",
-  "audit_artifact": "2026-08-08-morning-scan.json"
+  "audit_artifact": "20260808T032200Z-scan.json"
 }
