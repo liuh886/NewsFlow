@@ -20,6 +20,11 @@ try {
     timeout: 15_000,
   });
 
+  const bodyText = await page.locator('body').innerText();
+  for (const operatorCopy of ['冻结后不再改写', '已经冻结的刊期', '自动流程不会自行改写']) {
+    if (bodyText.includes(operatorCopy)) throw new Error(`Reader exposes operator-facing copy: ${operatorCopy}`);
+  }
+
   const freshnessBadge = page.locator('#app .nf-data-date');
   await freshnessBadge.waitFor({ state: 'visible', timeout: 10_000 });
   const badgeContract = await freshnessBadge.evaluate((badge) => {
@@ -53,6 +58,18 @@ try {
   await page.locator('#newsflow-reading-surface-root .nf-reading-shell').waitFor({ state: 'visible' });
   await page.locator('[data-reading-action="close"]').click();
   await page.locator('#newsflow-reading-surface-root').waitFor({ state: 'hidden' });
+
+  const archivedIssueButton = page.locator('#app .edition-archive [data-edition-action="open-issue"]').first();
+  await archivedIssueButton.waitFor({ state: 'visible', timeout: 10_000 });
+  await archivedIssueButton.click();
+  const historicalIssuePanel = page.locator('#app .edition-panel [data-action="open"][data-id]').first();
+  await historicalIssuePanel.waitFor({ state: 'visible', timeout: 10_000 });
+  const historicalIssueTitle = await page.locator('#app #issue-panel-title').innerText();
+  if (!historicalIssueTitle.trim()) throw new Error('Historical Issue panel opened without a title.');
+  await historicalIssuePanel.click();
+  await page.locator('#newsflow-reading-surface-root .nf-reading-shell').waitFor({ state: 'visible', timeout: 10_000 });
+  await page.locator('#newsflow-reading-surface-root #nf-reading-title').waitFor({ state: 'visible' });
+  await page.locator('[data-reading-action="close"]').click();
 
   await page.setViewportSize({ width: 390, height: 844 });
   await page.goto('http://127.0.0.1:4173/', { waitUntil: 'domcontentloaded' });
