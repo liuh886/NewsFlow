@@ -43,6 +43,8 @@ create table if not exists public.newsflow_editorial_invitations (
   accepted_at timestamptz,
   created_at timestamptz not null default now()
 );
+create index if not exists newsflow_editorial_invitations_created_by_idx on public.newsflow_editorial_invitations (created_by);
+create index if not exists newsflow_editorial_invitations_accepted_by_idx on public.newsflow_editorial_invitations (accepted_by) where accepted_by is not null;
 alter table public.newsflow_editorial_invitations enable row level security;
 revoke all on table public.newsflow_editorial_invitations from anon, authenticated;
 grant select, insert, delete on table public.newsflow_editorial_invitations to authenticated;
@@ -82,6 +84,7 @@ create table if not exists public.newsflow_editorial_members (
   appointed_at timestamptz not null default now(),
   updated_at timestamptz not null default now()
 );
+create index if not exists newsflow_editorial_members_appointed_by_idx on public.newsflow_editorial_members (appointed_by) where appointed_by is not null;
 alter table public.newsflow_editorial_members enable row level security;
 revoke all on table public.newsflow_editorial_members from anon, authenticated;
 grant select, insert, update, delete on table public.newsflow_editorial_members to authenticated;
@@ -130,6 +133,35 @@ from public.membership_admins
 where active = true and role = 'owner'
 on conflict (user_id) do update
 set role = 'editor_in_chief', active = true, updated_at = now();
+
+create or replace function private.newsflow_sync_owner_editorial_membership()
+returns trigger
+language plpgsql
+security definer
+set search_path = ''
+as $$
+declare
+  affected_user uuid := coalesce(new.user_id, old.user_id);
+begin
+  if tg_op = 'DELETE' or new.active is not true or new.role <> 'owner' then
+    update public.newsflow_editorial_members
+    set active = false, updated_at = now()
+    where user_id = affected_user and role = 'editor_in_chief';
+    return coalesce(new, old);
+  end if;
+
+  insert into public.newsflow_editorial_members (user_id, role, active, appointed_by, updated_at)
+  values (new.user_id, 'editor_in_chief', true, new.user_id, now())
+  on conflict (user_id) do update
+    set role = 'editor_in_chief', active = true, appointed_by = excluded.appointed_by, updated_at = now();
+  return new;
+end;
+$$;
+revoke all on function private.newsflow_sync_owner_editorial_membership() from public, anon, authenticated, service_role;
+drop trigger if exists newsflow_sync_owner_editorial_membership on public.membership_admins;
+create trigger newsflow_sync_owner_editorial_membership
+after insert or update of role, active or delete on public.membership_admins
+for each row execute function private.newsflow_sync_owner_editorial_membership();
 
 create or replace function private.newsflow_mark_editor_invitation_accepted()
 returns trigger
@@ -318,6 +350,8 @@ create table if not exists public.newsflow_governance_drafts (
   published_at timestamptz,
   unique (kind, target_id)
 );
+create index if not exists newsflow_governance_drafts_created_by_idx on public.newsflow_governance_drafts (created_by);
+create index if not exists newsflow_governance_drafts_updated_by_idx on public.newsflow_governance_drafts (updated_by);
 alter table public.newsflow_governance_drafts enable row level security;
 revoke all on table public.newsflow_governance_drafts from anon, authenticated;
 grant select, insert, update, delete on table public.newsflow_governance_drafts to authenticated;
@@ -343,6 +377,7 @@ create table if not exists public.newsflow_governance_publications (
   published_at timestamptz not null default now()
 );
 create index if not exists newsflow_governance_publications_time_idx on public.newsflow_governance_publications (published_at, id);
+create index if not exists newsflow_governance_publications_draft_id_idx on public.newsflow_governance_publications (draft_id);
 alter table public.newsflow_governance_publications enable row level security;
 revoke all on table public.newsflow_governance_publications from anon, authenticated;
 grant select, insert, update, delete on table public.newsflow_governance_publications to service_role;
