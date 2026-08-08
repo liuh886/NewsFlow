@@ -45,6 +45,7 @@ const requiredFiles = [
   'schemas/content-candidate-pack.schema.json',
   'config/content-workflow.json',
   'config/content-sources.json',
+  'config/content-discovery.json',
   'config/recommendation-policy.json',
   'content/state/pipeline-review-queue.json',
   'content/state/adoption-sync.json',
@@ -113,17 +114,13 @@ if (workflowConfig.required_inputs?.includes('editions/reference/edition.yaml'))
 if (workflowConfig.apply_writes?.includes('public/data/news.json')) throw new Error('collection apply must never write Reader news.json.');
 if (!workflowConfig.commands?.apply?.includes('apply-content.mjs')) throw new Error('candidate application must use apply-content.mjs.');
 
-if (supabaseConfig.schema_version !== '1.0' || supabaseConfig.enabled !== false || supabaseConfig.url !== '' || supabaseConfig.publishable_key !== '') {
-  throw new Error('source Supabase config must remain disabled and credential-free.');
-}
+if (supabaseConfig.schema_version !== '1.0' || supabaseConfig.enabled !== false || supabaseConfig.url !== '' || supabaseConfig.publishable_key !== '') throw new Error('source Supabase config must remain disabled and credential-free.');
 if (packageManifest.version !== '2.4.1') throw new Error('package release remains pinned until intentionally cut.');
 if (packageManifest.dependencies?.['@supabase/supabase-js'] !== '2.112.0'
   || packageManifest.devDependencies?.supabase !== '2.111.0'
   || packageManifest.devDependencies?.esbuild !== '0.28.1') throw new Error('Supabase client, CLI and esbuild must remain exactly pinned.');
 for (const command of ['supabase:sync', 'editorial:sync']) if (!packageManifest.scripts?.[command]) throw new Error(`package script missing ${command}.`);
-for (const retired of ['aggregate-pipeline-reviews', 'supabase:catalog', 'review:process']) {
-  if (JSON.stringify(packageManifest.scripts || {}).includes(retired)) throw new Error(`retired script returned: ${retired}`);
-}
+for (const retired of ['aggregate-pipeline-reviews', 'supabase:catalog', 'review:process']) if (JSON.stringify(packageManifest.scripts || {}).includes(retired)) throw new Error(`retired script returned: ${retired}`);
 
 const index = await readFile(resolve(root, 'index.html'), 'utf8');
 for (const reference of [
@@ -159,7 +156,11 @@ for (const contract of [
   'newsflow_governance_drafts', 'newsflow_governance_publications', 'newsflow_publish_governance_change',
   "revoke all on table public.newsflow_candidates from anon, authenticated"
 ]) if (!editorialSql.toLowerCase().includes(contract.toLowerCase())) throw new Error(`NewsFlow editorial SQL missing ${contract}`);
-if (editorialSql.includes('newsflow_sync_editorial_adoptions()') || editorialSql.includes('after insert or update of state on public.product_accounts')) throw new Error('Product-account adoption compatibility path must not return.');
+for (const retiredCreation of [
+  'create or replace function public.newsflow_sync_editorial_adoptions',
+  'create trigger newsflow_sync_editorial_adoptions',
+  'after insert or update of state on public.product_accounts'
+]) if (editorialSql.toLowerCase().includes(retiredCreation)) throw new Error(`Product-account adoption compatibility path must not return: ${retiredCreation}`);
 
 const buildSource = await readFile(resolve(root, 'scripts/build.mjs'), 'utf8');
 for (const forbidden of ['review-candidates.json', 'pipeline-reviews.json', 'guest-editor-invites.json']) if (buildSource.includes(forbidden)) throw new Error(`Reader build must not emit ${forbidden}`);
@@ -171,9 +172,7 @@ const applySource = await readFile(resolve(root, 'scripts/apply-content.mjs'), '
 if (applySource.includes("['--stdin', '--apply']") || applySource.includes('public/data/news.json')) throw new Error('candidate apply must not invoke or write publication state.');
 
 const publisher = await readFile(resolve(root, 'scripts/publish-edition.mjs'), 'utf8');
-for (const contract of [".from('newsflow_editorial_adoptions')", ".select('candidate_id,decision,decided_at')", 'cover_signal_id:', "writeFile(resolve(root, 'public/data/news.json')", "writeFile(resolve(root, 'public/data/issues.json')"]) {
-  if (!publisher.includes(contract)) throw new Error(`Formal publisher missing contract: ${contract}`);
-}
+for (const contract of [".from('newsflow_editorial_adoptions')", ".select('candidate_id,decision,decided_at')", 'cover_signal_id:', "writeFile(resolve(root, 'public/data/news.json')", "writeFile(resolve(root, 'public/data/issues.json')"]) if (!publisher.includes(contract)) throw new Error(`Formal publisher missing contract: ${contract}`);
 if (publisher.includes('minimum_quality') || publisher.includes('minimumQuality')) throw new Error('Formal Issue selection must not fall back to quality-only adoption.');
 
 const [pagesWorkflow, publishWorkflow, supabaseWorkflow, editorialWorkflow] = await Promise.all([
@@ -182,6 +181,6 @@ const [pagesWorkflow, publishWorkflow, supabaseWorkflow, editorialWorkflow] = aw
 if (!pagesWorkflow.includes('npm run check') || !pagesWorkflow.includes('npm run build')) throw new Error('Pages workflow must validate before building.');
 for (const contract of ['NEWSFLOW_SUPABASE_URL:', 'NEWSFLOW_SUPABASE_PUBLISHABLE_KEY:', 'git add public/data/issues.json public/data/news.json']) if (!publishWorkflow.includes(contract)) throw new Error(`Publish workflow missing ${contract}`);
 for (const contract of ['SUPABASE_SERVICE_ROLE_KEY', 'npm run supabase:sync', 'content/inbox/**']) if (!supabaseWorkflow.includes(contract)) throw new Error(`Supabase sync workflow missing ${contract}`);
-for (const contract of ["cron: '17 * * * *'", 'contents: write', 'npm run editorial:sync', 'npm run check', 'git push origin HEAD:main']) if (!editorialWorkflow.includes(contract)) throw new Error(`Editorial sync workflow missing ${contract}`);
+for (const contract of ["cron: '17 * * * *'", 'contents: write', 'npm run editorial:sync', 'npm run supabase:sync', 'npm run check', 'config/content-discovery.json', 'actions/upload-pages-artifact@v4', 'actions/deploy-pages@v4', 'git push origin HEAD:main']) if (!editorialWorkflow.includes(contract)) throw new Error(`Editorial sync workflow missing ${contract}`);
 
 console.log(`NewsFlow repository contract passed: ${news.length} public Signals, ${storylines.length} Storylines, private Candidates, advisory Editors and one Editor-in-Chief publication authority.`);
