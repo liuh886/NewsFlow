@@ -1,4 +1,4 @@
-name: Sync NewsFlow to Supabase
+name: Sync private candidates to Supabase
 
 on:
   workflow_dispatch:
@@ -22,32 +22,30 @@ concurrency:
 
 jobs:
   sync:
-    name: Sync public catalog and private candidates
+    name: Sync private editorial candidates
     runs-on: ubuntu-24.04
     timeout-minutes: 8
     env:
       SUPABASE_URL: ${{ vars.NEWSFLOW_SUPABASE_URL || '' }}
       SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY || '' }}
     steps:
-      - name: Skip when Supabase credentials are absent
+      - name: Require Supabase credentials
         if: env.SUPABASE_URL == '' || env.SUPABASE_SERVICE_ROLE_KEY == ''
-        run: echo "NewsFlow Supabase sync skipped because server credentials are not configured."
+        run: |
+          echo "NEWSFLOW_SUPABASE_URL variable and SUPABASE_SERVICE_ROLE_KEY secret are required." >&2
+          exit 1
 
       - name: Checkout
-        if: env.SUPABASE_URL != '' && env.SUPABASE_SERVICE_ROLE_KEY != ''
         uses: actions/checkout@v6
 
       - name: Set up Node
-        if: env.SUPABASE_URL != '' && env.SUPABASE_SERVICE_ROLE_KEY != ''
         uses: actions/setup-node@v6
         with:
           node-version: 22
           cache: npm
 
       - name: Install locked toolchain
-        if: env.SUPABASE_URL != '' && env.SUPABASE_SERVICE_ROLE_KEY != ''
         run: npm ci --no-audit --no-fund
 
-      - name: Sync NewsFlow state
-        if: env.SUPABASE_URL != '' && env.SUPABASE_SERVICE_ROLE_KEY != ''
+      - name: Sync private candidates
         run: npm run supabase:sync
