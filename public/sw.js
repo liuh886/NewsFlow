@@ -1,5 +1,5 @@
-const ASSET_VERSION = '2.8.0';
-const CACHE_NAME = 'newsflow-editorial-governance-v2.8.0';
+const ASSET_VERSION = '2.9.0';
+const CACHE_NAME = 'newsflow-editorial-governance-v2.9.0';
 const NETWORK_TIMEOUT_MS = 5000;
 const versioned = (path) => `${path}?v=${ASSET_VERSION}`;
 const APP_SHELL = [
@@ -30,7 +30,6 @@ const APP_SHELL = [
   './manifest.webmanifest',
   './data/topics.json',
   './data/news.json',
-  './data/ai_digest.json',
   './data/edition.json',
   './data/issues.json',
   './data/storylines.json',
