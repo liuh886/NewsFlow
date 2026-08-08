@@ -6,7 +6,7 @@ NewsFlow is a GitHub-native publication engine with a private editorial workflow
 
 The reference publication is **Frontier Systems Review**, focused on AI infrastructure, CCUS and the energy transition.
 
-## Product baseline
+## Product status
 
 The product is considered **feature-stable** at the current Reader v3 + Editorial Governance v2 baseline.
 
@@ -38,6 +38,12 @@ The hierarchy is:
 8. full-page Reading Surface, with the side drawer retained only for quick evidence inspection.
 
 The Reader artifact contains no unpublished Candidate packet, review vote, rejection/revision state or internal pre-publication score.
+
+## Editorial Signal Desk
+
+The public **最新** stream is the Reader-facing Editorial Signal Desk: newest-first by `published_at`, containing only content the Editor-in-Chief has already adopted or a formal Issue has frozen.
+
+It is intentionally different from the private Candidate queue. Collection, scoring and review never make a manuscript public by themselves.
 
 ## Editor Mode
 
