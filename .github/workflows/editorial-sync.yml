@@ -28,31 +28,31 @@ jobs:
     env:
       SUPABASE_URL: ${{ vars.NEWSFLOW_SUPABASE_URL || '' }}
       SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY || '' }}
+      NEWSFLOW_SUPABASE_URL: ${{ vars.NEWSFLOW_SUPABASE_URL || '' }}
+      NEWSFLOW_SUPABASE_PUBLISHABLE_KEY: ${{ vars.NEWSFLOW_SUPABASE_PUBLISHABLE_KEY || '' }}
     steps:
-      - name: Skip when Supabase credentials are absent
-        if: env.SUPABASE_URL == '' || env.SUPABASE_SERVICE_ROLE_KEY == ''
-        run: echo "NewsFlow editorial sync skipped because server credentials are not configured."
+      - name: Require editorial synchronization credentials
+        if: env.SUPABASE_URL == '' || env.SUPABASE_SERVICE_ROLE_KEY == '' || env.NEWSFLOW_SUPABASE_PUBLISHABLE_KEY == ''
+        run: |
+          echo "NEWSFLOW_SUPABASE_URL, NEWSFLOW_SUPABASE_PUBLISHABLE_KEY and SUPABASE_SERVICE_ROLE_KEY are required." >&2
+          exit 1
 
       - name: Checkout main
-        if: env.SUPABASE_URL != '' && env.SUPABASE_SERVICE_ROLE_KEY != ''
         uses: actions/checkout@v6
         with:
           ref: main
           fetch-depth: 0
 
       - name: Set up Node
-        if: env.SUPABASE_URL != '' && env.SUPABASE_SERVICE_ROLE_KEY != ''
         uses: actions/setup-node@v6
         with:
           node-version: 22
           cache: npm
 
       - name: Install locked toolchain
-        if: env.SUPABASE_URL != '' && env.SUPABASE_SERVICE_ROLE_KEY != ''
         run: npm ci --no-audit --no-fund
 
       - name: Pull published editorial state
-        if: env.SUPABASE_URL != '' && env.SUPABASE_SERVICE_ROLE_KEY != ''
         id: sync
         run: |
           npm run editorial:sync
@@ -67,10 +67,6 @@ jobs:
         run: |
           npm run check
           npm run build
-
-      - name: Reconcile changed state to Supabase
-        if: steps.sync.outputs.changed == 'true'
-        run: npm run supabase:sync
 
       - name: Commit chief editorial state
         if: steps.sync.outputs.changed == 'true'
