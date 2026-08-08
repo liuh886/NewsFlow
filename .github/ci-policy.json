@@ -7,7 +7,7 @@
     ".github/workflows/ci-governance.yml",
     ".github/workflows/ci.yml",
     ".github/workflows/pages.yml",
-    ".github/workflows/publish-edition.yml",
+    ".github/workflows/publication-sync.yml",
     ".github/workflows/review-pipeline.yml",
     ".github/workflows/supabase-activity.yml"
   ],
@@ -18,7 +18,7 @@
   ],
   "release_workflows": [
     ".github/workflows/pages.yml",
-    ".github/workflows/publish-edition.yml",
+    ".github/workflows/publication-sync.yml",
     ".github/workflows/review-pipeline.yml"
   ],
   "advisory_workflows": [
