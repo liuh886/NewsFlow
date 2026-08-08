@@ -1,0 +1,103 @@
+{
+  "schema_version": "1.0",
+  "edition_id": "frontier-systems-review",
+  "issue_id": "frontier-systems-review-2026-15",
+  "issue_number": 15,
+  "coverage_start": "2026-07-16",
+  "coverage_end": "2026-07-31",
+  "curated_at": "2026-08-08T09:28:00+08:00",
+  "curation_mode": "owner_supplemental_review",
+  "candidate_count": 8,
+  "selected_count": 6,
+  "cover_signal_id": "doe-paducah-ai-energy-campus-2026",
+  "candidates": [
+    {
+      "id": "tsmc-q2-ai-capacity-2026",
+      "channel_id": "ai-infrastructure",
+      "event_date": "2026-07-16",
+      "title": "台积电二季度美元营收增长 33.7%，先进制程占晶圆收入 77%，AI 需求继续把产能约束推向制造与封装",
+      "source": "TSMC",
+      "url": "https://pr.tsmc.com/chinese/news/3326",
+      "decision": "accept",
+      "rationale": "制造端一手数据直接覆盖芯片层供给、先进制程结构和扩产压力，与本期能源和基础设施证据互补。"
+    },
+    {
+      "id": "alphabet-q2-ai-capex-2026",
+      "channel_id": "ai-infrastructure",
+      "event_date": "2026-07-22",
+      "title": "Alphabet 上调资本开支并继续扩张 AI 云容量",
+      "source": "Reuters",
+      "url": "https://www.reuters.com/business/google-quarterly-cloud-revenue-growth-beats-expectations-2026-07-22/",
+      "decision": "reject",
+      "rationale": "事实强，但与 Microsoft 在同一刊期内对超大规模云厂商资本开支、云需求和容量约束的证据高度重叠；为保持每篇稿件的独立信息增量而不录用。"
+    },
+    {
+      "id": "signal-iea-electricity-2026",
+      "channel_id": "ai-infrastructure",
+      "event_date": "2026-07-23",
+      "title": "全球电力需求增速将继续加快，数据中心与工业负荷成为新增压力源",
+      "source": "International Energy Agency",
+      "url": "https://www.iea.org/news/global-electricity-demand-growth-set-to-accelerate-as-power-systems-adjust-to-recent-shocks",
+      "decision": "accept",
+      "rationale": "提供系统级电力需求基线，是解释 Paducah 等大型 AI 园区为何需要自带发电、储能和并网条件的核心背景证据。"
+    },
+    {
+      "id": "doe-paducah-ai-energy-campus-2026",
+      "channel_id": "ai-infrastructure",
+      "event_date": "2026-07-29",
+      "title": "美国能源部选定 Paducah 场址建设 1.8GW AI 算力园区，配套 2GW 燃气发电与 2.6GW 储能，私人投资超过 1000 亿美元",
+      "source": "U.S. Department of Energy",
+      "url": "https://energy.gov/articles/energy-department-announces-partnership-expand-reliable-affordable-energy-access-and-power",
+      "decision": "cover_story",
+      "rationale": "本期最完整地把 AI 算力、电力、储能、土地、输电和资本投入连接为同一基础设施系统，直接承载本期主判断。"
+    },
+    {
+      "id": "microsoft-ai-cloud-demand-2026",
+      "channel_id": "ai-infrastructure",
+      "event_date": "2026-07-29",
+      "title": "Microsoft Azure 增长 43%，云合同积压升至 6780 亿美元，AI 基建投入开始得到需求侧验证",
+      "source": "Reuters",
+      "url": "https://www.reuters.com/business/microsoft-tops-quarterly-cloud-growth-estimates-easing-spending-concerns-2026-07-29/",
+      "decision": "accept",
+      "rationale": "同时给出云需求、企业 AI 付费、资本开支、合同积压和长期数据中心租约，提供从基础设施投入到应用需求的端到端证据。"
+    },
+    {
+      "id": "amazon-q2-ai-capex-2026",
+      "channel_id": "ai-infrastructure",
+      "event_date": "2026-07-30",
+      "title": "Amazon 上调资本开支，AWS 需求继续超过可用容量",
+      "source": "Reuters",
+      "url": "https://www.reuters.com/business/retail-consumer/amazon-beats-estimates-quarterly-cloud-revenue-growth-2026-07-30/",
+      "decision": "reject",
+      "rationale": "AWS 数据质量高，但与 Microsoft 已录用稿对云需求、资本开支和容量约束的主要结论重复；不为版面完整度牺牲边际信息价值。"
+    },
+    {
+      "id": "uk-ccus-transition-access-agreement-2026",
+      "channel_id": "ccus-energy-transition",
+      "event_date": "2026-07-22",
+      "title": "英国明确 CCUS Transition Access Agreement 政策立场，运输封存网络开始为低补贴与未来商业化用户设计接入机制",
+      "source": "UK Department for Energy Security and Net Zero",
+      "url": "https://www.gov.uk/government/publications/carbon-capture-usage-and-storage-ccus-business-models",
+      "decision": "accept",
+      "rationale": "从早期政府支持集群向更低干预的网络用户过渡，是 CCUS 运输封存网络商业化成熟度的直接制度信号。"
+    },
+    {
+      "id": "uk-ggr-ccus-network-policy-2026",
+      "channel_id": "ccus-energy-transition",
+      "event_date": "2026-07-17",
+      "title": "英国把工程化碳移除的收入确定性、CCUS 网络费用与跨链风险放进同一政策框架",
+      "source": "UK Government",
+      "url": "https://www.gov.uk/government/publications/independent-review-on-greenhouse-gas-removals-government-response/independent-review-on-greenhouse-gas-removals-government-response",
+      "decision": "accept",
+      "rationale": "把收入机制、运输封存网络成本和网络不可用风险明确连在一起，补足本期 CCUS 的可融资性、责任与接入证据。"
+    }
+  ],
+  "editorial_note": "本次补充审阅用于重编已发布的 Issue #15。选择仍遵守 Edition 的 6 篇上限和单频道 4 篇上限；未因需要展示完整版式而降低证据或独立信息增量标准。",
+  "corrections": [
+    {
+      "candidate_id": "uk-ccs-east-coast-cluster-8bn-financing-2026",
+      "action": "remove_from_review_queue",
+      "reason": "候选把约 80 亿英镑 NEP / Net Zero Teesside Power 项目融资误标为 2026-07-31 新事件；该融资实际在 2024 年 12 月已完成，因此不能作为 Issue #15 新证据。"
+    }
+  ]
+}
