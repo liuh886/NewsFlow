@@ -57,7 +57,7 @@ for (const contract of [
 ]) {
   if (!mode.includes(contract)) throw new Error(`editor mode controller missing contract: ${contract}`);
 }
-for (const retired of ['renderDesk', 'renderIssueDesk', 'officeTab', "id: 'accept'", 'AUTOMATED PRE-REVIEW', 'syncFormalEditorialState', 'newsflow_editorial']) {
+for (const retired of ['renderDesk', 'renderIssueDesk', 'officeTab', "id: 'accept'", 'AUTOMATED PRE-REVIEW', 'syncFormalEditorialState', 'FORMAL_STORAGE_KEY']) {
   if (mode.includes(retired)) throw new Error(`editor mode controller still owns retired authority/review UI: ${retired}`);
 }
 
