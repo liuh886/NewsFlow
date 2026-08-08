@@ -44,10 +44,20 @@ for (const forbidden of ['review-candidates.json', 'pipeline-reviews.json', 'gue
 }
 for (const publicAsset of ['source-registry.json', 'governance-status.json', 'editorial-governance.js', 'editorial-governance.css']) if (!sw.includes(publicAsset)) throw new Error(`PWA governance asset missing ${publicAsset}`);
 
-for (const contract of ['newsflow_governance_publications', 'public/data/edition.json', 'public/data/storylines.json', 'config/content-sources.json', 'applied_publication_ids']) if (!governanceSync.includes(contract)) throw new Error(`GitHub governance compiler missing ${contract}`);
-for (const contract of ["from('newsflow_editorial_adoptions')", "from('newsflow_candidates')", 'managed_signal_ids', 'issueSignalIds', "editorial_status: 'adopted'", 'unregistered source']) if (!adoptionSync.includes(contract)) throw new Error(`adoption compiler missing ${contract}`);
+for (const contract of [
+  'newsflow_governance_publications', 'public/data/edition.json', 'public/data/storylines.json',
+  'config/content-sources.json', 'config/content-discovery.json', 'syncDiscoveryRouting', 'plan.source_ids',
+  'applied_publication_ids'
+]) if (!governanceSync.includes(contract)) throw new Error(`GitHub governance compiler missing ${contract}`);
+for (const contract of [
+  "from('newsflow_editorial_adoptions')", "from('newsflow_candidates')", 'managed_signal_ids',
+  'issueSignalIds', 'allowedPublicIds', "editorial_status: 'adopted'", 'non-authoritative public Signal(s) removed', 'unregistered source'
+]) if (!adoptionSync.includes(contract)) throw new Error(`adoption compiler missing ${contract}`);
 
-for (const contract of ['newsflow_editorial_members', 'newsflow_editorial_reviews', 'newsflow_candidates', 'newsflow_governance_drafts', 'newsflow_governance_publications', 'newsflow_sync_chief_adoption']) if (!sql.includes(contract)) throw new Error(`Supabase governance schema missing ${contract}`);
+for (const contract of [
+  'newsflow_editorial_members', 'newsflow_editorial_reviews', 'newsflow_candidates', 'payload jsonb',
+  'newsflow_governance_drafts', 'newsflow_governance_publications', 'newsflow_sync_chief_adoption'
+]) if (!sql.includes(contract)) throw new Error(`Supabase governance schema missing ${contract}`);
 if (!sql.includes("role = 'owner'")) throw new Error('Only the shared owner may be Editor-in-Chief publication authority.');
 
-console.log('NewsFlow editorial governance contract passed: chief-only publication/governance, advisory Editors, private Candidates and GitHub-synced canonical state.');
+console.log('NewsFlow editorial governance contract passed: chief-only publication/governance, governed source discovery routing, advisory Editors and authoritative-only Reader Signals.');
