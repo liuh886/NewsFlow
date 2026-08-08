@@ -36,6 +36,17 @@
   display: block;
 }
 
+/* Collapsed Reader search is icon-only. The placeholder returns only after focus opens the field. */
+.app-shell[data-product-model='magazine-edition'] .global-search:not(:focus-within) input::placeholder {
+  color: transparent;
+  opacity: 0;
+}
+
+.app-shell[data-product-model='magazine-edition'] .global-search:focus-within input::placeholder {
+  color: var(--ink-faint);
+  opacity: 1;
+}
+
 .post-issue-intro[data-empty='true'] {
   border-bottom-style: dashed;
 }
