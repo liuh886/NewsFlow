@@ -1,6 +1,6 @@
 # NewsFlow portable content-update workflow
 
-This is the canonical, vendor-neutral procedure for updating NewsFlow evidence. Candidate packs conform to `schemas/content-candidate-pack.schema.json`; the machine-readable companion is `config/content-workflow.json`.
+This is the canonical procedure for updating NewsFlow evidence. Candidate packs conform to `schemas/content-candidate-pack.schema.json`; the machine-readable companion is `config/content-workflow.json`.
 
 ## One publication boundary
 
@@ -15,8 +15,10 @@ The stages are deliberately separate:
 3. reviewable Candidates are written directly to private Supabase;
 4. Editors produce advisory five-state opinions;
 5. the Editor-in-Chief produces the final five-state decision;
-6. only chief **封面文章 / 录用** becomes public adoption;
-7. adopted Signals enter Reader Latest and can later freeze into a formal Issue.
+6. chief **封面文章 / 录用** creates a sanitized public adoption projection in Supabase;
+7. GitHub publication sync reads only that public projection and updates Reader Latest;
+8. adopted Signals are ranked into the active half-month Current Issue;
+9. when the next half-month starts, the previous Issue becomes historical and the new period becomes Current Issue immediately.
 
 A content-pipeline `accepted` result means only **passed preflight for editorial review**. It never means Reader publication.
 
@@ -31,9 +33,11 @@ A content-pipeline `accepted` result means only **passed preflight for editorial
 7. Supabase `newsflow_candidates` is the durable private Candidate authority.
 8. Supabase `newsflow_editorial_reviews` stores normalized Editor/Chief five-state records.
 9. only the active owner / Editor-in-Chief review can create `newsflow_editorial_adoptions`.
-10. `scripts/sync-adopted-signals.mjs` promotes chief-adopted Candidates to public Latest.
-11. `scripts/publish-edition.mjs` freezes the 1st/15th formal Issue.
-12. Agent-specific adapters may not weaken or extend this chain.
+10. `supabase/newsflow-publication-projection.sql` turns an adopted private Candidate into the sanitized public `publication` snapshot; private Candidate rows remain inaccessible to Reader/publication workers.
+11. `scripts/sync-adopted-signals.mjs` consumes only the public adoption projection and updates public Reader Signals.
+12. `scripts/sync-live-issue.mjs` owns the live Current Issue lifecycle and ranking.
+13. `.github/workflows/publication-sync.yml` is the only GitHub publication writer and deployer.
+14. Agent-specific adapters may not weaken or extend this chain.
 
 If two layers conflict, stop before applying and report the conflict.
 
@@ -95,7 +99,7 @@ The evaluator is read-only. `scripts/update-content.mjs --apply` is retired and 
 
 ### 6. Persist reviewable Candidates directly to Supabase
 
-Use server-side credentials only:
+Use server-side credentials only for writing private Candidate state:
 
 ```bash
 SUPABASE_URL=... \
@@ -139,7 +143,7 @@ The chief reviews the same Candidate and may see aggregate opinion counts from E
 The chief's five-state row is final editorial judgment:
 
 - any final chief decision closes the Candidate;
-- `cover_story` / `accept` → database trigger creates/updates `newsflow_editorial_adoptions`;
+- `cover_story` / `accept` → database trigger creates/updates `newsflow_editorial_adoptions` and stores a sanitized public `publication` snapshot;
 - `minor_revision` / `major_revision` / `reject` → any pre-Issue adoption is removed;
 - deleting/undoing the chief review reopens the Candidate and removes its pre-Issue adoption.
 
@@ -147,46 +151,43 @@ No majority vote, recommendation score or automatic fallback can override the ch
 
 ### 9. Chief adoption → Reader Latest
 
-`.github/workflows/editorial-sync.yml` checks hourly.
+`.github/workflows/publication-sync.yml` is the sole publication worker.
 
 `scripts/sync-adopted-signals.mjs`:
 
-- reads chief adoption + private Candidate payload server-side;
+- uses the Supabase publishable key only;
+- reads `newsflow_editorial_adoptions.publication`, never private `newsflow_candidates`;
 - validates the registered source;
 - promotes current adoption to `public/data/news.json`;
-- withdraws a previously managed pre-Issue Signal if the chief reverses adoption;
-- never deletes content already frozen into a historical Issue;
+- withdraws a previously managed live Signal if the chief reverses adoption;
+- retains Signals already belonging to historical Issues;
 - writes GitHub only when semantic publication state changed.
 
-The same workflow also applies published chief governance changes and deploys the validated build when there is a real change.
+The same workflow applies explicitly published governance changes, validates/builds when state changes, commits main and deploys Pages.
 
-### 10. Formal Issue publication
+### 10. Live Current Issue
 
-On the 1st and 15th, `scripts/publish-edition.mjs`:
+`scripts/sync-live-issue.mjs` owns the half-month lifecycle:
 
-- calculates the half-month window;
-- reads `newsflow_editorial_adoptions`;
-- admits only chief Cover/Accept decisions in-window;
-- respects Issue/channel caps;
-- persists Cover as `cover_signal_id`;
-- ensures adopted Candidate data exists in public Signal state;
-- freezes `public/data/issues.json`;
-- refreshes deterministic `data-status.json`;
-- permits a valid no-change Issue.
+- 1st–14th is one active Issue window; 15th–month-end is the next;
+- at Shanghai midnight when a new window begins, that window becomes Current Issue immediately, even with zero articles;
+- during the window, adopted Signals are re-ranked as publication state changes;
+- explicit chief `cover_story` ranks first; otherwise editorial quality and recency determine current order;
+- the first ranked Signal is the current cover article;
+- channel and Issue caps remain in force;
+- when the next window begins, the previous Issue becomes historical and retains its published article set.
 
-There is no quality-score publication fallback.
-
-Formal publication and hourly editorial synchronization share one publication-writer concurrency lock.
+`publication-sync.yml` runs an idempotent Shanghai-midnight boundary check plus twice-hourly in-period synchronization. There is no second formal-Issue publisher.
 
 ### 11. Chief governance changes
 
 The chief can edit Edition judgment, active Storylines and trusted sources in **Publication Settings**.
 
 - **Save draft** → private Supabase `newsflow_governance_drafts`, no Reader effect.
-- **发布到 GitHub** → `newsflow_governance_publications` queue row.
-- hourly editorial sync validates and applies the change to canonical GitHub files, runs checks/build, commits `main` only when state changed, then deploys Pages.
+- **发布到 GitHub** → `newsflow_governance_publications` row containing only a change explicitly destined for public canonical files.
+- publication sync reads this published queue with the publishable key and applies it to canonical GitHub files.
 
-The browser never carries a GitHub token or Supabase service-role key.
+The browser and publication worker never carry a GitHub token or Supabase service-role key for public publication reads.
 
 ### 12. Clean transient input
 
