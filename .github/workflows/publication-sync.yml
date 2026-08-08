@@ -3,6 +3,9 @@ name: Sync publication state
 on:
   workflow_dispatch:
   schedule:
+    # 00:00 Asia/Shanghai on the 1st and 15th: open the new live Issue immediately.
+    - cron: '0 16 1,15 * *'
+    # During an active Issue, pull chief decisions and recompute the live ranking twice an hour.
     - cron: '17,47 * * * *'
   push:
     branches: [main]
