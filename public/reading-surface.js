@@ -1,6 +1,9 @@
 (() => {
   const ROOT_ID = 'newsflow-reading-surface-root';
   const DATA_TIMEOUT_MS = 5000;
+  const scriptBaseUrl = new URL('./', document.currentScript?.src || window.location.href);
+  const homeCanonical = document.querySelector('link[rel="canonical"]')?.href || scriptBaseUrl.href;
+  const baseTitle = document.title;
   const state = {
     edition: null,
     storylines: [],
@@ -39,6 +42,7 @@
   const activeItem = () => state.news.find((item) => itemId(item) === state.activeId) || null;
   const channel = (item) => (state.edition?.channels || []).find((entry) => entry.id === item?.channel_id) || null;
   const matchedStorylines = (item) => state.storylines.filter((storyline) => (item?.storyline_ids || []).includes(storyline.id));
+  const canonicalArticleUrl = (id) => new URL(`articles/${encodeURIComponent(String(id || ''))}/`, scriptBaseUrl).href;
 
   const formatDate = (value) => {
     const date = new Date(value);
@@ -144,6 +148,17 @@
     else app.removeAttribute('aria-hidden');
   };
 
+  const setDocumentIdentity = (item = null) => {
+    const canonical = document.querySelector('link[rel="canonical"]');
+    if (item) {
+      document.title = `${item.title} — ${state.edition?.name || 'Frontier Systems Review'}`;
+      canonical?.setAttribute('href', canonicalArticleUrl(itemId(item)));
+    } else {
+      document.title = baseTitle;
+      canonical?.setAttribute('href', homeCanonical);
+    }
+  };
+
   const ensureRoot = () => {
     let root = document.getElementById(ROOT_ID);
     if (!root) {
@@ -162,12 +177,14 @@
       root.hidden = true;
       document.body.classList.remove('nf-reading-open');
       setBackgroundInert(false);
+      setDocumentIdentity();
       return;
     }
     root.hidden = false;
     root.innerHTML = renderReadingSurface(item);
     document.body.classList.add('nf-reading-open');
     setBackgroundInert(true);
+    setDocumentIdentity(item);
     requestAnimationFrame(() => root.querySelector('[data-reading-action="close"]')?.focus());
   };
 
@@ -224,7 +241,7 @@
       if (!anchor || !id || !state.news.some((item) => itemId(item) === id)) return;
       anchor.dataset.readingLink = 'true';
       anchor.dataset.id = id;
-      anchor.href = `#read/${encodeURIComponent(id)}`;
+      anchor.href = canonicalArticleUrl(id);
       anchor.removeAttribute('target');
       anchor.removeAttribute('rel');
     };
