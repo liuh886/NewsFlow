@@ -7,12 +7,14 @@ const root = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 const files = [
   'public/magazine-polish.js',
   'public/magazine-polish.css',
+  'public/editorial-loader.js',
   'scripts/check-magazine-polish.mjs'
 ];
 for (const file of files) await access(resolve(root, file));
 
-const [index, script, css, readingCss, serviceWorker, packageSource] = await Promise.all([
+const [index, loader, script, css, readingCss, serviceWorker, packageSource] = await Promise.all([
   readFile(resolve(root, 'index.html'), 'utf8'),
+  readFile(resolve(root, 'public/editorial-loader.js'), 'utf8'),
   readFile(resolve(root, 'public/magazine-polish.js'), 'utf8'),
   readFile(resolve(root, 'public/magazine-polish.css'), 'utf8'),
   readFile(resolve(root, 'public/reading-surface.css'), 'utf8'),
@@ -25,11 +27,18 @@ for (const reference of ['./magazine-polish.css', './magazine-polish.js']) {
   if (!index.includes(reference)) throw new Error(`index.html is missing ${reference}`);
   if (!serviceWorker.includes(reference)) throw new Error(`service worker is missing ${reference}`);
 }
+if (!index.includes('./editorial-loader.js?v=__NEWSFLOW_VERSION__')) throw new Error('Reader must load the lazy editorial entrypoint.');
+for (const editorAsset of ['./review-game.css', './review-game.js', './editorial-governance.css', './editorial-governance.js', './editorial-office.js']) {
+  if (index.includes(editorAsset)) throw new Error(`Reader must not eagerly load ${editorAsset}`);
+  if (!loader.includes(editorAsset)) throw new Error(`editorial-loader is missing ${editorAsset}`);
+}
 if (index.indexOf('./magazine-polish.css') < index.indexOf('./edition-layer.css')) throw new Error('magazine-polish.css must load after edition-layer.css');
 if (index.indexOf('./magazine-polish.js') < index.indexOf('./edition-layer.js')) throw new Error('magazine-polish.js must load after edition-layer.js');
 
-const syntax = spawnSync(process.execPath, ['--check', resolve(root, 'public/magazine-polish.js')], { encoding: 'utf8' });
-if (syntax.status !== 0) throw new Error(`magazine-polish.js syntax check failed:\n${syntax.stderr}`);
+for (const path of ['public/magazine-polish.js', 'public/editorial-loader.js']) {
+  const syntax = spawnSync(process.execPath, ['--check', resolve(root, path)], { encoding: 'utf8' });
+  if (syntax.status !== 0) throw new Error(`${path} syntax check failed:\n${syntax.stderr}`);
+}
 
 for (const contract of [
   'setMagazineBackgroundInert', 'restoreMagazineTrigger', "intro.dataset.empty = 'true'",
@@ -59,8 +68,11 @@ for (const identity of [
 
 if (packageManifest.version !== '2.4.1') throw new Error('package release contract must remain pinned until a package release is intentionally cut');
 if (!packageManifest.scripts?.check?.includes('check-magazine-polish.mjs')) throw new Error('npm check must include the magazine polish contract');
-for (const releaseContract of ["const ASSET_VERSION = '2.10.0'", 'editorial-governance-v2.10.0', 'reading-surface.css', 'editorial-governance.css']) {
-  if (!serviceWorker.includes(releaseContract)) throw new Error(`service worker is missing live issue release contract: ${releaseContract}`);
+for (const releaseContract of ["const ASSET_VERSION = '__NEWSFLOW_VERSION__'", 'newsflow-reader-v${ASSET_VERSION}', 'reading-surface.css', 'editorial-loader.js']) {
+  if (!serviceWorker.includes(releaseContract)) throw new Error(`service worker is missing Reader release contract: ${releaseContract}`);
+}
+for (const eagerEditorAsset of ["versioned('./editorial-governance.css')", "versioned('./editorial-governance.js')", "versioned('./review-game.css')", "versioned('./review-game.js')"]) {
+  if (serviceWorker.includes(eagerEditorAsset)) throw new Error(`service worker must not precache editor-only asset ${eagerEditorAsset}`);
 }
 
-console.log('NewsFlow magazine polish contract passed: Edition-first identity, restrained Reader chrome, header badge/search state, section hierarchy and responsive reading typography.');
+console.log('NewsFlow magazine polish contract passed: Edition-first identity, restrained Reader chrome, lean app shell, header badge/search state, section hierarchy and responsive reading typography.');
