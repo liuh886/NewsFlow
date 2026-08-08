@@ -18,7 +18,8 @@ const requiredFiles = [
   'scripts/sync-adopted-signals.mjs', 'scripts/sync-editorial-governance.mjs', 'scripts/update-data-status.mjs',
   'schemas/content-candidate-pack.schema.json', 'config/content-workflow.json', 'config/content-sources.json',
   'config/content-discovery.json', 'content/state/adoption-sync.json', 'content/state/governance-sync.json',
-  'supabase/newsflow-editorial.sql', '.github/workflows/pages.yml', '.github/workflows/publication-sync.yml',
+  'supabase/newsflow-editorial.sql', 'supabase/newsflow-publication-projection.sql',
+  '.github/workflows/pages.yml', '.github/workflows/publication-sync.yml',
   'WORKFLOW.md', 'DESIGN.md', 'README.md'
 ];
 for (const file of requiredFiles) await access(resolve(root, file));
@@ -105,11 +106,24 @@ for (const contract of [
 ]) if (!editorialSql.toLowerCase().includes(contract.toLowerCase())) throw new Error(`Editorial SQL missing ${contract}`);
 if (!editorialSql.includes('update public.newsflow_candidates set active = false') || !editorialSql.includes('update public.newsflow_candidates set active = true')) throw new Error('Canonical editorial SQL must close/reopen Candidates with the chief decision lifecycle.');
 
+const projectionSql = await read('supabase/newsflow-publication-projection.sql');
+for (const contract of [
+  'publication jsonb', 'private.newsflow_publication_snapshot', 'private.newsflow_sync_chief_adoption',
+  'publication = private.newsflow_publication_snapshot', 'Public reads published NewsFlow governance changes'
+]) if (!projectionSql.includes(contract)) throw new Error(`Public publication projection missing ${contract}`);
+if (projectionSql.includes('grant select on table public.newsflow_candidates to anon')) throw new Error('Public publication projection must not expose private Candidates.');
+
 const adoptionCompiler = await read('scripts/sync-adopted-signals.mjs');
 for (const contract of [
-  "from('newsflow_editorial_adoptions')", "from('newsflow_candidates')", 'frozenIssueSignalIds',
-  ".filter((issue) => issue?.lifecycle !== 'live')", "editorial_status: 'adopted'", 'unregistered source'
-]) if (!adoptionCompiler.includes(contract)) throw new Error(`Adoption compiler missing live/frozen boundary: ${contract}`);
+  "from('newsflow_editorial_adoptions')", ".select('candidate_id,decision,decided_at,publication')", 'SUPABASE_PUBLISHABLE_KEY',
+  'frozenIssueSignalIds', ".filter((issue) => issue?.lifecycle !== 'live')", "editorial_status: 'adopted'", 'unregistered source'
+]) if (!adoptionCompiler.includes(contract)) throw new Error(`Adoption compiler missing public-projection contract: ${contract}`);
+for (const forbidden of ["from('newsflow_candidates')", 'SUPABASE_SERVICE_ROLE_KEY']) if (adoptionCompiler.includes(forbidden)) throw new Error(`Adoption compiler must not read private Candidate state: ${forbidden}`);
+
+const governanceCompiler = await read('scripts/sync-editorial-governance.mjs');
+if (!governanceCompiler.includes('SUPABASE_PUBLISHABLE_KEY') || governanceCompiler.includes('SUPABASE_SERVICE_ROLE_KEY')) {
+  throw new Error('Governance publication sync must read the explicitly published queue with the publishable key only.');
+}
 
 const liveCompiler = await read('scripts/sync-live-issue.mjs');
 for (const contract of [
@@ -119,17 +133,26 @@ for (const contract of [
 ]) if (!liveCompiler.includes(contract)) throw new Error(`Live Issue compiler missing contract: ${contract}`);
 if (liveCompiler.includes("from('newsflow_editorial_adoptions')") || liveCompiler.includes('SUPABASE_SERVICE_ROLE_KEY')) throw new Error('Live Issue compiler must consume authoritative public Signals, not create a second Supabase read path.');
 
+const editionLayer = await read('src/edition-layer.js');
+for (const contract of ['renderIssueDrawer', "data-edition-action=\"open-issue\"", '历期精选', '历期刊物', '阅读本期 →']) {
+  if (!editionLayer.includes(contract)) throw new Error(`Historical Issue reading contract missing: ${contract}`);
+}
+for (const operatorCopy of ['冻结后不再改写', '已经冻结的刊期', '自动流程不会自行改写']) {
+  if (editionLayer.includes(operatorCopy)) throw new Error(`Reader exposes operator-facing implementation copy: ${operatorCopy}`);
+}
+
 const [pagesWorkflow, publicationWorkflow] = await Promise.all([
   read('.github/workflows/pages.yml'), read('.github/workflows/publication-sync.yml')
 ]);
 if (!pagesWorkflow.includes('npm run check') || !pagesWorkflow.includes('npm run build')) throw new Error('Pages workflow must validate before building.');
 for (const contract of [
-  "cron: '17,47 * * * *'", 'group: newsflow-publication-writer', 'SUPABASE_SERVICE_ROLE_KEY',
-  'NEWSFLOW_SUPABASE_PUBLISHABLE_KEY', 'npm run editorial:sync', 'npm run issue:sync', 'npm run content:status',
-  'npm run check', 'npm run build', 'public/data/issues.json', 'actions/upload-pages-artifact@v4',
-  'actions/deploy-pages@v4', 'git pull --rebase origin main'
+  "cron: '17,47 * * * *'", "cron: '0 16 * * *'", 'group: newsflow-publication-writer', 'SUPABASE_PUBLISHABLE_KEY',
+  'npm run editorial:sync', 'npm run issue:sync', 'npm run content:status', 'npm run check', 'npm run build',
+  'public/data/issues.json', 'actions/upload-pages-artifact@v4', 'actions/deploy-pages@v4', 'git pull --rebase origin main'
 ]) if (!publicationWorkflow.includes(contract)) throw new Error(`Publication sync workflow missing ${contract}`);
-if (publicationWorkflow.includes('npm run supabase:sync')) throw new Error('Publication sync must not resurrect repository Candidate synchronization.');
+if (publicationWorkflow.includes('SUPABASE_SERVICE_ROLE_KEY') || publicationWorkflow.includes('npm run supabase:sync')) {
+  throw new Error('Publication sync must not carry service-role credentials or resurrect Candidate synchronization.');
+}
 
 const runFiles = await readdir(resolve(root, 'content/runs'));
 for (const name of runFiles.filter((file) => file.endsWith('.json'))) {
@@ -137,4 +160,4 @@ for (const name of runFiles.filter((file) => file.endsWith('.json'))) {
   if ('decisions' in run || 'candidates' in run) throw new Error(`Public scan audit exposes Candidate detail: ${name}`);
 }
 
-console.log(`NewsFlow repository contract passed: ${news.length} authoritative public Signals, ${storylines.length} Storylines, Supabase-private Candidates, live Current Issue and frozen historical Issues.`);
+console.log(`NewsFlow repository contract passed: ${news.length} authoritative public Signals, ${storylines.length} Storylines, Supabase-private Candidates, public publication projection, live Current Issue and readable historical Issues.`);

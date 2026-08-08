@@ -14,6 +14,7 @@ const editionState = {
   storylines: [],
   news: [],
   activeStorylineId: '',
+  activeIssueId: '',
   activeChannelId: '',
   channelSort: 'newest',
   archiveOpen: false
@@ -48,6 +49,7 @@ const publishedIssues = () => editionState.issues
 
 const archivedIssues = () => publishedIssues().filter((issue) => issue?.lifecycle !== 'live');
 const latestIssue = () => publishedIssues().find((issue) => issue?.lifecycle === 'live') || publishedIssues()[0] || null;
+const archivedIssueById = (id) => archivedIssues().find((issue) => String(issue.id || '') === String(id || '')) || null;
 
 const nextPublicationLabel = (issue) => {
   const base = issue?.published_at ? new Date(issue.published_at) : new Date();
@@ -115,11 +117,11 @@ const renderPostIssueIntro = (issue) => {
   return `
   <section class="post-issue-intro" data-edition-layer="post-issue" aria-label="${live ? '本期动态更新' : '刊期之后的新变化'}">
     <div>
-      <span class="section-label">${live ? '本期进行中' : '刊期之后'}</span>
+      <span class="section-label">${live ? '本期进行中' : '最新进展'}</span>
       <p>${issue
         ? live
-          ? `第 ${escapeEditionHtml(issue.issue_number)} 期正在更新。新录用 Signal 会进入本期，封面与篇目顺序按当前重要性继续变化。`
-          : `第 ${escapeEditionHtml(issue.issue_number)} 期冻结后的最新变化，按时间继续进入 NewsFlow。`
+          ? `第 ${escapeEditionHtml(issue.issue_number)} 期持续更新，重要进展将进入本期并影响封面与篇目排序。`
+          : `第 ${escapeEditionHtml(issue.issue_number)} 期之后的重要进展，按时间继续进入 NewsFlow。`
         : '首期发布前，值得继续关注的最新变化。'}</p>
     </div>
     <div class="post-issue-status">
@@ -131,7 +133,7 @@ const renderPostIssueIntro = (issue) => {
 
 const renderCurrentIssue = (edition, issue) => {
   if (!issue) {
-    return `<section class="latest-edition-panel" id="current-issue" data-edition-layer="latest"><div class="issue-empty"><span>Current Issue</span><h2>首期正在准备</h2><p>正式刊期只收录主编明确录用的变化；最新信号仍会持续进入阅读流。</p></div></section>`;
+    return `<section class="latest-edition-panel" id="current-issue" data-edition-layer="latest"><div class="issue-empty"><span>Current Issue</span><h2>首期正在准备</h2><p>重要进展将在完成编辑审阅后进入刊物。</p></div></section>`;
   }
 
   const signals = issueSignals(issue);
@@ -141,15 +143,15 @@ const renderCurrentIssue = (edition, issue) => {
   const signalButtons = secondarySignals.map((signal, index) => `
     <button class="issue-signal-link" data-action="open" data-id="${escapeEditionHtml(signal.id)}">
       <span>${String(index + 1).padStart(2, '0')}</span>
-      <span>${escapeEditionHtml(signal.title || `打开本期信号 ${index + 1}`)}</span>
+      <span>${escapeEditionHtml(signal.title || `打开本期文章 ${index + 1}`)}</span>
     </button>`).join('');
   const live = issue.lifecycle === 'live';
   const selectionRecord = live
     ? 'LIVE · 动态编排'
     : issue.selection_mode === 'owner_editorial_decisions'
-      ? '主编选稿'
-      : issue.auto_generated ? '定期编译' : '人工出版';
-  const issueDate = live && issue.coverage_start && issue.coverage_end
+      ? '主编精选'
+      : issue.auto_generated ? '正式刊期' : '编辑出版';
+  const issueDate = issue.coverage_start && issue.coverage_end
     ? `${formatEditionDate(issue.coverage_start, { month: 'numeric', day: 'numeric' })}—${formatEditionDate(issue.coverage_end, { month: 'numeric', day: 'numeric' })}`
     : formatEditionDate(issue.published_at);
 
@@ -221,12 +223,19 @@ const renderStorylines = () => `
     <button class="storyline-all" type="button" data-edition-action="open-storylines">查看全部长期议题</button>
   </section>`;
 
+const archiveIssueMeta = (issue) => {
+  const start = formatEditionDate(issue.coverage_start || issue.published_at, { year: 'numeric', month: 'numeric', day: 'numeric' });
+  const end = issue.coverage_end ? formatEditionDate(issue.coverage_end, { month: 'numeric', day: 'numeric' }) : '';
+  const selection = issue.selection_mode === 'owner_editorial_decisions' ? '主编精选' : issue.auto_generated ? '正式刊期' : '编辑出版';
+  return `${start}${end ? `—${end}` : ''} · ${selection}`;
+};
+
 const renderArchive = () => {
   const issues = archivedIssues();
   return `<section class="edition-archive" data-edition-layer="archive" aria-labelledby="archive-title">
-    <div class="archive-heading"><div><span class="section-label">往期</span><h2 id="archive-title">已经冻结的刊期</h2></div><button type="button" data-edition-action="open-archive">打开完整归档 →</button></div>
+    <div class="archive-heading"><div><span class="section-label">往期</span><h2 id="archive-title">历期精选</h2></div><button type="button" data-edition-action="open-archive">浏览全部往期 →</button></div>
     <div class="archive-list">
-      ${issues.slice(0, 3).map((issue) => `<article class="archive-row"><span class="archive-number">${String(issue.issue_number).padStart(2, '0')}</span><div><h3>${escapeEditionHtml(issue.title)}</h3><p>${escapeEditionHtml(issue.standfirst)}</p></div><div class="archive-date">${escapeEditionHtml(formatEditionDate(issue.coverage_start || issue.published_at))}<br>${issue.selection_mode === 'owner_editorial_decisions' ? '主编选稿' : issue.auto_generated ? '冻结刊期' : '人工生成'}</div></article>`).join('') || '<p class="archive-empty">尚无已冻结刊期。</p>'}
+      ${issues.slice(0, 3).map((issue) => `<article class="archive-row"><span class="archive-number">${String(issue.issue_number).padStart(2, '0')}</span><div><h3>${escapeEditionHtml(issue.title)}</h3><p>${escapeEditionHtml(issue.standfirst)}</p><button class="issue-cover-action" type="button" data-edition-action="open-issue" data-issue-id="${escapeEditionHtml(issue.id)}">阅读本期 →</button></div><div class="archive-date">${escapeEditionHtml(archiveIssueMeta(issue))}</div></article>`).join('') || '<p class="archive-empty">往期内容正在整理。</p>'}
     </div>
   </section>`;
 };
@@ -245,9 +254,32 @@ const renderStorylineDrawer = () => {
       <h2 id="storyline-panel-title">${escapeEditionHtml(storyline.title)}</h2>
       <p class="panel-question">${escapeEditionHtml(storyline.question || '')}</p>
       <section><span class="section-label">当前判断</span><p>${escapeEditionHtml(storyline.current_view)}</p></section>
-      <section><span class="section-label">下一步观察</span>${watchItems.length ? `<ul>${watchItems.map((item) => `<li>${escapeEditionHtml(item)}</li>`).join('')}</ul>` : '<p>等待下一批可改变判断的证据。</p>'}</section>
-      <section><span class="section-label">可能推翻判断的证据</span>${falsifiers.length ? `<ul>${falsifiers.map((item) => `<li>${escapeEditionHtml(item)}</li>`).join('')}</ul>` : '<p>当前未定义明确的反证条件。</p>'}</section>
-      <section><span class="section-label">判断边界</span><p>长期议题记录证据如何强化、削弱或复杂化当前观点；自动流程不会自行改写 Edition 文件中的正式主编立场。</p></section>
+      <section><span class="section-label">下一步观察</span>${watchItems.length ? `<ul>${watchItems.map((item) => `<li>${escapeEditionHtml(item)}</li>`).join('')}</ul>` : '<p>等待新的关键证据。</p>'}</section>
+      <section><span class="section-label">可能改变判断的证据</span>${falsifiers.length ? `<ul>${falsifiers.map((item) => `<li>${escapeEditionHtml(item)}</li>`).join('')}</ul>` : '<p>当前没有明确的反向证据条件。</p>'}</section>
+      <section><span class="section-label">观察框架</span><p>这里记录证据如何强化、削弱或复杂化当前观点，让长期判断可以沿时间持续检验。</p></section>
+    </div>
+  </aside>`;
+};
+
+const renderIssueDrawer = () => {
+  const issue = archivedIssueById(editionState.activeIssueId);
+  if (!issue) return '';
+  const signals = issueSignals(issue);
+  const coverSignalId = String(issue.cover_signal_id || '');
+  const coverSignal = signals.find((signal) => signal.id === coverSignalId) || null;
+  const otherSignals = coverSignalId ? signals.filter((signal) => signal.id !== coverSignalId) : signals;
+  const watchItems = Array.isArray(issue.what_to_watch) ? issue.what_to_watch.filter(Boolean) : [];
+
+  return `<div class="edition-overlay" data-edition-action="close-panel"></div><aside class="edition-panel archive-panel" role="dialog" aria-modal="true" aria-labelledby="issue-panel-title">
+    <div class="edition-panel-head"><span>${escapeEditionHtml(editionState.edition?.short_name || 'Frontier Systems')} · Issue ${escapeEditionHtml(issue.issue_number)}</span><button type="button" data-edition-action="close-panel" aria-label="关闭本期">×</button></div>
+    <div class="edition-panel-body">
+      <span class="section-label">${escapeEditionHtml(archiveIssueMeta(issue))}</span>
+      <h2 id="issue-panel-title">${escapeEditionHtml(issue.title)}</h2>
+      <p class="panel-question">${escapeEditionHtml(issue.standfirst)}</p>
+      <section><span class="section-label">本期判断</span><p>${escapeEditionHtml(issue.judgment)}</p></section>
+      ${coverSignal ? `<section><span class="section-label">封面文章</span><button class="issue-signal-link" data-action="open" data-id="${escapeEditionHtml(coverSignal.id)}"><span>封面</span><span>${escapeEditionHtml(coverSignal.title || '阅读封面文章')}</span></button></section>` : ''}
+      ${otherSignals.length ? `<section><span class="section-label">本期文章</span>${otherSignals.map((signal, index) => `<button class="issue-signal-link" data-action="open" data-id="${escapeEditionHtml(signal.id)}"><span>${String(index + 1).padStart(2, '0')}</span><span>${escapeEditionHtml(signal.title || `本期文章 ${index + 1}`)}</span></button>`).join('')}</section>` : ''}
+      ${watchItems.length ? `<section><span class="section-label">接下来关注</span><ul>${watchItems.map((item) => `<li>${escapeEditionHtml(item)}</li>`).join('')}</ul></section>` : ''}
     </div>
   </aside>`;
 };
@@ -258,8 +290,9 @@ const renderArchiveDrawer = () => {
   return `<div class="edition-overlay" data-edition-action="close-panel"></div><aside class="edition-panel archive-panel" role="dialog" aria-modal="true" aria-labelledby="archive-panel-title">
     <div class="edition-panel-head"><span>${escapeEditionHtml(editionState.edition?.short_name || 'Frontier Systems')} · 往期归档</span><button type="button" data-edition-action="close-panel" aria-label="关闭刊期归档">×</button></div>
     <div class="edition-panel-body">
-      <span class="section-label">完整归档</span><h2 id="archive-panel-title">冻结后不再改写</h2>
-      <div class="archive-panel-list">${issues.map((issue) => `<article><span>${String(issue.issue_number).padStart(2, '0')}</span><div><h3>${escapeEditionHtml(issue.title)}</h3><p>${escapeEditionHtml(issue.standfirst)}</p><small>${escapeEditionHtml(formatEditionDate(issue.coverage_start))}—${escapeEditionHtml(formatEditionDate(issue.coverage_end))} · ${issue.selection_mode === 'owner_editorial_decisions' ? '主编选稿' : issue.auto_generated ? '冻结刊期' : '人工出版'}</small></div></article>`).join('') || '<p>尚无已冻结刊期。</p>'}</div>
+      <span class="section-label">完整归档</span><h2 id="archive-panel-title">历期刊物</h2>
+      <p class="panel-question">回看每一期的核心判断、封面文章与入选内容。</p>
+      <div class="archive-panel-list">${issues.map((issue) => `<article><span>${String(issue.issue_number).padStart(2, '0')}</span><div><h3>${escapeEditionHtml(issue.title)}</h3><p>${escapeEditionHtml(issue.standfirst)}</p><small>${escapeEditionHtml(archiveIssueMeta(issue))}</small><button class="issue-cover-action" type="button" data-edition-action="open-issue" data-issue-id="${escapeEditionHtml(issue.id)}">阅读本期 →</button></div></article>`).join('') || '<p>往期内容正在整理。</p>'}</div>
     </div>
   </aside>`;
 };
@@ -270,7 +303,11 @@ const syncEditionPanels = () => {
   const shell = appRoot?.querySelector('.app-shell');
   if (!shell) return;
   shell.querySelectorAll('[data-edition-layer="panel"]').forEach((node) => node.remove());
-  const panelMarkup = editionState.activeStorylineId ? renderStorylineDrawer() : renderArchiveDrawer();
+  const panelMarkup = editionState.activeIssueId
+    ? renderIssueDrawer()
+    : editionState.activeStorylineId
+      ? renderStorylineDrawer()
+      : renderArchiveDrawer();
   if (!panelMarkup) {
     emitEditionRendered();
     return;
@@ -286,6 +323,7 @@ const syncEditionPanels = () => {
 
 const closeEditionPanels = () => {
   editionState.activeStorylineId = '';
+  editionState.activeIssueId = '';
   editionState.archiveOpen = false;
   appRoot?.querySelector('[data-edition-layer="panel"]')?.remove();
   document.body.classList.remove('overlay-active');
@@ -467,15 +505,23 @@ appRoot?.addEventListener('click', (event) => {
     applyEditionLayer();
   } else if (action === 'open-storyline') {
     editionState.activeStorylineId = target.dataset.storylineId || editionState.storylines[0]?.id || '';
+    editionState.activeIssueId = '';
     editionState.archiveOpen = false;
     syncEditionPanels();
   } else if (action === 'open-storylines') {
     editionState.activeStorylineId = editionState.storylines[0]?.id || '';
+    editionState.activeIssueId = '';
     editionState.archiveOpen = false;
     syncEditionPanels();
   } else if (action === 'open-archive') {
     editionState.archiveOpen = true;
     editionState.activeStorylineId = '';
+    editionState.activeIssueId = '';
+    syncEditionPanels();
+  } else if (action === 'open-issue') {
+    editionState.activeIssueId = target.dataset.issueId || '';
+    editionState.activeStorylineId = '';
+    editionState.archiveOpen = false;
     syncEditionPanels();
   } else if (action === 'close-panel') {
     closeEditionPanels();
@@ -488,7 +534,7 @@ window.addEventListener('popstate', () => {
 });
 
 window.addEventListener('keydown', (event) => {
-  if (event.key === 'Escape' && (editionState.activeStorylineId || editionState.archiveOpen)) closeEditionPanels();
+  if (event.key === 'Escape' && (editionState.activeStorylineId || editionState.activeIssueId || editionState.archiveOpen)) closeEditionPanels();
   else if (event.key === 'Escape' && editionState.activeChannelId) setActiveChannel('', true);
 });
 

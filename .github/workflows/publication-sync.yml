@@ -16,6 +16,7 @@ on:
       - 'scripts/sync-adopted-signals.mjs'
       - 'scripts/sync-live-issue.mjs'
       - 'scripts/update-data-status.mjs'
+      - 'supabase/newsflow-publication-projection.sql'
       - '.github/workflows/publication-sync.yml'
 
 permissions:
@@ -33,18 +34,14 @@ jobs:
     outputs:
       changed: ${{ steps.sync.outputs.changed }}
     env:
-      SUPABASE_URL: ${{ vars.NEWSFLOW_SUPABASE_URL || '' }}
-      SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY || '' }}
-      NEWSFLOW_SUPABASE_URL: ${{ vars.NEWSFLOW_SUPABASE_URL || '' }}
-      NEWSFLOW_SUPABASE_PUBLISHABLE_KEY: ${{ vars.NEWSFLOW_SUPABASE_PUBLISHABLE_KEY || '' }}
+      # These are public client credentials protected by RLS. Publication sync no
+      # longer carries a service-role key or reads private Candidate rows.
+      SUPABASE_URL: https://blgwlycfcwvsupmqyqwn.supabase.co
+      SUPABASE_PUBLISHABLE_KEY: sb_publishable_n1Va-c_alpkQ0zNuJYUaxA_J0u68RVW
+      NEWSFLOW_SUPABASE_URL: https://blgwlycfcwvsupmqyqwn.supabase.co
+      NEWSFLOW_SUPABASE_PUBLISHABLE_KEY: sb_publishable_n1Va-c_alpkQ0zNuJYUaxA_J0u68RVW
       CLOUDFLARE_WEB_ANALYTICS_TOKEN: ${{ vars.CLOUDFLARE_WEB_ANALYTICS_TOKEN || '' }}
     steps:
-      - name: Require publication synchronization credentials
-        if: env.SUPABASE_URL == '' || env.SUPABASE_SERVICE_ROLE_KEY == '' || env.NEWSFLOW_SUPABASE_PUBLISHABLE_KEY == ''
-        run: |
-          echo "NEWSFLOW_SUPABASE_URL, NEWSFLOW_SUPABASE_PUBLISHABLE_KEY and SUPABASE_SERVICE_ROLE_KEY are required." >&2
-          exit 1
-
       - name: Checkout main
         uses: actions/checkout@v6
         with:

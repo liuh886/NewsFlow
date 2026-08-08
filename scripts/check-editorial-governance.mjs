@@ -9,13 +9,14 @@ for (const file of [
   'public/editorial-governance.js', 'public/editorial-governance.css',
   'scripts/sync-editorial-governance.mjs', 'scripts/sync-adopted-signals.mjs',
   'content/state/governance-sync.json', 'content/state/adoption-sync.json',
-  'public/data/governance-status.json'
+  'public/data/governance-status.json', 'supabase/newsflow-publication-projection.sql'
 ]) await access(resolve(root, file));
 
-const [index, governance, css, game, mode, build, sw, governanceSync, adoptionSync, sql] = await Promise.all([
+const [index, governance, css, game, mode, build, sw, governanceSync, adoptionSync, sql, projectionSql] = await Promise.all([
   read('index.html'), read('public/editorial-governance.js'), read('public/editorial-governance.css'),
   read('public/review-game.js'), read('public/editorial-office.js'), read('scripts/build.mjs'), read('public/sw.js'),
-  read('scripts/sync-editorial-governance.mjs'), read('scripts/sync-adopted-signals.mjs'), read('supabase/newsflow-editorial.sql')
+  read('scripts/sync-editorial-governance.mjs'), read('scripts/sync-adopted-signals.mjs'), read('supabase/newsflow-editorial.sql'),
+  read('supabase/newsflow-publication-projection.sql')
 ]);
 for (const file of ['public/editorial-governance.js', 'scripts/sync-editorial-governance.mjs', 'scripts/sync-adopted-signals.mjs']) {
   const syntax = spawnSync(process.execPath, ['--check', resolve(root, file)], { encoding: 'utf8' });
@@ -47,12 +48,15 @@ for (const publicAsset of ['source-registry.json', 'governance-status.json', 'ed
 for (const contract of [
   'newsflow_governance_publications', 'public/data/edition.json', 'public/data/storylines.json',
   'config/content-sources.json', 'config/content-discovery.json', 'syncDiscoveryRouting', 'plan.source_ids',
-  'applied_publication_ids'
+  'applied_publication_ids', 'SUPABASE_PUBLISHABLE_KEY'
 ]) if (!governanceSync.includes(contract)) throw new Error(`GitHub governance compiler missing ${contract}`);
+if (governanceSync.includes('SUPABASE_SERVICE_ROLE_KEY')) throw new Error('Published governance sync must not require service-role credentials.');
+
 for (const contract of [
-  "from('newsflow_editorial_adoptions')", "from('newsflow_candidates')", 'managed_signal_ids',
-  'frozenIssueSignalIds', "editorial_status: 'adopted'", 'non-authoritative public Signal(s) removed', 'unregistered source'
+  "from('newsflow_editorial_adoptions')", ".select('candidate_id,decision,decided_at,publication')", 'SUPABASE_PUBLISHABLE_KEY',
+  'managed_signal_ids', 'frozenIssueSignalIds', "editorial_status: 'adopted'", 'non-authoritative public Signal(s) removed', 'unregistered source'
 ]) if (!adoptionSync.includes(contract)) throw new Error(`adoption compiler missing ${contract}`);
+for (const forbidden of ["from('newsflow_candidates')", 'SUPABASE_SERVICE_ROLE_KEY']) if (adoptionSync.includes(forbidden)) throw new Error(`adoption compiler crossed the private Candidate boundary: ${forbidden}`);
 
 for (const contract of [
   'newsflow_editorial_members', 'newsflow_editorial_reviews', 'newsflow_candidates', 'payload jsonb',
@@ -61,4 +65,11 @@ for (const contract of [
 if (!sql.includes("role = 'owner'")) throw new Error('Only the shared owner may be Editor-in-Chief publication authority.');
 if (!sql.includes('update public.newsflow_candidates set active = false') || !sql.includes('update public.newsflow_candidates set active = true')) throw new Error('Chief Candidate lifecycle contract is missing.');
 
-console.log('NewsFlow editorial governance contract passed: chief-only publication/governance, private Candidate lifecycle, governed source discovery routing and authoritative-only Reader Signals.');
+for (const contract of [
+  'publication jsonb', 'private.newsflow_publication_snapshot', 'publication = private.newsflow_publication_snapshot',
+  'grant select on table public.newsflow_governance_publications to anon, authenticated',
+  'Public reads published NewsFlow governance changes'
+]) if (!projectionSql.includes(contract)) throw new Error(`public projection schema missing ${contract}`);
+if (projectionSql.includes('grant select on table public.newsflow_candidates to anon')) throw new Error('Private Candidate manuscripts must remain inaccessible to anonymous Reader clients.');
+
+console.log('NewsFlow editorial governance contract passed: chief-only decisions, private Candidate lifecycle, sanitized public publication projection and publishable-key GitHub synchronization.');

@@ -100,13 +100,13 @@ const issue = {
   auto_generated: true,
   selection_mode: 'live_editorial_ranking',
   edition_version: edition.schema_version,
-  title: cover?.title || `Issue ${issueNumber} · 本期正在更新`,
+  title: cover?.title || `Issue ${issueNumber} · 本期编选中`,
   standfirst: cover
-    ? `${cover.short_summary || cover.long_summary || ''} 本期仍在进行中，主编新采用的重大变化会继续进入排序。`
-    : '本期已经开始。主编采用的新 Signal 会持续进入当前刊期，封面与排序随重要性动态更新。',
+    ? `${cover.short_summary || cover.long_summary || ''} 本期持续追踪相关进展，封面与篇目将随重要性更新。`
+    : '本期已进入出版周期。重要进展将在完成编辑审阅后陆续进入本期。',
   judgment: selected.length
-    ? '本期仍在进行中；当前封面代表此刻排序第一的已采用 Signal，后续重大变化可能改变封面与篇目顺序。'
-    : '本期仍在进行中；尚无主编采用的 Signal，编辑台继续观察。',
+    ? '本期关注正在发生的关键变化；当前封面聚焦此刻最具影响力的进展，后续重大事件可能改变版面重点。'
+    : '本期尚无入选文章，编辑部持续追踪关键进展。',
   cover_signal_id: cover ? String(cover.id) : '',
   signal_ids: selectedIds,
   storyline_updates: [],

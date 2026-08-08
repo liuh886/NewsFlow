@@ -5,9 +5,9 @@ import { fileURLToPath } from 'node:url';
 
 const root = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 const supabaseUrl = process.env.SUPABASE_URL?.trim();
-const serviceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY?.trim();
-if (!supabaseUrl || !serviceRoleKey) {
-  throw new Error('SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY are required for adoption sync.');
+const publishableKey = process.env.SUPABASE_PUBLISHABLE_KEY?.trim();
+if (!supabaseUrl || !publishableKey) {
+  throw new Error('SUPABASE_URL and SUPABASE_PUBLISHABLE_KEY are required for adoption sync.');
 }
 
 const readJson = async (path) => JSON.parse(await readFile(resolve(root, path), 'utf8'));
@@ -21,7 +21,7 @@ try {
 } catch {
   previousSync = {};
 }
-const client = createClient(supabaseUrl, serviceRoleKey, {
+const client = createClient(supabaseUrl, publishableKey, {
   auth: { persistSession: false, autoRefreshToken: false }
 });
 
@@ -44,71 +44,58 @@ const sourceForUrl = (value) => {
 
 const { data: adoptionRows, error: adoptionError } = await client
   .from('newsflow_editorial_adoptions')
-  .select('candidate_id,decision,decided_at')
+  .select('candidate_id,decision,decided_at,publication')
   .order('decided_at', { ascending: false, nullsFirst: false });
 if (adoptionError) throw adoptionError;
 const adoptions = Array.isArray(adoptionRows) ? adoptionRows : [];
 const adoptionIds = adoptions.map((row) => String(row.candidate_id || '')).filter(Boolean);
 
-let candidates = [];
-if (adoptionIds.length) {
-  const { data, error } = await client
-    .from('newsflow_candidates')
-    .select('candidate_id,title,short_summary,source,url,channel_id,storyline_ids,event_type,published_at,payload')
-    .in('candidate_id', adoptionIds);
-  if (error) throw error;
-  candidates = Array.isArray(data) ? data : [];
-}
-const candidateById = new Map(candidates.map((candidate) => [String(candidate.candidate_id), candidate]));
-
-const deriveQuality = (payload) => {
-  const direct = Number(payload?.quality_index);
-  if (Number.isFinite(direct) && direct > 0) return direct;
-  const scores = Object.values(payload?.scores || {}).map(Number).filter(Number.isFinite);
-  return scores.length
-    ? Number(((scores.reduce((sum, value) => sum + value, 0) / scores.length) * 2).toFixed(1))
-    : 8.0;
-};
-
-const normalizeAdoptedSignal = (candidate, adoption) => {
-  const payload = candidate?.payload && typeof candidate.payload === 'object' && !Array.isArray(candidate.payload)
-    ? candidate.payload
-    : {};
-  const url = String(payload.url || candidate.url || '');
-  const registeredSource = sourceForUrl(url);
-  if (!registeredSource) throw new Error(`Adopted candidate ${candidate.candidate_id} uses an unregistered source: ${url}`);
-  const title = String(payload.title || candidate.title || '').trim();
-  const shortSummary = String(payload.short_summary || candidate.short_summary || '').trim();
-  const longSummary = String(payload.long_summary || shortSummary).trim();
-  const publishedAt = String(payload.published_at || candidate.published_at || '');
-  if (!title || !shortSummary || !longSummary || !publishedAt) {
-    throw new Error(`Adopted candidate ${candidate.candidate_id} is missing publication fields.`);
+const normalizeAdoptedSignal = (adoption) => {
+  const publication = adoption?.publication && typeof adoption.publication === 'object' && !Array.isArray(adoption.publication)
+    ? adoption.publication
+    : null;
+  if (!publication || !Object.keys(publication).length) {
+    throw new Error(`Adoption ${adoption.candidate_id} is missing its public publication snapshot.`);
   }
+
+  const url = String(publication.url || '').trim();
+  const registeredSource = sourceForUrl(url);
+  if (!registeredSource) throw new Error(`Adopted candidate ${adoption.candidate_id} uses an unregistered source: ${url}`);
+
+  const title = String(publication.title || '').trim();
+  const shortSummary = String(publication.short_summary || '').trim();
+  const longSummary = String(publication.long_summary || shortSummary).trim();
+  const publishedAt = String(publication.published_at || '').trim();
+  if (!title || !shortSummary || !longSummary || !publishedAt) {
+    throw new Error(`Adopted candidate ${adoption.candidate_id} is missing publication fields.`);
+  }
+
+  const quality = Number(publication.quality_index);
   return {
-    id: String(candidate.candidate_id),
-    channel_id: String(payload.channel_id || candidate.channel_id || ''),
-    storyline_ids: Array.isArray(payload.storyline_ids) ? payload.storyline_ids.map(String) : (candidate.storyline_ids || []).map(String),
-    event_type: String(payload.event_type || candidate.event_type || ''),
-    event_date: String(payload.event_date || publishedAt).slice(0, 10),
+    id: String(adoption.candidate_id),
+    channel_id: String(publication.channel_id || ''),
+    storyline_ids: Array.isArray(publication.storyline_ids) ? publication.storyline_ids.map(String) : [],
+    event_type: String(publication.event_type || ''),
+    event_date: String(publication.event_date || publishedAt).slice(0, 10),
     title,
     url,
-    source: String(payload.source || candidate.source || registeredSource.name),
+    source: String(publication.source || registeredSource.name),
     published_at: publishedAt,
-    quality_index: deriveQuality(payload),
-    source_tier: String(payload.source_tier || registeredSource.tier || 'Tier B'),
+    quality_index: Number.isFinite(quality) && quality > 0 ? quality : 8.0,
+    source_tier: String(publication.source_tier || registeredSource.tier || 'Tier B'),
     short_summary: shortSummary,
     long_summary: longSummary,
-    key_quote: String(payload.key_quote || ''),
-    supporting_quotes: Array.isArray(payload.supporting_quotes) ? payload.supporting_quotes.map(String) : [],
-    tags: Array.isArray(payload.tags) ? payload.tags.map(String) : [],
+    key_quote: String(publication.key_quote || ''),
+    supporting_quotes: Array.isArray(publication.supporting_quotes) ? publication.supporting_quotes.map(String) : [],
+    tags: Array.isArray(publication.tags) ? publication.tags.map(String) : [],
     editorial_status: 'adopted',
     editorial_decision: String(adoption.decision),
     adopted_at: adoption.decided_at || null
   };
 };
 
-// Frozen Issues are immutable publication history. A live Issue is rebuilt from the
-// current adoption projection, so withdrawn chief decisions must disappear from it.
+// Historical Issues retain their published Signals. The live Issue is rebuilt from
+// the current public adoption projection, so reversed chief decisions leave it.
 const frozenIssueSignalIds = new Set((issues || [])
   .filter((issue) => issue?.lifecycle !== 'live')
   .flatMap((issue) => issue.signal_ids || [])
@@ -123,9 +110,7 @@ const nextById = new Map(
 
 for (const adoption of adoptions) {
   const id = String(adoption.candidate_id || '');
-  const candidate = candidateById.get(id);
-  if (!candidate) throw new Error(`Adopted candidate ${id} is missing from the private candidate catalog.`);
-  nextById.set(id, normalizeAdoptedSignal(candidate, adoption));
+  nextById.set(id, normalizeAdoptedSignal(adoption));
 }
 
 const removedLegacyOrWithdrawn = news
@@ -159,4 +144,4 @@ if (stateChanged) {
   });
 }
 
-console.log(`Editorial adoption sync: ${currentAdoptionIds.size} current adoption(s), ${frozenIssueSignalIds.size} frozen Issue Signal(s), ${removedLegacyOrWithdrawn.length} non-authoritative public Signal(s) removed, ${newsChanged || stateChanged ? 'state changed' : 'no semantic change'}.`);
+console.log(`Editorial adoption sync: ${currentAdoptionIds.size} current adoption(s), ${frozenIssueSignalIds.size} historical Issue Signal(s), ${removedLegacyOrWithdrawn.length} non-authoritative public Signal(s) removed, ${newsChanged || stateChanged ? 'state changed' : 'no semantic change'}.`);
