@@ -15,7 +15,6 @@ const writeJson = async (path, value) => writeFile(resolve(root, path), `${JSON.
 const news = await readJson('public/data/news.json');
 const issues = await readJson('public/data/issues.json');
 const sourceConfig = await readJson('config/content-sources.json');
-const syncState = await readJson('content/state/adoption-sync.json');
 const client = createClient(supabaseUrl, serviceRoleKey, {
   auth: { persistSession: false, autoRefreshToken: false }
 });
@@ -104,8 +103,12 @@ const normalizeAdoptedSignal = (candidate, adoption) => {
 
 const issueSignalIds = new Set((issues || []).flatMap((issue) => issue.signal_ids || []).map(String));
 const currentAdoptionIds = new Set(adoptionIds);
-const previouslyManaged = new Set(Array.isArray(syncState.managed_signal_ids) ? syncState.managed_signal_ids.map(String) : []);
-const nextById = new Map(news.map((item) => [String(item.id || ''), item]));
+const allowedPublicIds = new Set([...issueSignalIds, ...currentAdoptionIds]);
+const nextById = new Map(
+  news
+    .filter((item) => allowedPublicIds.has(String(item.id || '')))
+    .map((item) => [String(item.id || ''), item])
+);
 
 for (const adoption of adoptions) {
   const id = String(adoption.candidate_id || '');
@@ -114,26 +117,23 @@ for (const adoption of adoptions) {
   nextById.set(id, normalizeAdoptedSignal(candidate, adoption));
 }
 
-const withdrawn = [];
-for (const id of previouslyManaged) {
-  if (currentAdoptionIds.has(id) || issueSignalIds.has(id)) continue;
-  if (nextById.delete(id)) withdrawn.push(id);
-}
-
+const removedLegacyOrWithdrawn = news
+  .map((item) => String(item.id || ''))
+  .filter((id) => id && !nextById.has(id));
 const nextNews = [...nextById.values()].sort((left, right) =>
   new Date(right.published_at || 0).getTime() - new Date(left.published_at || 0).getTime()
     || String(left.id || '').localeCompare(String(right.id || ''))
 );
-const nextManaged = [...new Set([...currentAdoptionIds, ...[...previouslyManaged].filter((id) => issueSignalIds.has(id))])].sort();
-const changed = JSON.stringify(nextNews) !== JSON.stringify(news)
-  || JSON.stringify(nextManaged) !== JSON.stringify([...previouslyManaged].sort());
+const nextManaged = [...currentAdoptionIds].sort();
+const changed = JSON.stringify(nextNews) !== JSON.stringify(news);
 
 if (changed) await writeJson('public/data/news.json', nextNews);
 await writeJson('content/state/adoption-sync.json', {
   schema_version: '1.0',
   managed_signal_ids: nextManaged,
   current_adoption_count: currentAdoptionIds.size,
+  formal_issue_signal_count: issueSignalIds.size,
   last_synced_at: new Date().toISOString()
 });
 
-console.log(`Editorial adoption sync: ${currentAdoptionIds.size} current adoption(s), ${withdrawn.length} pre-Issue withdrawal(s), ${changed ? 'Reader data changed' : 'no Reader change'}.`);
+console.log(`Editorial adoption sync: ${currentAdoptionIds.size} current adoption(s), ${issueSignalIds.size} frozen Issue Signal(s), ${removedLegacyOrWithdrawn.length} non-authoritative public Signal(s) removed, ${changed ? 'Reader data changed' : 'no Reader change'}.`);
