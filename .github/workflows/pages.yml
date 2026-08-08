@@ -1,7 +1,7 @@
 name: NewsFlow Frontend
 
-# Reader deployment consumes only canonical public publication state.
-# Private Candidates live in Supabase; editorial-sync.yml owns chief state → GitHub/Pages.
+# Reader deployment consumes canonical public publication state only.
+# Private Candidates remain in Supabase; publication-sync.yml projects chief-published state to GitHub/Pages.
 
 on:
   pull_request:
@@ -17,11 +17,11 @@ on:
       - 'scripts/**'
       - 'tests/browser-smoke.mjs'
       - 'supabase/newsflow-editorial.sql'
+      - 'supabase/newsflow-publication-projection.sql'
       - 'package.json'
       - 'package-lock.json'
       - '.github/workflows/pages.yml'
-      - '.github/workflows/editorial-sync.yml'
-      - '.github/workflows/publish-edition.yml'
+      - '.github/workflows/publication-sync.yml'
   push:
     branches: [main]
     paths:
@@ -35,11 +35,11 @@ on:
       - 'scripts/**'
       - 'tests/browser-smoke.mjs'
       - 'supabase/newsflow-editorial.sql'
+      - 'supabase/newsflow-publication-projection.sql'
       - 'package.json'
       - 'package-lock.json'
       - '.github/workflows/pages.yml'
-      - '.github/workflows/editorial-sync.yml'
-      - '.github/workflows/publish-edition.yml'
+      - '.github/workflows/publication-sync.yml'
   workflow_dispatch:
 
 permissions:
