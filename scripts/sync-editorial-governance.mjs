@@ -4,9 +4,9 @@ import { fileURLToPath } from 'node:url';
 
 const root = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 const supabaseUrl = process.env.SUPABASE_URL?.trim();
-const serviceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY?.trim();
-if (!supabaseUrl || !serviceRoleKey) {
-  throw new Error('SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY are required for governance sync.');
+const publishableKey = process.env.SUPABASE_PUBLISHABLE_KEY?.trim();
+if (!supabaseUrl || !publishableKey) {
+  throw new Error('SUPABASE_URL and SUPABASE_PUBLISHABLE_KEY are required for governance sync.');
 }
 
 const readJson = async (path) => JSON.parse(await readFile(resolve(root, path), 'utf8'));
@@ -19,7 +19,7 @@ const requireText = (value, label) => {
 };
 
 const response = await fetch(`${supabaseUrl}/rest/v1/newsflow_governance_publications?select=id,kind,target_id,payload,published_at&order=published_at.asc,id.asc`, {
-  headers: { apikey: serviceRoleKey, Authorization: `Bearer ${serviceRoleKey}` }
+  headers: { apikey: publishableKey, Authorization: `Bearer ${publishableKey}` }
 });
 if (!response.ok) throw new Error(`Governance publication fetch failed: ${response.status} ${await response.text()}`);
 const publications = await response.json();
