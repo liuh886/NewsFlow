@@ -1,0 +1,221 @@
+name: One-shot health audit patch
+
+on:
+  push:
+    branches: [fix/health-audit-49]
+    paths:
+      - '.github/workflows/health-audit-patch.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  patch:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          ref: fix/health-audit-49
+          fetch-depth: 0
+      - uses: actions/setup-python@v6
+        with:
+          python-version: '3.12'
+      - name: Apply exact health-audit patches
+        shell: python
+        run: |
+          from pathlib import Path
+          import json, re
+
+          def replace(path, old, new, count=1):
+              p = Path(path)
+              text = p.read_text()
+              if old not in text:
+                  raise SystemExit(f'missing expected fragment in {path}: {old[:100]!r}')
+              text2 = text.replace(old, new, count)
+              p.write_text(text2)
+
+          def regex_replace(path, pattern, replacement, count=1):
+              p = Path(path)
+              text = p.read_text()
+              text2, n = re.subn(pattern, replacement, text, count=count, flags=re.S)
+              if n != count:
+                  raise SystemExit(f'expected {count} regex replacement(s) in {path}, got {n}: {pattern}')
+              p.write_text(text2)
+
+          # Reader: the only content authority is public/data/news.json.
+          regex_replace('src/editorial-app.js', r"const verifiedFallbackItems = \[.*?\n\];\n\nconst readStoredJson", 'const readStoredJson')
+          replace('src/editorial-app.js', "  dataMode: 'repository',\n", "  dataMode: 'publication',\n  dataError: '',\n")
+          replace('src/editorial-app.js', "    if (state.filter === 'high' && getQuality(item) < 8) return false;\n", '')
+          replace('src/editorial-app.js', "  const sourceLabel = state.dataMode === 'repository' ? '仓库数据快照' : '核验后备用快照';\n", "  const sourceLabel = '正式出版记录';\n")
+          replace('src/editorial-app.js', "          ['high', '高置信度', state.items.filter((item) => getQuality(item) >= 8).length],\n", '')
+          replace('src/editorial-app.js', "  const quality = getQuality(item);\n", '')
+          replace('src/editorial-app.js', '      <div class="signal-score"><div class="score-row"><span>信号评分</span><strong>${quality.toFixed(1)} / 10</strong></div><div class="score-meter"><span style="width:${Math.min(100, quality * 10)}%"></span></div></div>\n', '')
+          replace('src/editorial-app.js', '<div class="article-meta"><span class="article-source">${escapeHtml(item.source)}</span>${isPrimary(item) ? \'<span class="source-verification">机构 / 一手源</span>\' : \'\'}<span>${escapeHtml(relativeTime(item.published_at))}</span><span>评分 ${getQuality(item).toFixed(1)}</span></div>', '<div class="article-meta"><span class="article-source">${escapeHtml(item.source)}</span>${isPrimary(item) ? \'<span class="source-verification">机构 / 一手源</span>\' : \'\'}<span>${escapeHtml(relativeTime(item.published_at))}</span></div>')
+          replace('src/editorial-app.js', '<div class="drawer-eyebrow">${escapeHtml(item.source)} · ${escapeHtml(formatDate(item.published_at, { year: \'numeric\', month: \'long\', day: \'numeric\' }))} · 评分 ${getQuality(item).toFixed(1)}</div>', '<div class="drawer-eyebrow">${escapeHtml(item.source)} · ${escapeHtml(formatDate(item.published_at, { year: \'numeric\', month: \'long\', day: \'numeric\' }))}</div>')
+          old_empty = "'<section class=\"empty-state\"><h3>没有匹配的信号</h3><p>当前频道、时间或筛选条件过窄。重置后可以回到完整信息流。</p><button class=\"text-button primary\" data-action=\"reset\">重置筛选</button></section>'"
+          new_empty = "(state.dataError ? '<section class=\"empty-state\"><h3>正式出版数据暂时不可用</h3><p>NewsFlow 不会用候选稿或备用内容替代主编已经采用的出版记录。请稍后重新加载。</p></section>' : '<section class=\"empty-state\"><h3>没有匹配的信号</h3><p>当前频道、时间或筛选条件过窄。重置后可以回到完整信息流。</p><button class=\"text-button primary\" data-action=\"reset\">重置筛选</button></section>')"
+          replace('src/editorial-app.js', old_empty, new_empty)
+          new_initialize = '''const initialize = async () => {
+            renderLoading();
+            setTheme(state.theme);
+            const [newsResult, topicResult, editionResult] = await Promise.allSettled([
+              loadJson('./data/news.json'),
+              loadJson('./data/topics.json'),
+              loadJson('./data/edition.json')
+            ]);
+
+            if (newsResult.status === 'fulfilled' && Array.isArray(newsResult.value)) {
+              const deduped = new Map();
+              newsResult.value
+                .map(normalizeItem)
+                .filter((item) => item.status !== 'archived' && item.url !== '#' && item.title && getSummary(item))
+                .forEach((item) => {
+                  const key = item.url !== '#' ? item.url : getId(item);
+                  const existing = deduped.get(key);
+                  if (!existing || getLongSummary(item).length > getLongSummary(existing).length) deduped.set(key, item);
+                });
+              state.items = [...deduped.values()].sort((a, b) =>
+                (validDate(b.published_at)?.getTime() || 0) - (validDate(a.published_at)?.getTime() || 0)
+              );
+              state.dataMode = 'publication';
+              state.dataError = '';
+            } else {
+              console.warn('NewsFlow authoritative publication data unavailable:', newsResult.status === 'rejected' ? newsResult.reason : 'invalid news.json');
+              state.items = [];
+              state.dataMode = 'unavailable';
+              state.dataError = 'authoritative-publication-unavailable';
+            }
+
+            if (topicResult.status === 'fulfilled' && Array.isArray(topicResult.value) && topicResult.value.length) {
+              state.topics = topicResult.value;
+            }
+            if (editionResult.status === 'fulfilled' && editionResult.value?.id) state.editionId = String(editionResult.value.id);
+            state.loading = false;
+            if (state.cloudSnapshotRequested) broadcastFeedbackSnapshot();
+            render();
+          };
+
+          initialize();'''
+          regex_replace('src/editorial-app.js', r"const initialize = async \(\) => \{.*?\n\};\n\ninitialize\(\);", new_initialize)
+
+          # PWA/browser cache identity: force the Governance v2 health-fix assets to replace 2.8.0.
+          for path in ['index.html', 'public/sw.js', 'scripts/check-review-game.mjs', 'scripts/check-frontend-architecture.mjs', 'scripts/check-product-polish.mjs']:
+              p = Path(path)
+              text = p.read_text().replace('2.8.0', '2.9.0').replace('editorial-governance-v2.8.0', 'editorial-governance-v2.9.0')
+              p.write_text(text)
+          replace('public/sw.js', "  './data/ai_digest.json',\n", '')
+
+          # Product checks: Reader scores/fallbacks are prohibited rather than merely hidden with CSS.
+          replace('scripts/check-product-polish.mjs', ", '.signal-score'", '')
+          old_check = "if (!editionCss.includes('display: none;') || !editionCss.includes('.source-verification')) throw new Error('Reader homepage must suppress score/badge chrome from the editorial hierarchy.');"
+          new_check = "if (!editionCss.includes('.source-verification')) throw new Error('Reader source provenance styling is missing.');\nfor (const forbidden of ['verifiedFallbackItems', './data/ai_digest.json', '信号评分', '高置信度', '评分 ${getQuality']) if (appJs.includes(forbidden)) throw new Error(`Reader must not expose or synthesize internal editorial content: ${forbidden}`);"
+          replace('scripts/check-product-polish.mjs', old_check, new_check)
+          insert_after = "if (!app.includes(contract)) throw new Error(`reader app is missing architecture contract: ${contract}`);\n}\n"
+          add = insert_after + "for (const forbidden of ['verifiedFallbackItems', './data/ai_digest.json', '信号评分', '高置信度', '评分 ${getQuality']) {\n  if (app.includes(forbidden)) throw new Error(`publication-only Reader contains forbidden editorial fallback/score: ${forbidden}`);\n}\n"
+          replace('scripts/check-frontend-architecture.mjs', insert_after, add)
+
+          # Canonical SQL must match the live production lifecycle trigger.
+          new_fn = '''create or replace function private.newsflow_sync_chief_adoption()
+          returns trigger
+          language plpgsql
+          security definer
+          set search_path = ''
+          as $$
+          declare
+            review_user uuid := coalesce(new.reviewer_user_id, old.reviewer_user_id);
+            review_candidate text := coalesce(new.candidate_id, old.candidate_id);
+          begin
+            if not exists (
+              select 1 from public.membership_admins
+              where user_id = review_user and active = true and role = 'owner'
+            ) then
+              return coalesce(new, old);
+            end if;
+
+            if tg_op = 'DELETE' then
+              delete from public.newsflow_editorial_adoptions where candidate_id = review_candidate;
+              update public.newsflow_candidates set active = true, synced_at = now() where candidate_id = review_candidate;
+              return old;
+            end if;
+
+            update public.newsflow_candidates set active = false, synced_at = now() where candidate_id = new.candidate_id;
+
+            if new.decision in ('cover_story', 'accept') then
+              insert into public.newsflow_editorial_adoptions (candidate_id, decision, decided_at, updated_at)
+              values (new.candidate_id, new.decision, new.decided_at, now())
+              on conflict (candidate_id) do update
+                set decision = excluded.decision,
+                    decided_at = excluded.decided_at,
+                    updated_at = now();
+            else
+              delete from public.newsflow_editorial_adoptions where candidate_id = new.candidate_id;
+            end if;
+            return new;
+          end;
+          $$;
+          revoke all on function private.newsflow_sync_chief_adoption() from public, anon, authenticated, service_role;'''
+          regex_replace('supabase/newsflow-editorial.sql', r"create or replace function private\.newsflow_sync_chief_adoption\(\).*?revoke all on function private\.newsflow_sync_chief_adoption\(\) from public, anon, authenticated, service_role;", new_fn)
+
+          # Workflow docs/config: Candidates are transient locally and durable only in private Supabase.
+          cfg = json.loads(Path('config/content-workflow.json').read_text())
+          cfg['allowed_draft_writes'] = ['content/inbox/*.json (local, gitignored, transient)']
+          cfg['apply_writes'] = ['supabase:public.newsflow_candidates', 'content/runs/*.json (sanitized counts/metadata only)']
+          cfg['private_candidate_store'] = 'supabase:public.newsflow_candidates'
+          cfg['public_audit_excludes_candidate_content'] = True
+          Path('config/content-workflow.json').write_text(json.dumps(cfg, ensure_ascii=False, indent=2) + '\n')
+
+          # Public data freshness comes from the sanitized Aug 8 audit, not a tracked Candidate pack.
+          status = {
+            'schema_version': '1.0',
+            'edition_id': 'frontier-systems-review',
+            'updated_at': '2026-08-08T11:22:00+08:00',
+            'timezone': 'Asia/Shanghai',
+            'source': 'content-run',
+            'signal_count': 17,
+            'latest_signal_at': '2026-08-03T00:00:00.000Z',
+            'audit_artifact': '20260808T032200Z-scan.json'
+          }
+          Path('public/data/data-status.json').write_text(json.dumps(status, ensure_ascii=False, indent=2) + '\n')
+
+          # Remove obsolete public Reader/candidate files.
+          for path in ['public/data/ai_digest.json']:
+              p = Path(path)
+              if p.exists(): p.unlink()
+
+          # Pages path filters should describe current architecture only.
+          for path in ['.github/workflows/pages.yml']:
+              p = Path(path)
+              text = p.read_text()
+              text = text.replace("      - 'content/inbox/**'\n", '')
+              text = text.replace("      - 'content/state/pipeline-review-queue.json'\n", '')
+              text = text.replace("      - '.github/workflows/supabase-sync.yml'\n", '')
+              p.write_text(text)
+
+          # Update WORKFLOW prose without preserving the old public Candidate model.
+          p = Path('WORKFLOW.md')
+          text = p.read_text()
+          text = re.sub(r"## Two different acceptance boundaries.*?## Invocation", '''## One publication boundary\n\nNewsFlow separates machine attention filtering from editorial publication:\n\n1. the content workflow decides only whether sourced evidence is strong enough to become a **private Candidate**;\n2. Editors record advisory five-state opinions in Supabase;\n3. only the Editor-in-Chief's **封面文章 / 录用** decision can cross the publication gate into Reader Latest and the next formal Issue.\n\nA machine `accepted` result never means published. Candidate manuscripts, evidence packets, revision/rejection records and Editor opinions are Editorial World data and must not be committed to the public repository.\n\n## Invocation''', text, count=1, flags=re.S)
+          text = text.replace('- Write one JSON candidate pack to `content/inbox/` using `schemas/content-candidate-pack.schema.json`.', '- Write one temporary JSON candidate pack to gitignored `content/inbox/` (or pass it on stdin) using `schemas/content-candidate-pack.schema.json`. Never commit the pack.')
+          text = text.replace('The apply command may promote evidence to the continuous Signal set and synchronizes durable human-preflight state. A `needs_review` candidate stays available to the Editor Review Game after transient inbox cleanup.', 'The apply command writes reviewable Candidates directly to the RLS-protected Supabase `newsflow_candidates` table. It writes only a sanitized GitHub scan audit containing run metadata and aggregate counts. It cannot publish Reader content.')
+          text = text.replace('- All five decisions can be preserved in the editor\'s private NewsFlow account state. Only active-owner `封面文章` and `录用` are projected to `newsflow_editorial_adoptions` for formal publication. Guest and non-authoritative editor opinions do not gain publication authority.', '- All five decisions live in normalized private Supabase review rows. Ordinary Editors provide opinions only. A chief decision closes the Candidate; only chief `封面文章` and `录用` create `newsflow_editorial_adoptions`. Deleting the chief decision reopens the Candidate.')
+          text = text.replace('- `completed_applied`: evidence update applied and checks passed; formal Issue adoption still awaits editor decisions.', '- `completed_applied`: reviewable Candidates were submitted to private Supabase and the sanitized public scan audit was written; publication still awaits the Editor-in-Chief.')
+          p.write_text(text)
+
+          # Remove the temporary workflow itself from the resulting branch commit.
+          Path('.github/workflows/health-audit-patch.yml').unlink()
+
+          # Strong local assertions before committing.
+          app = Path('src/editorial-app.js').read_text()
+          for forbidden in ['verifiedFallbackItems', './data/ai_digest.json', '信号评分', '高置信度', '评分 ${getQuality']:
+              if forbidden in app: raise SystemExit(f'Reader still contains {forbidden}')
+          if Path('public/data/ai_digest.json').exists(): raise SystemExit('ai_digest still exists')
+          if 'update public.newsflow_candidates set active = false' not in Path('supabase/newsflow-editorial.sql').read_text(): raise SystemExit('canonical SQL lifecycle update missing')
+
+      - name: Commit patch
+        run: |
+          git config user.name "newsflow-health-bot"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -A
+          git commit -m "fix: close NewsFlow health audit gaps"
+          git push origin HEAD:fix/health-audit-49
