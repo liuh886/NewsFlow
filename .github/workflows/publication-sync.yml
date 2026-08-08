@@ -3,8 +3,9 @@ name: Sync publication state
 on:
   workflow_dispatch:
   schedule:
-    # 00:00 Asia/Shanghai on the 1st and 15th: open the new live Issue immediately.
-    - cron: '0 16 1,15 * *'
+    # 00:00 Asia/Shanghai every day. The live-issue compiler is idempotent and
+    # only opens/freezes an Issue when the half-month boundary has actually changed.
+    - cron: '0 16 * * *'
     # During an active Issue, pull chief decisions and recompute the live ranking twice an hour.
     - cron: '17,47 * * * *'
   push:
