@@ -28,11 +28,14 @@ for (const contract of ['STARTUP_WATCHDOG_MS = 8000', 'data-startup-recovery="tr
   if (!startupJs.includes(contract)) throw new Error(`Startup resilience is missing ${contract}`);
 }
 if (startupJs.includes('window.fetch =') || startupJs.includes('nativeFetch')) throw new Error('Startup resilience must not own or monkey-patch application data fetching.');
-if (!appJs.includes('AbortSignal.timeout(5000)')) throw new Error('Reader data owner must bound repository data requests directly.');
+if (!appJs.includes('AbortSignal.timeout(5000)')) throw new Error('Reader data owner must bound publication requests directly.');
 for (const contract of ['按时间排序', "(validDate(b.published_at)?.getTime() || 0) - (validDate(a.published_at)?.getTime() || 0)", 'recommendationScore(b) - recommendationScore(a)']) {
   if (!appJs.includes(contract)) throw new Error(`Latest stream chronological contract is missing ${contract}`);
 }
-for (const contract of ['NETWORK_TIMEOUT_MS = 5000', 'fetchWithTimeout', 'warmAppShell', 'editorial-governance-v2.8.0']) {
+for (const forbidden of ['verifiedFallbackItems', './data/ai_digest.json', '信号评分', '高置信度', '评分 ${getQuality']) {
+  if (appJs.includes(forbidden)) throw new Error(`Reader must not expose or synthesize internal editorial content: ${forbidden}`);
+}
+for (const contract of ['NETWORK_TIMEOUT_MS = 5000', 'fetchWithTimeout', 'warmAppShell', 'editorial-governance-v2.9.0']) {
   if (!serviceWorker.includes(contract)) throw new Error(`Service worker startup contract is missing ${contract}`);
 }
 
@@ -40,9 +43,7 @@ for (const contract of [
   'EDITORIAL DISPOSITION REPORT', 'data-review-action="decision"', 'nf-review-stamp',
   'prefers-reduced-motion', 'grid-template-columns: repeat(5', "from('newsflow_candidates')", "from('newsflow_editorial_reviews')",
   '编辑意见', 'FINAL EDITORIAL RECORD'
-]) {
-  if (!`${gameJs}\n${gameCss}\n${governanceCss}`.includes(contract)) throw new Error(`Review game polish contract is missing ${contract}`);
-}
+]) if (!`${gameJs}\n${gameCss}\n${governanceCss}`.includes(contract)) throw new Error(`Review game polish contract is missing ${contract}`);
 if (gameJs.includes('openGuest') || gameJs.includes('localStorage')) throw new Error('Review game may not reintroduce public guest packets or local editorial decisions.');
 
 for (const contract of [
@@ -50,10 +51,10 @@ for (const contract of [
   "heading.textContent = '最新'", "firstEditorialAnchor.insertAdjacentHTML('beforebegin', renderCurrentIssue(edition, issue))",
   "issueNode.insertAdjacentHTML('afterend', renderPostIssueIntro(issue))", '#section/', "channelSort: 'newest'", "data-sort=\"selected\""
 ]) if (!editionJs.includes(contract)) throw new Error(`Premium Reader IA/section contract is missing ${contract}`);
-for (const selector of ['.issue-hero-copy h2', 'font-size: clamp(48px, 6.2vw, 76px)', '.issue-judgment-band', '.global-search:focus-within', '.signal-score']) {
+for (const selector of ['.issue-hero-copy h2', 'font-size: clamp(48px, 6.2vw, 76px)', '.issue-judgment-band', '.global-search:focus-within']) {
   if (!editionCss.includes(selector)) throw new Error(`Premium Reader visual hierarchy is missing ${selector}`);
 }
-if (!editionCss.includes('display: none;') || !editionCss.includes('.source-verification')) throw new Error('Reader homepage must suppress score/badge chrome from the editorial hierarchy.');
+if (!editionCss.includes('.source-verification')) throw new Error('Reader source provenance styling is missing.');
 
 for (const contract of [
   "const ROOT_ID = 'newsflow-reading-surface-root'", '#read/', 'NewsFlow Editorial Desk', '发生了什么', '为什么重要',
@@ -71,9 +72,8 @@ for (const contract of ['Publication Settings', '刊物判断', '长期议题', 
 for (const selector of ['.nf-governance-shell', '.nf-gov-tabs', '.nf-gov-editor', '.nf-gov-index', '.nf-gov-board-stats', '@media (max-width: 720px)']) {
   if (!governanceCss.includes(selector)) throw new Error(`Chief governance CSS is missing ${selector}`);
 }
-
-for (const privateArtifact of ['review-candidates.json', 'pipeline-reviews.json', 'guest-editor-invites.json']) {
-  if (serviceWorker.includes(privateArtifact) || index.includes(privateArtifact)) throw new Error(`Reader artifact exposes private editorial state: ${privateArtifact}`);
+for (const privateArtifact of ['review-candidates.json', 'pipeline-reviews.json', 'guest-editor-invites.json', 'ai_digest.json']) {
+  if (serviceWorker.includes(privateArtifact) || index.includes(privateArtifact)) throw new Error(`Reader artifact exposes retired/private state: ${privateArtifact}`);
 }
 
 const reactions = JSON.parse(reactionsText);
@@ -88,4 +88,4 @@ if (!Number.isInteger(status.signal_count) || status.signal_count < 1) throw new
 const statusCheck = spawnSync(process.execPath, [resolve(root, 'scripts/update-data-status.mjs'), '--check'], { encoding: 'utf8' });
 if (statusCheck.status !== 0) throw new Error(statusCheck.stderr || statusCheck.stdout);
 
-console.log('NewsFlow product polish passed: premium publication Reader, private editorial game, chief governance surface and live freshness.');
+console.log('NewsFlow product polish passed: premium publication-only Reader, private editorial game, chief governance surface and live freshness.');
