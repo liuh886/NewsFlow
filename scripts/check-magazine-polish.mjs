@@ -59,8 +59,8 @@ for (const identity of [
 
 if (packageManifest.version !== '2.4.1') throw new Error('package release contract must remain pinned until a package release is intentionally cut');
 if (!packageManifest.scripts?.check?.includes('check-magazine-polish.mjs')) throw new Error('npm check must include the magazine polish contract');
-for (const releaseContract of ["const ASSET_VERSION = '2.9.0'", 'editorial-governance-v2.9.0', 'reading-surface.css', 'editorial-governance.css']) {
-  if (!serviceWorker.includes(releaseContract)) throw new Error(`service worker is missing governance release contract: ${releaseContract}`);
+for (const releaseContract of ["const ASSET_VERSION = '2.10.0'", 'editorial-governance-v2.10.0', 'reading-surface.css', 'editorial-governance.css']) {
+  if (!serviceWorker.includes(releaseContract)) throw new Error(`service worker is missing live issue release contract: ${releaseContract}`);
 }
 
 console.log('NewsFlow magazine polish contract passed: Edition-first identity, restrained Reader chrome, header badge/search state, section hierarchy and responsive reading typography.');
