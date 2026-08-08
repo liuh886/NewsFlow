@@ -55,9 +55,12 @@ for (const contract of [
   "const MODE_STORAGE_KEY = 'newsflow_mode_v3'", "const INVITE_PARAM = 'editor-invite'",
   "from('newsflow_editorial_members')", "from('newsflow_editorial_invitations')", "role: 'editor'",
   "roleCard('reader'", "roleCard('editor'", '编辑模式需要主编任命',
-  'window.NewsFlowReviewGame?.openFormal?.()', 'createEditorInvite', 'openGovernance', 'window.NewsFlowMode'
+  'window.NewsFlowReviewGame?.isOpen?.()', 'window.NewsFlowReviewGame?.openFormal?.()', 'createEditorInvite', 'openGovernance', 'window.NewsFlowMode'
 ]) if (!mode.includes(contract)) throw new Error(`mode controller missing contract: ${contract}`);
 if (mode.includes('syncFormalEditorialState') || mode.includes('FORMAL_STORAGE_KEY')) throw new Error('Mode controller must not persist a second editorial decision store.');
+if (mode.includes("void syncModePreference('editor')") || mode.includes('window.setTimeout(openEditorGame')) {
+  throw new Error('Account preference updates must never recursively reopen the Review Game.');
+}
 
 for (const selector of [
   '.nf-review-stack', '.nf-review-card', '.nf-review-decision-bar', 'grid-template-columns: repeat(5',
@@ -78,4 +81,4 @@ for (const decision of ['cover_story', 'accept', 'minor_revision', 'major_revisi
   if (!Array.isArray(reactions[decision]) || reactions[decision].length < 4) throw new Error(`reaction library is too shallow for ${decision}.`);
 }
 
-console.log('NewsFlow review game contract passed: permanent Editor membership, advisory reviews, chief-only authority and three-second five-state review.');
+console.log('NewsFlow review game contract passed: stable one-shot Editor entry, permanent membership, advisory reviews, chief-only authority and three-second five-state review.');
