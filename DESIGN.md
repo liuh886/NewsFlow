@@ -2,26 +2,30 @@
 
 ## Product position
 
-NewsFlow is one publication system with a strict boundary between editorial work and public reading.
+NewsFlow is one publication system with a strict boundary between private editorial work and public reading.
 
 > **Machines collect. Editors advise. The Editor-in-Chief decides. Readers see only adopted publication content.**
 
 The reference Reader identity is **Frontier Systems Review**. NewsFlow is the publishing engine beneath it.
 
+This Reader v3 + Editorial Governance v2 model is the stable product baseline.
+
 ## Core principles
 
 1. **Publication before tooling.** Reader Mode must feel like a premium journal before it feels like software.
-2. **Collection is not publication.** Automated discovery, source checks and quality scores may create a Candidate, never a public Signal.
-3. **Editors advise.** An Editor's five-state decision is an editorial opinion only.
-4. **One final authority.** Only the Editor-in-Chief can make a publication decision or alter publication governance.
-5. **Readers see the publication world only.** Candidate manuscripts, revision/rejection states, editor opinions and internal scores remain private.
-6. **One review engine.** Editor and Editor-in-Chief share the same manuscript renderer and five decisions; authority changes semantics, not the UI engine.
-7. **No majority-rule publishing.** Aggregate editor opinions inform the chief but never determine the outcome automatically.
-8. **GitHub is canonical.** Edition, Storylines, trusted sources, Signals and Issues are versioned publication state in the repository.
-9. **Supabase is workflow state.** Membership, Candidates, reviews and online governance drafts are private RLS-backed data.
-10. **No browser secrets.** GitHub writes and service-role reads occur only in GitHub Actions/server-side contexts.
-11. **Fixed Issue rhythm, variable length.** Formal Issues publish on the 1st and 15th, including valid no-change Issues.
-12. **Editorial restraint.** The system must be willing not to publish.
+2. **Collection is not publication.** Discovery, source checks and quality scores may create a Candidate, never a public Signal.
+3. **Candidates are private.** Unpublished manuscript payloads live in Supabase, not in the public repository or Reader artifact.
+4. **Editors advise.** An Editor's five-state decision is an editorial opinion only.
+5. **One final authority.** Only the Editor-in-Chief can make a publication decision or alter publication governance.
+6. **Readers see publication state only.** Candidate manuscripts, revision/rejection states, editor opinions and internal scores remain private.
+7. **One review engine.** Editor and Editor-in-Chief share the same manuscript renderer and five decisions; authority changes semantics, not the engine.
+8. **No majority-rule publishing.** Aggregate Editor opinions may inform the chief but never determine the outcome.
+9. **GitHub is canonical public state.** Edition, Storylines, trusted sources, Signals and Issues are versioned in the repository.
+10. **Supabase is private workflow state.** Membership, Candidates, reviews and governance drafts are RLS-backed data.
+11. **No browser secrets.** GitHub writes and service-role reads occur only in server-side/GitHub Actions contexts.
+12. **Fixed Issue rhythm, variable length.** Formal Issues publish on the 1st and 15th, including valid no-change Issues.
+13. **Editorial restraint.** The system must be willing not to publish.
+14. **Stable by default.** New product surface requires a concrete problem or editorial requirement, not speculative roadmap pressure.
 
 ## Roles
 
@@ -31,33 +35,36 @@ There is one final publication authority, derived from the active shared-account
 
 The chief can:
 
-- review every private Candidate;
+- review every active private Candidate;
 - see aggregate Editor opinions;
 - issue Cover Story / Accept / Minor Revision / Major Revision / Reject decisions;
 - make Cover/Accept publicly adopted;
-- withdraw an un-frozen adoption by changing the decision;
+- withdraw an un-frozen adoption by changing/removing the final review;
 - edit the Edition's reader promise, editorial view and core questions;
 - edit active Storylines' question, current view, watch items and falsifiers;
 - edit/add trusted sources and their usage limitations;
 - appoint permanent authenticated Editors.
 
+Any final chief decision closes the Candidate. Removing that chief review reopens it.
+
 ### Editor / 编辑
 
-An Editor receives a permanent authenticated seat through a one-time, time-limited appointment link issued by the chief.
+An Editor receives an authenticated seat through a one-time, time-limited appointment link issued by the chief.
 
 An Editor can:
 
-- read private Candidate manuscripts;
+- read active private Candidates;
 - use the same five-state Review Game;
 - revise or undo their own opinion.
 
 An Editor cannot:
 
 - create public adoption;
+- close a Candidate through an advisory review;
 - change an Issue or Cover Story;
 - see another individual Editor's private record;
 - change Edition / Storylines / Sources;
-- grant themselves or others authority.
+- grant authority.
 
 ### Reader / 读者
 
@@ -76,13 +83,15 @@ A Reader must never receive Candidate packets, review votes, rejected/revision m
 
 ### Edition
 
-The editorial constitution. `public/data/edition.json` is the **single canonical Edition file**.
-
-There is no duplicate YAML authority.
+The editorial constitution. `public/data/edition.json` is the single canonical Edition file.
 
 ### Candidate
 
-A private manuscript produced by collection/preflight. It contains source, summaries, Storyline routing, scores and evidence. Candidates live in private repository workflow files and in the RLS-protected Supabase `newsflow_candidates` table; they are not Reader data.
+A private manuscript produced by collection/preflight. It contains source, summaries, Storyline routing, internal scores and evidence.
+
+A Candidate pack may exist transiently in a local/Agent workspace under gitignored `content/inbox/`, but the durable Candidate authority is Supabase `newsflow_candidates`.
+
+The public repository must not retain Candidate title/URL/evidence payloads as current working state.
 
 ### Editorial review
 
@@ -96,11 +105,11 @@ The minimal public projection of a chief Cover/Accept decision:
 
 `candidate_id + decision + decided_at`
 
-It is generated by a database trigger; ordinary Editor rows cannot reach it.
+It is generated by a database trigger. Ordinary Editor rows cannot reach it.
 
 ### Signal
 
-A public NewsFlow content unit. A Candidate becomes a public Signal only after chief adoption. Adopted Signals can appear in Reader **最新** before the next formal Issue freezes.
+A public NewsFlow content unit. A Candidate becomes a public Signal only after chief adoption. Adopted Signals may appear in Reader **最新** before the next formal Issue freezes.
 
 ### Storyline
 
@@ -115,22 +124,23 @@ A frozen semi-monthly publication artifact containing adopted Signals, optional 
 ```text
 source research / automated discovery
   ↓
-candidate pack
+transient candidate pack (gitignored)
   ↓
 source/evidence/date/score validation
   ↓
-private Candidate queue
+scripts/apply-content.mjs --apply
   ↓
-GitHub → Supabase private candidate sync
+Supabase newsflow_candidates
   ↓
 Editors: advisory five-state reviews
   ↓
 Editor-in-Chief: final five-state decision
   ├─ minor_revision / major_revision / reject
-  │     → remains private
+  │     → private only; Candidate closed
   └─ cover_story / accept
+        → Candidate closed
         → newsflow_editorial_adoptions
-        → hourly GitHub adoption sync
+        → hourly chief-state sync
         → public/data/news.json
         → Reader Latest
         → 1st / 15th compiler
@@ -138,22 +148,26 @@ Editor-in-Chief: final five-state decision
         → Current Issue / Archive
 ```
 
+Removing the chief's final review reopens the Candidate and removes any pre-Issue adoption. Historical Issue content remains frozen.
+
 ### Collection boundary
 
-`scripts/update-content.mjs` is read-only. It validates and scores candidates but cannot write public publication state.
+`scripts/update-content.mjs` is read-only. It validates and scores Candidate packs but cannot write public state.
 
-`scripts/apply-content.mjs --apply` may update the private review queue and audit run only. It cannot write `public/data/news.json`.
+`scripts/apply-content.mjs --apply` writes reviewable Candidate payloads directly to private Supabase using server-side credentials. It records only sanitized run metadata/counts in public repository audit files.
+
+It cannot write `public/data/news.json`.
 
 The only normal public Signal write paths are:
 
 1. chief adoption sync for continuous Reader Latest;
-2. the formal Issue compiler when freezing an Issue.
+2. formal Issue compilation when freezing an Issue.
 
 Quality score never substitutes for a chief decision.
 
 ## Review Game
 
-The core interaction is:
+Core interaction:
 
 > **一屏一稿，一键裁决，一次反馈，然后下一稿。**
 
@@ -165,21 +179,17 @@ Five decisions:
 4. 大修 / MAJOR REVISION
 5. 拒稿 / REJECT
 
-Desktop shortcuts are `1–5`; `Z` undoes the prior decision. Desktop manuscript content uses approximately 80% visual scale while top identity/progress and the five-choice rail retain full interaction size.
+Desktop shortcuts are `1–5`; `Z` undoes the prior decision.
 
 Decision feedback:
 
 `read → decide → stamp / reaction → (3) → (2) → (1) → next`
 
-The Review Game reads Candidates and writes reviews directly through Supabase RLS. It has no localStorage decision store, product-account decision mirror, anonymous Guest Candidate packet or duplicate settlement step.
+The Review Game reads Candidates and writes reviews through Supabase RLS. It has no localStorage decision store, product-account decision mirror, anonymous Guest real-Candidate packet or duplicate settlement step.
 
 ### Chief opinion view
 
-On a chief manuscript card, other Editors are summarized only as raw counts by decision:
-
-`封面 n · 录用 n · 小修 n · 大修 n · 拒稿 n`
-
-The interface never calculates a binding aggregate score or auto-decision.
+On a chief manuscript card, other Editors are summarized only as raw counts by decision. The interface never calculates a binding aggregate score or auto-decision.
 
 ## Editor appointment
 
@@ -191,9 +201,9 @@ Only the SHA-256 token hash is stored in Supabase. An authenticated user accepts
 
 The appointment grants review access, not publication authority.
 
-## Chief publication settings
+## Chief Publication Settings
 
-The chief has one full-screen **Publication Settings** surface with four sections.
+The chief has one full-screen Publication Settings surface.
 
 ### 刊物判断 / Edition
 
@@ -205,7 +215,7 @@ Editable:
 
 ### 长期议题 / Storylines
 
-Editable for existing active Storylines:
+Editable for active Storylines:
 
 - title;
 - research question;
@@ -213,7 +223,7 @@ Editable for existing active Storylines:
 - watch items;
 - falsifiers.
 
-This is the deliberate place for chief judgment. New evidence never silently rewrites current view.
+New evidence never silently rewrites current view.
 
 ### 信源 / Sources
 
@@ -224,13 +234,11 @@ Editable/addable fields:
 - source class and tier;
 - allowed Reader Sections and Storylines;
 - allowed uses;
-- explicit limitations for company/stakeholder/report evidence.
-
-This turns source policy into an editable editorial asset without exposing it as a generic configuration system.
+- explicit limitations.
 
 ### 编辑部 / Editorial Board
 
-The chief can inspect role counts and issue one-time permanent Editor appointments. Membership and RLS remain the source of authority.
+The chief can inspect role counts and issue one-time permanent Editor appointments. Membership and RLS remain the authority source.
 
 ## Governance publishing: Supabase → GitHub
 
@@ -251,9 +259,9 @@ hourly GitHub Action with server-side service-role secret
   ↓
 validate + update canonical files
   ↓
-commit to main
+commit to main only when semantic state changed
   ↓
-normal Pages deploy
+build + Pages deploy
 ```
 
 Canonical governance targets:
@@ -263,8 +271,6 @@ Canonical governance targets:
 - `config/content-sources.json`
 
 `content/state/governance-sync.json` records applied publication IDs. `public/data/governance-status.json` exposes only non-sensitive sync status.
-
-This design preserves online editing and repository audit history without storing a GitHub credential in Supabase or the browser.
 
 ## Reader Mode
 
@@ -301,11 +307,12 @@ The side drawer remains quick evidence, not primary reading.
 - 1st coverage: previous month 16th through month-end.
 - 15th coverage: current month 1st through 14th.
 - Only chief Cover/Accept adoption is eligible.
-- Edition caps still apply.
+- Edition caps apply.
 - A Cover decision may become `cover_signal_id`.
 - A no-change Issue is valid.
-- Already-frozen Issue content is not silently withdrawn if the chief later changes a current review.
+- Already-frozen Issue content is immutable under later review changes.
 - Automation records evidence movement but never silently rewrites Edition/Storyline judgment.
+- Formal publication and hourly chief-state sync share one publication-writer concurrency lock.
 
 ## Data/security boundary
 
@@ -317,17 +324,17 @@ The side drawer remains quick evidence, not primary reading.
 - adopted/published Signals;
 - Issues;
 - minimal adoption projection;
-- non-sensitive data/governance freshness status.
+- sanitized scan/data/governance freshness status.
 
 ### Private / editorial
 
 - Candidate payloads;
-- editor membership and invitation hashes;
-- editor reviews;
+- Editor membership and invitation hashes;
+- Editor reviews;
 - revision/rejection states;
 - governance drafts and unpublished publication queue rows.
 
-All private Supabase tables use RLS. Service-role credentials stay in GitHub Actions. The browser receives only the publishable Supabase key used by authenticated RLS queries.
+All private Supabase tables use RLS. Service-role credentials stay server-side. The browser receives only the publishable Supabase key used by authenticated RLS queries.
 
 ## Architecture ownership
 
@@ -337,12 +344,13 @@ All private Supabase tables use RLS. Service-role credentials stay in GitHub Act
 4. `public/editorial-office.js` owns mode selection, authenticated editorial membership and appointment entry.
 5. `public/review-game.js` owns all five-state review interaction.
 6. `public/editorial-governance.js` owns chief Publication Settings only.
-7. Supabase RLS + triggers own private role/review/adoption authority.
-8. `scripts/sync-supabase.mjs` owns repository → private workflow synchronization.
+7. Supabase RLS + triggers own private role/review/adoption authority and Candidate lifecycle.
+8. `scripts/apply-content.mjs` owns direct Candidate persistence to private Supabase.
 9. `scripts/sync-adopted-signals.mjs` owns chief adoption → public Latest promotion/withdrawal before Issue freeze.
 10. `scripts/sync-editorial-governance.mjs` owns published chief governance → canonical GitHub files.
-11. `scripts/publish-edition.mjs` owns formal Issue freezing.
-12. Runtime coordination remains event-based; no MutationObserver/fetch monkey patches.
+11. `scripts/update-data-status.mjs` owns deterministic Reader freshness metadata.
+12. `scripts/publish-edition.mjs` owns formal Issue freezing.
+13. Runtime coordination remains event-based; no MutationObserver/fetch monkey patches.
 
 ## Explicitly retired
 
@@ -352,31 +360,52 @@ Do not reintroduce:
 - anonymous Guest Editor real-Candidate packets;
 - public `review-candidates.json`;
 - public `pipeline-reviews.json`;
+- tracked Candidate packs as durable editorial storage;
+- repository-to-Supabase Candidate synchronization;
 - localStorage editorial decisions;
 - product-account adoption state;
 - majority-vote auto publishing;
 - quality-score publishing fallback;
+- hard-coded Reader publication fallback;
+- secondary Reader content sources such as `ai_digest.json`;
 - local `CLOSE ISSUE` settlement;
 - duplicate Edition YAML;
 - catalog-only Supabase sync.
 
 ## Acceptance criteria
 
-A Governance v2 release is complete only when:
+The stable baseline is valid only when:
 
 1. `npm run check` passes;
 2. `npm run build` succeeds;
-3. static Reader artifact contains no unpublished Candidate/review packet;
-4. authenticated Readers cannot query Candidates or reviews through RLS;
-5. appointed Editors can read Candidates and write/read only their own opinions;
-6. the chief can read all editorial opinions;
-7. ordinary Editor reviews never create adoption;
-8. chief Cover/Accept creates adoption, while chief revision/reject removes pre-Issue adoption;
-9. chief-adopted Candidate can enter Reader Latest through GitHub sync;
-10. only adopted Signals can enter the formal Issue compiler;
-11. chief can save private governance drafts without Reader effect;
-12. chief publish queues Edition/Storyline/Source changes for GitHub sync;
-13. GitHub remains canonical and browser assets contain no GitHub/service-role secret;
-14. Storyline current view cannot be silently changed by automation;
-15. Editor appointments are authenticated, one-time and time-limited;
-16. README, design contract, workflows and runtime describe the same implemented product.
+3. the Frontend workflow passes its real-browser smoke against the built artifact;
+4. static Reader artifacts contain no unpublished Candidate/review packet;
+5. authenticated Readers cannot query Candidates or reviews through RLS;
+6. appointed Editors can read Candidates and write/read only their own opinions;
+7. the chief can read aggregate editorial opinion state;
+8. ordinary Editor reviews never create adoption or close Candidates;
+9. chief final review closes a Candidate;
+10. chief Cover/Accept creates adoption, while revision/reject removes pre-Issue adoption;
+11. removing a chief review reopens the Candidate;
+12. chief-adopted Candidate can enter Reader Latest through GitHub sync;
+13. only adopted Signals can enter the formal Issue compiler;
+14. chief can save private governance drafts without Reader effect;
+15. chief publish queues Edition/Storyline/Source changes for GitHub sync;
+16. GitHub remains canonical and browser assets contain no GitHub/service-role secret;
+17. Storyline current view cannot be silently changed by automation;
+18. Editor appointments are authenticated, one-time and time-limited;
+19. README, DESIGN, WORKFLOW, TASKS, workflows and runtime describe the same implemented product.
+
+## Change policy
+
+There is no standing feature backlog for the stable product.
+
+New work should be opened only for:
+
+- a reproducible defect;
+- observed reader/editor friction;
+- a concrete editorial capability required by real use;
+- security/privacy/data-integrity risk;
+- a measured operational reliability issue.
+
+Do not open speculative architecture, compatibility or framework-migration Issues. Prefer the simplest change inside the existing owner/module and delete superseded paths.
