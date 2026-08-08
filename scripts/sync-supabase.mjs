@@ -13,10 +13,28 @@ if (!supabaseUrl || !serviceRoleKey) {
 const readJson = async (path) => JSON.parse(await readFile(resolve(root, path), 'utf8'));
 const edition = await readJson('public/data/edition.json');
 const news = await readJson('public/data/news.json');
+const sourceConfig = await readJson('config/content-sources.json');
 const client = createClient(supabaseUrl, serviceRoleKey, {
   auth: { persistSession: false, autoRefreshToken: false }
 });
 const syncedAt = new Date().toISOString();
+
+const sourceForUrl = (value) => {
+  try {
+    const url = new URL(String(value || ''));
+    const hostname = url.hostname.toLowerCase().replace(/^www\./, '');
+    const pathname = url.pathname.toLowerCase();
+    return (sourceConfig.sources || []).find((source) => {
+      const domain = String(source.domain || '').toLowerCase().replace(/^www\./, '');
+      const domainMatches = hostname === domain || hostname.endsWith(`.${domain}`);
+      const pathMatches = !source.path_prefixes?.length
+        || source.path_prefixes.some((prefix) => pathname.startsWith(String(prefix).toLowerCase()));
+      return domainMatches && pathMatches;
+    }) || null;
+  } catch {
+    return null;
+  }
+};
 
 const signalRows = news.map((item) => ({
   edition_id: edition.id,
@@ -54,22 +72,32 @@ if (retiredSignalIds.length) {
 
 const publishedSignalIds = new Set(news.map((item) => String(item.id || '')).filter(Boolean));
 const candidates = new Map();
-const addCandidate = (candidate, source = '') => {
+const addCandidate = (candidate, sourceHint = '') => {
   const id = String(candidate?.id || '');
   if (!id || !candidate?.title || publishedSignalIds.has(id)) return;
   const rawDate = candidate.published_at || candidate.event_date || null;
   const parsedDate = rawDate ? new Date(rawDate) : null;
+  const registeredSource = sourceForUrl(candidate.url);
+  const source = String(sourceHint || candidate.source || registeredSource?.name || '');
+  const payload = {
+    ...candidate,
+    id,
+    source,
+    source_tier: String(candidate.source_tier || registeredSource?.tier || ''),
+    source_id: String(registeredSource?.id || sourceHint || '')
+  };
   candidates.set(id, {
     candidate_id: id,
     edition_id: edition.id,
     title: String(candidate.title),
     short_summary: String(candidate.short_summary || ''),
-    source: String(source || candidate.source || ''),
+    source,
     url: String(candidate.url || ''),
     channel_id: String(candidate.channel_id || ''),
     storyline_ids: Array.isArray(candidate.storyline_ids) ? candidate.storyline_ids.map(String) : [],
     event_type: String(candidate.event_type || ''),
     published_at: parsedDate && !Number.isNaN(parsedDate.getTime()) ? parsedDate.toISOString() : null,
+    payload,
     active: true,
     synced_at: syncedAt
   });
@@ -90,7 +118,7 @@ try {
   const queue = await readJson('content/state/pipeline-review-queue.json');
   for (const item of queue.items || []) addCandidate(item.candidate, item.decision?.source_id || '');
 } catch {
-  // The durable human-review queue is optional.
+  // The durable review queue is optional.
 }
 
 const candidateRows = [...candidates.values()];
