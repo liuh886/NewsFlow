@@ -21,8 +21,11 @@ if (!index.includes('<html lang="zh-CN"')) throw new Error('NewsFlow HTML langua
 if (manifest.lang !== edition.language) throw new Error('PWA manifest language must match Edition language.');
 if (edition.language !== 'zh-CN') throw new Error('The reference Edition is explicitly Chinese.');
 
-for (const contract of ['信号评分', '机构 / 一手源', 'NewsFlow · 证据视图', '评分 ${getQuality(item).toFixed(1)}']) {
+for (const contract of ['机构 / 一手源', 'NewsFlow · 证据视图', '正式出版数据暂时不可用', '主编采用记录']) {
   if (!appSource.includes(contract)) throw new Error(`Reader render source is missing localized contract: ${contract}`);
+}
+for (const forbidden of ['信号评分', '高置信度', '评分 ${getQuality']) {
+  if (appSource.includes(forbidden)) throw new Error(`Editorial-only scoring leaked into Reader language: ${forbidden}`);
 }
 
 for (const leak of ['Latest Edition', 'Editorial Desk', 'Autonomous edition', 'Strong editor mode', '>Archive<']) {
@@ -41,4 +44,4 @@ try {
   if (error?.code !== 'ENOENT') throw error;
 }
 
-console.log('NewsFlow language contract passed: Chinese is rendered at source with no DOM translation patch.');
+console.log('NewsFlow language contract passed: Chinese Reader chrome is rendered at source with no editorial scoring or DOM translation patch.');
