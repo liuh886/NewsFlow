@@ -5,7 +5,6 @@
   "entrypoint": "WORKFLOW.md",
   "timezone": "Asia/Shanghai",
   "required_inputs": [
-    "editions/reference/edition.yaml",
     "public/data/edition.json",
     "public/data/news.json",
     "public/data/storylines.json",
@@ -35,11 +34,10 @@
     "content/inbox/*.json"
   ],
   "apply_writes": [
-    "public/data/news.json",
+    "content/state/pipeline-review-queue.json",
     "content/runs/*.json"
   ],
   "forbidden_direct_writes": [
-    "editions/reference/edition.yaml",
     "public/data/edition.json",
     "public/data/storylines.json",
     "public/data/issues.json",
@@ -50,7 +48,7 @@
   "commands": {
     "contract_check": "npm run content:check",
     "dry_run": "node scripts/update-content.mjs --input=<candidate-pack.json>",
-    "apply": "node scripts/update-content.mjs --input=<candidate-pack.json> --apply",
+    "apply": "node scripts/apply-content.mjs --input=<candidate-pack.json> --apply",
     "verify": [
       "npm run check",
       "npm run build"
