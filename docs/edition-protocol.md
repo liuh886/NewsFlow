@@ -2,139 +2,215 @@
 
 ## 1. Product definition
 
-NewsFlow is a GitHub-native autonomous publishing system. An editor writes an Edition file that defines how a publication observes a domain. The repository then keeps a continuous Editorial Desk and automatically compiles a formal issue twice each month.
+NewsFlow is a GitHub-native publishing system with a private editorial workflow.
 
-The Edition—not the account, interface, model or schedule—is the editorial authority.
+The reference governance rule is:
 
-## 2. Strong-editor model
+> **Machines collect. Editors advise. The Editor-in-Chief decides. Readers see only adopted publication content.**
 
-NewsFlow intentionally uses a strong-editor model:
+The Edition is the written editorial constitution; the Editor-in-Chief is the only human authority allowed to change it or decide public adoption.
 
-- the Edition file states the reader promise, scope, current editorial view, source policy, long-running storylines and materiality rules;
-- automated workflows may collect evidence, reject low-value candidates, connect signals to storylines and describe whether new evidence strengthens, weakens or complicates an existing view;
-- automated workflows must not silently rewrite the editor's position;
-- only a committed change to the Edition file changes the publication's formal editorial view.
+## 2. Strong chief-editor model
 
-This creates a visible boundary between evidence processing and editorial authority.
+NewsFlow deliberately separates evidence processing from publication authority:
 
-## 3. GitHub-first operating model
+- automated workflows discover, validate, score and route evidence into private Candidates;
+- Editors independently review Candidates and produce advisory five-state opinions;
+- only the Editor-in-Chief can issue a final publication decision;
+- only chief `cover_story` / `accept` decisions become public adoption;
+- automated workflows never silently rewrite the Edition or a Storyline's chief `current_view`;
+- only an audited chief governance publication committed back to GitHub changes canonical editorial judgment.
 
-NewsFlow does not require an additional account, certification or publication marketplace in its first stage.
+No quality score, majority vote or recommendation algorithm can substitute for the chief.
+
+## 3. GitHub + Supabase operating model
+
+### GitHub is canonical publication state
 
 GitHub provides:
 
-- version history for the Edition file;
-- reviewable changes through pull requests;
-- scheduled execution through GitHub Actions;
-- durable issue artifacts committed to the repository;
-- forkability for people who want to create a different editorial system;
-- static publication through GitHub Pages.
+- version history for Edition, Storylines and trusted-source policy;
+- durable public Signal and Issue artifacts;
+- scheduled validation/synchronization with GitHub Actions;
+- static Reader publication through GitHub Pages.
 
-Technically, anyone can fork the protocol. The official NewsFlow interface remains a deliberately small shelf of editor-selected Editions rather than an unmoderated directory.
+Canonical files include:
+
+- `public/data/edition.json`;
+- `public/data/storylines.json`;
+- `config/content-sources.json`;
+- `public/data/news.json`;
+- `public/data/issues.json`.
+
+`public/data/edition.json` is the single Edition authority. The duplicate YAML source is retired.
+
+### Supabase is private workflow state
+
+Supabase stores:
+
+- authenticated editorial membership;
+- private Candidate payloads;
+- normalized Editor/Chief reviews;
+- minimal chief adoption projection;
+- chief governance drafts/publication queue.
+
+RLS prevents Readers from accessing private editorial data. Service-role credentials exist only in server-side GitHub Actions.
 
 ## 4. Core objects
 
 ### Edition
 
-The executable editorial constitution. It defines the publication's identity and rules.
+The editorial constitution: reader promise, editorial view, scope, materiality, publishing cadence, writing rules and Storyline definitions.
+
+### Candidate
+
+A private manuscript that passed enough deterministic preflight to deserve editorial judgment. Collection/preflight can create a Candidate but cannot create a public Signal.
+
+### Editorial review
+
+One five-state opinion/decision per editorial member and Candidate:
+
+`cover_story | accept | minor_revision | major_revision | reject`
+
+For an Editor it is advisory. For the Editor-in-Chief it is final editorial judgment.
 
 ### Signal
 
-A traceable unit of new evidence. A Signal is not automatically an article in a formal issue.
-
-### Editorial Desk
-
-The continuously updated working surface. It exposes material signals after collection, normalization, deduplication and source assessment.
+A public evidence/article unit. A Candidate becomes a public Signal only after chief Cover/Accept adoption.
 
 ### Storyline
 
-A persistent question or thesis that accumulates evidence across many publication cycles.
+A persistent editorial question with chief current view, watch items, falsifiers and evidence movement across cycles.
 
 ### Issue
 
-A frozen publication artifact produced on the 1st and 15th of each month. An Issue is a cognitive settlement of the period, not a ranked list of links.
+A frozen formal artifact produced on the 1st and 15th from eligible chief-adopted Signals in the coverage window.
 
 ### Archive
 
-The chronological record of Issues, data cutoffs and editorial movement.
+The chronological record of Issues, cutoffs and editorial movement.
 
-## 5. Automatic semi-monthly publication
+## 5. Publication lifecycle
 
-The reference workflow runs at 09:15 Asia/Shanghai on the 1st and 15th of each month.
+```text
+research
+  → candidate pack
+  → deterministic preflight
+  → private Candidate
+  → Editor advisory reviews
+  → Editor-in-Chief final review
+      ├─ revision/reject → private
+      └─ cover/accept → adoption
+            → Reader Latest
+            → 1st/15th Issue freeze
+            → Archive
+```
 
-- The 1st covers the 16th through the final day of the previous month.
-- The 15th covers the 1st through the 14th of the current month.
-- The schedule is fixed.
-- The length is not fixed.
-- When no candidate reaches the Edition's materiality threshold, the workflow still publishes a short no-material-change issue.
+The public Reader site never exposes unpublished Candidate packets or review votes.
 
-A stable rhythm builds reader trust. Refusing to pad an issue protects editorial quality.
+## 6. Continuous publication vs formal Issues
 
-## 6. Edition file responsibilities
+Chief-adopted Signals can enter Reader **最新** between formal publication dates. This gives NewsFlow a continuous web publication surface while preserving fixed Issue cadence.
 
-An Edition file must define:
+Formal Issues run at 09:15 Asia/Shanghai:
 
-1. `reader_promise` — what a reader should become capable of judging through continued reading;
-2. `editorial_view` — the editor's current explicit interpretation of the field;
-3. `scope.include` and `scope.exclude` — hard editorial boundaries;
-4. `source_policy` — what each source class is suitable for and what must be rejected;
-5. `materiality` — what qualifies as a formal signal;
-6. `storylines` — persistent questions with stable identifiers and matching vocabulary;
-7. `publishing` — Desk and Issue cadence;
-8. `writing` — tone and evidence/interpretation separation.
-9. `channels` — distinct subject lanes that share one reader promise and editorial view.
+- 1st: previous month 16th through month-end;
+- 15th: current month 1st through 14th.
 
-Keywords are discovery aids, not the editorial model.
+The schedule is fixed; Issue length is not. A no-change Issue is valid.
 
-The reference Edition has two channels: AI infrastructure and CCUS/energy transition. Each Signal carries an explicit `channel_id`, `storyline_ids`, `event_type` and `event_date`; keyword matching is retained only as a legacy fallback.
+## 7. Edition responsibilities
 
-## 6.1 Content discovery and company disclosures
+The canonical Edition must define:
 
-`config/content-discovery.json` defines the operational search plan for each Storyline: cadence, lookback window, approved sources, material event types, normal queries and counter-evidence queries. It may change without changing the Edition's formal view.
+1. `reader_promise`;
+2. `editorial_view`;
+3. `scope.include` / `scope.exclude`;
+4. source-policy principles;
+5. `materiality`;
+6. long-running `storylines`;
+7. `publishing` cadence;
+8. `writing` rules;
+9. subject `channels`.
 
-Company filings, earnings materials and project releases are primary evidence for attributable facts about that company. They are not independent proof of wider market impact. Planned, contracted, under-construction, commissioned and operating capacity must remain distinct, and a corporate claim scored above 4.5 for evidence confidence requires independent non-corporate evidence.
+The chief can edit reader promise, editorial view and core questions in Publication Settings. Existing active Storylines can be edited independently for question/current view/watch/falsifiers.
 
-## 7. Issue contract
+Source-level operational policy lives in `config/content-sources.json` so individual source domains, routing, allowed uses and limitations remain explicit and auditable.
+
+## 8. Trusted-source governance
+
+A source entry may define:
+
+- stable ID;
+- name/domain/path scope;
+- class/tier;
+- allowed Sections and Storylines;
+- allowed uses;
+- limitations;
+- report/stakeholder metadata where relevant.
+
+The chief may edit/add sources online, but a browser write only creates a private governance draft/publication row. GitHub Actions validates and commits the canonical source file; the browser never receives a GitHub credential.
+
+Company pages are attributable primary evidence about the company, not independent market verification. Targets, contracted capacity, construction, commissioning and operating results remain distinct states.
+
+## 9. Storyline governance
+
+A Storyline's `current_view` is an explicit chief judgment. Evidence may be tagged as strengthening, weakening or complicating it, but automation cannot rewrite that field.
+
+Chief-editable Storyline fields include:
+
+- title;
+- research question;
+- current view;
+- watch items;
+- falsifiers.
+
+This is the formal place for the publication's evolving long-term interpretation.
+
+## 10. Issue contract
 
 Every published Issue records:
 
 - issue number and coverage period;
-- publication time and Edition version;
+- publication time/Edition version;
 - central judgment;
 - adopted Signal IDs;
+- optional `cover_signal_id`;
 - Storyline movement;
 - next-watch items;
-- candidate, selected and primary-source counts;
+- candidate/selected/source counts;
 - whether the formal editorial view changed;
-- whether the artifact was generated automatically.
+- publication provenance.
 
-The current deterministic compiler is deliberately conservative: it can record new evidence and publish on schedule, but it never claims to have changed the editor's worldview. A future model-backed Agent may improve synthesis while preserving this boundary.
+The compiler can synthesize evidence movement but never invent chief adoption or change the Edition worldview.
 
-## 8. Trust rules
+## 11. Trust rules
 
-- Facts, source metadata and editorial interpretation must remain distinguishable.
-- Original sources must remain directly reachable.
-- Repository payloads and fallback content remain mutually exclusive.
-- A stale dataset must never be described as current.
-- Automated publication must expose its data cutoff and method.
-- Lack of material change is a valid editorial result.
-- The interface must not imply independent fact verification merely because a source tier or quality score exists.
+- Facts, provenance and editorial interpretation remain distinguishable.
+- Original sources remain reachable.
+- Candidate/review data is private.
+- A stale dataset is never described as current.
+- Lack of material change is valid.
+- Source tiers/quality scores do not imply independent verification.
+- Chief authority is explicit and auditable.
+- Browser assets never contain GitHub/service-role credentials.
 
-## 9. Forking an Edition
+## 12. Forking
 
-A fork should change the Edition file rather than duplicate the frontend engine. A fork becomes a genuinely different publication when it changes its reader promise, scope, source policy, storylines, materiality or editorial view.
+A fork becomes a different publication by changing its canonical Edition/Storylines/source policy, not by duplicating the frontend engine.
 
-Recommended repository layout:
+Minimal canonical layout:
 
 ```text
 edition-repository/
-├── edition.yaml
 ├── public/data/edition.json
-├── public/data/news.json
 ├── public/data/storylines.json
+├── public/data/news.json
 ├── public/data/issues.json
+├── config/content-sources.json
+├── supabase/newsflow-editorial.sql
 ├── scripts/publish-edition.mjs
-└── .github/workflows/publish-edition.yml
+└── .github/workflows/
 ```
 
-The YAML file is the human-maintained source. JSON is the runtime projection consumed by the static frontend.
+GitHub history is the human-readable audit trail; a duplicate YAML authority is unnecessary.
