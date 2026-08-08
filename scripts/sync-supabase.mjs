@@ -36,40 +36,6 @@ const sourceForUrl = (value) => {
   }
 };
 
-const signalRows = news.map((item) => ({
-  edition_id: edition.id,
-  signal_id: item.id,
-  channel_id: item.channel_id,
-  published_at: new Date(item.published_at).toISOString(),
-  active: item.status !== 'archived',
-  synced_at: syncedAt
-}));
-if (signalRows.length) {
-  const { error } = await client.from('signal_catalog').upsert(signalRows, {
-    onConflict: 'edition_id,signal_id',
-    ignoreDuplicates: false
-  });
-  if (error) throw error;
-}
-
-const { data: existingSignals, error: signalSelectError } = await client
-  .from('signal_catalog')
-  .eq('edition_id', edition.id)
-  .select('signal_id');
-if (signalSelectError) throw signalSelectError;
-const activeSignalIds = new Set(signalRows.map((row) => row.signal_id));
-const retiredSignalIds = (existingSignals || [])
-  .map((row) => row.signal_id)
-  .filter((id) => !activeSignalIds.has(id));
-if (retiredSignalIds.length) {
-  const { error } = await client
-    .from('signal_catalog')
-    .update({ active: false, synced_at: syncedAt })
-    .eq('edition_id', edition.id)
-    .in('signal_id', retiredSignalIds);
-  if (error) throw error;
-}
-
 const publishedSignalIds = new Set(news.map((item) => String(item.id || '')).filter(Boolean));
 const candidates = new Map();
 const addCandidate = (candidate, sourceHint = '') => {
@@ -148,4 +114,4 @@ if (retiredCandidateIds.length) {
   if (error) throw error;
 }
 
-console.log(`Supabase synchronized: ${signalRows.length} public Signal(s), ${candidateRows.length} private active candidate(s) for ${edition.id}.`);
+console.log(`Supabase synchronized: ${candidateRows.length} private active candidate(s) for ${edition.id}.`);
