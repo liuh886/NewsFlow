@@ -27,7 +27,7 @@ for (const reference of [
   './account-integration.css',
   './membership-config.js',
   'https://liuh886.github.io/admin/shared/account-shell.js?v=5',
-  'https://liuh886.github.io/admin/shared/account-upgrade.js?v=3',
+  'https://liuh886.github.io/admin/shared/account-upgrade.js?v=4',
   './account-integration.js',
 ]) {
   if (!index.includes(reference)) throw new Error(`index.html is missing ${reference}`);
