@@ -1,6 +1,6 @@
 {
   "schema_version": "1.0",
-  "policy_version": "1.0.0",
+  "policy_version": "1.1.0",
   "objective": "Maximize decision-relevant information gain after evidence and attention gates, without optimizing for clicks alone.",
   "feedback": {
     "storage_key": "newsflow_feedback_v1",
@@ -41,7 +41,11 @@
     "attention_weight": 0.3,
     "freshness_boost_max": 0.5,
     "freshness_half_life_days": 30,
-    "preference_boost_max": 0.8,
+    "chief_cover_boost": 1,
+    "editor_consensus_boost_max": 0.45,
+    "reader_consensus_boost_max": 0.15,
+    "reader_consensus_minimum": 3,
+    "preference_boost_max": 0.15,
     "exploration_share": 0.12,
     "minimum_channel_share": 0.2
   },
@@ -66,6 +70,7 @@
     "agent_may_edit_edition": false,
     "agent_may_self_approve_sources": false,
     "policy_changes_require_human_review": true,
-    "raw_feedback_is_append_only": true
+    "raw_feedback_is_append_only": false,
+    "publication_authority_order": ["evidence_gate", "editor_in_chief", "editor_consensus", "reader_consensus"]
   }
 }

@@ -13,12 +13,23 @@
     { id: 'reject', label: '拒稿', code: 'REJECT', key: '5' }
   ];
 
+  const WITHDRAWAL_REASONS = [
+    { id: 'evidence_update', label: '证据更新' },
+    { id: 'factual_error', label: '事实错误' },
+    { id: 'stale', label: '已失去时效' },
+    { id: 'editorial_judgment', label: '编辑判断调整' }
+  ];
+
   const state = {
     phase: 'idle',
     edition: null,
     storylines: [],
     reactions: {},
     candidates: [],
+    consensus: new Map(),
+    adoptions: new Map(),
+    withdrawals: new Map(),
+    events: [],
     packet: [],
     reviews: [],
     ownReviews: new Map(),
@@ -27,6 +38,9 @@
     userId: '',
     index: 0,
     reaction: null,
+    archiveFilter: 'archive',
+    archiveSelectionId: '',
+    withdrawalDialog: null,
     notice: '',
     error: '',
     busy: false,
@@ -123,6 +137,9 @@
 
   const normalizeCandidate = (row) => {
     const payload = row?.payload && typeof row.payload === 'object' && !Array.isArray(row.payload) ? row.payload : {};
+    const directQuality = Number(payload.quality_index || 0);
+    const scoreValues = Object.values(payload.scores || {}).map(Number).filter(Number.isFinite);
+    const scoreQuality = scoreValues.length ? (scoreValues.reduce((sum, value) => sum + value, 0) / scoreValues.length) * 2 : 0;
     return {
       id: String(row?.candidate_id || payload.id || ''),
       title: String(payload.title || row?.title || ''),
@@ -133,10 +150,34 @@
       storyline_ids: Array.isArray(payload.storyline_ids) ? payload.storyline_ids.map(String) : (row?.storyline_ids || []).map(String),
       event_type: String(payload.event_type || row?.event_type || ''),
       date: String(payload.published_at || row?.published_at || payload.event_date || ''),
+      quality: directQuality || scoreQuality || 8,
       scores: payload.scores && typeof payload.scores === 'object' ? payload.scores : {},
-      source_tier: String(payload.source_tier || '')
+      source_tier: String(payload.source_tier || ''),
+      active: row?.active === true
     };
   };
+
+  const decisionById = (id) => DECISIONS.find((item) => item.id === id) || null;
+  const chiefReviewFor = (candidateId) => {
+    const reviews = state.reviews.filter((review) => String(review.candidate_id) === String(candidateId));
+    if (isChief()) return reviews.find((review) => String(review.reviewer_user_id) === state.userId) || null;
+    return reviews.find((review) => String(review.reviewer_user_id) !== state.userId) || null;
+  };
+  const ownReviewFor = (candidateId) => state.ownReviews.get(String(candidateId)) || null;
+  const consensusFor = (candidateId) => state.consensus.get(String(candidateId)) || {
+    cover_story_count: 0,
+    accept_count: 0,
+    minor_revision_count: 0,
+    major_revision_count: 0,
+    reject_count: 0,
+    editor_review_count: 0,
+    editorial_boost: 0
+  };
+  const rankingFor = (candidateId) => state.adoptions.get(String(candidateId))?.publication?.ranking || {};
+  const withdrawalFor = (candidateId) => state.withdrawals.get(String(candidateId)) || null;
+  const finalDecisionFor = (candidateId) => chiefReviewFor(candidateId)?.decision || '';
+  const closedCandidates = () => state.candidates.filter((candidate) => finalDecisionFor(candidate.id) || ownReviewFor(candidate.id));
+  const rejectedCandidates = () => state.candidates.filter((candidate) => finalDecisionFor(candidate.id) === 'reject' || withdrawalFor(candidate.id));
 
   const selectReaction = (decisionId, manuscriptId) => {
     const lines = Array.isArray(state.reactions?.[decisionId]) ? state.reactions[decisionId] : [];
@@ -146,14 +187,14 @@
   };
 
   const opinionCounts = (candidateId) => {
-    const counts = Object.fromEntries(DECISIONS.map((decision) => [decision.id, 0]));
-    if (!isChief()) return counts;
-    for (const review of state.reviews) {
-      if (String(review.candidate_id) !== String(candidateId)) continue;
-      if (String(review.reviewer_user_id) === state.userId) continue;
-      if (review.decision in counts) counts[review.decision] += 1;
-    }
-    return counts;
+    const consensus = consensusFor(candidateId);
+    return {
+      cover_story: Number(consensus.cover_story_count || 0),
+      accept: Number(consensus.accept_count || 0),
+      minor_revision: Number(consensus.minor_revision_count || 0),
+      major_revision: Number(consensus.major_revision_count || 0),
+      reject: Number(consensus.reject_count || 0)
+    };
   };
 
   const opinionTotal = (candidateId) => Object.values(opinionCounts(candidateId)).reduce((sum, count) => sum + count, 0);
@@ -168,21 +209,38 @@
     const client = await getClient();
     if (!client) throw new Error('编辑数据库暂不可用。');
 
-    const [edition, storylines, reactions, candidatesResult, reviewsResult] = await Promise.all([
+    const [edition, storylines, reactions, candidatesResult, reviewsResult, consensusResult, withdrawalsResult, adoptionsResult, eventsResult] = await Promise.all([
       fetchJson('./data/edition.json'),
       fetchJson('./data/storylines.json'),
       fetchJson('./data/editorial-reactions.json'),
       client
         .from('newsflow_candidates')
-        .select('candidate_id,title,short_summary,source,url,channel_id,storyline_ids,event_type,published_at,payload')
-        .eq('active', true)
+        .select('candidate_id,title,short_summary,source,url,channel_id,storyline_ids,event_type,published_at,payload,active')
         .order('published_at', { ascending: false, nullsFirst: false }),
       client
         .from('newsflow_editorial_reviews')
-        .select('candidate_id,reviewer_user_id,decision,decided_at,updated_at')
+        .select('candidate_id,reviewer_user_id,decision,decided_at,updated_at'),
+      client
+        .from('newsflow_editorial_consensus')
+        .select('candidate_id,cover_story_count,accept_count,minor_revision_count,major_revision_count,reject_count,editor_review_count,editorial_boost'),
+      client
+        .from('newsflow_editorial_withdrawals')
+        .select('candidate_id,reason_code,note,withdrawn_at,updated_at'),
+      client
+        .from('newsflow_editorial_adoptions')
+        .select('candidate_id,decision,decided_at,publication'),
+      client
+        .from('newsflow_editorial_events')
+        .select('candidate_id,actor_role,event_type,decision,previous_decision,reason_code,note,occurred_at')
+        .order('occurred_at', { ascending: false })
+        .limit(240)
     ]);
     if (candidatesResult.error) throw candidatesResult.error;
     if (reviewsResult.error) throw reviewsResult.error;
+    if (consensusResult.error) throw consensusResult.error;
+    if (withdrawalsResult.error) throw withdrawalsResult.error;
+    if (adoptionsResult.error) throw adoptionsResult.error;
+    if (eventsResult.error) throw eventsResult.error;
 
     state.edition = edition || null;
     state.storylines = Array.isArray(storylines) ? storylines : [];
@@ -192,6 +250,10 @@
       .filter((candidate) => candidate.id && candidate.title)
       .sort((left, right) => right.date.localeCompare(left.date));
     state.reviews = Array.isArray(reviewsResult.data) ? reviewsResult.data : [];
+    state.consensus = new Map((consensusResult.data || []).map((row) => [String(row.candidate_id), row]));
+    state.withdrawals = new Map((withdrawalsResult.data || []).map((row) => [String(row.candidate_id), row]));
+    state.adoptions = new Map((adoptionsResult.data || []).map((row) => [String(row.candidate_id), row]));
+    state.events = Array.isArray(eventsResult.data) ? eventsResult.data : [];
     state.ownReviews = new Map(
       state.reviews
         .filter((review) => String(review.reviewer_user_id) === state.userId)
@@ -205,6 +267,9 @@
     state.records = [];
     state.index = 0;
     state.reaction = null;
+    state.archiveFilter = 'archive';
+    state.archiveSelectionId = '';
+    state.withdrawalDialog = null;
     state.notice = '';
     state.error = '';
     state.busy = false;
@@ -221,8 +286,8 @@
       await loadReviewData();
       const includeReviewed = options.includeReviewed === true;
       state.packet = includeReviewed
-        ? [...state.candidates]
-        : state.candidates.filter((candidate) => !state.ownReviews.has(candidate.id));
+        ? state.candidates.filter((candidate) => candidate.active || state.ownReviews.has(candidate.id))
+        : state.candidates.filter((candidate) => candidate.active && !state.ownReviews.has(candidate.id));
       state.phase = state.packet.length ? 'review' : 'complete';
       track('editor_review_game_open', {
         pending_count: state.packet.length,
@@ -371,6 +436,87 @@
     }
   };
 
+  const pendingCandidates = () => state.candidates.filter((candidate) => candidate.active && !state.ownReviews.has(candidate.id));
+
+  const openReviewSection = () => {
+    state.withdrawalDialog = null;
+    state.packet = pendingCandidates();
+    state.index = 0;
+    state.records = [];
+    state.phase = state.packet.length ? 'review' : 'complete';
+    render();
+  };
+
+  const openArchiveSection = (filter = 'archive') => {
+    clearReactionTimers();
+    state.archiveFilter = filter === 'rejects' ? 'rejects' : 'archive';
+    const items = state.archiveFilter === 'rejects' ? rejectedCandidates() : closedCandidates();
+    if (!items.some((candidate) => candidate.id === state.archiveSelectionId)) {
+      state.archiveSelectionId = items[0]?.id || '';
+    }
+    state.withdrawalDialog = null;
+    state.phase = 'archive';
+    track('editor_review_archive_open', { archive_filter: state.archiveFilter, item_count: items.length });
+    render();
+  };
+
+  const openWithdrawalDialog = (candidateId) => {
+    if (!isChief() || !state.adoptions.has(candidateId)) return;
+    state.withdrawalDialog = { candidateId, reason: 'evidence_update', note: '' };
+    render();
+  };
+
+  const submitWithdrawal = async () => {
+    const dialog = state.withdrawalDialog;
+    if (!isChief() || !dialog || state.busy) return;
+    state.busy = true;
+    render();
+    try {
+      const client = await getClient();
+      if (!client) throw new Error('编辑数据库暂不可用。');
+      const { error } = await client.rpc('newsflow_withdraw_candidate', {
+        target_candidate_id: dialog.candidateId,
+        withdrawal_reason: dialog.reason,
+        withdrawal_note: dialog.note.trim()
+      });
+      if (error) throw error;
+      await loadReviewData();
+      state.archiveFilter = 'rejects';
+      state.archiveSelectionId = dialog.candidateId;
+      state.withdrawalDialog = null;
+      state.phase = 'archive';
+      track('editor_review_withdrawal', { reason: dialog.reason });
+      flash('撤稿完成。文章已离开当前采用队列，历史决定仍在。');
+    } catch (error) {
+      flash(error?.message || '撤稿失败。');
+    } finally {
+      state.busy = false;
+      render();
+    }
+  };
+
+  const restoreWithdrawal = async (candidateId) => {
+    if (!isChief() || !candidateId || state.busy) return;
+    state.busy = true;
+    render();
+    try {
+      const client = await getClient();
+      if (!client) throw new Error('编辑数据库暂不可用。');
+      const { error } = await client.rpc('newsflow_restore_withdrawn_candidate', { target_candidate_id: candidateId });
+      if (error) throw error;
+      await loadReviewData();
+      state.archiveSelectionId = candidateId;
+      state.phase = 'archive';
+      track('editor_review_withdrawal_reversed');
+      flash('已恢复采用。编辑部地下室少了一份文件。');
+    } catch (error) {
+      flash(error?.message || '恢复采用失败。');
+    } finally {
+      state.busy = false;
+      render();
+    }
+  };
+
   const decisionCounts = () => Object.fromEntries(DECISIONS.map((decision) => [
     decision.id,
     state.records.filter((record) => record.decision.id === decision.id).length
@@ -431,12 +577,98 @@
 
   const renderError = () => `<section class="nf-review-shell" role="dialog" aria-modal="true"><div class="nf-review-paper"><span class="nf-review-label">EDITORIAL DESK</span><div class="nf-review-seal">!</div><h1>审稿台暂未就绪</h1><p>${escapeHtml(state.error)}</p><div class="nf-review-actions is-centered"><button class="is-primary" data-review-action="retry">重新加载</button><button data-review-action="close-game">返回期刊</button></div></div></section>`;
 
-  const renderDecisionBar = () => `<div class="nf-review-decision-bar" aria-label="编辑裁决">
-    ${DECISIONS.map((decision) => `<button class="nf-review-decision is-${decision.id}" data-review-action="decision" data-decision="${decision.id}" ${state.busy ? 'disabled' : ''}><kbd>${decision.key}</kbd><span>${decision.code}</span><strong>${decision.label}</strong></button>`).join('')}
+  const renderDeskTabs = (active = 'pending') => `<nav class="nf-review-tabs" aria-label="编辑部稿件状态">
+    <button class="${active === 'pending' ? 'is-active' : ''}" data-review-action="open-pending">待审稿 <b>${pendingCandidates().length}</b></button>
+    <button class="${active === 'archive' ? 'is-active' : ''}" data-review-action="open-archive">决定档案 <b>${closedCandidates().length}</b></button>
+    <button class="${active === 'rejects' ? 'is-active' : ''}" data-review-action="open-rejects">退稿库 <b>${rejectedCandidates().length}</b></button>
+  </nav>`;
+
+  const renderDecisionBar = (disabled = false) => `<div class="nf-review-decision-bar" aria-label="编辑裁决">
+    ${DECISIONS.map((decision) => `<button class="nf-review-decision is-${decision.id}" data-review-action="decision" data-decision="${decision.id}" ${disabled || state.busy ? 'disabled' : ''}><kbd>${decision.key}</kbd><span>${decision.code}</span><strong>${decision.label}</strong></button>`).join('')}
   </div>`;
 
+  const formatArchiveTime = (value) => {
+    const date = new Date(value || 0);
+    return Number.isNaN(date.getTime()) ? '时间待确认' : new Intl.DateTimeFormat('zh-CN', {
+      year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit'
+    }).format(date);
+  };
+
+  const archiveDisposition = (candidate) => {
+    if (withdrawalFor(candidate.id)) return { id: 'withdrawn', label: '已撤稿', code: 'WITHDRAWN' };
+    const final = decisionById(finalDecisionFor(candidate.id));
+    if (final) return final;
+    const own = decisionById(ownReviewFor(candidate.id)?.decision);
+    return own ? { ...own, label: `我的意见：${own.label}` } : { id: 'pending', label: '待定', code: 'PENDING' };
+  };
+
+  const renderImportance = (candidate) => {
+    const consensus = consensusFor(candidate.id);
+    const ranking = rankingFor(candidate.id);
+    const editorialBoost = Number(consensus.editorial_boost || ranking.editorial_boost || 0);
+    const editorCount = Number(consensus.editor_review_count || ranking.editor_review_count || 0);
+    const readerBoost = Number(ranking.reader_boost || 0);
+    const readerCount = Number(ranking.reader_feedback_count || 0);
+    const signed = (value) => `${value >= 0 ? '+' : ''}${value.toFixed(2)}`;
+    return `<dl class="nf-review-importance" aria-label="重要性构成">
+      <div><dt>基础质量</dt><dd>${candidate.quality.toFixed(1)}</dd></div>
+      <div><dt>编辑共识</dt><dd>${signed(editorialBoost)} <small>（${editorCount} 位）</small></dd></div>
+      <div><dt>读者信号</dt><dd>${signed(readerBoost)} <small>（${readerCount || '样本不足'}）</small></dd></div>
+    </dl>`;
+  };
+
+  const renderArchiveEvents = (candidateId) => {
+    const entries = state.events.filter((entry) => String(entry.candidate_id) === String(candidateId)).slice(0, 5);
+    if (!entries.length) return '<p class="nf-review-history-empty">早期决定尚未进入审计账簿。</p>';
+    const labels = {
+      decision_created: '作出决定', decision_changed: '调整决定', decision_reaffirmed: '重申决定',
+      decision_removed: '撤销决定', withdrawn: '撤稿', withdrawal_reversed: '恢复采用'
+    };
+    return `<ol class="nf-review-history">${entries.map((entry) => `<li><span>${escapeHtml(labels[entry.event_type] || entry.event_type)}</span><strong>${escapeHtml(decisionById(entry.decision)?.label || WITHDRAWAL_REASONS.find((reason) => reason.id === entry.reason_code)?.label || '')}</strong><time>${escapeHtml(formatArchiveTime(entry.occurred_at))}</time></li>`).join('')}</ol>`;
+  };
+
+  const renderWithdrawalDialog = () => {
+    const dialog = state.withdrawalDialog;
+    if (!dialog) return '';
+    const candidate = state.candidates.find((item) => item.id === dialog.candidateId);
+    return `<div class="nf-review-dialog-backdrop" data-review-action="close-withdrawal"></div>
+      <section class="nf-review-withdrawal-dialog" role="dialog" aria-modal="true" aria-labelledby="nf-withdrawal-title">
+        <button class="nf-review-close" data-review-action="close-withdrawal" aria-label="关闭撤稿确认">×</button>
+        <span class="nf-review-label">WITHDRAWAL NOTICE</span>
+        <h2 id="nf-withdrawal-title">撤稿确认</h2>
+        <p>${escapeHtml(candidate?.title || '')}</p>
+        <label>撤稿原因<select data-review-field="withdrawal-reason">${WITHDRAWAL_REASONS.map((reason) => `<option value="${reason.id}" ${reason.id === dialog.reason ? 'selected' : ''}>${reason.label}</option>`).join('')}</select></label>
+        <label>补充说明（可选）<textarea data-review-field="withdrawal-note" maxlength="500" placeholder="说明证据变化或编辑判断…">${escapeHtml(dialog.note)}</textarea></label>
+        <p class="nf-review-withdrawal-warning">撤稿会移出当前刊期，历史决定仍留档。</p>
+        <div class="nf-review-actions"><button class="is-danger" data-review-action="confirm-withdrawal" ${state.busy ? 'disabled' : ''}>确认撤稿</button><button data-review-action="close-withdrawal">再想三秒</button></div>
+      </section>`;
+  };
+
+  const renderArchive = () => {
+    const items = state.archiveFilter === 'rejects' ? rejectedCandidates() : closedCandidates();
+    const selected = items.find((candidate) => candidate.id === state.archiveSelectionId) || items[0] || null;
+    const selectedDisposition = selected ? archiveDisposition(selected) : null;
+    const selectedWithdrawal = selected ? withdrawalFor(selected.id) : null;
+    return `<section class="nf-review-shell is-review is-archive" role="dialog" aria-modal="true" aria-labelledby="nf-archive-title">
+      <header class="nf-review-header"><div><strong>Frontier Systems Review</strong><span>${roleLabel()}</span></div><div class="nf-review-header-actions">${isChief() ? '<button data-review-action="open-governance">刊物设置</button><button data-review-action="open-invite">任命编辑</button>' : ''}<button class="nf-review-close" data-review-action="close-game" aria-label="返回期刊">×</button></div></header>
+      ${renderDeskTabs(state.archiveFilter)}
+      <main class="nf-review-stage"><div class="nf-review-stack" aria-hidden="true"></div><article class="nf-review-card nf-review-archive-card">
+        <div class="nf-review-card-meta"><span id="nf-archive-title">EDITORIAL ARCHIVE</span><span>${items.length} RECORDS</span></div>
+        ${items.length ? `<div class="nf-review-archive-list">${items.map((candidate, index) => {
+          const disposition = archiveDisposition(candidate);
+          const consensus = consensusFor(candidate.id);
+          return `<button class="nf-review-archive-row ${selected?.id === candidate.id ? 'is-selected' : ''}" data-review-action="select-archive" data-candidate-id="${escapeHtml(candidate.id)}"><span class="nf-review-archive-index">${String(index + 1).padStart(2, '0')}</span><span><strong>${escapeHtml(candidate.title)}</strong><small>${escapeHtml(candidate.source || 'Editorial submission')} · ${escapeHtml(candidate.date.slice(0, 10) || 'date pending')}</small></span><em class="is-${disposition.id}">${escapeHtml(disposition.label)}</em><small>编辑共识 ${Number(consensus.editorial_boost || 0) >= 0 ? '+' : ''}${Number(consensus.editorial_boost || 0).toFixed(2)}</small></button>`;
+        }).join('')}</div>` : '<div class="nf-review-archive-empty"><h2>这里还很安静</h2><p>退稿不会消失，它只是被编辑部礼貌地放进了地下室。</p></div>'}
+        ${selected ? `<section class="nf-review-archive-detail"><div><span class="nf-review-label">SELECTED RECORD</span><h2>${escapeHtml(selected.title)}</h2><p>${escapeHtml(selected.summary || '摘要待补充。')}</p><p class="nf-review-archive-source">${escapeHtml(selected.source)} · ${escapeHtml(activeStorylineTitle(selected))}</p>${renderImportance(selected)}</div><aside><div class="nf-review-stamp is-${selectedDisposition.id}">${escapeHtml(selectedDisposition.code)}</div>${selectedWithdrawal ? `<p>撤稿原因：<strong>${escapeHtml(WITHDRAWAL_REASONS.find((reason) => reason.id === selectedWithdrawal.reason_code)?.label || selectedWithdrawal.reason_code)}</strong></p><p>${escapeHtml(selectedWithdrawal.note || '未附补充说明。')}</p><time>${escapeHtml(formatArchiveTime(selectedWithdrawal.withdrawn_at))}</time>` : `<p>主编决定：<strong>${escapeHtml(decisionById(finalDecisionFor(selected.id))?.label || '尚未裁决')}</strong></p>`}<div class="nf-review-archive-actions">${isChief() && state.adoptions.has(selected.id) && !selectedWithdrawal ? `<button class="is-danger" data-review-action="open-withdrawal" data-candidate-id="${escapeHtml(selected.id)}">撤稿</button>` : ''}${isChief() && selectedWithdrawal ? `<button class="is-primary" data-review-action="restore-withdrawal" data-candidate-id="${escapeHtml(selected.id)}">恢复采用</button>` : ''}<button data-review-action="review-selected" data-candidate-id="${escapeHtml(selected.id)}">重新审阅</button></div></aside><section class="nf-review-history-block"><h3>决定记录</h3>${renderArchiveEvents(selected.id)}</section></section>` : ''}
+        ${state.archiveFilter === 'rejects' ? '<p class="nf-review-basement">退稿不会消失，它只是被编辑部礼貌地放进了地下室。</p>' : ''}
+      </article></main>
+      ${renderDecisionBar(true)}
+      ${state.notice ? `<div class="nf-review-notice" role="status">${escapeHtml(state.notice)}</div>` : ''}
+      ${renderWithdrawalDialog()}${renderInviteDialog()}
+    </section>`;
+  };
+
   const renderOpinions = (candidate) => {
-    if (!isChief()) return '';
     const counts = opinionCounts(candidate.id);
     const total = opinionTotal(candidate.id);
     if (!total) return '<div class="nf-review-opinions is-empty"><span>编辑意见</span><em>尚无其他编辑完成本稿评议</em></div>';
@@ -452,6 +684,7 @@
         <div><strong>Frontier Systems Review</strong><span>${roleLabel()}</span></div>
         <div class="nf-review-header-actions"><span>${String(state.index + 1).padStart(2, '0')} / ${String(state.packet.length).padStart(2, '0')}</span>${isChief() ? '<button data-review-action="open-governance">刊物设置</button><button data-review-action="open-invite">任命编辑</button>' : ''}<button data-review-action="undo" ${state.records.length && !state.busy ? '' : 'disabled'}>Z 撤销</button><button class="nf-review-close" data-review-action="close-game" aria-label="返回期刊">×</button></div>
       </header>
+      ${renderDeskTabs('pending')}
       <main class="nf-review-stage">
         <div class="nf-review-stack" aria-hidden="true"></div>
         <article class="nf-review-card" tabindex="-1">
@@ -475,6 +708,7 @@
     if (!reaction) return renderReview();
     return `<section class="nf-review-shell is-review is-reacting" role="dialog" aria-modal="true">
       <header class="nf-review-header"><div><strong>Frontier Systems Review</strong><span>${roleLabel()}</span></div><div class="nf-review-header-actions"><span>${String(state.index + 1).padStart(2, '0')} / ${String(state.packet.length).padStart(2, '0')}</span><button data-review-action="undo" ${state.busy ? 'disabled' : ''}>Z 撤销</button></div></header>
+      ${renderDeskTabs('pending')}
       <main class="nf-review-stage"><article class="nf-review-card is-stamped"><div class="nf-review-card-meta"><span>EDITORIAL DECISION</span><span>${isChief() ? 'FINAL EDITORIAL RECORD' : 'EDITORIAL OPINION'}</span></div><h1>${escapeHtml(reaction.candidate.title)}</h1><div class="nf-review-stamp is-${reaction.decision.id}">${escapeHtml(reaction.decision.code)}</div><p class="nf-review-reaction-line">${escapeHtml(reaction.line)}</p><div class="nf-review-countdown" role="timer" aria-live="polite" aria-label="${reaction.countdown} 秒后进入下一稿">（${reaction.countdown}）</div><button class="nf-review-next" data-review-action="advance">下一稿 →</button></article></main>
       ${renderInviteDialog()}
     </section>`;
@@ -497,7 +731,7 @@
         <span class="nf-review-label">EDITORIAL DISPOSITION REPORT</span><div class="nf-review-seal">✓</div>
         <p class="nf-review-publication">${roleLabel()}</p><h1 id="nf-review-complete-title">${title}</h1><p class="nf-review-paper-copy">${body}</p>
         ${hasRound ? `<div class="nf-review-results">${DECISIONS.map((decision) => `<div><span>${decision.label}</span><strong>${counts[decision.id] || 0}</strong></div>`).join('')}</div>` : ''}
-        <div class="nf-review-actions is-centered"><button class="is-primary" data-review-action="close-game">完成并返回期刊</button><button data-review-action="review-all">重审已处理</button>${isChief() ? '<button data-review-action="open-governance">刊物设置</button><button data-review-action="open-invite">任命编辑</button>' : ''}<button data-review-action="switch-reader">切换读者模式</button></div>
+        <div class="nf-review-actions is-centered"><button class="is-primary" data-review-action="close-game">完成并返回期刊</button><button data-review-action="open-archive">查看决定档案</button><button data-review-action="open-rejects">打开退稿库</button><button data-review-action="review-all">重审已处理</button>${isChief() ? '<button data-review-action="open-governance">刊物设置</button><button data-review-action="open-invite">任命编辑</button>' : ''}<button data-review-action="switch-reader">切换读者模式</button></div>
       </div>
       ${state.notice ? `<div class="nf-review-notice" role="status">${escapeHtml(state.notice)}</div>` : ''}
       ${renderInviteDialog()}
@@ -511,6 +745,7 @@
     else if (state.phase === 'error') content = renderError();
     else if (state.phase === 'review') content = renderReview();
     else if (state.phase === 'reaction') content = renderReaction();
+    else if (state.phase === 'archive') content = renderArchive();
     else if (state.phase === 'complete') content = renderComplete();
     else content = renderInviteDialog();
     root.innerHTML = content;
@@ -528,6 +763,18 @@
     else if (action === 'close-game') closeGame();
     else if (action === 'retry') await openFormal();
     else if (action === 'review-all') await openFormal({ includeReviewed: true });
+    else if (action === 'open-pending') openReviewSection();
+    else if (action === 'open-archive') openArchiveSection('archive');
+    else if (action === 'open-rejects') openArchiveSection('rejects');
+    else if (action === 'select-archive') { state.archiveSelectionId = target.dataset.candidateId || ''; state.withdrawalDialog = null; render(); }
+    else if (action === 'review-selected') {
+      const candidate = state.candidates.find((item) => item.id === target.dataset.candidateId);
+      if (candidate) { state.packet = [candidate]; state.index = 0; state.records = []; state.phase = 'review'; render(); }
+    }
+    else if (action === 'open-withdrawal') openWithdrawalDialog(target.dataset.candidateId || '');
+    else if (action === 'close-withdrawal') { state.withdrawalDialog = null; render(); }
+    else if (action === 'confirm-withdrawal') await submitWithdrawal();
+    else if (action === 'restore-withdrawal') await restoreWithdrawal(target.dataset.candidateId || '');
     else if (action === 'open-invite') await openInviteDialog();
     else if (action === 'close-invite') { state.inviteDialogOpen = false; state.invite = null; render(); }
     else if (action === 'copy-invite') await copyInvite();
@@ -539,6 +786,11 @@
   };
 
   const handleKeydown = (event) => {
+    if (state.phase === 'archive' && event.key === 'Escape') {
+      if (state.withdrawalDialog) { state.withdrawalDialog = null; render(); }
+      else closeGame();
+      return;
+    }
     if (!['review', 'reaction'].includes(state.phase)) return;
     if (event.metaKey || event.ctrlKey || event.altKey) return;
     const tag = document.activeElement?.tagName?.toLowerCase();
@@ -559,6 +811,11 @@
 
   const root = ensureRoot();
   root.addEventListener('click', (event) => { void handleRootClick(event); });
+  root.addEventListener('input', (event) => {
+    if (!state.withdrawalDialog) return;
+    if (event.target.matches('[data-review-field="withdrawal-reason"]')) state.withdrawalDialog.reason = event.target.value;
+    if (event.target.matches('[data-review-field="withdrawal-note"]')) state.withdrawalDialog.note = event.target.value;
+  });
   document.addEventListener('keydown', handleKeydown);
 
   window.NewsFlowReviewGame = Object.freeze({

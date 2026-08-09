@@ -1,5 +1,7 @@
 -- NewsFlow Editorial Governance v2.
--- Canonical live-schema contract. GitHub stores the contract; Supabase stores private workflow state.
+-- Canonical editorial base contract. The low-frequency audit, withdrawal and
+-- ranking extension is versioned in migrations/20260809045304_editorial_ranking_loop.sql.
+-- GitHub stores the contract; Supabase stores private workflow state.
 
 create schema if not exists private;
 revoke all on schema private from public, anon;

@@ -90,7 +90,8 @@ const normalizeAdoptedSignal = (adoption) => {
     tags: Array.isArray(publication.tags) ? publication.tags.map(String) : [],
     editorial_status: 'adopted',
     editorial_decision: String(adoption.decision),
-    adopted_at: adoption.decided_at || null
+    adopted_at: adoption.decided_at || null,
+    ranking: publication.ranking && typeof publication.ranking === 'object' ? publication.ranking : {}
   };
 };
 

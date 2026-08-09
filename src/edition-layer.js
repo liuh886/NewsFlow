@@ -436,6 +436,7 @@ const applyEditionLayer = () => {
     if (heading) heading.textContent = utility.label;
     if (count) {
       if (count.textContent?.includes('按你的反馈排序')) editionSortLabel = '按你的反馈排序';
+      else if (count.textContent?.includes('按编辑重要性排序')) editionSortLabel = '按编辑重要性排序';
       const countValue = count.textContent?.match(/\d+/)?.[0] || '0';
       count.textContent = `${editionSortLabel} · ${countValue} 条`;
     }

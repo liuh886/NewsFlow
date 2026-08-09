@@ -27,11 +27,13 @@
       "长期购电协议"
     ],
     "ranking": {
-      "version": "live-v1",
-      "policy": "chief_cover_then_quality_then_recency",
-      "future_inputs": [
+      "version": "live-v2",
+      "policy": "chief_cover_then_evidence_quality_then_editor_consensus_then_reader_signal_then_recency",
+      "authority_order": [
+        "evidence_gate",
+        "editor_in_chief",
         "editor_consensus",
-        "reader_preference"
+        "reader_consensus"
       ]
     },
     "methodology": {
@@ -39,13 +41,15 @@
       "selected_count": 3,
       "editorial_adoption_count": 3,
       "cover_story_count": 0,
+      "editor_review_count": 0,
+      "qualified_reader_feedback_count": 0,
       "selected_by_channel": {
         "ai-infrastructure": 3
       },
       "fixed_length": false,
       "editorial_view_changed": false
     },
-    "updated_at": "2026-08-08T17:23:37.862Z"
+    "updated_at": "2026-08-09T05:18:37.542Z"
   },
   {
     "id": "frontier-systems-review-2026-15",

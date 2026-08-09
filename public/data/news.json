@@ -27,7 +27,15 @@
     ],
     "editorial_status": "adopted",
     "editorial_decision": "accept",
-    "adopted_at": "2026-08-08T16:03:14.409+00:00"
+    "adopted_at": "2026-08-08T16:03:14.409+00:00",
+    "ranking": {
+      "version": "ranking-v2",
+      "reader_boost": 0,
+      "reader_minimum": 3,
+      "editorial_boost": 0,
+      "editor_review_count": 0,
+      "reader_feedback_count": 0
+    }
   },
   {
     "id": "openai-astra-critical-cyber-deployment-controls-2026",
@@ -56,7 +64,15 @@
     ],
     "editorial_status": "adopted",
     "editorial_decision": "accept",
-    "adopted_at": "2026-08-08T16:03:39.39+00:00"
+    "adopted_at": "2026-08-08T16:03:39.39+00:00",
+    "ranking": {
+      "version": "ranking-v2",
+      "reader_boost": 0,
+      "reader_minimum": 3,
+      "editorial_boost": 0,
+      "editor_review_count": 0,
+      "reader_feedback_count": 0
+    }
   },
   {
     "id": "texas-data-center-grid-deposit-risk-2026",
@@ -86,7 +102,15 @@
     ],
     "editorial_status": "adopted",
     "editorial_decision": "accept",
-    "adopted_at": "2026-08-08T16:03:53.62+00:00"
+    "adopted_at": "2026-08-08T16:03:53.62+00:00",
+    "ranking": {
+      "version": "ranking-v2",
+      "reader_boost": 0,
+      "reader_minimum": 3,
+      "editorial_boost": 0,
+      "editor_review_count": 0,
+      "reader_feedback_count": 0
+    }
   },
   {
     "id": "microsoft-ai-cloud-demand-2026",
@@ -152,7 +176,7 @@
     "url": "https://about.fb.com/news/2026/07/meta-announces-new-venture-with-blackrock-to-develop-data-center-in-el-paso/",
     "source": "Meta Newsroom",
     "published_at": "2026-07-27T00:00:00Z",
-    "quality_index": 9.0,
+    "quality_index": 9,
     "source_tier": "Tier A",
     "short_summary": "Meta 与 BlackRock 宣布组建合资企业开发并持有得州 El Paso 数据中心园区；项目正在建设，规划 1GW 算力容量，Meta 表示其投资超过 100 亿美元，并将作为建成后的初始唯一租户，容量预计自 2028 年起上线。",
     "long_summary": "这笔交易显示 hyperscaler 正把数据中心从完全自有资本开支转向更成熟的基础设施融资结构。BlackRock、GIP 与 HPS 提供长期资本，Meta 保留建设管理、运营管理与初始独占使用权，使算力资产的融资和使用权开始分离。对 AI 基础设施层而言，这意味着未来扩张速度不只取决于现金流和芯片供给，还取决于能否把长期租约、资产所有权和机构资本组织成可融资的结构。相关容量和投资数字来自 Meta 披露，仍需以后续完工与投运数据验证。",
@@ -363,7 +387,7 @@
     "url": "https://www.reuters.com/sustainability/new-york-issues-moratorium-data-centers-2026-07-16/",
     "source": "Reuters",
     "published_at": "2026-07-16T12:29:31Z",
-    "quality_index": 9.0,
+    "quality_index": 9,
     "source_tier": "Tier A",
     "short_summary": "Reuters 报道纽约州对耗电 50MW 以上的大型新数据中心实施一年暂停，政策背景包括电价、水资源、土地占用和社区负担等担忧；美国多地对 AI 数据中心扩张的政治与社会阻力正在上升。",
     "long_summary": "这条变化把 AI 基建的约束从工程资源推进到‘社会许可’层面。即使芯片、电源和资本都已到位，大型数据中心仍可能因电价分摊、水资源、污染、土地和地方政治而延后或被重新设计。对能源层与基础设施层而言，未来项目可交付性的判断必须同时覆盖并网、环境许可、社区接受度和成本承担机制，而不能只统计规划容量。",

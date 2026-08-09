@@ -55,8 +55,11 @@ const eligible = news.filter((item) => {
 const rankIssueSignals = (left, right) => {
   const coverPriority = Number(right.editorial_decision === 'cover_story') - Number(left.editorial_decision === 'cover_story');
   if (coverPriority) return coverPriority;
-  const quality = Number(right.quality_index || 0) - Number(left.quality_index || 0);
-  if (quality) return quality;
+  const importance = (item) => Number(item.quality_index || 0)
+    + Number(item.ranking?.editorial_boost || 0)
+    + Number(item.ranking?.reader_boost || 0);
+  const importanceDifference = importance(right) - importance(left);
+  if (importanceDifference) return importanceDifference;
   const adopted = new Date(right.adopted_at || 0).getTime() - new Date(left.adopted_at || 0).getTime();
   if (adopted) return adopted;
   return new Date(right.published_at || 0).getTime() - new Date(left.published_at || 0).getTime();
@@ -112,15 +115,17 @@ const issue = {
   storyline_updates: [],
   what_to_watch: (edition.storylines || []).flatMap((storyline) => storyline.watch_for || []).slice(0, 3),
   ranking: {
-    version: 'live-v1',
-    policy: 'chief_cover_then_quality_then_recency',
-    future_inputs: ['editor_consensus', 'reader_preference']
+    version: 'live-v2',
+    policy: 'chief_cover_then_evidence_quality_then_editor_consensus_then_reader_signal_then_recency',
+    authority_order: ['evidence_gate', 'editor_in_chief', 'editor_consensus', 'reader_consensus']
   },
   methodology: {
     candidate_count: eligible.length,
     selected_count: selected.length,
     editorial_adoption_count: eligible.length,
     cover_story_count: selected.filter((item) => item.editorial_decision === 'cover_story').length,
+    editor_review_count: selected.reduce((sum, item) => sum + Number(item.ranking?.editor_review_count || 0), 0),
+    qualified_reader_feedback_count: selected.reduce((sum, item) => sum + Number(item.ranking?.reader_feedback_count || 0), 0),
     selected_by_channel: Object.fromEntries(selectedByChannel),
     fixed_length: false,
     editorial_view_changed: false

@@ -37,15 +37,27 @@ const ranked = news.map((item) => {
   const freshness = Number(policy.ranking.freshness_boost_max) * (0.5 ** (ageDays / Number(policy.ranking.freshness_half_life_days)));
   const preference = preferenceFor(item);
   const preferenceBoost = preference.value * Number(policy.ranking.preference_boost_max);
+  const chiefBoost = item.editorial_decision === 'cover_story' ? Number(policy.ranking.chief_cover_boost || 0) : 0;
+  const editorBoost = Math.max(
+    -Number(policy.ranking.editor_consensus_boost_max || 0),
+    Math.min(Number(policy.ranking.editor_consensus_boost_max || 0), Number(item.ranking?.editorial_boost || 0))
+  );
+  const readerBoost = Math.max(
+    -Number(policy.ranking.reader_consensus_boost_max || 0),
+    Math.min(Number(policy.ranking.reader_consensus_boost_max || 0), Number(item.ranking?.reader_boost || 0))
+  );
   return {
     signal_id: item.id,
     title: item.title,
     channel_id: item.channel_id,
-    recommendation_score: Math.round((quality + attention + freshness + preferenceBoost) * 1000) / 1000,
+    recommendation_score: Math.round((quality + attention + freshness + chiefBoost + editorBoost + readerBoost + preferenceBoost) * 1000) / 1000,
     components: {
       quality: Math.round(quality * 1000) / 1000,
       attention: Math.round(attention * 1000) / 1000,
       freshness: Math.round(freshness * 1000) / 1000,
+      chief: Math.round(chiefBoost * 1000) / 1000,
+      editors: Math.round(editorBoost * 1000) / 1000,
+      readers: Math.round(readerBoost * 1000) / 1000,
       preference: Math.round(preferenceBoost * 1000) / 1000
     },
     preference_reasons: preference.reasons
