@@ -30,10 +30,11 @@
       const actions = document.querySelector('.app-shell[data-product-model="magazine-edition"] .top-actions');
       const launcher = actions?.querySelector(':scope > [data-action="open-editorial-office"]');
       if (!launcher) return;
-      const roleTrigger = actions.querySelector(':scope > [data-editorial-role-trigger]');
-      launcher.style.display = roleTrigger ? 'none' : 'grid';
-      launcher.setAttribute('aria-label', '进入审稿模式');
-      launcher.title = '审稿模式';
+      launcher.style.display = 'grid';
+      if (!launcher.dataset.newsflowRole) {
+        launcher.setAttribute('aria-label', '进入审稿模式');
+        launcher.title = '审稿模式';
+      }
     });
   };
 
