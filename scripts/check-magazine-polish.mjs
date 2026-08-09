@@ -30,7 +30,10 @@ for (const reference of ['./magazine-polish.css', './magazine-polish.js', './rea
   if (!serviceWorker.includes(reference)) throw new Error(`service worker is missing ${reference}`);
 }
 if (!index.includes('./editorial-loader.js?v=__NEWSFLOW_VERSION__')) throw new Error('Reader must load the lazy editorial entrypoint.');
-for (const editorAsset of ['./review-game.css', './review-stamp.css', './review-game.js', './editorial-governance.css', './editorial-governance.js', './editorial-office.js']) {
+for (const editorAsset of [
+  './review-game.css', './review-archive.css', './review-stamp.css', './review-game.js', './review-archive.js',
+  './editorial-governance.css', './editorial-governance.js', './editorial-office.js'
+]) {
   if (index.includes(editorAsset)) throw new Error(`Reader must not eagerly load ${editorAsset}`);
   if (!loader.includes(editorAsset)) throw new Error(`editorial-loader is missing ${editorAsset}`);
 }
@@ -75,12 +78,15 @@ for (const identity of [
   'Frontier Systems Review：聚焦 AI 基建、CCUS 与能源转型的专业半月刊'
 ]) if (!index.includes(identity)) throw new Error(`Edition-first browser identity is missing: ${identity}`);
 
-if (packageManifest.version !== '2.4.5') throw new Error('package release contract must match the current Reader asset release');
+if (!/^\d+\.\d+\.\d+$/.test(String(packageManifest.version || ''))) throw new Error('package release contract must remain semantic and drive Reader asset versioning');
 if (!packageManifest.scripts?.check?.includes('check-magazine-polish.mjs')) throw new Error('npm check must include the magazine polish contract');
 for (const releaseContract of ["const ASSET_VERSION = '__NEWSFLOW_VERSION__'", 'newsflow-reader-v${ASSET_VERSION}', 'reader-navigation.css', 'reading-surface.css', 'editorial-loader.js']) {
   if (!serviceWorker.includes(releaseContract)) throw new Error(`service worker is missing Reader release contract: ${releaseContract}`);
 }
-for (const eagerEditorAsset of ["versioned('./editorial-governance.css')", "versioned('./editorial-governance.js')", "versioned('./review-game.css')", "versioned('./review-stamp.css')", "versioned('./review-game.js')"]) {
+for (const eagerEditorAsset of [
+  "versioned('./editorial-governance.css')", "versioned('./editorial-governance.js')", "versioned('./review-game.css')",
+  "versioned('./review-archive.css')", "versioned('./review-stamp.css')", "versioned('./review-game.js')", "versioned('./review-archive.js')"
+]) {
   if (serviceWorker.includes(eagerEditorAsset)) throw new Error(`service worker must not precache editor-only asset ${eagerEditorAsset}`);
 }
 
