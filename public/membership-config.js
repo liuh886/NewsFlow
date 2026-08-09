@@ -39,8 +39,8 @@
         { zh: '查看自己的评议记录与编辑决策档案', en: 'Review your editorial history and decision archive' },
       ],
       note: {
-        zh: '受邀编辑可以获得限时 Newsflow Pro 免费体验；免费期同样可以管理订阅。',
-        en: 'Invited editors can receive a limited Newsflow Pro free trial, with subscription management available during the trial.',
+        zh: '受邀编辑可通过主编专属邀请获得 3 个月 Newsflow Pro 赠送权益；这是编辑任命的一部分，不会创建新的付费订阅。',
+        en: 'Invited editors receive three months of complimentary Newsflow Pro through the Editor-in-Chief invitation. It is part of the editorial appointment and does not create a new paid subscription.',
       },
       checkoutDescription: {
         zh: 'US$1/月开通 Newsflow Pro，进入编辑部浏览候选稿件、提交评议并查看自己的编辑决策档案；正式刊物阅读仍永久免费。',
