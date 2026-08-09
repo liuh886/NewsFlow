@@ -55,7 +55,8 @@ for (const contract of [
   "from('newsflow_editorial_members')", "from('newsflow_editorial_invitations')", "role: 'editor'",
   "roleCard('reader'", "roleCard('editor'", '编辑模式需要主编任命',
   'window.NewsFlowReviewGame?.isOpen?.()', 'window.NewsFlowReviewGame?.openFormal?.()', 'createEditorInvite', 'openGovernance',
-  'syncModeLauncher', '[data-action="open-editorial-office"]', 'window.NewsFlowMode'
+  'syncModeLauncher', '[data-action="open-editorial-office"]', 'window.NewsFlowMode',
+  '同步获得 3 个月 NewsFlow Pro', 'window.HaoAccount?.refresh?.()'
 ]) if (!mode.includes(contract)) throw new Error(`mode controller missing contract: ${contract}`);
 if (mode.includes('data-editorial-role-trigger') || mode.includes('nf-mode-trigger')) {
   throw new Error('Mode controller must reuse the canonical editorial launcher instead of mounting a role-sized header control.');
@@ -89,4 +90,4 @@ const reactions = JSON.parse(reactionsText);
 for (const decision of ['cover_story', 'accept', 'minor_revision', 'major_revision', 'reject']) {
   if (!Array.isArray(reactions[decision]) || reactions[decision].length < 4) throw new Error(`reaction library is too shallow for ${decision}.`);
 }
-console.log('NewsFlow review game contract passed: lazy editor runtime, stable canonical role launcher, permanent membership, advisory reviews, chief-only authority and three-second five-state review.');
+console.log('NewsFlow review game contract passed: lazy editor runtime, stable canonical role launcher, Pro-gated editor access, invite-triggered Pro refresh, advisory reviews, chief-only authority and three-second five-state review.');
