@@ -25,6 +25,18 @@
   let ready = false;
   let replaying = false;
 
+  const syncEditorialEntry = () => {
+    window.requestAnimationFrame(() => {
+      const actions = document.querySelector('.app-shell[data-product-model="magazine-edition"] .top-actions');
+      const launcher = actions?.querySelector(':scope > [data-action="open-editorial-office"]');
+      if (!launcher) return;
+      const roleTrigger = actions.querySelector(':scope > [data-editorial-role-trigger]');
+      launcher.style.display = roleTrigger ? 'none' : 'grid';
+      launcher.setAttribute('aria-label', '进入审稿模式');
+      launcher.title = '审稿模式';
+    });
+  };
+
   const loadStyle = (path) => new Promise((resolve, reject) => {
     const existing = [...document.querySelectorAll('link[rel="stylesheet"]')]
       .find((link) => link.getAttribute('href')?.includes(path.replace('./', '')));
@@ -67,6 +79,7 @@
       for (const path of scripts) await loadScript(path);
       ready = true;
       window.dispatchEvent(new CustomEvent('newsflow:editorial-runtime-ready'));
+      syncEditorialEntry();
     })().catch((error) => {
       loading = null;
       console.error('NewsFlow editorial runtime failed to load:', error);
@@ -85,6 +98,10 @@
       replaying = false;
     });
   });
+  window.addEventListener('newsflow:rendered', syncEditorialEntry);
+  window.addEventListener('newsflow:editorial-rendered', syncEditorialEntry);
+  window.addEventListener('newsflow:editorial-runtime-ready', syncEditorialEntry);
 
+  syncEditorialEntry();
   window.NewsFlowEditorialLoader = Object.freeze({ ensure: ensureEditorialRuntime });
 })();

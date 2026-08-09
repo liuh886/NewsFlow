@@ -77,6 +77,26 @@ try {
   const fitsViewport = await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth + 1);
   if (!fitsViewport) throw new Error('Reader mobile layout overflows horizontally.');
 
+  const editorialEntry = page.locator('#app .top-actions > [data-action="open-editorial-office"]');
+  await editorialEntry.waitFor({ state: 'visible', timeout: 10_000 });
+  if ((await editorialEntry.getAttribute('aria-label')) !== '进入审稿模式') {
+    throw new Error('Mobile Reader does not expose the editorial mode switch with the expected label.');
+  }
+
+  await page.evaluate(() => {
+    const event = new Event('beforeinstallprompt', { cancelable: true });
+    Object.defineProperty(event, 'prompt', { value: () => Promise.resolve() });
+    Object.defineProperty(event, 'userChoice', { value: Promise.resolve({ outcome: 'dismissed' }) });
+    window.dispatchEvent(event);
+  });
+  await page.locator('[data-newsflow-install-section]').waitFor({ state: 'attached', timeout: 5_000 });
+  await page.locator('[data-action="mobile-menu"]').click();
+  const installAction = page.locator('[data-newsflow-install-action]');
+  await installAction.waitFor({ state: 'visible', timeout: 5_000 });
+  if ((await installAction.innerText()).trim() !== '安装应用') {
+    throw new Error('Mobile menu install action does not expose the expected copy.');
+  }
+
   if (runtimeErrors.length) {
     throw new Error(`Browser runtime errors: ${runtimeErrors.join(' | ')}`);
   }
