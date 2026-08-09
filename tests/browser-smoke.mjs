@@ -161,7 +161,24 @@ try {
   const firstArticle = page.locator('#app #current-issue [data-action="open"][data-id]').first();
   await firstArticle.waitFor({ state: 'visible', timeout: 10_000 });
   await firstArticle.click();
-  await page.locator('#newsflow-reading-surface-root .nf-reading-shell').waitFor({ state: 'visible' });
+  const readingShell = page.locator('#newsflow-reading-surface-root .nf-reading-shell');
+  await readingShell.waitFor({ state: 'visible' });
+  const readingSheet = await readingShell.evaluate((shell) => {
+    const rect = shell.getBoundingClientRect();
+    const style = getComputedStyle(shell);
+    return {
+      left: rect.left,
+      width: rect.width,
+      viewportWidth: window.innerWidth,
+      background: style.backgroundColor,
+    };
+  });
+  if (readingSheet.left <= 0 || readingSheet.width >= readingSheet.viewportWidth * 0.75) {
+    throw new Error(`Desktop article reading is not a side sheet: ${JSON.stringify(readingSheet)}`);
+  }
+  if (!readingSheet.background || readingSheet.background === 'rgba(0, 0, 0, 0)') {
+    throw new Error('Desktop article side sheet has no paper background.');
+  }
   await page.locator('[data-reading-action="close"]').click();
   await page.locator('#newsflow-reading-surface-root').waitFor({ state: 'hidden' });
 
@@ -194,13 +211,20 @@ try {
     throw new Error(`Mobile publication nav is not aligned with issue-first IA: ${mobileNavText}`);
   }
 
+  const mobileMenuButton = page.locator('#app [data-action="mobile-menu"]');
+  if (await mobileMenuButton.isVisible()) {
+    throw new Error('Duplicate mobile hamburger menu is still visible.');
+  }
+  const mobileFilter = page.locator('#app .mobile-nav [data-action="mobile-filter"]');
+  await mobileFilter.waitFor({ state: 'visible', timeout: 10_000 });
+
   const editorialEntry = page.locator('#app .top-actions > [data-action="open-editorial-office"]');
   await editorialEntry.waitFor({ state: 'visible', timeout: 10_000 });
-  if ((await editorialEntry.getAttribute('aria-label')) !== '当前为读者模式，打开模式切换') {
-    throw new Error('Mobile Reader does not expose the editorial mode switch with the expected label.');
+  if ((await editorialEntry.getAttribute('aria-label')) !== '打开编辑部') {
+    throw new Error('Mobile Reader does not expose one neutral editorial entry before runtime load.');
   }
-  if ((await editorialEntry.locator('.nf-mode-launcher-label').innerText()).trim() !== '读者') {
-    throw new Error('Mobile Reader does not visibly identify the current mode.');
+  if ((await editorialEntry.locator('.nf-mode-launcher-label').innerText()).trim() !== '编辑部') {
+    throw new Error('Mobile Reader editorial entry has the wrong label.');
   }
   const launcherBeforeRuntime = await editorialEntry.boundingBox();
   await page.evaluate(async () => {
@@ -219,7 +243,7 @@ try {
     throw new Error(`Editorial runtime changed the canonical mobile header geometry: ${JSON.stringify({ launcherBeforeRuntime, launcherAfterRuntime })}`);
   }
 
-  await page.locator('[data-action="mobile-menu"]').click();
+  await mobileFilter.click();
   const installSection = page.locator('[data-newsflow-install-section]');
   await installSection.waitFor({ state: 'visible', timeout: 5_000 });
   if ((await installSection.getAttribute('data-install-entry-mode')) !== 'persistent') {
@@ -227,14 +251,14 @@ try {
   }
   const installAction = page.locator('[data-newsflow-install-action]');
   if ((await installAction.innerText()).trim() !== '安装应用') {
-    throw new Error('Mobile menu install action does not expose the expected copy.');
+    throw new Error('Filter panel install action does not expose the expected copy.');
   }
   const installPlacement = await installAction.evaluate((button) => {
     const rect = button.getBoundingClientRect();
     return { top: rect.top, bottom: rect.bottom, viewportHeight: window.innerHeight };
   });
   if (installPlacement.top < 0 || installPlacement.bottom > installPlacement.viewportHeight) {
-    throw new Error('Mobile menu install action is not visible in the initial viewport without scrolling.');
+    throw new Error('Filter panel install action is not visible in the initial viewport without scrolling.');
   }
 
   await installAction.click();
@@ -254,7 +278,7 @@ try {
     Object.defineProperty(event, 'userChoice', { value: Promise.resolve({ outcome: 'dismissed' }) });
     window.dispatchEvent(event);
   });
-  await page.locator('[data-action="mobile-menu"]').click();
+  if (!(await installSection.isVisible())) await mobileFilter.click();
   await installAction.click();
   const promptCalled = await page.evaluate(() => window.__newsflowInstallPromptCalled === true);
   if (!promptCalled) throw new Error('PWA install entry does not invoke the native install prompt when available.');
