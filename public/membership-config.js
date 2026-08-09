@@ -38,8 +38,8 @@
         { zh: '查看自己的评议记录与编辑决策档案', en: 'Review your editorial history and decision archive' },
       ],
       note: {
-        zh: '受邀编辑可通过主编邀请链接获得 3 个月 Pro；最终出版决定仍由主编完成。',
-        en: 'Invited editors can receive three months of Pro through an Editor-in-Chief invite; final publication decisions remain with the Editor-in-Chief.',
+        zh: '受邀编辑可通过主编邀请链接获得 3 个月 Newsflow Pro 免费体验。免费期也是可管理的 Stripe 订阅；最终出版决定仍由主编完成。',
+        en: 'Invited editors can receive a three-month Newsflow Pro free trial. The free period is still a manageable Stripe subscription; final publication decisions remain with the Editor-in-Chief.',
       },
       checkoutDescription: {
         zh: 'US$1/月开通 Newsflow Pro，进入编辑台提交评议并查看自己的编辑决策档案；正式刊物阅读仍永久免费。',
