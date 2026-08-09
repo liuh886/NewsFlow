@@ -4,7 +4,7 @@
   "updated_at": "2026-08-09T02:03:00.000Z",
   "timezone": "Asia/Shanghai",
   "source": "content-run",
-  "signal_count": 9,
+  "signal_count": 15,
   "latest_signal_at": "2026-08-08T01:42:00.000Z",
   "audit_artifact": "20260809T020300Z-41030ffb18.json"
 }

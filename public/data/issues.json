@@ -54,68 +54,82 @@
     "coverage_start": "2026-07-16",
     "coverage_end": "2026-07-31",
     "status": "published",
+    "lifecycle": "frozen",
+    "frozen_at": "2026-08-01T00:00:00+08:00",
     "auto_generated": false,
     "selection_mode": "owner_editorial_decisions",
-    "edition_version": "1.0",
-    "editorially_revised_at": "2026-08-08T09:28:00+08:00",
-    "revision_note": "主编补充审阅 2026-07-16 至 2026-07-31 的候选证据，按现行 Edition 阈值重编 Issue #15。",
-    "title": "AI 基础设施开始从单点扩张变成系统级约束",
-    "standfirst": "从台积电先进制程、Microsoft 云需求到 Paducah 1.8GW 算力园区，AI 的约束正同时落在芯片、电力与资本交付；英国 CCUS 则开始用更明确的网络接入与跨链风险安排推动市场化。",
-    "judgment": "本期证据强化了两个判断：AI 产业栈已经进入“需求仍强，但能源、芯片和资本必须同步交付”的阶段；CCUS 的下一步瓶颈正从技术可行性转向运输封存接入、跨链风险与收入机制。两条主线都说明，真正稀缺的是可融资、可接入、可持续运行的系统能力，而不是新增公告。",
+    "edition_version": "1.1",
+    "editorially_revised_at": "2026-08-09T11:13:00+08:00",
+    "revision_note": "主编授权一次性补编 2026-07-16 至 2026-07-31 的历史刊期，新增此前遗漏的高重要性证据以建立完整内容基线；常规内容更新仍只作用于当前 live Issue。",
+    "title": "AI 基础设施的约束从芯片扩散到电力、资本与社会许可",
+    "standfirst": "从台积电先进制程、Google 与 Microsoft 的云需求，到 Meta 的基础设施融资、Nvidia 潜在信用担保、联邦 AI 能源园区与纽约州数据中心暂停，7 月下半月显示 AI 扩张已同时受制于制造、电力、资本和地方监管；英国 CCUS 则继续把封存许可、网络接入和跨链责任制度化。",
+    "judgment": "这一阶段最重要的变化不是 AI 需求减弱，而是需求强劲开始暴露更完整的交付约束：先进芯片仍需扩产，云容量仍供不应求，但超大规模数据中心已经需要专用电源、基础设施金融和更复杂的信用支持，同时还必须取得地方监管与社会许可。CCUS 的并行证据也指向同一结论：真正稀缺的不是公告容量，而是经过许可、合同、融资和责任安排后可以实际交付的系统能力。",
     "cover_signal_id": "doe-paducah-ai-energy-campus-2026",
     "signal_ids": [
       "doe-paducah-ai-energy-campus-2026",
-      "signal-iea-electricity-2026",
-      "tsmc-q2-ai-capacity-2026",
+      "google-cloud-capex-demand-2026",
       "microsoft-ai-cloud-demand-2026",
+      "meta-blackrock-el-paso-ai-campus-2026",
+      "nvidia-openai-ohio-financing-backstop-2026",
+      "signal-iea-electricity-2026",
+      "doe-savannah-river-ai-energy-campus-2026",
+      "new-york-data-center-moratorium-2026",
+      "tsmc-q2-ai-capacity-2026",
       "uk-ccus-transition-access-agreement-2026",
+      "uk-offshore-co2-storage-licensing-round-2026",
       "uk-ggr-ccus-network-policy-2026"
     ],
     "storyline_updates": [
       {
         "storyline_id": "ai-energy-foundation",
         "movement": "strengthened",
-        "note": "IEA 的负荷预测与 Paducah 1.8GW AI 园区共同强化了能源供给、并网与算力扩张之间的系统耦合。"
+        "note": "IEA 负荷预测、Paducah 与 Savannah River 的专用发电方案，以及纽约州对大型数据中心的暂停共同表明，电力供给、成本分摊与监管接受度已经成为 AI 扩张的一体化约束。"
       },
       {
         "storyline_id": "ai-chip-layer",
         "movement": "strengthened",
-        "note": "TSMC 二季度先进制程收入结构与资本开支继续表明，领先制程和先进封装仍需持续扩产才能匹配 AI 需求。"
+        "note": "TSMC 的先进制程收入结构和资本开支继续显示，领先逻辑与先进封装仍是 AI 系统扩张需要持续建设的制造底座。"
       },
       {
         "storyline_id": "ai-infrastructure-layer",
         "movement": "strengthened",
-        "note": "Paducah 的电源—储能—算力园区与 Microsoft 的云需求、资本开支和长期数据中心租约共同显示，AI 工厂正在成为跨电力、地产与云服务的长期资产系统。"
+        "note": "Google、Microsoft、Meta、Paducah、Savannah River 与 Nvidia 融资报道把 AI 工厂的约束从机房建设扩展到容量利用率、专用电源、机构资本和租户信用。"
       },
       {
         "storyline_id": "ai-application-layer",
         "movement": "strengthened",
-        "note": "Azure 增长、云合同积压与 Microsoft 365 Copilot 付费席位为企业 AI 需求提供了比产品发布更直接的商业化证据。"
+        "note": "Google Cloud 与 Azure 的高速增长、合同积压及企业 AI 使用为上游巨额资本开支提供了需求侧验证，但是否足以覆盖持续上升的资产投入仍是核心问题。"
+      },
+      {
+        "storyline_id": "ccus-project-delivery",
+        "movement": "strengthened",
+        "note": "英国第二轮海上 CO₂ 封存许可进入具体环境适宜性评估，显示储存资源正在从理论面积和申请数量向可许可、可开发的实际项目池推进。"
       },
       {
         "storyline_id": "ccus-network-economics",
         "movement": "strengthened",
-        "note": "英国 Transition Access Agreement 与 GGR 政策回应把运输封存接入、网络费用和跨链风险进一步写入商业模式，强化了共享网络决定项目可融资性的判断。"
+        "note": "Transition Access Agreement 与 GGR 政策把运输封存接入、网络费用和跨链风险进一步写入商业模式，强化了共享网络决定项目可融资性的判断。"
       },
       {
         "storyline_id": "evidence-governance",
         "movement": "strengthened",
-        "note": "英国 GGR 政策把收入确定性、网络成本与网络延迟或不可用的风险保护连接起来，使责任和合同接口更接近可执行制度安排。"
+        "note": "封存许可评估、TAA 与 GGR 风险安排共同说明，环境证据、接入合同和责任边界正在成为 CCUS 从规划容量走向可执行项目的制度接口。"
       }
     ],
     "what_to_watch": [
-      "超大规模云厂商的合同积压与长期数据中心租约能否转化为持续高利用率和足够资本回报",
-      "大型 AI 园区的电源、并网、储能和建设进度是否按计划交付",
-      "领先制程与先进封装扩产能否实质缓解 AI 芯片层的供给约束",
-      "Transition Access Agreement 是否产生在更低政府支持下实际接入英国运输封存网络的项目",
-      "非管输与工程化碳移除项目能否把政策支持转化为合同、融资和真实封存容量"
+      "Google、Microsoft 等云厂商的收入增长和利用率能否持续覆盖不断上升的资本开支与长期租约",
+      "大型 AI 园区的专用电源、并网、许可和建设进度能否把规划 GW 转化为实际可用算力",
+      "Meta 式基础设施合资与 Nvidia 式潜在信用担保是否成为超大规模 AI 资产的常见融资结构",
+      "地方政府是否继续通过电价、水资源、环境许可或暂停令限制大型数据中心建设",
+      "领先制程、先进封装与自研加速器能否降低系统级算力成本而不制造新的供应链瓶颈",
+      "英国 CO₂ 封存许可与网络接入安排能否进一步转化为获得融资、签订合同并进入建设的项目"
     ],
     "methodology": {
-      "candidate_count": 8,
-      "selected_count": 6,
-      "primary_source_count": 5,
+      "candidate_count": 14,
+      "selected_count": 12,
+      "primary_source_count": 8,
       "fixed_length": false,
-      "editorial_view_changed": false
+      "editorial_view_changed": true
     }
   }
 ]

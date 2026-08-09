@@ -141,6 +141,59 @@
     ]
   },
   {
+    "id": "meta-blackrock-el-paso-ai-campus-2026",
+    "channel_id": "ai-infrastructure",
+    "storyline_ids": [
+      "ai-infrastructure-layer"
+    ],
+    "event_type": "infrastructure_financing",
+    "event_date": "2026-07-27",
+    "title": "Meta 与 BlackRock 为 El Paso 1GW AI 数据中心组建资本合资结构，超大规模算力开始系统性引入基础设施金融",
+    "url": "https://about.fb.com/news/2026/07/meta-announces-new-venture-with-blackrock-to-develop-data-center-in-el-paso/",
+    "source": "Meta Newsroom",
+    "published_at": "2026-07-27T00:00:00Z",
+    "quality_index": 9.0,
+    "source_tier": "Tier A",
+    "short_summary": "Meta 与 BlackRock 宣布组建合资企业开发并持有得州 El Paso 数据中心园区；项目正在建设，规划 1GW 算力容量，Meta 表示其投资超过 100 亿美元，并将作为建成后的初始唯一租户，容量预计自 2028 年起上线。",
+    "long_summary": "这笔交易显示 hyperscaler 正把数据中心从完全自有资本开支转向更成熟的基础设施融资结构。BlackRock、GIP 与 HPS 提供长期资本，Meta 保留建设管理、运营管理与初始独占使用权，使算力资产的融资和使用权开始分离。对 AI 基础设施层而言，这意味着未来扩张速度不只取决于现金流和芯片供给，还取决于能否把长期租约、资产所有权和机构资本组织成可融资的结构。相关容量和投资数字来自 Meta 披露，仍需以后续完工与投运数据验证。",
+    "key_quote": "",
+    "supporting_quotes": [],
+    "tags": [
+      "AI & Tech",
+      "Data Center",
+      "Infrastructure Finance",
+      "Meta",
+      "BlackRock"
+    ]
+  },
+  {
+    "id": "nvidia-openai-ohio-financing-backstop-2026",
+    "channel_id": "ai-infrastructure",
+    "storyline_ids": [
+      "ai-energy-foundation",
+      "ai-infrastructure-layer"
+    ],
+    "event_type": "financing",
+    "event_date": "2026-07-26",
+    "title": "Nvidia 据报拟为 OpenAI 10GW 俄亥俄数据中心提供最高 2500 亿美元融资担保，芯片供应商开始介入项目信用结构",
+    "url": "https://www.reuters.com/business/media-telecom/nvidia-talks-with-openai-guarantee-250-billion-financing-data-center-wsj-reports-2026-07-26/",
+    "source": "Reuters",
+    "published_at": "2026-07-26T23:39:39Z",
+    "quality_index": 8.7,
+    "source_tier": "Tier A",
+    "short_summary": "Reuters 转述《华尔街日报》称，Nvidia 正讨论为 OpenAI 租用 SB Energy 在俄亥俄州南部开发的 10GW 数据中心提供约 2500 亿美元融资担保；项目总成本据报超过 5000 亿美元，Nvidia 还可能为芯片采购提供额外融资。",
+    "long_summary": "如果相关安排落地，AI 基础设施的瓶颈将从‘谁有足够现金建机房’进一步转向‘谁能为数千亿美元长期资产提供信用支持’。Nvidia 的潜在担保既能降低融资成本，也会把模型公司的租户信用和项目建设风险部分传导到芯片供应商资产负债表。报道所述安排仍处于讨论阶段，且 Reuters 的信息来自其他媒体报道，因此应将其视为重要融资结构信号，而不是已经签署的交易。",
+    "key_quote": "",
+    "supporting_quotes": [],
+    "tags": [
+      "AI & Tech",
+      "Data Center",
+      "Infrastructure Finance",
+      "Nvidia",
+      "OpenAI"
+    ]
+  },
+  {
     "id": "signal-iea-electricity-2026",
     "channel_id": "ai-infrastructure",
     "storyline_ids": [
@@ -165,6 +218,33 @@
     ]
   },
   {
+    "id": "google-cloud-capex-demand-2026",
+    "channel_id": "ai-infrastructure",
+    "storyline_ids": [
+      "ai-infrastructure-layer",
+      "ai-application-layer"
+    ],
+    "event_type": "cloud_demand_and_capex",
+    "event_date": "2026-07-22",
+    "title": "Google Cloud 二季度增长 82%，Alphabet 再上调资本开支至 1950–2050 亿美元，需求扩张开始与现金流压力同时显现",
+    "url": "https://www.reuters.com/business/google-quarterly-cloud-revenue-growth-beats-expectations-2026-07-22/",
+    "source": "Reuters",
+    "published_at": "2026-07-22T20:05:00Z",
+    "quality_index": 9.3,
+    "source_tier": "Tier A",
+    "short_summary": "Alphabet 将 2026 年资本开支预期上调至 1950–2050 亿美元；Google Cloud 二季度收入增长 82% 至 248 亿美元。公司称尽管过去数年持续扩容，需求仍超过新增容量，同时季度自由现金流首次转为负值。",
+    "long_summary": "这组数据把 AI 基础设施的‘需求强劲’与‘资本代价’放在同一张报表上。Google Cloud 的高速增长说明企业仍在购买训练、推理和云容量，但 Alphabet 同期继续提高资本开支并出现季度负自由现金流。对 NewsFlow 的五层框架而言，基础设施层已经不只是能否建出容量，而是新增容量能否以足够快的收入增长和利用率回收资本；Google 同期开始确认 TPU 直接销售收入，也说明自研加速器正在从内部基础设施向更明确的商业化路径延伸。",
+    "key_quote": "",
+    "supporting_quotes": [],
+    "tags": [
+      "AI & Tech",
+      "Cloud",
+      "Data Center",
+      "Capex",
+      "TPU"
+    ]
+  },
+  {
     "id": "uk-ccus-transition-access-agreement-2026",
     "channel_id": "ccus-energy-transition",
     "storyline_ids": [
@@ -180,7 +260,7 @@
     "quality_index": 9,
     "source_tier": "Tier A",
     "short_summary": "英国政府发布 Transition Access Agreement Policy Position Statement，进一步明确面向不需要完整 CCUS Business Model 支持的项目如何接入 CO₂ 运输与封存网络。",
-    "long_summary": "TAA 的核心不是再增加一层补贴，而是为市场从政府主导的早期集群走向更低干预的商业化阶段建立接入合同。政策把网络接入、费用承担、有限风险支持和合同期限等问题显式化，意味着 CCUS 规模化的竞争焦点正从单个捕集项目转向谁能在可预测的商业规则下获得运输封存容量。它强化了 Edition 对“共享网络、合同结构与责任边界决定可融资性”的判断。",
+    "long_summary": "TAA 的核心不是再增加一层补贴，而是为市场从政府主导的早期集群走向更低干预的商业化阶段建立接入合同。政策把网络接入、费用承担、有限风险支持和合同期限等问题显式化，意味着 CCUS 规模化的竞争焦点正从单个捕集项目转向谁能在可预测的商业规则下获得运输封存容量。它强化了 Edition 对‘共享网络、合同结构与责任边界决定可融资性’的判断。",
     "key_quote": "",
     "supporting_quotes": [],
     "tags": [
@@ -188,6 +268,60 @@
       "CCUS",
       "Transport & Storage",
       "Business Model"
+    ]
+  },
+  {
+    "id": "doe-savannah-river-ai-energy-campus-2026",
+    "channel_id": "ai-infrastructure",
+    "storyline_ids": [
+      "ai-energy-foundation",
+      "ai-infrastructure-layer"
+    ],
+    "event_type": "power_agreement",
+    "event_date": "2026-07-20",
+    "title": "DOE/NNSA 选择 Amentum 谈判 Savannah River AI 园区：1GW 数据中心配约 2GW 场内电源，燃气先行并计划衔接核能",
+    "url": "https://www.energy.gov/nnsa/articles/nnsa-selects-amentum-ai-data-center-and-energy-project-savannah-river-site",
+    "source": "U.S. Department of Energy",
+    "published_at": "2026-07-20T00:00:00Z",
+    "quality_index": 9.2,
+    "source_tier": "Tier A",
+    "short_summary": "美国能源部国家核安全局选择 Amentum 进入分阶段租赁谈判，拟在 Savannah River Site 建设 1GW AI 数据中心和约 2GW 场内发电设施；能源方案以天然气作为过渡并计划衔接核能。",
+    "long_summary": "Savannah River 项目说明联邦 AI 基础设施模式正在从单纯提供土地转向‘土地 + 专用电源 + 公私合作’的一体化交付。项目把场内电源规模设计为数据中心负荷的约两倍，并强调新增负荷不应把成本转嫁给既有电力用户。不过 DOE 明确指出当前只是选择 Amentum 进入租赁谈判，并非最终租约；后续真正需要观察的是谈判、许可、安全评估、核能方案与实际投运能否兑现。",
+    "key_quote": "",
+    "supporting_quotes": [],
+    "tags": [
+      "AI & Tech",
+      "Data Center",
+      "Power Infrastructure",
+      "Nuclear",
+      "Federal Sites"
+    ]
+  },
+  {
+    "id": "uk-offshore-co2-storage-licensing-round-2026",
+    "channel_id": "ccus-energy-transition",
+    "storyline_ids": [
+      "ccus-project-delivery",
+      "evidence-governance"
+    ],
+    "event_type": "storage_licensing",
+    "event_date": "2026-07-20",
+    "title": "英国第二轮海上 CO₂ 封存许可进入环境适宜性评估，储存资源开发开始从面积供给走向具体许可筛选",
+    "url": "https://www.gov.uk/government/consultations/2nd-offshore-carbon-dioxide-storage-licensing-round-appropriate-assessment",
+    "source": "UK Department for Energy Security and Net Zero",
+    "published_at": "2026-07-20T00:00:00Z",
+    "quality_index": 8.9,
+    "source_tier": "Tier A",
+    "short_summary": "英国政府就第二轮海上 CO₂ 封存许可开展 Appropriate Assessment。14 个开放区域中有 9 个在初筛后被认为如有申请需进一步评估；本轮最终收到覆盖 6 个区域的申请，其中 3 个区域进入进一步环境适宜性评估。",
+    "long_summary": "这不是新增一个名义上的储存容量数字，而是把储存资源开发推进到具体许可筛选。对 CCUS 项目交付而言，真正可用的封存能力需要经历申请、环境评估、许可、勘探评价和开发投资等连续环节；对证据治理而言，适宜性评估也说明生态与空间约束必须在容量进入商业网络之前被制度化处理。因此，产业规模化不能只看理论储量，还应追踪获批储存区、评价进度和最终注入许可。",
+    "key_quote": "",
+    "supporting_quotes": [],
+    "tags": [
+      "Energy & Transition",
+      "CCUS",
+      "CO2 Storage",
+      "Licensing",
+      "North Sea"
     ]
   },
   {
@@ -214,6 +348,33 @@
       "CCUS",
       "GGR",
       "Non-Pipeline Transport"
+    ]
+  },
+  {
+    "id": "new-york-data-center-moratorium-2026",
+    "channel_id": "ai-infrastructure",
+    "storyline_ids": [
+      "ai-energy-foundation",
+      "ai-infrastructure-layer"
+    ],
+    "event_type": "infrastructure_regulation",
+    "event_date": "2026-07-16",
+    "title": "纽约州对 50MW 以上大型新数据中心实施一年暂停，AI 基建约束从电力接入进一步扩展到社会许可与地方监管",
+    "url": "https://www.reuters.com/sustainability/new-york-issues-moratorium-data-centers-2026-07-16/",
+    "source": "Reuters",
+    "published_at": "2026-07-16T12:29:31Z",
+    "quality_index": 9.0,
+    "source_tier": "Tier A",
+    "short_summary": "Reuters 报道纽约州对耗电 50MW 以上的大型新数据中心实施一年暂停，政策背景包括电价、水资源、土地占用和社区负担等担忧；美国多地对 AI 数据中心扩张的政治与社会阻力正在上升。",
+    "long_summary": "这条变化把 AI 基建的约束从工程资源推进到‘社会许可’层面。即使芯片、电源和资本都已到位，大型数据中心仍可能因电价分摊、水资源、污染、土地和地方政治而延后或被重新设计。对能源层与基础设施层而言，未来项目可交付性的判断必须同时覆盖并网、环境许可、社区接受度和成本承担机制，而不能只统计规划容量。",
+    "key_quote": "",
+    "supporting_quotes": [],
+    "tags": [
+      "AI & Tech",
+      "Data Center",
+      "Regulation",
+      "Power Demand",
+      "Social License"
     ]
   },
   {
