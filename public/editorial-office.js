@@ -116,7 +116,7 @@
   const syncEditorialEntry = () => {
     const role = isChief() ? 'chief' : isEditorialMember() ? 'editor' : 'reader';
     document.querySelectorAll('[data-action="open-editorial-office"]').forEach((trigger) => {
-      trigger.dataset.newsflowRole = role;
+      trigger.removeAttribute('data-newsflow-role');
       const topbarLabel = trigger.querySelector('.nf-mode-launcher-label');
       if (topbarLabel) topbarLabel.textContent = role === 'chief' ? '主编' : role === 'editor' ? '编辑' : '编辑部';
       const navLabel = trigger.querySelector('.nav-name span:last-child, :scope > span:last-child');
