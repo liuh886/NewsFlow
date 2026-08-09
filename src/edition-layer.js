@@ -423,6 +423,7 @@ const applyEditionLayer = () => {
     lead.id = 'latest-change';
   }
 
+  let editionSortLabel = '按时间排序';
   if (feedToolbar) {
     feedToolbar.id = 'editorial-desk';
     const heading = feedToolbar.querySelector('.feed-heading h2');
@@ -430,15 +431,16 @@ const applyEditionLayer = () => {
     if (heading && !heading.dataset.originalHeading) heading.dataset.originalHeading = heading.textContent || '';
     if (heading && !/收藏|主题/.test(heading.textContent || '')) heading.textContent = '最新';
     if (count) {
+      if (count.textContent?.includes('按你的反馈排序')) editionSortLabel = '按你的反馈排序';
       const countValue = count.textContent?.match(/\d+/)?.[0] || '0';
-      count.textContent = `按时间排序 · ${countValue} 条`;
+      count.textContent = `${editionSortLabel} · ${countValue} 条`;
     }
   }
 
   const feedList = appRoot.querySelector('.feed-list');
   if (feedList) {
     feedList.classList.add('publication-list');
-    feedList.setAttribute('aria-label', '按时间排序的最新信号');
+    feedList.setAttribute('aria-label', `${editionSortLabel}的最新信号`);
   }
 
   if (rail) rail.innerHTML = renderStorylines();

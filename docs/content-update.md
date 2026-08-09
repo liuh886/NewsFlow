@@ -81,14 +81,9 @@ npm run build
 
 The package command routes apply through `scripts/apply-content.mjs`.
 
-Apply may write only:
+Apply writes non-rejected Candidate snapshots directly to the RLS-protected Supabase `newsflow_candidates` table and records only a sanitized `content/runs/*.json` audit artifact in the repository. The transient Candidate pack remains gitignored.
 
-- `content/state/pipeline-review-queue.json`;
-- `content/runs/*.json` audit artifacts.
-
-It must **not** write `public/data/news.json` or formal Issues.
-
-Non-rejected Candidate snapshots are then synchronized server-side to the RLS-protected Supabase `newsflow_candidates` table. The Reader static build never contains those packets.
+It must **not** write `public/data/news.json`, formal Issues or a repository Candidate queue. The Reader static build never contains Candidate packets.
 
 ## 5. What preflight enforces
 

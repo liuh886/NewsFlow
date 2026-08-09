@@ -1,0 +1,32 @@
+[
+  {
+    "edition_id": "frontier-systems-review",
+    "signal_id": "nvidia-lancium-stargate-power-investment-2026",
+    "saved": true,
+    "preference": 1,
+    "hidden": false,
+    "reason_code": null,
+    "evidence_flag": false,
+    "updated_at": "2026-08-09T02:00:00.000Z"
+  },
+  {
+    "edition_id": "frontier-systems-review",
+    "signal_id": "openai-astra-critical-cyber-deployment-controls-2026",
+    "saved": false,
+    "preference": -1,
+    "hidden": true,
+    "reason_code": "too_late",
+    "evidence_flag": false,
+    "updated_at": "2026-08-09T02:01:00.000Z"
+  },
+  {
+    "edition_id": "frontier-systems-review",
+    "signal_id": "texas-data-center-grid-deposit-risk-2026",
+    "saved": false,
+    "preference": 0,
+    "hidden": false,
+    "reason_code": null,
+    "evidence_flag": true,
+    "updated_at": "2026-08-09T02:02:00.000Z"
+  }
+]

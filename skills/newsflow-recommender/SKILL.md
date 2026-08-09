@@ -16,7 +16,7 @@ Treat the repository as the system of record. Use this Skill as the execution co
 ## Select a mode
 
 - **Research or update**: execute `newsflow-content-update` from `/WORKFLOW.md`.
-- **Ingest PWA feedback**: dry-run, then explicitly apply `scripts/import-feedback.mjs` when authorized.
+- **Ingest PWA feedback**: use an explicit JSON export, or run `npm run feedback:refresh` when private Supabase access is authorized.
 - **Learn preferences**: run `scripts/build-profile.mjs`; inspect the generated profile before applying it.
 - **Rank current Signals**: run `scripts/rank-signals.mjs` and report both scores and reasons.
 - **Evaluate or revise policy**: compare logged outcomes with `/config/recommendation-policy.json`; propose governance changes separately.
@@ -32,7 +32,8 @@ Never let preference compensate for weak evidence. Never treat clicks, bookmarks
 
 - Prefer explicit feedback such as `useful`, `not_interested`, `hide` and `evidence_issue` over passive behavioral proxies.
 - Preserve the append-only raw events and regenerate learned state deterministically.
-- Keep feedback local and anonymous unless the operator deliberately exports it.
+- Keep feedback local-first. Cloud sync is opt-in through sign-in, stores only bounded current state and never grants publication authority.
+- Prefer `content/state/reader-profile.local.json` when it exists; it is private generated ranking state and must not be committed.
 - Use negative feedback to alter search and ranking, not to erase historical facts.
 - Maintain exploration and cross-channel diversity within the bounds set by the recommendation policy.
 - Propose changes to the Edition, trusted-source registry, quality thresholds or governance policy for human review; never self-approve them.

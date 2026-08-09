@@ -255,7 +255,7 @@ Chief presses 发布到 GitHub
   ↓
 newsflow_governance_publications queue
   ↓
-hourly GitHub Action with server-side service-role secret
+twice-hourly GitHub Action reads the sanitized public projection with a publishable key
   ↓
 validate + update canonical files
   ↓
@@ -334,11 +334,18 @@ The side drawer remains quick evidence, not primary reading.
 - revision/rejection states;
 - governance drafts and unpublished publication queue rows.
 
-All private Supabase tables use RLS. Service-role credentials stay server-side. The browser receives only the publishable Supabase key used by authenticated RLS queries.
+### Private / reader recommendation
+
+- at most one non-neutral `signal_feedback` row per reader and Signal;
+- no passive exposure or engagement event stream;
+- no server-side reader profile;
+- gitignored local Agent snapshot/profile without user identifiers.
+
+All private Supabase tables use RLS. Service-role credentials stay in an explicitly authorized local Agent environment. The browser receives only the publishable Supabase key used by authenticated owner-scoped RLS queries.
 
 ## Architecture ownership
 
-1. `src/editorial-app.js` owns public Signal rendering and chronological Latest.
+1. `src/editorial-app.js` owns public Signal rendering and local-first adaptive Latest.
 2. `src/edition-layer.js` owns Edition/Issue/Section/Storyline/Archive presentation.
 3. `public/reading-surface.js` owns full-page reading.
 4. `public/editorial-office.js` owns mode selection, authenticated editorial membership and appointment entry.
@@ -349,7 +356,7 @@ All private Supabase tables use RLS. Service-role credentials stay server-side. 
 9. `scripts/sync-adopted-signals.mjs` owns chief adoption → public Latest promotion/withdrawal before Issue freeze.
 10. `scripts/sync-editorial-governance.mjs` owns published chief governance → canonical GitHub files.
 11. `scripts/update-data-status.mjs` owns deterministic Reader freshness metadata.
-12. `scripts/publish-edition.mjs` owns formal Issue freezing.
+12. `scripts/sync-live-issue.mjs` owns live half-month ranking and formal Issue freezing.
 13. Runtime coordination remains event-based; no MutationObserver/fetch monkey patches.
 
 ## Explicitly retired

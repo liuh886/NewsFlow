@@ -2,7 +2,7 @@
 
 ## Research and update
 
-Read every `required_inputs` entry in `/config/content-workflow.json`, then execute `/WORKFLOW.md`. Read `/content/state/reader-profile.json` only to prioritize search and rank evidence that already passed the quality gates.
+Read every `required_inputs` entry in `/config/content-workflow.json`, then execute `/WORKFLOW.md`. Prefer gitignored `/content/state/reader-profile.local.json` when available; otherwise use `/content/state/reader-profile.json`. Profiles only prioritize search and rank evidence that already passed the quality gates.
 
 ## Feedback ingestion
 
@@ -34,12 +34,20 @@ node skills/newsflow-recommender/scripts/build-profile.mjs --apply
 
 The profile is generated state, not editorial authority.
 
+When private Supabase access is explicitly authorized, refresh the bounded cloud snapshot and private local profile before research:
+
+```bash
+npm run feedback:refresh
+```
+
+This command uses the same local `SUPABASE_URL` and `SUPABASE_SERVICE_ROLE_KEY` needed for Candidate persistence. It selects no user identifiers, writes the current-state snapshot under gitignored `content/feedback/cloud/`, and writes the learned profile to gitignored `content/state/reader-profile.local.json`.
+
 ## Ranking
 
 Read the generated profile and current Signals, then run:
 
 ```bash
-node skills/newsflow-recommender/scripts/rank-signals.mjs --limit=10
+npm run feedback:rank:local
 ```
 
 Ranking cannot restore a Signal rejected by the content validator.

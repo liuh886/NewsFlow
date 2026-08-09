@@ -33,8 +33,8 @@ for (const contract of ['STARTUP_WATCHDOG_MS = 8000', 'data-startup-recovery="tr
 }
 if (startupJs.includes('window.fetch =') || startupJs.includes('nativeFetch')) throw new Error('Startup resilience must not own or monkey-patch application data fetching.');
 if (!appJs.includes('AbortSignal.timeout(5000)')) throw new Error('Reader data owner must bound publication requests directly.');
-for (const contract of ['按时间排序', "(validDate(b.published_at)?.getTime() || 0) - (validDate(a.published_at)?.getTime() || 0)", 'recommendationScore(b) - recommendationScore(a)']) {
-  if (!appJs.includes(contract)) throw new Error(`Latest stream chronological contract is missing ${contract}`);
+for (const contract of ['按时间排序', '按你的反馈排序', 'personalizationReady', 'recommendationScore(b) - recommendationScore(a)']) {
+  if (!appJs.includes(contract)) throw new Error(`Latest stream adaptive ranking contract is missing ${contract}`);
 }
 for (const forbidden of ['verifiedFallbackItems', './data/ai_digest.json', '信号评分', '高置信度', '评分 ${getQuality']) {
   if (appJs.includes(forbidden)) throw new Error(`Reader must not expose or synthesize internal editorial content: ${forbidden}`);

@@ -2,7 +2,6 @@ import { createClient } from '@supabase/supabase-js';
 
 const CONFIG_PATH = './data/supabase-config.json';
 const OUTBOX_KEY = 'newsflow_supabase_outbox_v1';
-const CLIENT_ID_KEY = 'newsflow_sync_client_id_v1';
 const SYNC_SUSPENDED_KEY = 'newsflow_supabase_sync_suspended_v1';
 const OUTBOX_OWNER_KEY = 'newsflow_supabase_outbox_owner_v1';
 const status = (detail) => window.dispatchEvent(new CustomEvent('newsflow:sync-status', { detail }));
@@ -15,14 +14,6 @@ const readJson = (key, fallback) => {
     return fallback;
   }
 };
-const makeId = () => globalThis.crypto?.randomUUID?.()
-  || 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, (character) => {
-    const random = Math.floor(Math.random() * 16);
-    return (character === 'x' ? random : ((random & 0x3) | 0x8)).toString(16);
-  });
-const clientId = localStorage.getItem(CLIENT_ID_KEY) || makeId();
-localStorage.setItem(CLIENT_ID_KEY, clientId);
-
 let config = null;
 let client = null;
 let session = null;
@@ -46,6 +37,11 @@ const bindOutbox = (userId) => {
   syncSuspended = localStorage.getItem(suspensionKey()) === 'true';
 };
 const outboxKey = (row) => `${row.edition_id}:${row.signal_id}`;
+const neutralRow = (row) => row.saved !== true
+  && Number(row.preference || 0) === 0
+  && row.hidden !== true
+  && !row.reason_code
+  && row.evidence_flag !== true;
 const publicUser = () => session?.user ? {
   id: session.user.id,
   label: session.user.user_metadata?.user_name || session.user.email || '已登录用户'
@@ -66,7 +62,7 @@ const queue = (input) => {
     syncSuspended = false;
     localStorage.removeItem(suspensionKey());
   }
-  outbox[outboxKey(row)] = { ...row, client_id: clientId };
+  outbox[outboxKey(row)] = row;
   saveOutbox();
   emitStatus(navigator.onLine ? 'pending' : 'offline', navigator.onLine ? '等待同步' : '离线保存');
   scheduleFlush();
@@ -99,14 +95,27 @@ const flush = async () => {
   syncing = true;
   emitStatus('syncing', '正在同步反馈');
   try {
-    const batchSize = Math.max(1, Math.min(20, Number(config.maximum_batch_rows || 20)));
+    const batchSize = Math.max(1, Math.min(12, Number(config.maximum_batch_rows || 12)));
     for (let offset = 0; offset < queued.length; offset += batchSize) {
       const batch = queued.slice(offset, offset + batchSize).map((row) => ({ ...row, user_id: session.user.id }));
-      const { error } = await client.from('signal_feedback').upsert(batch, {
-        onConflict: 'user_id,edition_id,signal_id',
-        ignoreDuplicates: false
-      });
-      if (error) throw error;
+      const activeRows = batch.filter((row) => !neutralRow(row));
+      const neutralSignalIds = batch.filter(neutralRow).map((row) => row.signal_id);
+      if (activeRows.length) {
+        const { error } = await client.from('signal_feedback').upsert(activeRows, {
+          onConflict: 'user_id,edition_id,signal_id',
+          ignoreDuplicates: false
+        });
+        if (error) throw error;
+      }
+      if (neutralSignalIds.length) {
+        const { error } = await client
+          .from('signal_feedback')
+          .delete()
+          .eq('user_id', session.user.id)
+          .eq('edition_id', config.edition_id)
+          .in('signal_id', neutralSignalIds);
+        if (error) throw error;
+      }
       for (const row of batch) {
         const key = outboxKey(row);
         if (outbox[key]?.updated_at === row.updated_at) delete outbox[key];
