@@ -31,13 +31,15 @@ for (const reference of ['./magazine-polish.css', './magazine-polish.js', './rea
 }
 if (!index.includes('./editorial-loader.js?v=__NEWSFLOW_VERSION__')) throw new Error('Reader must load the lazy editorial entrypoint.');
 for (const editorAsset of [
-  './review-game.css', './review-archive.css', './review-stamp.css', './review-game.js', './review-archive.js',
+  './review-game.css', './review-archive.css', './review-stamp.css', './review-game.js', './editorial-desk.js',
   './editorial-governance.css', './editorial-governance.js', './editorial-office.js'
 ]) {
   if (index.includes(editorAsset)) throw new Error(`Reader must not eagerly load ${editorAsset}`);
   if (!loader.includes(editorAsset)) throw new Error(`editorial-loader is missing ${editorAsset}`);
 }
-if (index.includes('./editorial-mode.css') || loader.includes('./editorial-mode.css')) throw new Error('Retired role-choice styles must not return.');
+if (index.includes('./editorial-mode.css') || loader.includes('./editorial-mode.css') || loader.includes('./review-archive.js')) {
+  throw new Error('Retired role-choice/archive-controller assets must not return.');
+}
 if (index.indexOf('./magazine-polish.css') < index.indexOf('./edition-layer.css')) throw new Error('magazine-polish.css must load after edition-layer.css');
 if (index.indexOf('./magazine-polish.js') < index.indexOf('./edition-layer.js')) throw new Error('magazine-polish.js must load after edition-layer.js');
 
@@ -85,7 +87,7 @@ for (const releaseContract of ["const ASSET_VERSION = '__NEWSFLOW_VERSION__'", '
 }
 for (const eagerEditorAsset of [
   "versioned('./editorial-governance.css')", "versioned('./editorial-governance.js')", "versioned('./review-game.css')",
-  "versioned('./review-archive.css')", "versioned('./review-stamp.css')", "versioned('./review-game.js')", "versioned('./review-archive.js')"
+  "versioned('./review-archive.css')", "versioned('./review-stamp.css')", "versioned('./review-game.js')", "versioned('./editorial-desk.js')"
 ]) {
   if (serviceWorker.includes(eagerEditorAsset)) throw new Error(`service worker must not precache editor-only asset ${eagerEditorAsset}`);
 }

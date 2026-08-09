@@ -1,7 +1,8 @@
 (() => {
   'use strict';
 
-  const archiveRoot = () => document.querySelector('#newsflow-review-game-root .nf-review-shell.is-archive');
+  const reviewRoot = () => document.getElementById('newsflow-review-game-root');
+  const archiveRoot = () => reviewRoot()?.querySelector('.nf-review-shell.is-archive') || null;
   const archiveRows = (root) => [...root.querySelectorAll('[data-review-action="select-archive"]')];
 
   const announce = (message) => {
@@ -20,6 +21,28 @@
       row?.focus({ preventScroll: true });
     });
   };
+
+  const pendingCount = (button) => {
+    const value = Number.parseInt(button.querySelector('b')?.textContent || '', 10);
+    return Number.isFinite(value) ? value : null;
+  };
+
+  document.addEventListener('click', (event) => {
+    const pendingButton = event.target.closest?.('#newsflow-review-game-root [data-review-action="open-pending"]');
+    if (!pendingButton || pendingCount(pendingButton) !== 0) return;
+
+    const root = reviewRoot();
+    const overviewButton = root?.querySelector('[data-review-action="open-overview"]');
+    if (!overviewButton) return;
+
+    event.preventDefault();
+    event.stopPropagation();
+    overviewButton.click();
+    window.requestAnimationFrame(() => {
+      reviewRoot()?.querySelector('[data-review-action="open-overview"].is-active')?.focus();
+    });
+    announce('待审稿件已清空，仍停留在编辑部总览。');
+  }, true);
 
   document.addEventListener('keydown', (event) => {
     if (!['ArrowUp', 'ArrowDown'].includes(event.key)) return;
