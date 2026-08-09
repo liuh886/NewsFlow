@@ -60,7 +60,7 @@ for (const contract of ['ensureMobileReaderSearch', 'syncEditionDialogAccessibil
 for (const contract of ['./editorial-mode.css', './review-game.css', './editorial-governance.css', './review-game.js', './editorial-governance.js', './editorial-office.js']) {
   assert(loader.includes(contract), `Editorial lazy loader missing asset: ${contract}`);
 }
-for (const contract of ['syncEditorialEntry', 'data-action="open-editorial-office"', "launcher.style.display = roleTrigger ? 'none' : 'grid'", '进入审稿模式']) {
+for (const contract of ['syncEditorialEntry', 'data-action="open-editorial-office"', "launcher.style.display = roleTrigger ? 'none' : 'grid'", 'newsflow:edition-rendered', '进入审稿模式']) {
   assert(loader.includes(contract), `Editorial lazy loader missing reachable mode-switch contract: ${contract}`);
 }
 
