@@ -140,7 +140,7 @@ try {
   await page.locator('#global-search').fill('');
   await page.locator('#app #current-issue').waitFor({ state: 'visible', timeout: 5_000 });
 
-  const firstArticle = page.locator('#app [data-reading-link="true"]').first();
+  const firstArticle = page.locator('#app #current-issue [data-action="open"][data-id]').first();
   await firstArticle.waitFor({ state: 'visible', timeout: 10_000 });
   await firstArticle.click();
   await page.locator('#newsflow-reading-surface-root .nf-reading-shell').waitFor({ state: 'visible' });
