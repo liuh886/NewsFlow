@@ -1,0 +1,10 @@
+/* Mobile Reader navigation: one bottom rail, no duplicate hamburger menu. */
+@media (max-width: 920px) {
+  .app-shell[data-product-model='magazine-edition'] .mobile-menu-button {
+    display: none;
+  }
+
+  .app-shell[data-product-model='magazine-edition'] .mobile-nav {
+    grid-template-columns: repeat(5, minmax(0, 1fr));
+  }
+}
