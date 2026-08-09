@@ -134,7 +134,7 @@ if (!governanceCompiler.includes('SUPABASE_PUBLISHABLE_KEY') || governanceCompil
 const liveCompiler = await read('scripts/sync-live-issue.mjs');
 for (const contract of [
   "item?.editorial_status !== 'adopted'", "lifecycle: 'live'", "lifecycle: 'frozen'",
-  'rankIssueSignals', 'chief_cover_then_quality_then_recency', "writeJson('public/data/issues.json'",
+  'rankIssueSignals', 'chief_cover_then_evidence_quality_then_editor_consensus_then_reader_signal_then_recency', "writeJson('public/data/issues.json'",
   'maxSignalsPerChannel', 'coverage_start:', 'coverage_end:'
 ]) if (!liveCompiler.includes(contract)) throw new Error(`Live Issue compiler missing contract: ${contract}`);
 if (liveCompiler.includes("from('newsflow_editorial_adoptions')") || liveCompiler.includes('SUPABASE_SERVICE_ROLE_KEY')) throw new Error('Live Issue compiler must consume authoritative public Signals, not create a second Supabase read path.');

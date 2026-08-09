@@ -36,6 +36,7 @@ const BOOKMARK_STORAGE_KEY = 'newsflow_bookmarks';
 const LOCAL_SCOPE_ADOPTED_KEY = 'newsflow_local_feedback_adopted_by_v1';
 const FEEDBACK_EXPORT_VERSION = '1.0';
 const MAX_LOCAL_FEEDBACK_EVENTS = 500;
+const PERSONAL_PREFERENCE_BOOST_MAX = 0.15;
 const PREFERENCE_WEIGHTS = {
   useful: 1.5,
   bookmark: 1,
@@ -168,7 +169,7 @@ const localPreferenceScore = (item) => {
     matchCount += Math.min(2, matches);
   }
   if (!matchCount) return 0;
-  return Math.tanh(weightedSum / (3 * Math.sqrt(matchCount))) * 0.8;
+  return Math.tanh(weightedSum / (3 * Math.sqrt(matchCount))) * PERSONAL_PREFERENCE_BOOST_MAX;
 };
 
 const personalizationReady = () => preferenceFeedbackEvents().length >= 3;
@@ -178,7 +179,13 @@ const freshnessScore = (item) => {
   const ageDays = Math.max(0, (Date.now() - published.getTime()) / 86_400_000);
   return 0.5 * (0.5 ** (ageDays / 30));
 };
-const recommendationScore = (item) => getQuality(item) + freshnessScore(item) + localPreferenceScore(item);
+const globalRankingScore = (item) => {
+  const ranking = item.ranking && typeof item.ranking === 'object' ? item.ranking : {};
+  const chiefBoost = item.editorial_decision === 'cover_story' ? 1 : 0;
+  return chiefBoost + Number(ranking.editorial_boost || 0) + Number(ranking.reader_boost || 0);
+};
+const globalRankingReady = () => state.items.some((item) => item.ranking?.version === 'ranking-v2');
+const recommendationScore = (item) => getQuality(item) + freshnessScore(item) + globalRankingScore(item) + localPreferenceScore(item);
 
 const normalizeItem = (item, index) => ({
   ...item,
@@ -193,7 +200,8 @@ const normalizeItem = (item, index) => ({
   long_summary: item.long_summary || item.full_translation || item.summary || item.content || '',
   key_quote: item.key_quote || '',
   supporting_quotes: Array.isArray(item.supporting_quotes) ? item.supporting_quotes : [],
-  tags: Array.isArray(item.tags) ? item.tags.map(String) : (item.tags ? [String(item.tags)] : [])
+  tags: Array.isArray(item.tags) ? item.tags.map(String) : (item.tags ? [String(item.tags)] : []),
+  ranking: item.ranking && typeof item.ranking === 'object' ? item.ranking : {}
 });
 
 const matchesTopic = (item, topic) => {
@@ -239,6 +247,7 @@ const formatDate = (value, options = { month: 'short', day: 'numeric' }) => {
 const filteredItems = () => {
   const query = state.query.trim().toLowerCase();
   const personalized = personalizationReady();
+  const editorialRanking = globalRankingReady();
   return state.items.filter((item) => {
     if (state.hiddenSignals.has(getId(item))) return false;
     if (!matchesTopic(item, state.topic)) return false;
@@ -249,7 +258,7 @@ const filteredItems = () => {
     if (query && !text.includes(query)) return false;
     if (state.entity && !text.includes(state.entity.toLowerCase())) return false;
     return true;
-  }).sort((a, b) => personalized
+  }).sort((a, b) => personalized || editorialRanking
     ? recommendationScore(b) - recommendationScore(a)
       || (validDate(b.published_at)?.getTime() || 0) - (validDate(a.published_at)?.getTime() || 0)
     : (validDate(b.published_at)?.getTime() || 0) - (validDate(a.published_at)?.getTime() || 0)
@@ -519,7 +528,11 @@ const renderDrawer = () => {
   const id = getId(item);
   const saved = state.bookmarks.has(id);
   const quotes = (item.supporting_quotes || []).filter(Boolean);
-  return `<div class="drawer-backdrop" data-action="close-drawer"></div><article class="article-drawer" role="dialog" aria-modal="true" aria-labelledby="drawer-title"><div class="drawer-head"><span class="drawer-brand">NewsFlow · 证据视图</span><button class="drawer-close" data-action="close-drawer" aria-label="关闭">${icon('close')}</button></div><div class="drawer-eyebrow">${escapeHtml(item.source)} · ${escapeHtml(formatDate(item.published_at, { year: 'numeric', month: 'long', day: 'numeric' }))}</div><h2 class="drawer-title" id="drawer-title">${escapeHtml(item.title)}</h2><p class="drawer-summary">${escapeHtml(getSummary(item))}</p>${item.key_quote ? `<blockquote class="drawer-quote">${escapeHtml(item.key_quote)}</blockquote>` : ''}<section class="drawer-section"><h3>发生了什么 / 为什么重要</h3><p>${escapeHtml(getLongSummary(item))}</p></section>${quotes.length ? `<section class="drawer-section"><h3>支持证据</h3><ul>${quotes.map((quote) => `<li>${escapeHtml(quote)}</li>`).join('')}</ul></section>` : ''}<section class="drawer-section"><h3>信号元数据</h3><p>${isPrimary(item) ? '机构或一手来源' : '专家或独立来源'} · ${(item.tags || []).map(escapeHtml).join(' · ') || '未分类'}</p></section><section class="drawer-section feedback-prompt"><h3>这条信息对你有用吗？</h3><p>反馈只调整你的阅读排序；登录后可跨设备同步，但不会改变主编出版记录。</p><div class="feedback-actions"><button class="text-button" data-action="feedback-useful" data-id="${escapeHtml(id)}">${icon('useful')} 有价值</button><button class="text-button" data-action="feedback-not-interested" data-id="${escapeHtml(id)}">不感兴趣</button><button class="text-button" data-action="feedback-hide" data-id="${escapeHtml(id)}">${icon('hide')} 仅隐藏</button></div></section><div class="drawer-footer"><a class="text-button primary" href="${safeUrl(item.url)}" target="_blank" rel="noopener noreferrer">${icon('arrow')} 打开原文</a><button class="text-button ${saved ? 'saved' : ''}" data-action="bookmark" data-id="${escapeHtml(id)}">${saved ? icon('bookmarkFill') : icon('bookmark')} ${saved ? '已收藏' : '收藏'}</button></div></article>`;
+  const ranking = item.ranking || {};
+  const rankingLine = ranking.version === 'ranking-v2'
+    ? `基础质量 ${getQuality(item).toFixed(1)} · 编辑共识 ${Number(ranking.editorial_boost || 0) >= 0 ? '+' : ''}${Number(ranking.editorial_boost || 0).toFixed(2)}（${Number(ranking.editor_review_count || 0)} 位） · 读者信号 ${Number(ranking.reader_boost || 0) >= 0 ? '+' : ''}${Number(ranking.reader_boost || 0).toFixed(2)}（${Number(ranking.reader_feedback_count || 0) || '样本不足'}）`
+    : '';
+  return `<div class="drawer-backdrop" data-action="close-drawer"></div><article class="article-drawer" role="dialog" aria-modal="true" aria-labelledby="drawer-title"><div class="drawer-head"><span class="drawer-brand">NewsFlow · 证据视图</span><button class="drawer-close" data-action="close-drawer" aria-label="关闭">${icon('close')}</button></div><div class="drawer-eyebrow">${escapeHtml(item.source)} · ${escapeHtml(formatDate(item.published_at, { year: 'numeric', month: 'long', day: 'numeric' }))}</div><h2 class="drawer-title" id="drawer-title">${escapeHtml(item.title)}</h2><p class="drawer-summary">${escapeHtml(getSummary(item))}</p>${item.key_quote ? `<blockquote class="drawer-quote">${escapeHtml(item.key_quote)}</blockquote>` : ''}<section class="drawer-section"><h3>发生了什么 / 为什么重要</h3><p>${escapeHtml(getLongSummary(item))}</p></section>${quotes.length ? `<section class="drawer-section"><h3>支持证据</h3><ul>${quotes.map((quote) => `<li>${escapeHtml(quote)}</li>`).join('')}</ul></section>` : ''}<section class="drawer-section"><h3>信号元数据</h3><p>${isPrimary(item) ? '机构或一手来源' : '专家或独立来源'} · ${(item.tags || []).map(escapeHtml).join(' · ') || '未分类'}</p>${rankingLine ? `<p>${escapeHtml(rankingLine)}</p>` : ''}</section><section class="drawer-section feedback-prompt"><h3>这条信息对你有用吗？</h3><p>反馈会以较低权重参与阅读排序；登录后可跨设备同步，但不会改变主编出版记录。</p><div class="feedback-actions"><button class="text-button" data-action="feedback-useful" data-id="${escapeHtml(id)}">${icon('useful')} 有价值</button><button class="text-button" data-action="feedback-not-interested" data-id="${escapeHtml(id)}">不感兴趣</button><button class="text-button" data-action="feedback-hide" data-id="${escapeHtml(id)}">${icon('hide')} 仅隐藏</button></div></section><div class="drawer-footer"><a class="text-button primary" href="${safeUrl(item.url)}" target="_blank" rel="noopener noreferrer">${icon('arrow')} 打开原文</a><button class="text-button ${saved ? 'saved' : ''}" data-action="bookmark" data-id="${escapeHtml(id)}">${saved ? icon('bookmarkFill') : icon('bookmark')} ${saved ? '已收藏' : '收藏'}</button></div></article>`;
 };
 
 const renderHelp = () => state.helpOpen ? `<div class="help-backdrop" data-action="close-help"></div><section class="help-dialog" role="dialog" aria-modal="true" aria-labelledby="help-title"><div class="drawer-head" style="margin-bottom:0"><h2 class="help-title" id="help-title">键盘阅读</h2><button class="drawer-close" data-action="close-help" aria-label="关闭">${icon('close')}</button></div><div class="shortcut-grid"><span>搜索全文</span><kbd>/</kbd><span>上一条 / 下一条</span><kbd>J K</kbd><span>打开当前信号</span><kbd>Enter</kbd><span>收藏当前信号</span><kbd>S</kbd><span>切换主题</span><kbd>T</kbd><span>切换列表 / 网格</span><kbd>L</kbd><span>关闭面板</span><kbd>Esc</kbd></div></section>` : '';
@@ -548,7 +561,7 @@ const render = () => {
   const stream = lead ? items.filter((item) => getId(item) !== getId(lead)) : items;
   if (state.focusedIndex >= stream.length) state.focusedIndex = stream.length - 1;
   const topicName = state.topics.find((topic) => topic.id === state.topic)?.name || '全部信号';
-  const streamSortLabel = personalizationReady() ? '按你的反馈排序' : '按时间排序';
+  const streamSortLabel = personalizationReady() ? '按你的反馈排序' : globalRankingReady() ? '按编辑重要性排序' : '按时间排序';
   const snapshot = latestDate();
   const empty = state.dataError
     ? '<section class="empty-state"><h3>正式出版数据暂时不可用</h3><p>NewsFlow 不会用候选稿或备用内容替代主编已经采用的出版记录。请稍后重新加载。</p></section>'

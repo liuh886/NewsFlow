@@ -697,6 +697,343 @@ html.nf-review-game-open body {
   box-shadow: 0 16px 44px rgba(0,0,0,.25);
 }
 
+.nf-review-shell.is-review {
+  grid-template-rows: auto auto minmax(0, 1fr) auto;
+}
+
+.nf-review-tabs {
+  min-height: 42px;
+  display: flex;
+  align-items: stretch;
+  justify-content: center;
+  gap: 0;
+  border-bottom: 1px solid var(--nf-review-line);
+  background: var(--nf-review-paper);
+}
+
+.nf-review-tabs button {
+  position: relative;
+  min-width: 132px;
+  padding: 0 22px;
+  border: 0;
+  border-right: 1px solid color-mix(in srgb, var(--nf-review-line) 55%, transparent);
+  color: var(--nf-review-muted);
+  background: transparent;
+  cursor: pointer;
+  font: 700 10px/1 var(--font-mono, monospace);
+  letter-spacing: .03em;
+}
+
+.nf-review-tabs button:first-child {
+  border-left: 1px solid color-mix(in srgb, var(--nf-review-line) 55%, transparent);
+}
+
+.nf-review-tabs button::after {
+  content: '';
+  position: absolute;
+  right: 18px;
+  bottom: -1px;
+  left: 18px;
+  height: 2px;
+  background: transparent;
+}
+
+.nf-review-tabs button:hover,
+.nf-review-tabs button:focus-visible,
+.nf-review-tabs button.is-active {
+  color: var(--nf-review-ink);
+  outline: none;
+}
+
+.nf-review-tabs button.is-active::after {
+  background: var(--nf-review-gold);
+}
+
+.nf-review-tabs b {
+  margin-left: 5px;
+  font-weight: 700;
+}
+
+.nf-review-decision:disabled {
+  cursor: default;
+  opacity: .46;
+}
+
+.nf-review-decision:disabled:hover,
+.nf-review-decision:disabled:focus-visible {
+  color: var(--nf-review-ink);
+  background: transparent;
+}
+
+.nf-review-archive-card {
+  min-height: min(590px, calc(100dvh - 250px));
+  padding: clamp(24px, 3.4vw, 42px);
+  overflow: auto;
+}
+
+.nf-review-archive-list {
+  margin-top: 16px;
+  border-bottom: 1px solid var(--nf-review-line);
+}
+
+.nf-review-archive-row {
+  width: 100%;
+  min-height: 76px;
+  display: grid;
+  grid-template-columns: 36px minmax(0, 1fr) 92px 112px;
+  align-items: center;
+  gap: 14px;
+  padding: 12px 8px;
+  border: 0;
+  border-top: 1px solid var(--nf-review-line);
+  color: var(--nf-review-ink);
+  background: transparent;
+  cursor: pointer;
+  text-align: left;
+}
+
+.nf-review-archive-row:hover,
+.nf-review-archive-row:focus-visible,
+.nf-review-archive-row.is-selected {
+  background: color-mix(in srgb, var(--nf-review-gold) 7%, transparent);
+  outline: none;
+}
+
+.nf-review-archive-index,
+.nf-review-archive-row small {
+  color: var(--nf-review-muted);
+  font: 700 8px/1.45 var(--font-mono, monospace);
+}
+
+.nf-review-archive-row > span:nth-child(2) {
+  min-width: 0;
+}
+
+.nf-review-archive-row strong,
+.nf-review-archive-row small {
+  display: block;
+}
+
+.nf-review-archive-row strong {
+  overflow: hidden;
+  font: 600 16px/1.25 var(--font-editorial, Georgia, serif);
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.nf-review-archive-row em {
+  justify-self: start;
+  padding: 7px 9px 5px;
+  border: 2px double currentColor;
+  color: var(--nf-review-red);
+  font: 700 10px/1 var(--font-mono, monospace);
+  font-style: normal;
+  transform: rotate(-2deg);
+}
+
+.nf-review-archive-row em.is-accept { color: var(--nf-review-green); }
+.nf-review-archive-row em.is-cover_story { color: var(--nf-review-gold); }
+.nf-review-archive-row em.is-minor_revision { color: var(--nf-review-blue); }
+
+.nf-review-archive-detail {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 210px;
+  gap: 28px;
+  margin-top: 22px;
+  padding-top: 22px;
+  border-top: 4px double var(--nf-review-ink);
+}
+
+.nf-review-archive-detail h2 {
+  margin: 7px 0 0;
+  font: 600 clamp(25px, 3.2vw, 38px)/1.04 var(--font-editorial, Georgia, serif);
+  letter-spacing: -.035em;
+}
+
+.nf-review-archive-detail p {
+  color: var(--nf-review-muted);
+  font: 500 13px/1.55 var(--font-editorial, Georgia, serif);
+}
+
+.nf-review-archive-source {
+  font-family: var(--font-mono, monospace) !important;
+  font-size: 8px !important;
+}
+
+.nf-review-archive-detail aside {
+  padding-left: 20px;
+  border-left: 1px solid var(--nf-review-line);
+}
+
+.nf-review-archive-detail .nf-review-stamp {
+  margin: 0 0 20px;
+  font-size: 22px;
+}
+
+.nf-review-archive-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 18px;
+}
+
+.nf-review-archive-actions button {
+  min-height: 36px;
+  padding: 0 11px;
+  border: 1px solid var(--nf-review-line);
+  color: var(--nf-review-ink);
+  background: transparent;
+  cursor: pointer;
+  font: 700 9px/1 var(--font-ui, system-ui, sans-serif);
+}
+
+.nf-review-archive-actions .is-primary {
+  color: var(--nf-review-paper);
+  border-color: var(--nf-review-green);
+  background: var(--nf-review-green);
+}
+
+.nf-review-archive-actions .is-danger,
+.nf-review-actions .is-danger {
+  color: var(--nf-review-paper);
+  border-color: var(--nf-review-red);
+  background: var(--nf-review-red);
+}
+
+.nf-review-importance {
+  max-width: 430px;
+  margin: 18px 0 0;
+  border-top: 1px solid var(--nf-review-line);
+}
+
+.nf-review-importance div {
+  display: flex;
+  justify-content: space-between;
+  gap: 18px;
+  padding: 8px 0;
+  border-bottom: 1px solid var(--nf-review-line);
+}
+
+.nf-review-importance dt,
+.nf-review-importance dd {
+  margin: 0;
+  font: 700 9px/1.35 var(--font-mono, monospace);
+}
+
+.nf-review-importance dd {
+  color: var(--nf-review-green);
+}
+
+.nf-review-importance small {
+  color: var(--nf-review-muted);
+  font-size: 8px;
+}
+
+.nf-review-history-block {
+  grid-column: 1 / -1;
+  padding-top: 16px;
+  border-top: 1px solid var(--nf-review-line);
+}
+
+.nf-review-history-block h3 {
+  margin: 0;
+  font: 700 9px/1 var(--font-mono, monospace);
+  letter-spacing: .08em;
+  text-transform: uppercase;
+}
+
+.nf-review-history {
+  margin: 10px 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.nf-review-history li {
+  display: grid;
+  grid-template-columns: 90px 1fr auto;
+  gap: 12px;
+  padding: 6px 0;
+  color: var(--nf-review-muted);
+  font: 600 8px/1.35 var(--font-mono, monospace);
+}
+
+.nf-review-history strong {
+  color: var(--nf-review-ink);
+}
+
+.nf-review-history-empty,
+.nf-review-basement,
+.nf-review-archive-empty {
+  color: var(--nf-review-muted);
+  font: 500 13px/1.6 var(--font-editorial, Georgia, serif);
+}
+
+.nf-review-basement {
+  margin: 18px 0 0;
+  text-align: center;
+}
+
+.nf-review-withdrawal-dialog {
+  position: fixed;
+  z-index: 12050;
+  top: 50%;
+  left: 50%;
+  width: min(520px, calc(100vw - 30px));
+  max-height: calc(100dvh - 30px);
+  overflow: auto;
+  padding: 34px;
+  border: 1px solid var(--nf-review-line);
+  color: var(--nf-review-ink);
+  background: var(--nf-review-paper-raised);
+  box-shadow: 0 28px 90px rgba(0,0,0,.24);
+  transform: translate(-50%, -50%);
+}
+
+.nf-review-withdrawal-dialog > .nf-review-close {
+  position: absolute;
+  top: 18px;
+  right: 18px;
+}
+
+.nf-review-withdrawal-dialog h2 {
+  margin: 8px 0 0;
+  font: 600 38px/1 var(--font-editorial, Georgia, serif);
+}
+
+.nf-review-withdrawal-dialog > p {
+  color: var(--nf-review-muted);
+  font-size: 12px;
+  line-height: 1.55;
+}
+
+.nf-review-withdrawal-dialog label {
+  display: grid;
+  gap: 8px;
+  margin-top: 18px;
+  color: var(--nf-review-muted);
+  font: 700 9px/1 var(--font-mono, monospace);
+}
+
+.nf-review-withdrawal-dialog select,
+.nf-review-withdrawal-dialog textarea {
+  width: 100%;
+  padding: 11px 12px;
+  border: 1px solid var(--nf-review-line);
+  border-radius: 0;
+  color: var(--nf-review-ink);
+  background: transparent;
+  font: 500 13px/1.45 var(--font-ui, system-ui, sans-serif);
+}
+
+.nf-review-withdrawal-dialog textarea {
+  min-height: 96px;
+  resize: vertical;
+}
+
+.nf-review-withdrawal-warning {
+  color: var(--nf-review-red) !important;
+}
+
 @keyframes nf-review-stamp-in {
   from { opacity: 0; transform: scale(1.5) rotate(-12deg); }
   to { opacity: 1; transform: scale(1) rotate(-5deg); }
@@ -815,10 +1152,73 @@ html.nf-review-game-open body {
     width: calc(100vw - 20px);
     padding: 34px 22px;
   }
+
+  .nf-review-tabs {
+    min-height: 40px;
+  }
+
+  .nf-review-tabs button {
+    min-width: 0;
+    flex: 1;
+    padding: 0 7px;
+    font-size: 8px;
+  }
+
+  .nf-review-archive-card {
+    min-height: calc(100dvh - 210px);
+    padding: 22px 16px 26px 22px;
+  }
+
+  .nf-review-archive-row {
+    grid-template-columns: 25px minmax(0, 1fr) 66px;
+    gap: 8px;
+  }
+
+  .nf-review-archive-row > small:last-child {
+    display: none;
+  }
+
+  .nf-review-archive-row strong {
+    font-size: 14px;
+  }
+
+  .nf-review-archive-row em {
+    padding: 6px 5px 4px;
+    font-size: 8px;
+  }
+
+  .nf-review-archive-detail {
+    grid-template-columns: 1fr;
+  }
+
+  .nf-review-archive-detail aside {
+    padding: 16px 0 0;
+    border-top: 1px solid var(--nf-review-line);
+    border-left: 0;
+  }
+
+  .nf-review-history li {
+    grid-template-columns: 72px 1fr;
+  }
+
+  .nf-review-history time {
+    grid-column: 2;
+  }
+
+  .nf-review-withdrawal-dialog {
+    width: calc(100vw - 20px);
+    padding: 30px 22px;
+  }
 }
 
 @media (prefers-reduced-motion: reduce) {
   .nf-review-stamp {
     animation: none;
+  }
+}
+
+@media (max-width: 480px) {
+  .nf-review-header-actions > button:not(.nf-review-close) {
+    display: none;
   }
 }

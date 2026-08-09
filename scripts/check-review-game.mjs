@@ -31,11 +31,14 @@ for (const retired of ['guest-editor', 'review-candidates.json', 'pipeline-revie
 }
 
 for (const contract of [
-  'const REACTION_HOLD_MS = 3000', 'const openFormal = async', 'const renderReview = () =>', 'const renderDecisionBar = () =>',
+  'const REACTION_HOLD_MS = 3000', 'const openFormal = async', 'const renderReview = () =>', 'const renderDecisionBar = (disabled = false) =>',
   "from('newsflow_candidates')", "from('newsflow_editorial_reviews')", "onConflict: 'candidate_id,reviewer_user_id'",
   "state.editorialRole === 'editor_in_chief'", 'opinionCounts', '尚无其他编辑完成本稿评议',
   'countdown: 3', 'nf-review-countdown', 'window.setTimeout(advance, REACTION_HOLD_MS)',
-  'window.NewsFlowReviewGame', 'editor_review_game_open', 'editor_review_decision', 'newsflow:switch-role'
+  'window.NewsFlowReviewGame', 'editor_review_game_open', 'editor_review_decision', 'newsflow:switch-role',
+  "from('newsflow_editorial_consensus')", "from('newsflow_editorial_withdrawals')", "from('newsflow_editorial_events')",
+  "client.rpc('newsflow_withdraw_candidate'", "client.rpc('newsflow_restore_withdrawn_candidate'",
+  '决定档案', '退稿库', 'editorial_boost', 'reader_boost'
 ]) if (!game.includes(contract)) throw new Error(`review game missing contract: ${contract}`);
 if (game.includes('localStorage') || game.includes('saveProductData') || game.includes('FORMAL_STORAGE_KEY')) {
   throw new Error('Review decisions must live only in normalized Supabase review rows.');
@@ -68,6 +71,7 @@ if (mode.includes("void syncModePreference('editor')") || mode.includes('window.
 for (const selector of [
   '.nf-review-stack', '.nf-review-card', '.nf-review-decision-bar', 'grid-template-columns: repeat(5',
   '.nf-review-stamp', '.nf-review-countdown', 'zoom: 0.8', 'overflow: hidden',
+  '.nf-review-tabs', '.nf-review-archive-card', '.nf-review-withdrawal-dialog',
   '@media (min-width: 761px)', '@media (max-width: 760px)', '@media (prefers-reduced-motion: reduce)'
 ]) if (!gameCss.includes(selector)) throw new Error(`review game CSS missing ${selector}`);
 if (gameCss.includes('.nf-settlement')) throw new Error('Retired local Issue settlement CSS must be deleted.');

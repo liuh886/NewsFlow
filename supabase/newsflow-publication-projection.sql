@@ -1,6 +1,8 @@
 -- NewsFlow public publication projection.
 -- Chief decisions remain private workflow events; this table exposes only the
 -- sanitized article snapshot that GitHub publication sync is allowed to read.
+-- Ranking-v2 and withdrawal behavior extend this projection in
+-- migrations/20260809045304_editorial_ranking_loop.sql.
 
 alter table public.newsflow_editorial_adoptions
   add column if not exists publication jsonb not null default '{}'::jsonb;
