@@ -12,11 +12,13 @@
   const versioned = (path) => version ? `${path}?v=${encodeURIComponent(version)}` : path;
   const styles = [
     './review-game.css',
+    './review-archive.css',
     './review-stamp.css',
     './editorial-governance.css'
   ];
   const scripts = [
     './review-game.js',
+    './review-archive.js',
     './editorial-governance.js',
     './editorial-office.js'
   ];
