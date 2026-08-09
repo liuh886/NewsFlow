@@ -39,8 +39,15 @@ for (const retired of ['openGuest', 'openSettlement', 'CLOSE ISSUE', 'saveProduc
 for (const contract of ["from('newsflow_governance_drafts')", '刊物判断', '长期议题', '信源', '编辑部', '发布到 GitHub']) {
   if (!governance.includes(contract)) throw new Error(`Governance surface missing ${contract}`);
 }
-for (const contract of ['cover_signal_id', 'Published with NewsFlow', "new CustomEvent('newsflow:edition-rendered')", '#section/', "issue?.lifecycle === 'live'", 'archivedIssues']) {
+for (const contract of [
+  'cover_signal_id', 'Published with NewsFlow', "new CustomEvent('newsflow:edition-rendered')", '#section/',
+  "issue?.lifecycle === 'live'", 'publishedIssueById', 'const issues = publishedIssues();', 'readerUtilityState',
+  '期刊目录', 'data-issue-current'
+]) {
   if (!edition.includes(contract)) throw new Error(`Edition layer missing ${contract}`);
+}
+for (const retired of ['archivedIssues', 'data-target="latest-change"', 'renderPostIssueIntro', '最新更新']) {
+  if (edition.includes(retired)) throw new Error(`Edition layer contains retired parallel publication path: ${retired}`);
 }
 for (const contract of ["const ROOT_ID = 'newsflow-reading-surface-root'", '#read/', 'canonicalArticleUrl', "window.addEventListener('newsflow:rendered'"]) {
   if (!reading.includes(contract)) throw new Error(`Reading Surface missing ${contract}`);
@@ -69,4 +76,4 @@ for (const contract of ['generatePublicationPages', "resolve(dist, 'feed.xml')",
 }
 if (!pages.includes("cancel-in-progress: ${{ github.event_name == 'pull_request' }}")) throw new Error('Pages main deployment cancellation policy regressed.');
 
-console.log('NewsFlow frontend architecture contract passed: lean Reader, lazy editorial runtime, static publication routes and explicit lifecycle boundaries.');
+console.log('NewsFlow frontend architecture contract passed: issue-first Reader, current-inclusive TOC, lazy editorial runtime, static publication routes and explicit lifecycle boundaries.');
