@@ -211,12 +211,23 @@ try {
     throw new Error(`Mobile publication nav is not aligned with issue-first IA: ${mobileNavText}`);
   }
 
-  const mobileMenuButton = page.locator('#app [data-action="mobile-menu"]');
-  if (await mobileMenuButton.isVisible()) {
-    throw new Error('Duplicate mobile hamburger menu is still visible.');
+  const mobileToolsButton = page.locator('#app [data-action="mobile-menu"]');
+  await mobileToolsButton.waitFor({ state: 'visible', timeout: 10_000 });
+  if ((await mobileToolsButton.getAttribute('aria-label')) !== '打开筛选菜单') {
+    throw new Error('Mobile tools trigger does not clearly describe its filter function.');
   }
-  const mobileFilter = page.locator('#app .mobile-nav [data-action="mobile-filter"]');
-  await mobileFilter.waitFor({ state: 'visible', timeout: 10_000 });
+  const mobileToolsVisual = await mobileToolsButton.evaluate((button) => {
+    const svg = button.querySelector('svg');
+    const pseudo = getComputedStyle(button, '::before');
+    return {
+      sourceSvgDisplay: svg ? getComputedStyle(svg).display : '',
+      maskImage: pseudo.maskImage || pseudo.webkitMaskImage || '',
+      pseudoWidth: Number.parseFloat(pseudo.width),
+    };
+  });
+  if (mobileToolsVisual.sourceSvgDisplay !== 'none' || !mobileToolsVisual.maskImage || mobileToolsVisual.maskImage === 'none' || mobileToolsVisual.pseudoWidth < 18) {
+    throw new Error(`Ambiguous hamburger icon is still exposed instead of an explicit filter/tools icon: ${JSON.stringify(mobileToolsVisual)}`);
+  }
 
   const editorialEntry = page.locator('#app .top-actions > [data-action="open-editorial-office"]');
   await editorialEntry.waitFor({ state: 'visible', timeout: 10_000 });
@@ -236,6 +247,9 @@ try {
   if (roleTriggerCount !== 0) {
     throw new Error('Editorial runtime mounted a second role-sized control into the mobile header.');
   }
+  if (await editorialEntry.getAttribute('data-newsflow-role')) {
+    throw new Error('Retired editorial role mode leaked back into the Reader header.');
+  }
   if (!launcherBeforeRuntime || !launcherAfterRuntime
     || Math.abs(launcherBeforeRuntime.x - launcherAfterRuntime.x) > 1
     || Math.abs(launcherBeforeRuntime.width - launcherAfterRuntime.width) > 1
@@ -243,7 +257,7 @@ try {
     throw new Error(`Editorial runtime changed the canonical mobile header geometry: ${JSON.stringify({ launcherBeforeRuntime, launcherAfterRuntime })}`);
   }
 
-  await mobileFilter.click();
+  await mobileToolsButton.click();
   const installSection = page.locator('[data-newsflow-install-section]');
   await installSection.waitFor({ state: 'visible', timeout: 5_000 });
   if ((await installSection.getAttribute('data-install-entry-mode')) !== 'persistent') {
@@ -251,14 +265,14 @@ try {
   }
   const installAction = page.locator('[data-newsflow-install-action]');
   if ((await installAction.innerText()).trim() !== '安装应用') {
-    throw new Error('Filter panel install action does not expose the expected copy.');
+    throw new Error('Filter/tools panel install action does not expose the expected copy.');
   }
   const installPlacement = await installAction.evaluate((button) => {
     const rect = button.getBoundingClientRect();
     return { top: rect.top, bottom: rect.bottom, viewportHeight: window.innerHeight };
   });
   if (installPlacement.top < 0 || installPlacement.bottom > installPlacement.viewportHeight) {
-    throw new Error('Filter panel install action is not visible in the initial viewport without scrolling.');
+    throw new Error('Filter/tools panel install action is not visible in the initial viewport without scrolling.');
   }
 
   await installAction.click();
@@ -278,7 +292,7 @@ try {
     Object.defineProperty(event, 'userChoice', { value: Promise.resolve({ outcome: 'dismissed' }) });
     window.dispatchEvent(event);
   });
-  if (!(await installSection.isVisible())) await mobileFilter.click();
+  if (!(await installSection.isVisible())) await mobileToolsButton.click();
   await installAction.click();
   const promptCalled = await page.evaluate(() => window.__newsflowInstallPromptCalled === true);
   if (!promptCalled) throw new Error('PWA install entry does not invoke the native install prompt when available.');
