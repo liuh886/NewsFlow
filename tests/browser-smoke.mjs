@@ -75,6 +75,19 @@ try {
     if (bodyText.includes(operatorCopy)) throw new Error(`Reader exposes operator-facing copy: ${operatorCopy}`);
   }
 
+  const publicationNavText = await page.locator('#app .publication-nav').innerText();
+  if (publicationNavText.includes('最新')) throw new Error(`Publication nav still exposes a parallel latest section: ${publicationNavText}`);
+  if (!publicationNavText.includes('本期') || !publicationNavText.includes('目录')) {
+    throw new Error(`Publication nav is missing issue-first anchors: ${publicationNavText}`);
+  }
+  if (await page.locator('#app [data-edition-layer="post-issue"], #app #latest-change').count()) {
+    throw new Error('Homepage still renders the retired parallel latest-update surface.');
+  }
+  if (!(await page.locator('#app #current-issue').isVisible())) throw new Error('Current Issue is not the homepage editorial surface.');
+  if (!(await page.locator('#app .lead-story').isHidden()) || !(await page.locator('#app .feed-toolbar').isHidden())) {
+    throw new Error('Default homepage still exposes the underlying rolling stream beside the Current Issue.');
+  }
+
   const freshnessBadge = page.locator('#app .nf-data-date');
   await freshnessBadge.waitFor({ state: 'visible', timeout: 10_000 });
   const badgeContract = await freshnessBadge.evaluate((badge) => {
@@ -119,6 +132,14 @@ try {
     throw new Error('Expanded Reader search does not restore its search hint.');
   }
 
+  await page.locator('#global-search').fill('Texas');
+  await page.locator('#app .feed-toolbar').waitFor({ state: 'visible', timeout: 5_000 });
+  if (!(await page.locator('#app #current-issue').isHidden())) throw new Error('Search did not switch the publication surface into Reader results mode.');
+  const resultHeading = await page.locator('#app .feed-heading h2').innerText();
+  if (!resultHeading.startsWith('搜索：')) throw new Error(`Search results surface has the wrong heading: ${resultHeading}`);
+  await page.locator('#global-search').fill('');
+  await page.locator('#app #current-issue').waitFor({ state: 'visible', timeout: 5_000 });
+
   const firstArticle = page.locator('#app [data-reading-link="true"]').first();
   await firstArticle.waitFor({ state: 'visible', timeout: 10_000 });
   await firstArticle.click();
@@ -126,14 +147,21 @@ try {
   await page.locator('[data-reading-action="close"]').click();
   await page.locator('#newsflow-reading-surface-root').waitFor({ state: 'hidden' });
 
-  const archivedIssueButton = page.locator('#app .edition-archive [data-edition-action="open-issue"]').first();
-  await archivedIssueButton.waitFor({ state: 'visible', timeout: 10_000 });
-  await archivedIssueButton.click();
-  const historicalIssuePanel = page.locator('#app .edition-panel [data-action="open"][data-id]').first();
-  await historicalIssuePanel.waitFor({ state: 'visible', timeout: 10_000 });
-  const historicalIssueTitle = await page.locator('#app #issue-panel-title').innerText();
-  if (!historicalIssueTitle.trim()) throw new Error('Historical Issue panel opened without a title.');
-  await historicalIssuePanel.click();
+  const currentTocRow = page.locator('#app .edition-archive [data-issue-current="true"]').first();
+  await currentTocRow.waitFor({ state: 'visible', timeout: 10_000 });
+  const currentIsFirst = await currentTocRow.evaluate((row) => row.parentElement?.firstElementChild === row);
+  if (!currentIsFirst) throw new Error('Current Issue is not the first entry in the issue TOC.');
+  if (await page.locator('#app .edition-archive [data-issue-current="false"]').count() < 1) {
+    throw new Error('Issue TOC does not retain historical issues below the Current Issue.');
+  }
+  await currentTocRow.locator('[data-edition-action="open-issue"]').click();
+  const issuePanel = page.locator('#app .edition-panel [data-action="open"][data-id]').first();
+  await issuePanel.waitFor({ state: 'visible', timeout: 10_000 });
+  const currentPanelHead = await page.locator('#app .edition-panel-head').innerText();
+  if (!currentPanelHead.toLowerCase().includes('current')) throw new Error(`Current Issue TOC entry did not open the live issue panel: ${currentPanelHead}`);
+  const issuePanelTitle = await page.locator('#app #issue-panel-title').innerText();
+  if (!issuePanelTitle.trim()) throw new Error('Current Issue panel opened without a title.');
+  await issuePanel.click();
   await page.locator('#newsflow-reading-surface-root .nf-reading-shell').waitFor({ state: 'visible', timeout: 10_000 });
   await page.locator('#newsflow-reading-surface-root #nf-reading-title').waitFor({ state: 'visible' });
   await page.locator('[data-reading-action="close"]').click();
@@ -143,6 +171,10 @@ try {
   await page.locator('#app .app-shell[data-product-model="magazine-edition"]').waitFor({ state: 'visible' });
   const fitsViewport = await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth + 1);
   if (!fitsViewport) throw new Error('Reader mobile layout overflows horizontally.');
+  const mobileNavText = await page.locator('#app .mobile-nav[data-edition-layer="magazine"]').innerText();
+  if (mobileNavText.includes('最新') || !mobileNavText.includes('目录') || !mobileNavText.includes('议题')) {
+    throw new Error(`Mobile publication nav is not aligned with issue-first IA: ${mobileNavText}`);
+  }
 
   const editorialEntry = page.locator('#app .top-actions > [data-action="open-editorial-office"]');
   await editorialEntry.waitFor({ state: 'visible', timeout: 10_000 });
