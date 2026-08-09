@@ -93,6 +93,13 @@ try {
   if ((await installAction.innerText()).trim() !== '安装应用') {
     throw new Error('Mobile menu install action does not expose the expected copy.');
   }
+  const installPlacement = await installAction.evaluate((button) => {
+    const rect = button.getBoundingClientRect();
+    return { top: rect.top, bottom: rect.bottom, viewportHeight: window.innerHeight };
+  });
+  if (installPlacement.top < 0 || installPlacement.bottom > installPlacement.viewportHeight) {
+    throw new Error('Mobile menu install action is not visible in the initial viewport without scrolling.');
+  }
 
   await installAction.click();
   await page.locator('[data-newsflow-install-help] .edition-panel').waitFor({ state: 'visible', timeout: 5_000 });
