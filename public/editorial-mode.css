@@ -25,46 +25,6 @@ html.nf-mode-dialog-open body {
   font-family: var(--font-ui, system-ui, sans-serif);
 }
 
-.nf-mode-trigger {
-  min-height: 36px;
-  display: inline-flex;
-  align-items: center;
-  gap: 7px;
-  padding: 4px 9px 4px 5px;
-  border: 1px solid color-mix(in srgb, var(--ink) 20%, transparent);
-  border-radius: 999px;
-  color: var(--ink);
-  background: color-mix(in srgb, var(--surface) 88%, transparent);
-  cursor: pointer;
-  font-family: var(--font-ui);
-}
-
-.nf-mode-trigger > span {
-  width: 26px;
-  height: 26px;
-  display: grid;
-  place-items: center;
-  border-radius: 50%;
-  color: var(--nf-mode-paper);
-  background: var(--nf-mode-ink);
-  font: 700 10px/1 var(--font-editorial, Georgia, serif);
-}
-
-.nf-mode-trigger.is-editor > span {
-  background: var(--nf-mode-red);
-}
-
-.nf-mode-trigger > strong {
-  font-size: 11px;
-  font-weight: 700;
-}
-
-.nf-mode-trigger:hover,
-.nf-mode-trigger:focus-visible {
-  border-color: color-mix(in srgb, var(--nf-mode-red) 52%, transparent);
-  outline: none;
-}
-
 .nf-mode-backdrop {
   position: fixed;
   inset: 0;
@@ -225,9 +185,6 @@ html.nf-mode-dialog-open body {
 }
 
 @media (max-width: 720px) {
-  .nf-mode-trigger > span { display: none; }
-  .nf-mode-trigger { padding: 5px 10px; }
-
   .nf-mode-dialog {
     width: 100vw;
     min-height: 100dvh;

@@ -51,8 +51,15 @@ for (const contract of [
   "const MODE_STORAGE_KEY = 'newsflow_mode_v3'", "const INVITE_PARAM = 'editor-invite'",
   "from('newsflow_editorial_members')", "from('newsflow_editorial_invitations')", "role: 'editor'",
   "roleCard('reader'", "roleCard('editor'", '编辑模式需要主编任命',
-  'window.NewsFlowReviewGame?.isOpen?.()', 'window.NewsFlowReviewGame?.openFormal?.()', 'createEditorInvite', 'openGovernance', 'window.NewsFlowMode'
+  'window.NewsFlowReviewGame?.isOpen?.()', 'window.NewsFlowReviewGame?.openFormal?.()', 'createEditorInvite', 'openGovernance',
+  'syncModeLauncher', '[data-action="open-editorial-office"]', 'window.NewsFlowMode'
 ]) if (!mode.includes(contract)) throw new Error(`mode controller missing contract: ${contract}`);
+if (mode.includes('data-editorial-role-trigger') || mode.includes('nf-mode-trigger')) {
+  throw new Error('Mode controller must reuse the canonical editorial launcher instead of mounting a role-sized header control.');
+}
+if (!loader.includes("launcher.style.display = 'grid'") || loader.includes('roleTrigger')) {
+  throw new Error('Editorial loader must preserve one fixed canonical launcher across lazy-runtime state changes.');
+}
 if (mode.includes('syncFormalEditorialState') || mode.includes('FORMAL_STORAGE_KEY')) throw new Error('Mode controller must not persist a second editorial decision store.');
 if (mode.includes("void syncModePreference('editor')") || mode.includes('window.setTimeout(openEditorGame')) {
   throw new Error('Account preference updates must never recursively reopen the Review Game.');
@@ -64,7 +71,8 @@ for (const selector of [
   '@media (min-width: 761px)', '@media (max-width: 760px)', '@media (prefers-reduced-motion: reduce)'
 ]) if (!gameCss.includes(selector)) throw new Error(`review game CSS missing ${selector}`);
 if (gameCss.includes('.nf-settlement')) throw new Error('Retired local Issue settlement CSS must be deleted.');
-for (const selector of ['.nf-mode-trigger', '.nf-mode-dialog', '.nf-mode-grid', '@media (max-width: 720px)']) if (!modeCss.includes(selector)) throw new Error(`mode CSS missing ${selector}`);
+for (const selector of ['.nf-mode-dialog', '.nf-mode-grid', '@media (max-width: 720px)']) if (!modeCss.includes(selector)) throw new Error(`mode CSS missing ${selector}`);
+if (modeCss.includes('.nf-mode-trigger')) throw new Error('Obsolete role trigger CSS must be deleted.');
 
 if (!sw.includes("versioned('./editorial-loader.js')")) throw new Error('service worker must cache the small editorial loader.');
 for (const editorAsset of ["versioned('./review-game.js')", "versioned('./review-game.css')", "versioned('./editorial-office.js')", "versioned('./editorial-mode.css')"]) {
@@ -77,4 +85,4 @@ const reactions = JSON.parse(reactionsText);
 for (const decision of ['cover_story', 'accept', 'minor_revision', 'major_revision', 'reject']) {
   if (!Array.isArray(reactions[decision]) || reactions[decision].length < 4) throw new Error(`reaction library is too shallow for ${decision}.`);
 }
-console.log('NewsFlow review game contract passed: lazy editor runtime, permanent membership, advisory reviews, chief-only authority and three-second five-state review.');
+console.log('NewsFlow review game contract passed: lazy editor runtime, stable canonical role launcher, permanent membership, advisory reviews, chief-only authority and three-second five-state review.');
