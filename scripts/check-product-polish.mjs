@@ -5,14 +5,14 @@ import { spawnSync } from 'node:child_process';
 
 const root = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 const read = (path) => readFile(resolve(root, path), 'utf8');
-const [index, loader, appJs, polishJs, editionJs, editionCss, readingJs, readingCss, startupJs, gameJs, gameCss, governanceJs, governanceCss, serviceWorker, statusText, reactionsText] = await Promise.all([
+const [index, loader, appJs, polishJs, editionJs, editionCss, navigationCss, readingJs, readingCss, startupJs, gameJs, gameCss, governanceJs, governanceCss, serviceWorker, statusText, reactionsText] = await Promise.all([
   read('index.html'), read('public/editorial-loader.js'), read('src/editorial-app.js'), read('src/polish.js'), read('src/edition-layer.js'), read('src/edition-layer.css'),
-  read('public/reading-surface.js'), read('public/reading-surface.css'), read('public/startup-resilience.js'),
+  read('public/reader-navigation.css'), read('public/reading-surface.js'), read('public/reading-surface.css'), read('public/startup-resilience.js'),
   read('public/review-game.js'), read('public/review-game.css'), read('public/editorial-governance.js'), read('public/editorial-governance.css'),
   read('public/sw.js'), read('public/data/data-status.json'), read('public/data/editorial-reactions.json')
 ]);
 
-for (const reference of ['./startup-resilience.js', './reading-surface.css', './reading-surface.js', './editorial-loader.js']) {
+for (const reference of ['./startup-resilience.js', './reader-navigation.css', './reading-surface.css', './reading-surface.js', './editorial-loader.js']) {
   if (!index.includes(reference)) throw new Error(`index.html is missing Reader reference ${reference}`);
   if (!serviceWorker.includes(reference)) throw new Error(`service worker is missing Reader reference ${reference}`);
 }
@@ -20,6 +20,7 @@ for (const editorAsset of ['./review-game.css', './review-game.js', './editorial
   if (index.includes(editorAsset)) throw new Error(`Reader must not eagerly load ${editorAsset}`);
   if (!loader.includes(editorAsset)) throw new Error(`editorial-loader is missing ${editorAsset}`);
 }
+if (index.includes('./editorial-mode.css') || loader.includes('./editorial-mode.css')) throw new Error('Retired role-choice UI must stay deleted.');
 if (index.indexOf('./startup-resilience.js') > index.indexOf('./editorial-app.js')) throw new Error('startup-resilience.js must run before editorial-app.js');
 if (!serviceWorker.includes('./data/data-status.json')) throw new Error('Service worker is missing data-status.json.');
 
@@ -45,6 +46,9 @@ for (const contract of ['NETWORK_TIMEOUT_MS = 5000', 'fetchWithTimeout', 'warmAp
 }
 for (const contract of ['ensureMobileReaderSearch', 'syncEditionDialogAccessibility', 'trapEditionFocus']) {
   if (!polishJs.includes(contract)) throw new Error(`Reader interaction polish is missing ${contract}`);
+}
+for (const contract of ['.mobile-menu-button::before', 'mask-image:', 'grid-template-columns: repeat(5, minmax(0, 1fr))']) {
+  if (!navigationCss.includes(contract)) throw new Error(`Reader mobile navigation contract is missing ${contract}`);
 }
 
 for (const contract of [
@@ -79,9 +83,11 @@ for (const contract of [
   "window.addEventListener('newsflow:edition-rendered'", "surface: 'reading_surface'"
 ]) if (!readingJs.includes(contract)) throw new Error(`Reading Surface is missing ${contract}`);
 if (readingJs.includes('MutationObserver') || readingJs.includes('stopImmediatePropagation')) throw new Error('Reading Surface must integrate through explicit lifecycle events and scoped capture.');
-for (const contract of ['width: min(740px, 100%)', '.nf-reading-article h1', '.nf-reading-standfirst', '.nf-reading-section > p', '@media (max-width: 720px)', '@media (prefers-reduced-motion: reduce)', '@media print']) {
-  if (!readingCss.includes(contract)) throw new Error(`Reading Surface CSS is missing ${contract}`);
-}
+for (const contract of [
+  '#newsflow-reading-surface-root:not([hidden])::before', 'width: min(760px, 54vw)', 'background: var(--surface-raised)',
+  '.nf-reading-article h1', '.nf-reading-standfirst', '.nf-reading-section > p', '@media (max-width: 720px)',
+  '@media (prefers-reduced-motion: reduce)', '@media print', '@keyframes nf-reading-sheet-in'
+]) if (!readingCss.includes(contract)) throw new Error(`Reading side-sheet CSS is missing ${contract}`);
 
 for (const contract of ['Publication Settings', '刊物判断', '长期议题', '信源', '编辑部', '发布到 GitHub', '主编当前判断', '任命编辑']) {
   if (!governanceJs.includes(contract)) throw new Error(`Chief governance polish is missing ${contract}`);
@@ -89,8 +95,8 @@ for (const contract of ['Publication Settings', '刊物判断', '长期议题', 
 for (const selector of ['.nf-governance-shell', '.nf-gov-tabs', '.nf-gov-editor', '.nf-gov-index', '.nf-gov-board-stats', '@media (max-width: 720px)']) {
   if (!governanceCss.includes(selector)) throw new Error(`Chief governance CSS is missing ${selector}`);
 }
-for (const privateArtifact of ['review-candidates.json', 'pipeline-reviews.json', 'guest-editor-invites.json', 'ai_digest.json']) {
-  if (serviceWorker.includes(privateArtifact) || index.includes(privateArtifact)) throw new Error(`Reader artifact exposes retired/private state: ${privateArtifact}`);
+for (const privateArtifact of ['review-candidates.json', 'pipeline-reviews.json', 'guest-editor-invites.json', 'ai_digest.json', 'editorial-mode.css']) {
+  if (serviceWorker.includes(privateArtifact) || index.includes(privateArtifact) || loader.includes(privateArtifact)) throw new Error(`Reader artifact exposes retired/private state: ${privateArtifact}`);
 }
 
 const reactions = JSON.parse(reactionsText);
@@ -105,4 +111,4 @@ if (!Number.isInteger(status.signal_count) || status.signal_count < 1) throw new
 const statusCheck = spawnSync(process.execPath, [resolve(root, 'scripts/update-data-status.mjs'), '--check'], { encoding: 'utf8' });
 if (statusCheck.status !== 0) throw new Error(statusCheck.stderr || statusCheck.stdout);
 
-console.log('NewsFlow product polish passed: issue-first publication Reader, current-inclusive TOC, lazy private editorial runtime, chief governance surface and live freshness.');
+console.log('NewsFlow product polish passed: issue-first Reader, continuous side-sheet reading, explicit mobile tools, permission-routed editorial dashboard and live freshness.');

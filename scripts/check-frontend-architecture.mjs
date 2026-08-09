@@ -4,13 +4,14 @@ import { fileURLToPath } from 'node:url';
 
 const root = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 const read = (path) => readFile(resolve(root, path), 'utf8');
-const [index, loader, app, polish, edition, reading, mode, game, governance, startup, sw, build, pages] = await Promise.all([
+const [index, loader, app, polish, edition, reading, office, game, governance, startup, sw, build, pages, navigationCss, readingCss] = await Promise.all([
   read('index.html'), read('public/editorial-loader.js'), read('src/editorial-app.js'), read('src/polish.js'), read('src/edition-layer.js'), read('public/reading-surface.js'),
   read('public/editorial-office.js'), read('public/review-game.js'), read('public/editorial-governance.js'),
-  read('public/startup-resilience.js'), read('public/sw.js'), read('scripts/build.mjs'), read('.github/workflows/pages.yml')
+  read('public/startup-resilience.js'), read('public/sw.js'), read('scripts/build.mjs'), read('.github/workflows/pages.yml'),
+  read('public/reader-navigation.css'), read('public/reading-surface.css')
 ]);
 
-for (const [name, source] of Object.entries({ app, polish, edition, reading, mode, game, governance, startup })) {
+for (const [name, source] of Object.entries({ app, polish, edition, reading, office, game, governance, startup })) {
   if (source.includes('MutationObserver')) throw new Error(`${name} must use explicit lifecycle events.`);
 }
 
@@ -24,10 +25,16 @@ for (const contract of ['ensureMobileReaderSearch', 'syncEditionDialogAccessibil
   if (!polish.includes(contract)) throw new Error(`Reader polish missing ${contract}`);
 }
 
-for (const contract of ["from('newsflow_editorial_members')", "window.HaoAccount?.can?.('newsflow.pro')", 'window.NewsFlowReviewGame?.isOpen?.()', 'window.NewsFlowReviewGame?.openFormal?.()', 'window.NewsFlowMode']) {
-  if (!mode.includes(contract)) throw new Error(`Mode controller missing ${contract}`);
+for (const contract of [
+  "from('newsflow_editorial_members')", "window.HaoAccount?.can?.('newsflow.pro')", 'isEditorialMember',
+  'openEditorialOverview', 'window.HaoAccount?.open?.()', 'window.NewsFlowReviewGame?.openOverview?.()', 'window.NewsFlowMode'
+]) if (!office.includes(contract)) throw new Error(`Editorial permission router missing ${contract}`);
+for (const retired of ['MODE_STORAGE_KEY', 'newsflow_mode_v3', 'roleCard(', 'renderDialog', '你以什么身份进入编辑部？']) {
+  if (office.includes(retired) || loader.includes(retired)) throw new Error(`Retired identity-mode path returned: ${retired}`);
 }
-if (mode.includes('window.setTimeout(openEditorGame')) throw new Error('Account hydration must not reopen the Review Game.');
+if (!office.includes("removeAttribute('data-newsflow-role')") || !loader.includes("removeAttribute('data-newsflow-role')")) {
+  throw new Error('Editorial permission must not leak into Reader navigation controls.');
+}
 
 for (const contract of ["from('newsflow_candidates')", "from('newsflow_editorial_reviews')", "state.editorialRole === 'editor_in_chief'", 'openOverview', 'window.NewsFlowReviewGame']) {
   if (!game.includes(contract)) throw new Error(`Review Game missing ${contract}`);
@@ -53,19 +60,25 @@ for (const contract of ["const ROOT_ID = 'newsflow-reading-surface-root'", '#rea
   if (!reading.includes(contract)) throw new Error(`Reading Surface missing ${contract}`);
 }
 if (reading.includes('stopImmediatePropagation') || reading.includes('window.fetch =')) throw new Error('Reading Surface must not take global ownership.');
+for (const contract of ['width: min(760px, 54vw)', 'background: var(--surface-raised)', '@keyframes nf-reading-sheet-in']) {
+  if (!readingCss.includes(contract)) throw new Error(`Reading side sheet missing ${contract}`);
+}
+for (const contract of ['.mobile-menu-button::before', 'mask-image:', 'repeat(5, minmax(0, 1fr))']) {
+  if (!navigationCss.includes(contract)) throw new Error(`Mobile navigation missing ${contract}`);
+}
 if (startup.includes('window.fetch =')) throw new Error('Startup resilience must not patch fetch.');
 
-for (const asset of ['./startup-resilience.js?v=__NEWSFLOW_VERSION__', './editorial-app.js?v=__NEWSFLOW_VERSION__', './reading-surface.js?v=__NEWSFLOW_VERSION__', './editorial-loader.js?v=__NEWSFLOW_VERSION__']) {
+for (const asset of ['./startup-resilience.js?v=__NEWSFLOW_VERSION__', './editorial-app.js?v=__NEWSFLOW_VERSION__', './reading-surface.js?v=__NEWSFLOW_VERSION__', './editorial-loader.js?v=__NEWSFLOW_VERSION__', './reader-navigation.css?v=__NEWSFLOW_VERSION__']) {
   if (!index.includes(asset)) throw new Error(`Index missing current Reader asset ${asset}`);
 }
 for (const editorAsset of ['./review-game.js', './editorial-office.js', './editorial-governance.js']) {
   if (index.includes(editorAsset)) throw new Error(`Reader must not eagerly load editor-only asset ${editorAsset}`);
   if (!loader.includes(editorAsset)) throw new Error(`Lazy editor loader missing ${editorAsset}`);
 }
-for (const retired of ['review-candidates.json', 'pipeline-reviews.json', 'guest-editor-invites.json', 'ai_digest.json']) {
-  if (index.includes(retired) || sw.includes(retired) || build.includes(retired)) throw new Error(`Reader artifact exposes retired data: ${retired}`);
+for (const retired of ['review-candidates.json', 'pipeline-reviews.json', 'guest-editor-invites.json', 'ai_digest.json', 'editorial-mode.css']) {
+  if (index.includes(retired) || sw.includes(retired) || build.includes(retired) || loader.includes(retired)) throw new Error(`Reader artifact exposes retired data/state: ${retired}`);
 }
-for (const contract of ["const ASSET_VERSION = '__NEWSFLOW_VERSION__'", 'newsflow-reader-v${ASSET_VERSION}', './data/source-registry.json', './data/governance-status.json', './feed.xml', './rss.xml']) {
+for (const contract of ["const ASSET_VERSION = '__NEWSFLOW_VERSION__'", 'newsflow-reader-v${ASSET_VERSION}', './data/source-registry.json', './data/governance-status.json', './feed.xml', './rss.xml', 'reader-navigation.css']) {
   if (!sw.includes(contract)) throw new Error(`Service worker missing ${contract}`);
 }
 for (const editorAsset of ["versioned('./review-game.js')", "versioned('./editorial-office.js')", "versioned('./editorial-governance.js')"]) {
@@ -76,4 +89,4 @@ for (const contract of ['generatePublicationPages', "resolve(dist, 'feed.xml')",
 }
 if (!pages.includes("cancel-in-progress: ${{ github.event_name == 'pull_request' }}")) throw new Error('Pages main deployment cancellation policy regressed.');
 
-console.log('NewsFlow frontend architecture contract passed: issue-first Reader, current-inclusive TOC, lazy editorial runtime, static publication routes and explicit lifecycle boundaries.');
+console.log('NewsFlow frontend architecture contract passed: issue-first Reader, side-sheet reading, explicit mobile tools, permission-routed editorial dashboard and explicit lifecycle boundaries.');

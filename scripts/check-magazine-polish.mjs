@@ -7,23 +7,25 @@ const root = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 const files = [
   'public/magazine-polish.js',
   'public/magazine-polish.css',
+  'public/reader-navigation.css',
   'public/editorial-loader.js',
   'scripts/check-magazine-polish.mjs'
 ];
 for (const file of files) await access(resolve(root, file));
 
-const [index, loader, script, css, readingCss, serviceWorker, packageSource] = await Promise.all([
+const [index, loader, script, css, navigationCss, readingCss, serviceWorker, packageSource] = await Promise.all([
   readFile(resolve(root, 'index.html'), 'utf8'),
   readFile(resolve(root, 'public/editorial-loader.js'), 'utf8'),
   readFile(resolve(root, 'public/magazine-polish.js'), 'utf8'),
   readFile(resolve(root, 'public/magazine-polish.css'), 'utf8'),
+  readFile(resolve(root, 'public/reader-navigation.css'), 'utf8'),
   readFile(resolve(root, 'public/reading-surface.css'), 'utf8'),
   readFile(resolve(root, 'public/sw.js'), 'utf8'),
   readFile(resolve(root, 'package.json'), 'utf8')
 ]);
 const packageManifest = JSON.parse(packageSource);
 
-for (const reference of ['./magazine-polish.css', './magazine-polish.js']) {
+for (const reference of ['./magazine-polish.css', './magazine-polish.js', './reader-navigation.css']) {
   if (!index.includes(reference)) throw new Error(`index.html is missing ${reference}`);
   if (!serviceWorker.includes(reference)) throw new Error(`service worker is missing ${reference}`);
 }
@@ -32,6 +34,7 @@ for (const editorAsset of ['./review-game.css', './review-stamp.css', './review-
   if (index.includes(editorAsset)) throw new Error(`Reader must not eagerly load ${editorAsset}`);
   if (!loader.includes(editorAsset)) throw new Error(`editorial-loader is missing ${editorAsset}`);
 }
+if (index.includes('./editorial-mode.css') || loader.includes('./editorial-mode.css')) throw new Error('Retired role-choice styles must not return.');
 if (index.indexOf('./magazine-polish.css') < index.indexOf('./edition-layer.css')) throw new Error('magazine-polish.css must load after edition-layer.css');
 if (index.indexOf('./magazine-polish.js') < index.indexOf('./edition-layer.js')) throw new Error('magazine-polish.js must load after edition-layer.js');
 
@@ -59,9 +62,14 @@ for (const selector of [
   'grid-template-columns: 28px minmax(0, 1fr)', '.article-body', '.article-meta', 'grid-column: 2'
 ]) if (!css.includes(selector)) throw new Error(`magazine polish CSS is missing ${selector}`);
 
-for (const selector of ['width: min(740px, 100%)', '@media (max-width: 720px)', '.nf-reading-article h1', '.nf-reading-section > p']) {
-  if (!readingCss.includes(selector)) throw new Error(`reading typography/responsive contract is missing ${selector}`);
+for (const contract of ['.mobile-menu-button::before', 'mask-image:', 'grid-template-columns: repeat(5, minmax(0, 1fr))']) {
+  if (!navigationCss.includes(contract)) throw new Error(`mobile reader navigation is missing ${contract}`);
 }
+for (const selector of [
+  '#newsflow-reading-surface-root:not([hidden])::before', 'width: min(760px, 54vw)', 'background: var(--surface-raised)',
+  '.nf-reading-article h1', '.nf-reading-section > p', '@media (max-width: 720px)', '@keyframes nf-reading-sheet-in'
+]) if (!readingCss.includes(selector)) throw new Error(`side-sheet reading contract is missing ${selector}`);
+
 for (const identity of [
   'Frontier Systems Review — AI 基建、CCUS 与能源转型',
   'Frontier Systems Review：聚焦 AI 基建、CCUS 与能源转型的专业半月刊'
@@ -69,11 +77,11 @@ for (const identity of [
 
 if (packageManifest.version !== '2.4.5') throw new Error('package release contract must match the current Reader asset release');
 if (!packageManifest.scripts?.check?.includes('check-magazine-polish.mjs')) throw new Error('npm check must include the magazine polish contract');
-for (const releaseContract of ["const ASSET_VERSION = '__NEWSFLOW_VERSION__'", 'newsflow-reader-v${ASSET_VERSION}', 'reading-surface.css', 'editorial-loader.js']) {
+for (const releaseContract of ["const ASSET_VERSION = '__NEWSFLOW_VERSION__'", 'newsflow-reader-v${ASSET_VERSION}', 'reader-navigation.css', 'reading-surface.css', 'editorial-loader.js']) {
   if (!serviceWorker.includes(releaseContract)) throw new Error(`service worker is missing Reader release contract: ${releaseContract}`);
 }
 for (const eagerEditorAsset of ["versioned('./editorial-governance.css')", "versioned('./editorial-governance.js')", "versioned('./review-game.css')", "versioned('./review-stamp.css')", "versioned('./review-game.js')"]) {
   if (serviceWorker.includes(eagerEditorAsset)) throw new Error(`service worker must not precache editor-only asset ${eagerEditorAsset}`);
 }
 
-console.log('NewsFlow magazine polish contract passed: Edition-first identity, restrained Reader chrome, lean app shell, stable role navigation, header badge/search state, section hierarchy and responsive reading typography.');
+console.log('NewsFlow magazine polish contract passed: Edition-first identity, explicit mobile tools trigger, five-item navigation, side-sheet continuous reading and lazy permission-routed editorial access.');

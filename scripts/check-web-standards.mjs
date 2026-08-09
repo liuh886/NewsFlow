@@ -58,13 +58,15 @@ for (const contract of ['ensureMobileReaderSearch', 'syncEditionDialogAccessibil
   assert(polish.includes(contract), `Reader polish missing interaction contract: ${contract}`);
 }
 
-for (const contract of ['./editorial-mode.css', './review-game.css', './editorial-governance.css', './review-game.js', './editorial-governance.js', './editorial-office.js']) {
+for (const contract of ['./review-game.css', './review-stamp.css', './editorial-governance.css', './review-game.js', './editorial-governance.js', './editorial-office.js']) {
   assert(loader.includes(contract), `Editorial lazy loader missing asset: ${contract}`);
 }
-for (const contract of ['syncEditorialEntry', 'data-action="open-editorial-office"', "launcher.style.display = 'inline-flex'", 'newsflow:edition-rendered', '当前为读者模式']) {
-  assert(loader.includes(contract), `Editorial lazy loader missing reachable mode-switch contract: ${contract}`);
+for (const contract of ['syncEditorialEntry', 'data-action="open-editorial-office"', "launcher.style.display = 'inline-flex'", 'newsflow:edition-rendered', "label.textContent = '编辑部'"]) {
+  assert(loader.includes(contract), `Editorial lazy loader missing direct-entry contract: ${contract}`);
 }
-assert(!loader.includes('roleTrigger'), 'Editorial lazy loader must not swap the canonical launcher for a role-sized header control.');
+for (const retired of ['./editorial-mode.css', 'newsflow_mode_v3', 'cachedMode', '当前为读者模式', 'roleTrigger']) {
+  assert(!loader.includes(retired), `Retired editorial mode contract returned: ${retired}`);
+}
 
 for (const contract of [
   "const INSTALL_ENTRY_MODE = 'persistent'",
@@ -92,4 +94,4 @@ assert(manifest.icons.some((icon) => icon.sizes === '192x192'), 'PWA manifest mu
 assert(manifest.icons.some((icon) => icon.sizes === '512x512'), 'PWA manifest must declare a 512x512 install icon.');
 assert(/^\d+\.\d+\.\d+$/.test(String(packageManifest.version || '')), 'package.json must remain the single semantic version source.');
 
-console.log(`NewsFlow web standards contract passed for v${packageManifest.version}: canonical publication pages, feed/sitemap, lazy editor runtime with one stable mode launcher, persistent PWA install entry with native/fallback guidance, mobile search, accessible edition dialogs and unified build versioning.`);
+console.log(`NewsFlow web standards contract passed for v${packageManifest.version}: canonical publication pages, feed/sitemap, lazy permission-routed editor runtime, persistent PWA install entry, mobile search, accessible edition dialogs and unified build versioning.`);

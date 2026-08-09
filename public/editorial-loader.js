@@ -11,7 +11,6 @@
   })();
   const versioned = (path) => version ? `${path}?v=${encodeURIComponent(version)}` : path;
   const styles = [
-    './editorial-mode.css',
     './review-game.css',
     './review-stamp.css',
     './editorial-governance.css'
@@ -26,35 +25,30 @@
   let ready = false;
   let replaying = false;
 
-  const cachedMode = () => {
-    const userId = String(window.HaoAccount?.getState?.()?.user?.id || '');
-    const key = userId ? `newsflow_mode_v3:${userId}` : 'newsflow_mode_v3';
-    return localStorage.getItem(key) === 'editor' ? 'editor' : 'reader';
-  };
-
   const syncEditorialEntry = () => {
     window.requestAnimationFrame(() => {
-      const actions = document.querySelector('.app-shell[data-product-model="magazine-edition"] .top-actions');
-      const launcher = actions?.querySelector(':scope > [data-action="open-editorial-office"]');
-      if (!launcher) return;
-      launcher.classList.add('nf-mode-launcher');
-      launcher.style.display = 'inline-flex';
-      let label = launcher.querySelector('.nf-mode-launcher-label');
-      if (!label) {
-        label = document.createElement('span');
-        label.className = 'nf-mode-launcher-label';
-        launcher.append(label);
-      }
-      if (!ready) {
-        const mode = cachedMode();
-        launcher.dataset.newsflowRole = mode;
-        label.textContent = mode === 'editor' ? '编辑' : '读者';
-        launcher.setAttribute(
-          'aria-label',
-          mode === 'editor' ? '当前为编辑模式，打开模式切换' : '当前为读者模式，打开模式切换',
-        );
-        launcher.title = `当前：${label.textContent}模式`;
-      }
+      document.querySelectorAll('[data-action="open-editorial-office"]').forEach((launcher) => {
+        launcher.removeAttribute('data-newsflow-role');
+        const topbarLauncher = launcher.closest('.top-actions');
+        if (topbarLauncher) {
+          launcher.classList.add('nf-mode-launcher');
+          launcher.style.display = 'inline-flex';
+          let label = launcher.querySelector('.nf-mode-launcher-label');
+          if (!label) {
+            label = document.createElement('span');
+            label.className = 'nf-mode-launcher-label';
+            launcher.append(label);
+          }
+          if (!ready) label.textContent = '编辑部';
+        } else if (!ready) {
+          const label = launcher.querySelector('.nav-name span:last-child, :scope > span:last-child');
+          if (label) label.textContent = '编辑部';
+        }
+        if (!ready) {
+          launcher.setAttribute('aria-label', '打开编辑部');
+          launcher.title = '编辑部';
+        }
+      });
     });
   };
 
@@ -131,7 +125,6 @@
   });
   window.addEventListener('newsflow:rendered', syncEditorialEntry);
   window.addEventListener('newsflow:edition-rendered', syncEditorialEntry);
-  window.addEventListener('newsflow:editorial-rendered', syncEditorialEntry);
   window.addEventListener('newsflow:editorial-runtime-ready', syncEditorialEntry);
   window.addEventListener('hao:account-changed', syncEditorialEntry);
 
