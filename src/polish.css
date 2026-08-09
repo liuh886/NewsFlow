@@ -86,6 +86,11 @@ body.is-scrolled .topbar {
   display: block;
 }
 
+/* Author-level button display rules must not override the responsive hidden state. */
+.top-actions .mobile-reader-search[hidden] {
+  display: none;
+}
+
 .global-search input {
   border-color: color-mix(in srgb, var(--line) 84%, transparent);
   background: color-mix(in srgb, var(--surface) 72%, transparent);
