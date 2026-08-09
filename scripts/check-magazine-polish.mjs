@@ -41,16 +41,17 @@ for (const path of ['public/magazine-polish.js', 'public/editorial-loader.js']) 
 }
 
 for (const contract of [
-  'setMagazineBackgroundInert', 'restoreMagazineTrigger', "intro.dataset.empty = 'true'",
+  'setMagazineBackgroundInert', 'restoreMagazineTrigger',
   "const STATUS_PATH = './data/data-status.json'", 'AbortSignal.timeout(5000)', 'decorateDataFreshness',
   "brandName?.closest('.brand-copy')", "brandCopy.querySelectorAll('.nf-brand-row')", "brandCopy.querySelectorAll('.nf-data-date')",
   'candidate !== badge', 'nf-data-date',
   "window.addEventListener('newsflow:rendered', decorateMagazine)", "window.addEventListener('newsflow:edition-rendered', decorateMagazine)"
 ]) if (!script.includes(contract)) throw new Error(`magazine interaction layer is missing ${contract}`);
+if (script.includes('updateLatestChangeState') || script.includes('post-issue-intro')) throw new Error('Retired parallel latest-update polish must not return.');
 if (script.includes('MutationObserver') || script.includes('stopImmediatePropagation')) throw new Error('magazine polish must not observe or intercept the Edition rendering lifecycle.');
 
 for (const selector of [
-  "[data-empty='true']", "[data-action='feedback-center']", "[data-action='open-editorial-office']",
+  "[data-action='feedback-center']", "[data-action='open-editorial-office']",
   '.nf-brand-row', '.nf-data-date', ".global-search:not(:focus-within) input::placeholder", '.global-search:focus-within input::placeholder',
   "[data-edition-layer='section-view'] .issue-hero-copy > h2", ".issue-section-heading .masthead-sections button[aria-pressed='true']",
   "[data-action='feedback-hide']", '@media (max-width: 920px)', '@media (max-width: 720px)', '@media (max-width: 430px)',
@@ -66,7 +67,7 @@ for (const identity of [
   'Frontier Systems Review：聚焦 AI 基建、CCUS 与能源转型的专业半月刊'
 ]) if (!index.includes(identity)) throw new Error(`Edition-first browser identity is missing: ${identity}`);
 
-if (packageManifest.version !== '2.4.2') throw new Error('package release contract must match the current Reader asset release');
+if (packageManifest.version !== '2.4.3') throw new Error('package release contract must match the current Reader asset release');
 if (!packageManifest.scripts?.check?.includes('check-magazine-polish.mjs')) throw new Error('npm check must include the magazine polish contract');
 for (const releaseContract of ["const ASSET_VERSION = '__NEWSFLOW_VERSION__'", 'newsflow-reader-v${ASSET_VERSION}', 'reading-surface.css', 'editorial-loader.js']) {
   if (!serviceWorker.includes(releaseContract)) throw new Error(`service worker is missing Reader release contract: ${releaseContract}`);
