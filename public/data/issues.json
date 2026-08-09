@@ -9,17 +9,22 @@
     "lifecycle": "live",
     "frozen_at": null,
     "auto_generated": true,
-    "selection_mode": "live_editorial_ranking",
+    "selection_mode": "live_editorial_evaluation",
     "edition_version": "1.2",
     "title": "SpaceX 与 Tesla 启动 168 亿美元 Terafab，AI 芯片供给开始向制造、封装、测试一体化纵向整合",
     "standfirst": "SpaceX 与 Tesla 将初始投资 168 亿美元在得州 Grimes County 建设 Terafab；该设施计划在同一园区完成先进逻辑和存储芯片的制造、封装与测试，并服务 Tesla 机器人/自动驾驶与 SpaceX 数据中心需求。 本期持续追踪相关进展，封面与篇目将随重要性更新。",
-    "judgment": "本期关注正在发生的关键变化；当前封面聚焦此刻最具影响力的进展，后续重大事件可能改变版面重点。",
+    "judgment": "本期刊期仍在开放评估中；所有已录用进展均向读者与编辑开放，封面与最终篇目将在刊期结束时按重要性收敛。",
     "cover_signal_id": "spacex-tesla-terafab-vertical-ai-chip-capacity-2026",
     "signal_ids": [
       "spacex-tesla-terafab-vertical-ai-chip-capacity-2026",
       "texas-data-center-grid-deposit-risk-2026",
       "amd-ai-data-center-revenue-rackscale-2026",
-      "apple-mac-qwen-china-production-integration-2026"
+      "apple-mac-qwen-china-production-integration-2026",
+      "openai-astra-critical-cyber-deployment-controls-2026",
+      "palantir-enterprise-ai-revenue-scale-2026",
+      "alibaba-qwen-openweight-revenue-sharing-2026",
+      "us-openweight-ai-safety-test-exemption-2026",
+      "nvidia-lancium-stargate-power-investment-2026"
     ],
     "storyline_updates": [],
     "what_to_watch": [
@@ -28,8 +33,8 @@
       "长期购电协议"
     ],
     "ranking": {
-      "version": "live-v2",
-      "policy": "chief_cover_then_evidence_quality_then_editor_consensus_then_reader_signal_then_recency",
+      "version": "live-v3",
+      "policy": "all_adopted_visible_until_freeze_then_chief_cover_then_evidence_quality_then_editor_consensus_then_reader_signal_then_recency",
       "authority_order": [
         "evidence_gate",
         "editor_in_chief",
@@ -39,18 +44,22 @@
     },
     "methodology": {
       "candidate_count": 9,
-      "selected_count": 4,
+      "selected_count": 9,
       "editorial_adoption_count": 9,
+      "evaluation_pool_count": 9,
       "cover_story_count": 0,
       "editor_review_count": 0,
       "qualified_reader_feedback_count": 0,
       "selected_by_channel": {
-        "ai-infrastructure": 4
+        "ai-infrastructure": 9
       },
+      "final_issue_max_signals": 24,
+      "final_channel_max_signals": 8,
+      "finalized": false,
       "fixed_length": false,
       "editorial_view_changed": false
     },
-    "updated_at": "2026-08-09T08:56:39.292Z"
+    "updated_at": "2026-08-09T09:51:17.833Z"
   },
   {
     "id": "frontier-systems-review-2026-15",
