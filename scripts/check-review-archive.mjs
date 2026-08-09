@@ -56,8 +56,14 @@ for (const contract of [
   '.nf-review-shell.is-archive .nf-review-archive-detail',
   'border-left: 1px solid',
   '.nf-review-shell.is-archive .nf-review-archive-detail aside',
-  'border-left: 0'
-]) if (!archiveCss.includes(contract)) throw new Error(`flat decision archive layout missing contract: ${contract}`);
+  'border-left: 0',
+  '.nf-review-shell.is-archive .nf-review-archive-actions .nf-review-retract-decision',
+  '@media (max-width: 760px)',
+  'max-height: 34dvh',
+  'position: fixed',
+  'bottom: calc(8px + env(safe-area-inset-bottom))',
+  'padding: 18px 16px calc(104px + env(safe-area-inset-bottom))'
+]) if (!archiveCss.includes(contract)) throw new Error(`flat/mobile decision archive layout missing contract: ${contract}`);
 
 for (const contract of [
   "['ArrowUp', 'ArrowDown']",
@@ -72,14 +78,27 @@ for (const contract of [
   '[data-review-action="open-overview"]',
   'event.stopPropagation()',
   'overviewButton.click()',
-  '待审稿件已清空，仍停留在编辑部总览。'
+  '待审稿件已清空，仍停留在编辑部总览。',
+  'revealArchiveDetailOnMobile',
+  "scrollIntoView({ block: 'start', behavior: 'smooth' })",
+  'syncRetractionAction',
+  "from('newsflow_editorial_reviews')",
+  "button.dataset.newsflowDeskAction = 'retract-decision'",
+  'openRetractionDialog',
+  'retractDecision',
+  '.delete()',
+  ".eq('reviewer_user_id', userId)",
+  'RETRACT DECISION',
+  '撤回决定？',
+  'window.NewsFlowReviewGame?.openOverview?.()',
+  '决定已撤回，稿件已重新进入待审。'
 ]) if (!deskJs.includes(contract)) throw new Error(`editorial desk interaction missing contract: ${contract}`);
 
 if (deskJs.includes('MutationObserver') || deskJs.includes('localStorage')) {
-  throw new Error('Editorial desk interactions must remain DOM-scoped and stateless.');
+  throw new Error('Editorial desk interactions must remain DOM-scoped and avoid persistent UI state.');
 }
 if (!packageManifest.scripts?.check?.includes('check-review-archive.mjs')) {
   throw new Error('npm check must include the editorial desk contract.');
 }
 
-console.log('NewsFlow editorial desk contract passed: flat archive/reject workspace, no dead decision bar, ArrowUp/ArrowDown record navigation and empty-pending return to overview.');
+console.log('NewsFlow editorial desk contract passed: flat archive/reject workspace, mobile fixed action rail, explicit decision retraction, ArrowUp/ArrowDown navigation and empty-pending return to overview.');
