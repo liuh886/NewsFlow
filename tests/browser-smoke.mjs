@@ -111,6 +111,7 @@ try {
     Object.defineProperty(event, 'userChoice', { value: Promise.resolve({ outcome: 'dismissed' }) });
     window.dispatchEvent(event);
   });
+  await page.locator('[data-action="mobile-menu"]').click();
   await installAction.click();
   const promptCalled = await page.evaluate(() => window.__newsflowInstallPromptCalled === true);
   if (!promptCalled) throw new Error('PWA install entry does not invoke the native install prompt when available.');
