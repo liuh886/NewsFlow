@@ -83,7 +83,7 @@ for (const contract of [
   "scrollIntoView({ block: 'start', behavior: 'smooth' })",
   'syncRetractionAction',
   "from('newsflow_editorial_reviews')",
-  "data-newsflow-desk-action=\"retract-decision\"",
+  "button.dataset.newsflowDeskAction = 'retract-decision'",
   'openRetractionDialog',
   'retractDecision',
   '.delete()',
