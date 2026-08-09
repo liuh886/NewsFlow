@@ -143,7 +143,7 @@
       return false;
     } finally {
       state.handlingInvite = false;
-      mountModeTrigger();
+      syncModeLauncher();
       renderDialog();
     }
   };
@@ -177,7 +177,7 @@
     }
     state.mode = 'editor';
     localStorage.setItem(modeStorageKey(), 'editor');
-    mountModeTrigger();
+    syncModeLauncher();
     if (window.NewsFlowReviewGame?.isOpen?.()) return;
     window.NewsFlowReviewGame?.openFormal?.();
   };
@@ -203,7 +203,7 @@
     state.dialogOpen = false;
     localStorage.setItem(modeStorageKey(), mode);
     await syncModePreference(mode);
-    mountModeTrigger();
+    syncModeLauncher();
     renderDialog();
     if (mode === 'editor') openEditorGame();
   };
@@ -254,23 +254,17 @@
     window.requestAnimationFrame(() => root.querySelector('.nf-mode-card:not(:disabled), .nf-mode-close')?.focus());
   };
 
-  function mountModeTrigger() {
-    const target = document.querySelector('.top-actions');
-    if (!target) return;
-    let trigger = target.querySelector('[data-editorial-role-trigger]');
-    if (!trigger) {
-      trigger = document.createElement('button');
-      trigger.type = 'button';
-      trigger.dataset.editorialRoleTrigger = 'true';
-      target.prepend(trigger);
-    }
-    const label = state.mode === 'editor' && isChief() ? '主编'
-      : state.mode === 'editor' && state.editorialRole === 'editor' ? '编辑'
-        : '读者';
-    trigger.className = `nf-mode-trigger is-${state.mode}`;
-    trigger.dataset.modeAction = state.mode === 'editor' && isEditorialMember() ? 'open-editor' : 'open-dialog';
-    trigger.setAttribute('aria-label', state.mode === 'editor' ? `进入${label}审稿模式` : '选择 NewsFlow 身份');
-    trigger.innerHTML = `<span aria-hidden="true">${label.slice(0, 1)}</span><strong>${label}</strong>`;
+  function syncModeLauncher() {
+    const launcher = document.querySelector('.top-actions > [data-action="open-editorial-office"]');
+    if (!launcher) return;
+    const role = state.mode === 'editor' && isChief() ? 'chief'
+      : state.mode === 'editor' && state.editorialRole === 'editor' ? 'editor'
+        : 'reader';
+    launcher.dataset.newsflowRole = role;
+    launcher.setAttribute('aria-label', role === 'chief'
+      ? '进入主编审稿模式'
+      : role === 'editor' ? '进入编辑审稿模式' : '选择 NewsFlow 身份');
+    launcher.title = role === 'chief' ? '主编审稿模式' : role === 'editor' ? '编辑审稿模式' : '选择身份';
   }
 
   const hydrateAccount = async (snapshot) => {
@@ -279,7 +273,7 @@
       state.editorialRole = '';
       state.mode = 'reader';
       state.dialogOpen = false;
-      mountModeTrigger();
+      syncModeLauncher();
       renderDialog();
       if (new URLSearchParams(window.location.search).has(INVITE_PARAM)) openAccount();
       return;
@@ -302,7 +296,7 @@
         renderDialog();
       }, 180);
     }
-    mountModeTrigger();
+    syncModeLauncher();
     renderDialog();
   };
 
@@ -329,9 +323,10 @@
   };
 
   document.addEventListener('click', handleAction);
-  window.addEventListener('newsflow:rendered', mountModeTrigger);
+  window.addEventListener('newsflow:rendered', syncModeLauncher);
   window.addEventListener('newsflow:open-editorial-office', () => {
     if (!state.account?.user) openAccount();
+    else if (state.mode === 'editor' && isEditorialMember()) openEditorGame();
     else { state.dialogOpen = true; renderDialog(); }
   });
   window.addEventListener('newsflow:switch-role', (event) => {
@@ -346,7 +341,7 @@
   });
 
   ensureRoot();
-  mountModeTrigger();
+  syncModeLauncher();
   if (window.HaoAccount?.subscribe) window.HaoAccount.subscribe(hydrateAccount);
   else window.addEventListener('hao:account-changed', (event) => { void hydrateAccount(event.detail); });
 
