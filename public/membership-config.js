@@ -3,7 +3,7 @@
 
   window.HaoAccountConfig = Object.freeze({
     enabled: true,
-    billingEnabled: false,
+    billingEnabled: true,
     appName: 'NewsFlow',
     productCode: 'newsflow',
     entitlementCode: 'newsflow.pro',
