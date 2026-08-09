@@ -28,6 +28,7 @@
   const syncEditorialEntry = () => {
     window.requestAnimationFrame(() => {
       document.querySelectorAll('[data-action="open-editorial-office"]').forEach((launcher) => {
+        launcher.removeAttribute('data-newsflow-role');
         const topbarLauncher = launcher.closest('.top-actions');
         if (topbarLauncher) {
           launcher.classList.add('nf-mode-launcher');
@@ -44,7 +45,6 @@
           if (label) label.textContent = '编辑部';
         }
         if (!ready) {
-          launcher.dataset.newsflowRole = 'reader';
           launcher.setAttribute('aria-label', '打开编辑部');
           launcher.title = '编辑部';
         }
