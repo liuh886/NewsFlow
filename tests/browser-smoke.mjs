@@ -99,6 +99,22 @@ try {
   if ((await editorialEntry.getAttribute('aria-label')) !== '进入审稿模式') {
     throw new Error('Mobile Reader does not expose the editorial mode switch with the expected label.');
   }
+  const launcherBeforeRuntime = await editorialEntry.boundingBox();
+  await page.evaluate(async () => {
+    await window.NewsFlowEditorialLoader?.ensure?.();
+  });
+  await page.waitForFunction(() => Boolean(window.NewsFlowMode), null, { timeout: 10_000 });
+  const launcherAfterRuntime = await editorialEntry.boundingBox();
+  const roleTriggerCount = await page.locator('#app .top-actions > [data-editorial-role-trigger]').count();
+  if (roleTriggerCount !== 0) {
+    throw new Error('Editorial runtime mounted a second role-sized control into the mobile header.');
+  }
+  if (!launcherBeforeRuntime || !launcherAfterRuntime
+    || Math.abs(launcherBeforeRuntime.x - launcherAfterRuntime.x) > 1
+    || Math.abs(launcherBeforeRuntime.width - launcherAfterRuntime.width) > 1
+    || Math.abs(launcherBeforeRuntime.height - launcherAfterRuntime.height) > 1) {
+    throw new Error(`Editorial runtime changed the canonical mobile header geometry: ${JSON.stringify({ launcherBeforeRuntime, launcherAfterRuntime })}`);
+  }
 
   await page.locator('[data-action="mobile-menu"]').click();
   const installSection = page.locator('[data-newsflow-install-section]');
