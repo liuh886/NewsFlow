@@ -7,14 +7,13 @@ const root = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 const read = (path) => readFile(resolve(root, path), 'utf8');
 const required = [
   'public/review-game.js', 'public/review-game.css', 'public/review-stamp.css', 'public/editorial-office.js',
-  'public/editorial-mode.css', 'public/editorial-loader.js', 'public/data/editorial-reactions.json'
+  'public/editorial-loader.js', 'public/data/editorial-reactions.json'
 ];
 for (const file of required) await access(resolve(root, file));
 
-const [index, loader, game, gameCss, stampCss, mode, modeCss, sw, reactionsText] = await Promise.all([
+const [index, loader, game, gameCss, stampCss, office, sw, reactionsText] = await Promise.all([
   read('index.html'), read('public/editorial-loader.js'), read('public/review-game.js'), read('public/review-game.css'), read('public/review-stamp.css'),
-  read('public/editorial-office.js'), read('public/editorial-mode.css'), read('public/sw.js'),
-  read('public/data/editorial-reactions.json')
+  read('public/editorial-office.js'), read('public/sw.js'), read('public/data/editorial-reactions.json')
 ]);
 for (const file of ['public/editorial-loader.js', 'public/review-game.js', 'public/editorial-office.js', 'public/sw.js']) {
   const syntax = spawnSync(process.execPath, ['--check', resolve(root, file)], { encoding: 'utf8' });
@@ -22,10 +21,11 @@ for (const file of ['public/editorial-loader.js', 'public/review-game.js', 'publ
 }
 
 if (!index.includes('./editorial-loader.js?v=__NEWSFLOW_VERSION__')) throw new Error('index must load the small editorial runtime loader.');
-for (const eagerAsset of ['./editorial-mode.css', './review-game.css', './review-stamp.css', './review-game.js', './editorial-office.js']) {
+for (const eagerAsset of ['./review-game.css', './review-stamp.css', './review-game.js', './editorial-office.js']) {
   if (index.includes(eagerAsset)) throw new Error(`Reader must not eagerly load editor-only asset: ${eagerAsset}`);
   if (!loader.includes(eagerAsset)) throw new Error(`editorial-loader is missing ${eagerAsset}`);
 }
+if (index.includes('./editorial-mode.css') || loader.includes('./editorial-mode.css')) throw new Error('Retired identity-choice UI must stay deleted.');
 for (const retired of ['guest-editor', 'review-candidates.json', 'pipeline-reviews.json', 'guest-editor-invites.json', 'newsflow_review_game_v4_guest']) {
   if (index.includes(retired) || sw.includes(retired) || game.includes(retired)) throw new Error(`retired/public editorial path still referenced: ${retired}`);
 }
@@ -51,29 +51,21 @@ for (const [id, key] of [['cover_story','1'],['accept','2'],['minor_revision','3
   if (!game.includes(`id: '${id}'`) || !game.includes(`key: '${key}'`)) throw new Error(`decision ${id} must use key ${key}`);
 }
 
-if (game.includes('MutationObserver') || mode.includes('MutationObserver')) throw new Error('editor mode must stay lifecycle-driven and may not use MutationObserver.');
-if (mode.includes("id: 'accept'") || mode.includes('renderDesk') || mode.includes('officeTab')) throw new Error('mode controller must not own a second review implementation.');
+if (game.includes('MutationObserver') || office.includes('MutationObserver')) throw new Error('editorial runtime must stay lifecycle-driven and may not use MutationObserver.');
 for (const contract of [
-  "const MODE_STORAGE_KEY = 'newsflow_mode_v3'", "const INVITE_PARAM = 'editor-invite'",
-  "from('newsflow_editorial_members')", "from('newsflow_editorial_invitations')", "role: 'editor'",
-  "roleCard('reader'", "roleCard('editor'", '编辑模式属于 Newsflow Pro',
-  'window.NewsFlowReviewGame?.isOpen?.()', 'window.NewsFlowReviewGame?.openFormal?.()', 'createEditorInvite', 'openGovernance',
-  'syncModeLauncher', '[data-action="open-editorial-office"]', 'window.NewsFlowMode',
-  '同步获得 3 个月 Newsflow Pro', 'window.HaoAccount?.refresh?.()', "window.HaoAccount?.can?.('newsflow.pro')", "action === 'upgrade'",
-  'nf-mode-launcher-label', 'nf-mode-current', '当前为读者模式，打开模式切换'
-]) if (!mode.includes(contract)) throw new Error(`mode controller missing contract: ${contract}`);
+  "const INVITE_PARAM = 'editor-invite'", "from('newsflow_editorial_members')", "from('newsflow_editorial_invitations')", "role: 'editor'",
+  "window.HaoAccount?.can?.('newsflow.pro')", 'isEditorialMember', 'openEditorialOverview', 'window.HaoAccount?.open?.()',
+  'window.NewsFlowReviewGame?.openOverview?.()', '开通 Newsflow Pro，进入编辑部', 'createEditorInvite', 'openGovernance',
+  'syncEditorialEntry', '[data-action="open-editorial-office"]', 'window.NewsFlowMode', 'window.HaoAccount?.refresh?.()'
+]) if (!office.includes(contract)) throw new Error(`editorial permission router missing contract: ${contract}`);
+for (const retired of ['MODE_STORAGE_KEY', 'newsflow_mode_v3', 'roleCard(', 'nf-mode-dialog', 'renderDialog', 'syncModePreference', '你以什么身份进入编辑部？']) {
+  if (office.includes(retired) || loader.includes(retired)) throw new Error(`retired role-choice architecture returned: ${retired}`);
+}
+if (!loader.includes("launcher.style.display = 'inline-flex'") || !loader.includes("label.textContent = '编辑部'") || loader.includes('cachedMode') || loader.includes('localStorage')) {
+  throw new Error('Editorial loader must expose one neutral 编辑部 entry without cached role modes.');
+}
 for (const contract of ['NEWSFLOW_EDITOR_ACCESS_REQUIRED', 'newsflow_pro_upgrade_prompt', 'data-review-action="upgrade-pro"', '开通 Newsflow Pro']) {
   if (!game.includes(contract)) throw new Error(`review access conversion missing contract: ${contract}`);
-}
-if (mode.includes('data-editorial-role-trigger') || mode.includes('nf-mode-trigger')) {
-  throw new Error('Mode controller must reuse the canonical editorial launcher instead of mounting a role-sized header control.');
-}
-if (!loader.includes("launcher.style.display = 'inline-flex'") || !loader.includes('cachedMode') || loader.includes('roleTrigger')) {
-  throw new Error('Editorial loader must preserve one fixed canonical launcher across lazy-runtime state changes.');
-}
-if (mode.includes('syncFormalEditorialState') || mode.includes('FORMAL_STORAGE_KEY')) throw new Error('Mode controller must not persist a second editorial decision store.');
-if (mode.includes("void syncModePreference('editor')") || mode.includes('window.setTimeout(openEditorGame')) {
-  throw new Error('Account preference updates must never recursively reopen the Review Game.');
 }
 
 for (const selector of [
@@ -87,11 +79,9 @@ for (const selector of [
   '.nf-review-persistent-decision', '.nf-review-stamp.is-persistent', 'mix-blend-mode: multiply',
   '@media (max-width: 760px)', '@media (prefers-reduced-motion: reduce)'
 ]) if (!stampCss.includes(selector)) throw new Error(`persistent review stamp CSS missing ${selector}`);
-for (const selector of ['.nf-mode-dialog', '.nf-mode-grid', '.nf-mode-current', '@media (max-width: 720px)']) if (!modeCss.includes(selector)) throw new Error(`mode CSS missing ${selector}`);
-if (modeCss.includes('.nf-mode-trigger')) throw new Error('Obsolete role trigger CSS must be deleted.');
 
 if (!sw.includes("versioned('./editorial-loader.js')")) throw new Error('service worker must cache the small editorial loader.');
-for (const editorAsset of ["versioned('./review-game.js')", "versioned('./review-game.css')", "versioned('./review-stamp.css')", "versioned('./editorial-office.js')", "versioned('./editorial-mode.css')"]) {
+for (const editorAsset of ["versioned('./review-game.js')", "versioned('./review-game.css')", "versioned('./review-stamp.css')", "versioned('./editorial-office.js')"]) {
   if (sw.includes(editorAsset)) throw new Error(`Reader app shell must not precache editor-only asset: ${editorAsset}`);
 }
 for (const forbidden of ['./data/review-candidates.json', './data/pipeline-reviews.json', './data/guest-editor-invites.json']) if (sw.includes(forbidden)) throw new Error(`service worker must not cache private editorial data: ${forbidden}`);
@@ -101,4 +91,4 @@ const reactions = JSON.parse(reactionsText);
 for (const decision of ['cover_story', 'accept', 'minor_revision', 'major_revision', 'reject']) {
   if (!Array.isArray(reactions[decision]) || reactions[decision].length < 4) throw new Error(`reaction library is too shallow for ${decision}.`);
 }
-console.log('NewsFlow review game contract passed: lazy editor runtime, stable canonical role launcher, Pro-gated editor access, invite-triggered Pro refresh, durable Supabase-backed decision stamps, advisory reviews, chief-only authority and three-second five-state review.');
+console.log('NewsFlow review game contract passed: lazy editor runtime, direct permission-routed dashboard entry, Pro conversion, durable Supabase-backed decision stamps, advisory reviews and chief-only authority.');
