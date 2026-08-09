@@ -20,6 +20,9 @@
     "docs/ccus-report-watchlist.md",
     "content/state/review-history.json"
   ],
+  "dynamic_discovery_inputs": [
+    "supabase:public.newsflow_editorial_referrals(status=queued, oldest-first, limit=1)"
+  ],
   "exchange_contract": {
     "candidate_pack_schema": "schemas/content-candidate-pack.schema.json",
     "candidate_pack_version": "1.0",
@@ -36,6 +39,7 @@
     "lifetime": "transient"
   },
   "private_candidate_store": "supabase:public.newsflow_candidates",
+  "private_editorial_referral_store": "supabase:public.newsflow_editorial_referrals",
   "apply_writes": [
     "supabase:public.newsflow_candidates",
     "content/runs/*.json (sanitized counts and run metadata only)"
@@ -51,6 +55,7 @@
   ],
   "commands": {
     "contract_check": "npm run content:check",
+    "green_lane": "SUPABASE_URL=... SUPABASE_SERVICE_ROLE_KEY=... npm run editorial:referrals -- --limit=1",
     "dry_run": "node scripts/update-content.mjs --input=content/inbox/<candidate-pack.json>",
     "apply": "SUPABASE_URL=... SUPABASE_SERVICE_ROLE_KEY=... node scripts/apply-content.mjs --input=content/inbox/<candidate-pack.json> --apply",
     "verify": [
