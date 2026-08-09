@@ -60,11 +60,19 @@ for (const contract of ['ensureMobileReaderSearch', 'syncEditionDialogAccessibil
 for (const contract of ['./editorial-mode.css', './review-game.css', './editorial-governance.css', './review-game.js', './editorial-governance.js', './editorial-office.js']) {
   assert(loader.includes(contract), `Editorial lazy loader missing asset: ${contract}`);
 }
-for (const contract of ['syncEditorialEntry', 'data-action="open-editorial-office"', "launcher.style.display = roleTrigger ? 'none' : 'grid'", '进入审稿模式']) {
+for (const contract of ['syncEditorialEntry', 'data-action="open-editorial-office"', "launcher.style.display = roleTrigger ? 'none' : 'grid'", 'newsflow:edition-rendered', '进入审稿模式']) {
   assert(loader.includes(contract), `Editorial lazy loader missing reachable mode-switch contract: ${contract}`);
 }
 
-for (const contract of ['beforeinstallprompt', 'appinstalled', 'data-newsflow-install-action', 'promptEvent.prompt()', '安装应用']) {
+for (const contract of [
+  "const INSTALL_ENTRY_MODE = 'persistent'",
+  'beforeinstallprompt',
+  'appinstalled',
+  'data-newsflow-install-action',
+  'data-newsflow-install-help',
+  'promptEvent.prompt()',
+  '安装应用'
+]) {
   assert(pwaInstall.includes(contract), `PWA install controller missing install-flow contract: ${contract}`);
 }
 
@@ -82,4 +90,4 @@ assert(manifest.icons.some((icon) => icon.sizes === '192x192'), 'PWA manifest mu
 assert(manifest.icons.some((icon) => icon.sizes === '512x512'), 'PWA manifest must declare a 512x512 install icon.');
 assert(/^\d+\.\d+\.\d+$/.test(String(packageManifest.version || '')), 'package.json must remain the single semantic version source.');
 
-console.log(`NewsFlow web standards contract passed for v${packageManifest.version}: canonical publication pages, feed/sitemap, lazy editor runtime with reachable mode switch, installable PWA entry, mobile search, accessible edition dialogs and unified build versioning.`);
+console.log(`NewsFlow web standards contract passed for v${packageManifest.version}: canonical publication pages, feed/sitemap, lazy editor runtime with reachable mode switch, persistent PWA install entry with native/fallback guidance, mobile search, accessible edition dialogs and unified build versioning.`);

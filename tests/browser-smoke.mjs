@@ -83,19 +83,38 @@ try {
     throw new Error('Mobile Reader does not expose the editorial mode switch with the expected label.');
   }
 
-  await page.evaluate(() => {
-    const event = new Event('beforeinstallprompt', { cancelable: true });
-    Object.defineProperty(event, 'prompt', { value: () => Promise.resolve() });
-    Object.defineProperty(event, 'userChoice', { value: Promise.resolve({ outcome: 'dismissed' }) });
-    window.dispatchEvent(event);
-  });
-  await page.locator('[data-newsflow-install-section]').waitFor({ state: 'attached', timeout: 5_000 });
   await page.locator('[data-action="mobile-menu"]').click();
+  const installSection = page.locator('[data-newsflow-install-section]');
+  await installSection.waitFor({ state: 'visible', timeout: 5_000 });
+  if ((await installSection.getAttribute('data-install-entry-mode')) !== 'persistent') {
+    throw new Error('PWA install entry is not persistent before beforeinstallprompt fires.');
+  }
   const installAction = page.locator('[data-newsflow-install-action]');
-  await installAction.waitFor({ state: 'visible', timeout: 5_000 });
   if ((await installAction.innerText()).trim() !== '安装应用') {
     throw new Error('Mobile menu install action does not expose the expected copy.');
   }
+
+  await installAction.click();
+  await page.locator('[data-newsflow-install-help] .edition-panel').waitFor({ state: 'visible', timeout: 5_000 });
+  await page.locator('[data-newsflow-install-close]').last().click();
+  await page.locator('[data-newsflow-install-help]').waitFor({ state: 'detached', timeout: 5_000 });
+
+  await page.evaluate(() => {
+    window.__newsflowInstallPromptCalled = false;
+    const event = new Event('beforeinstallprompt', { cancelable: true });
+    Object.defineProperty(event, 'prompt', {
+      value: () => {
+        window.__newsflowInstallPromptCalled = true;
+        return Promise.resolve();
+      }
+    });
+    Object.defineProperty(event, 'userChoice', { value: Promise.resolve({ outcome: 'dismissed' }) });
+    window.dispatchEvent(event);
+  });
+  await page.locator('[data-action="mobile-menu"]').click();
+  await installAction.click();
+  const promptCalled = await page.evaluate(() => window.__newsflowInstallPromptCalled === true);
+  if (!promptCalled) throw new Error('PWA install entry does not invoke the native install prompt when available.');
 
   if (runtimeErrors.length) {
     throw new Error(`Browser runtime errors: ${runtimeErrors.join(' | ')}`);

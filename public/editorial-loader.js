@@ -99,6 +99,7 @@
     });
   });
   window.addEventListener('newsflow:rendered', syncEditorialEntry);
+  window.addEventListener('newsflow:edition-rendered', syncEditorialEntry);
   window.addEventListener('newsflow:editorial-rendered', syncEditorialEntry);
   window.addEventListener('newsflow:editorial-runtime-ready', syncEditorialEntry);
 
