@@ -14,6 +14,10 @@
     document.querySelector('[data-newsflow-install-help]')?.remove();
   };
 
+  const closeReaderMenu = () => {
+    document.querySelector('[data-action="mobile-close"]')?.click();
+  };
+
   const installHelpCopy = () => {
     if (isIOS()) {
       return {
@@ -35,6 +39,7 @@
 
   const showInstallHelp = () => {
     closeInstallHelp();
+    closeReaderMenu();
     const copy = installHelpCopy();
     const wrapper = document.createElement('div');
     wrapper.dataset.newsflowInstallHelp = 'true';
