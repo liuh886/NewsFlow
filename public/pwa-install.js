@@ -81,7 +81,10 @@
           <span class="nav-name"><span class="nav-indicator"></span><span>安装应用</span></span>
         </button>
       </div>`;
-    sidebar.appendChild(section);
+
+    const heading = sidebar.querySelector('[data-edition-layer="filter-heading"]');
+    if (heading) heading.insertAdjacentElement('afterend', section);
+    else sidebar.prepend(section);
   };
 
   const promptInstall = async () => {
