@@ -62,7 +62,7 @@ for (const selector of [
   'grid-template-columns: 28px minmax(0, 1fr)', '.article-body', '.article-meta', 'grid-column: 2'
 ]) if (!css.includes(selector)) throw new Error(`magazine polish CSS is missing ${selector}`);
 
-for (const contract of ['.mobile-menu-button', 'display: none', 'grid-template-columns: repeat(5, minmax(0, 1fr))']) {
+for (const contract of ['.mobile-menu-button::before', 'mask-image:', 'grid-template-columns: repeat(5, minmax(0, 1fr))']) {
   if (!navigationCss.includes(contract)) throw new Error(`mobile reader navigation is missing ${contract}`);
 }
 for (const selector of [
@@ -84,4 +84,4 @@ for (const eagerEditorAsset of ["versioned('./editorial-governance.css')", "vers
   if (serviceWorker.includes(eagerEditorAsset)) throw new Error(`service worker must not precache editor-only asset ${eagerEditorAsset}`);
 }
 
-console.log('NewsFlow magazine polish contract passed: Edition-first identity, five-item mobile navigation, side-sheet continuous reading and lazy permission-routed editorial access.');
+console.log('NewsFlow magazine polish contract passed: Edition-first identity, explicit mobile tools trigger, five-item navigation, side-sheet continuous reading and lazy permission-routed editorial access.');
