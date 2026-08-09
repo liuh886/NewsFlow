@@ -115,7 +115,7 @@
           </div>
           <h1 id="nf-reading-title">${escapeHtml(item.title)}</h1>
           <p class="nf-reading-standfirst">${escapeHtml(shortSummary)}</p>
-          <div class="nf-reading-byline">NewsFlow Editorial Desk</div>
+          <div class="nf-reading-byline">Newsflow Editorial Desk</div>
 
           <section class="nf-reading-section">
             <h2>发生了什么</h2>
@@ -124,7 +124,7 @@
           ${whyItMatters ? `<section class="nf-reading-section"><h2>为什么重要</h2><p>${escapeHtml(whyItMatters)}</p></section>` : ''}
           <section class="nf-reading-section nf-reading-evidence">
             <h2>证据与来源</h2>
-            ${quotes.length ? quotes.map((quote) => `<blockquote>${escapeHtml(quote)}</blockquote>`).join('') : '<p>当前公开记录未附加可摘录引文；请以原始来源和 NewsFlow 的事实归因记录为准。</p>'}
+            ${quotes.length ? quotes.map((quote) => `<blockquote>${escapeHtml(quote)}</blockquote>`).join('') : '<p>当前公开记录未附加可摘录引文；请以原始来源和 Newsflow 的事实归因记录为准。</p>'}
             <p class="nf-reading-provenance">${escapeHtml(item.source || 'Editorial source')} · ${escapeHtml(item.source_tier || 'Source tier 未标注')} · ${escapeHtml(formatDate(item.published_at))}</p>
             <a class="nf-reading-inline-link" href="${safeUrl(item.url)}" target="_blank" rel="noopener noreferrer">查看原始来源 →</a>
           </section>

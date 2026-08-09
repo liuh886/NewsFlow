@@ -22,10 +22,12 @@ const [index, config, integration, styles] = await Promise.all([
 ]);
 
 for (const reference of [
-  'https://liuh886.github.io/admin/shared/account-shell.css?v=4',
+  'https://liuh886.github.io/admin/shared/account-shell.css?v=5',
+  'https://liuh886.github.io/admin/shared/account-upgrade.css?v=1',
   './account-integration.css',
   './membership-config.js',
-  'https://liuh886.github.io/admin/shared/account-shell.js?v=4',
+  'https://liuh886.github.io/admin/shared/account-shell.js?v=5',
+  'https://liuh886.github.io/admin/shared/account-upgrade.js?v=1',
   './account-integration.js',
 ]) {
   if (!index.includes(reference)) throw new Error(`index.html is missing ${reference}`);
@@ -41,7 +43,9 @@ for (const contract of [
   'feedbackEnabled: true',
   "mountSelectors: ['.top-actions']",
   'compactTrigger: true',
-  'NewsFlow Pro 解锁编辑评议权限',
+  'proUpgrade',
+  'US$1/月开通 Newsflow Pro',
+  '受邀编辑可通过主编邀请链接获得 3 个月 Pro',
   'sb_publishable_',
 ]) {
   if (!config.includes(contract)) throw new Error(`NewsFlow account config is missing ${contract}`);

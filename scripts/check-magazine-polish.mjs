@@ -67,7 +67,7 @@ for (const identity of [
   'Frontier Systems Review：聚焦 AI 基建、CCUS 与能源转型的专业半月刊'
 ]) if (!index.includes(identity)) throw new Error(`Edition-first browser identity is missing: ${identity}`);
 
-if (packageManifest.version !== '2.4.3') throw new Error('package release contract must match the current Reader asset release');
+if (packageManifest.version !== '2.4.4') throw new Error('package release contract must match the current Reader asset release');
 if (!packageManifest.scripts?.check?.includes('check-magazine-polish.mjs')) throw new Error('npm check must include the magazine polish contract');
 for (const releaseContract of ["const ASSET_VERSION = '__NEWSFLOW_VERSION__'", 'newsflow-reader-v${ASSET_VERSION}', 'reading-surface.css', 'editorial-loader.js']) {
   if (!serviceWorker.includes(releaseContract)) throw new Error(`service worker is missing Reader release contract: ${releaseContract}`);

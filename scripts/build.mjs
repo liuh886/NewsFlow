@@ -82,7 +82,7 @@ const htmlDocument = ({ title, description, canonical, type = 'website', publish
 </head>
 <body>
   <div class="pub-shell">
-    <header class="pub-head"><a class="pub-brand" href="${PUBLIC_BASE_URL}">${PUBLICATION_NAME}</a><span>Published with NewsFlow</span></header>
+    <header class="pub-head"><a class="pub-brand" href="${PUBLIC_BASE_URL}">${PUBLICATION_NAME}</a><span>Published with Newsflow</span></header>
     ${body}
     <footer class="pub-foot"><a href="${PUBLIC_BASE_URL}">返回 ${PUBLICATION_NAME}</a></footer>
   </div>
@@ -116,14 +116,14 @@ const generatePublicationPages = async () => {
       dateModified: item.adopted_at || item.published_at || undefined,
       mainEntityOfPage: canonical,
       url: canonical,
-      publisher: { '@type': 'Organization', name: 'NewsFlow', url: PUBLIC_BASE_URL },
+      publisher: { '@type': 'Organization', name: 'Newsflow', url: PUBLIC_BASE_URL },
       isPartOf: { '@type': 'Periodical', name: edition.name || PUBLICATION_NAME, url: PUBLIC_BASE_URL }
     };
     const body = `<main><article class="pub-article">
       <div class="pub-meta"><span>${escapeHtml(channelName(item.channel_id))}</span><span>${escapeHtml(formatDate(item.published_at))}</span><span>${escapeHtml(item.source || '')}</span></div>
       <h1>${escapeHtml(item.title)}</h1>
       <p class="standfirst">${escapeHtml(shortSummary)}</p>
-      <div class="byline">NewsFlow Editorial Desk</div>
+      <div class="byline">Newsflow Editorial Desk</div>
       <section class="pub-section"><h2>发生了什么</h2><p>${escapeHtml(shortSummary)}</p></section>
       ${longSummary && longSummary !== shortSummary ? `<section class="pub-section"><h2>为什么重要</h2><p>${escapeHtml(longSummary)}</p></section>` : ''}
       <section class="pub-section"><h2>证据与来源</h2>${quotes.length ? quotes.map((quote) => `<blockquote>${escapeHtml(quote)}</blockquote>`).join('') : '<p>当前公开记录未附加可摘录引文，请以原始来源为准。</p>'}<p>${escapeHtml(item.source || '')}${item.source_tier ? ` · ${escapeHtml(item.source_tier)}` : ''}</p><a class="pub-action" href="${escapeHtml(item.url || '#')}" target="_blank" rel="noopener noreferrer">查看原始来源 →</a></section>

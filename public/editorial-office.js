@@ -29,7 +29,7 @@
   const accountName = () => state.account?.profile?.display_name
     || state.account?.user?.user_metadata?.full_name
     || state.account?.user?.email
-    || 'NewsFlow Member';
+    || 'Newsflow Member';
   const isChief = () => state.editorialRole === 'editor_in_chief';
   const isPro = () => state.account?.isPro === true || window.HaoAccount?.can?.('newsflow.pro') === true;
   const isEditorialMember = () => isChief() || isPro();
@@ -134,7 +134,7 @@
       if (error) throw error;
       await readMembership();
       clearInviteParam();
-      state.notice = '编辑任命已生效，并已同步获得 3 个月 NewsFlow Pro。你的审稿意见会被主编看到，但不会自动改变正式刊物。';
+      state.notice = '编辑任命已生效，并已同步获得 3 个月 Newsflow Pro。你的审稿意见会被主编看到，但不会自动改变正式刊物。';
       state.mode = 'editor';
       localStorage.setItem(modeStorageKey(), 'editor');
       await syncModePreference('editor');
@@ -173,7 +173,7 @@
       return;
     }
     if (!isEditorialMember()) {
-      state.notice = '编辑模式属于 NewsFlow Pro。开通 Pro，或接受主编任命后即可进入；编辑意见不会自动出版。';
+      state.notice = '编辑模式属于 Newsflow Pro。开通 Pro，或接受主编任命后即可进入；编辑意见不会自动出版。';
       state.dialogOpen = true;
       renderDialog();
       return;
@@ -198,7 +198,7 @@
   const setMode = async (mode) => {
     if (!['reader', 'editor'].includes(mode)) return;
     if (mode === 'editor' && !isEditorialMember()) {
-      state.notice = '编辑模式属于 NewsFlow Pro。开通 Pro，或接受主编任命后即可进入。';
+      state.notice = '编辑模式属于 Newsflow Pro。开通 Pro，或接受主编任命后即可进入。';
       renderDialog();
       return;
     }
@@ -222,7 +222,7 @@
     const title = isChief() ? '主编' : '编辑';
     const english = isChief() ? 'EDITOR-IN-CHIEF' : 'EDITOR';
     const description = isChief()
-      ? '对每篇稿件签发最终裁决；封面与录用直接决定 NewsFlow 的公开内容。'
+      ? '对每篇稿件签发最终裁决；封面与录用直接决定 Newsflow 的公开内容。'
       : '对每篇稿件给出独立编辑意见，供主编最终裁决参考。';
     const footnote = isChief()
       ? '最终出版权 · 可维护 Edition、长期议题、信源与编辑席位。'
@@ -252,7 +252,7 @@
         ${state.notice ? `<div class="nf-mode-notice" role="status">${escapeHtml(state.notice)}</div>` : ''}
         <div class="nf-mode-grid">${roleCard('reader')}${roleCard('editor')}</div>
         ${isChief() ? '<div class="nf-mode-chief-actions"><button data-mode-action="open-governance">刊物设置</button><button data-mode-action="create-invite">任命编辑</button></div>' : ''}
-        <footer>${isChief() ? '主编拥有最终出版与刊物治理权限。' : isEditorialMember() ? 'NewsFlow Pro 与受邀编辑可提交评议；编辑意见不会自动公开。' : '开通 NewsFlow Pro 可获得编辑权限；受邀编辑同时获赠 3 个月 Pro。'}</footer>
+        <footer>${isChief() ? '主编拥有最终出版与刊物治理权限。' : isEditorialMember() ? 'Newsflow Pro 与受邀编辑可提交评议；编辑意见不会自动公开。' : '开通 Newsflow Pro 可获得编辑权限；受邀编辑同时获赠 3 个月 Pro。'}</footer>
       </section>`;
     document.documentElement.classList.add('nf-mode-dialog-open');
     window.dispatchEvent(new CustomEvent('newsflow:editorial-rendered'));
@@ -347,7 +347,7 @@
       return;
     }
     if (!isEditorialMember()) {
-      state.notice = '编辑部总览属于 NewsFlow Pro。开通 Pro，或接受主编任命后即可进入。';
+      state.notice = '编辑部总览属于 Newsflow Pro。开通 Pro，或接受主编任命后即可进入。';
       state.dialogOpen = true;
       renderDialog();
       return;

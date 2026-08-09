@@ -86,7 +86,7 @@ for (const eagerEditorAsset of ["versioned('./editorial-mode.css')", "versioned(
 }
 
 assert(manifest.name === 'Frontier Systems Review', 'PWA manifest name must match the publication identity.');
-assert(manifest.short_name === 'NewsFlow', 'PWA short_name must retain the NewsFlow product identity.');
+assert(manifest.short_name === 'Newsflow', 'PWA short_name must retain the Newsflow product identity.');
 assert(Array.isArray(manifest.icons) && manifest.icons.some((icon) => icon.purpose === 'any') && manifest.icons.some((icon) => icon.purpose === 'maskable'), 'PWA manifest must declare separate any and maskable icon purposes.');
 assert(manifest.icons.some((icon) => icon.sizes === '192x192'), 'PWA manifest must declare a 192x192 install icon.');
 assert(manifest.icons.some((icon) => icon.sizes === '512x512'), 'PWA manifest must declare a 512x512 install icon.');

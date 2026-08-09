@@ -55,12 +55,15 @@ if (mode.includes("id: 'accept'") || mode.includes('renderDesk') || mode.include
 for (const contract of [
   "const MODE_STORAGE_KEY = 'newsflow_mode_v3'", "const INVITE_PARAM = 'editor-invite'",
   "from('newsflow_editorial_members')", "from('newsflow_editorial_invitations')", "role: 'editor'",
-  "roleCard('reader'", "roleCard('editor'", '编辑模式属于 NewsFlow Pro',
+  "roleCard('reader'", "roleCard('editor'", '编辑模式属于 Newsflow Pro',
   'window.NewsFlowReviewGame?.isOpen?.()', 'window.NewsFlowReviewGame?.openFormal?.()', 'createEditorInvite', 'openGovernance',
   'syncModeLauncher', '[data-action="open-editorial-office"]', 'window.NewsFlowMode',
-  '同步获得 3 个月 NewsFlow Pro', 'window.HaoAccount?.refresh?.()', "window.HaoAccount?.can?.('newsflow.pro')", "action === 'upgrade'",
+  '同步获得 3 个月 Newsflow Pro', 'window.HaoAccount?.refresh?.()', "window.HaoAccount?.can?.('newsflow.pro')", "action === 'upgrade'",
   'nf-mode-launcher-label', 'nf-mode-current', '当前为读者模式，打开模式切换'
 ]) if (!mode.includes(contract)) throw new Error(`mode controller missing contract: ${contract}`);
+for (const contract of ['NEWSFLOW_EDITOR_ACCESS_REQUIRED', 'newsflow_pro_upgrade_prompt', 'data-review-action="upgrade-pro"', '开通 Newsflow Pro']) {
+  if (!game.includes(contract)) throw new Error(`review access conversion missing contract: ${contract}`);
+}
 if (mode.includes('data-editorial-role-trigger') || mode.includes('nf-mode-trigger')) {
   throw new Error('Mode controller must reuse the canonical editorial launcher instead of mounting a role-sized header control.');
 }

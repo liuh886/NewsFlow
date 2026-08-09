@@ -182,10 +182,9 @@ const renderChannelView = () => {
   if (!channel) return '';
   const storylines = channelStorylines(channel.id);
   const signals = sortedChannelSignals(channel.id);
-  const selected = selectedSignalIds();
   const list = signals.slice(0, 10).map((item, index) => `
     <button class="issue-signal-link" data-action="open" data-id="${escapeEditionHtml(item.id)}" data-channel-id="${escapeEditionHtml(item.channel_id || channel.id)}">
-      <span>${selected.has(String(item.id)) ? '选' : String(index + 1).padStart(2, '0')}</span>
+      <span>${String(index + 1).padStart(2, '0')}</span>
       <span>${escapeEditionHtml(item.title)}</span>
     </button>`).join('');
 
@@ -360,7 +359,7 @@ const syncSectionView = (main, masthead, issue, utility) => {
     if (kicker) kicker.textContent = `${editionState.edition.name} · 栏目`;
     if (title) title.textContent = channel.name;
     if (deck) deck.textContent = channel.promise;
-    if (meta) meta.innerHTML = `${channelSignals(channel.id).length} signals<br>${editionState.channelSort === 'selected' ? '精选优先' : '按时间排序'}<br>Published with NewsFlow`;
+    if (meta) meta.innerHTML = `${channelSignals(channel.id).length} signals<br>${editionState.channelSort === 'selected' ? '精选优先' : '按时间排序'}<br>Published with Newsflow`;
     if (sections) sections.hidden = true;
     masthead.insertAdjacentHTML('afterend', renderChannelView());
   } else {
@@ -369,7 +368,7 @@ const syncSectionView = (main, masthead, issue, utility) => {
     if (title) title.textContent = editionState.edition.name;
     if (deck) deck.textContent = utility.active ? utility.label : (editionState.edition.strapline || editionState.edition.reader_promise);
     if (meta) meta.innerHTML = utility.active
-      ? `Reader tools<br>${escapeEditionHtml(utility.label)}<br>Published with NewsFlow`
+      ? `Reader tools<br>${escapeEditionHtml(utility.label)}<br>Published with Newsflow`
       : `${issue ? `Issue ${escapeEditionHtml(issue.issue_number)}` : '刊期准备中'}<br>${issue ? escapeEditionHtml(formatEditionDate(issue.coverage_start || issue.published_at)) : '首期准备中'}<br>${live ? 'Current · 动态更新' : escapeEditionHtml(nextPublicationLabel(issue))}`;
     if (sections) sections.hidden = utility.active;
   }
@@ -395,8 +394,8 @@ const applyEditionLayer = () => {
   const brand = appRoot.querySelector('.brand');
   const brandName = appRoot.querySelector('.brand-name');
   const brandStatus = appRoot.querySelector('.brand-status');
-  if (brandName) brandName.textContent = edition.short_name || edition.name;
-  if (brandStatus) brandStatus.innerHTML = '<span class="status-dot"></span>Published with NewsFlow';
+  if (brandName) brandName.textContent = 'Newsflow';
+  if (brandStatus) brandStatus.innerHTML = '<span class="status-dot"></span>Published with Newsflow';
   if (brand) brand.setAttribute('aria-label', `返回 ${edition.name} 首页`);
 
   const topbarInner = appRoot.querySelector('.topbar-inner');

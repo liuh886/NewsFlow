@@ -45,6 +45,7 @@
     withdrawalDialog: null,
     notice: '',
     error: '',
+    accessDenied: false,
     busy: false,
     inviteDialogOpen: false,
     invite: null
@@ -201,12 +202,21 @@
 
   const opinionTotal = (candidateId) => Object.values(opinionCounts(candidateId)).reduce((sum, count) => sum + count, 0);
 
+  const isAccessDeniedError = (error) => ['42501', 'NEWSFLOW_EDITOR_ACCESS_REQUIRED'].includes(String(error?.code || ''))
+    || /permission denied|row-level security|没有 Newsflow 编辑权限|not authorized|forbidden/i.test(String(error?.message || ''));
+
+  const accessDeniedMessage = () => isChief()
+    ? '主编权限正在同步，请重新加载；若仍失败，请返回账户检查登录状态。'
+    : '开通 Newsflow Pro 即可进入编辑部、参与审稿并查看决定档案。受邀编辑会自动获得 3 个月 Pro。';
+
   const loadReviewData = async () => {
     const account = accountState();
     state.userId = String(account?.user?.id || '');
     state.editorialRole = String(window.NewsFlowMode?.getEditorialRole?.() || '');
     if (!state.userId || !['editor_in_chief', 'editor'].includes(state.editorialRole)) {
-      throw new Error('你没有 NewsFlow 编辑席位。');
+      const error = new Error('当前账户没有 Newsflow 编辑权限。');
+      error.code = 'NEWSFLOW_EDITOR_ACCESS_REQUIRED';
+      throw error;
     }
     const client = await getClient();
     if (!client) throw new Error('编辑数据库暂不可用。');
@@ -276,6 +286,7 @@
     state.withdrawalDialog = null;
     state.notice = '';
     state.error = '';
+    state.accessDenied = false;
     state.busy = false;
     state.inviteDialogOpen = false;
     state.invite = null;
@@ -301,8 +312,10 @@
       });
       render();
     } catch (error) {
-      state.error = error?.message || '编辑审稿台暂时无法加载。';
+      state.accessDenied = isAccessDeniedError(error);
+      state.error = state.accessDenied ? accessDeniedMessage() : error?.message || '编辑审稿台暂时无法加载。';
       state.phase = 'error';
+      if (state.accessDenied && !isChief()) track('newsflow_pro_upgrade_prompt', { source: 'review_access_denied' });
       render();
     }
   };
@@ -329,8 +342,10 @@
       });
       render();
     } catch (error) {
-      state.error = error?.message || '编辑部总览暂时无法加载。';
+      state.accessDenied = isAccessDeniedError(error);
+      state.error = state.accessDenied ? accessDeniedMessage() : error?.message || '编辑部总览暂时无法加载。';
       state.phase = 'error';
+      if (state.accessDenied && !isChief()) track('newsflow_pro_upgrade_prompt', { source: 'overview_access_denied' });
       render();
     }
   };
@@ -636,7 +651,11 @@
 
   const renderLoading = () => `<section class="nf-review-shell" role="dialog" aria-modal="true"><div class="nf-review-loading"><div class="nf-review-seal">NF</div><span>正在整理私有送审稿件</span></div></section>`;
 
-  const renderError = () => `<section class="nf-review-shell" role="dialog" aria-modal="true"><div class="nf-review-paper"><span class="nf-review-label">EDITORIAL DESK</span><div class="nf-review-seal">!</div><h1>审稿台暂未就绪</h1><p>${escapeHtml(state.error)}</p><div class="nf-review-actions is-centered"><button class="is-primary" data-review-action="retry">重新加载</button><button data-review-action="close-game">返回期刊</button></div></div></section>`;
+  const renderError = () => {
+    const showUpgrade = state.accessDenied && !isChief();
+    const title = showUpgrade ? '解锁编辑权限' : state.accessDenied ? '主编权限同步中' : '审稿台暂未就绪';
+    return `<section class="nf-review-shell" role="dialog" aria-modal="true"><div class="nf-review-paper"><span class="nf-review-label">EDITORIAL DESK</span><div class="nf-review-seal">!</div><h1>${title}</h1><p>${escapeHtml(state.error)}</p><div class="nf-review-actions is-centered">${showUpgrade ? '<button class="is-primary" data-review-action="upgrade-pro">开通 Newsflow Pro</button>' : '<button class="is-primary" data-review-action="retry">重新加载</button>'}<button data-review-action="close-game">返回期刊</button></div></div></section>`;
+  };
 
   const renderDeskTabs = (active = 'pending') => `<nav class="nf-review-tabs" aria-label="编辑部稿件状态">
     <button class="${active === 'overview' ? 'is-active' : ''}" data-review-action="open-overview">总览</button>
@@ -866,6 +885,11 @@
     else if (action === 'undo') await undoLastDecision();
     else if (action === 'close-game') closeGame();
     else if (action === 'retry') await openFormal();
+    else if (action === 'upgrade-pro') {
+      track('newsflow_pro_upgrade_click', { source: 'review_access_denied' });
+      closeGame();
+      window.HaoAccount?.open?.();
+    }
     else if (action === 'review-all') await openFormal({ includeReviewed: true });
     else if (action === 'open-overview') {
       clearReactionTimers();

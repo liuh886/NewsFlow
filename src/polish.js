@@ -131,7 +131,7 @@ const simplifyRail = () => {
 };
 
 const simplifyDrawer = () => {
-  setText(document.querySelector('.drawer-brand'), 'NewsFlow · 深读');
+  setText(document.querySelector('.drawer-brand'), 'Newsflow · 深读');
 
   document.querySelectorAll('.drawer-section h3').forEach((heading) => {
     const text = heading.textContent?.trim();
@@ -332,9 +332,9 @@ searchSheet.className = 'mobile-search-backdrop';
 searchSheet.id = 'mobile-search-sheet';
 searchSheet.setAttribute('aria-hidden', 'true');
 searchSheet.innerHTML = `<section class="mobile-search-panel" role="dialog" aria-modal="true" aria-labelledby="mobile-search-title">
-  <h2 id="mobile-search-title" hidden>搜索 NewsFlow</h2>
+  <h2 id="mobile-search-title" hidden>搜索 Newsflow</h2>
   <div class="mobile-search-row">
-    <label class="mobile-search-field">${polishIcon('search')}<input type="search" autocomplete="off" placeholder="搜索标题、摘要或主题…" aria-label="搜索 NewsFlow"></label>
+    <label class="mobile-search-field">${polishIcon('search')}<input type="search" autocomplete="off" placeholder="搜索标题、摘要或主题…" aria-label="搜索 Newsflow"></label>
     <button class="mobile-search-close" type="button" aria-label="关闭搜索">${polishIcon('close')}</button>
   </div>
 </section>`;
@@ -447,5 +447,5 @@ document.addEventListener('keydown', (event) => {
 
 window.addEventListener('popstate', () => requestAnimationFrame(syncEditionRouteFromLocation));
 window.addEventListener('hashchange', () => requestAnimationFrame(syncEditionRouteFromLocation));
-window.addEventListener('offline', () => announce('网络连接已中断，NewsFlow 将继续使用已缓存内容。'));
+window.addEventListener('offline', () => announce('网络连接已中断，Newsflow 将继续使用已缓存内容。'));
 window.addEventListener('online', () => announce('网络连接已恢复。'));
