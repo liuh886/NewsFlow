@@ -32,10 +32,12 @@ for (const contract of [
 
 for (const eagerEditorAsset of [
   '<script src="./review-game.js',
+  '<script src="./editorial-desk.js',
   '<script src="./editorial-governance.js',
   '<script src="./editorial-office.js',
   '<link rel="stylesheet" href="./editorial-mode.css',
   '<link rel="stylesheet" href="./review-game.css',
+  '<link rel="stylesheet" href="./review-archive.css',
   '<link rel="stylesheet" href="./editorial-governance.css'
 ]) assert(!index.includes(eagerEditorAsset), `Reader still eagerly loads editor-only asset: ${eagerEditorAsset}`);
 
@@ -58,14 +60,17 @@ for (const contract of ['ensureMobileReaderSearch', 'syncEditionDialogAccessibil
   assert(polish.includes(contract), `Reader polish missing interaction contract: ${contract}`);
 }
 
-for (const contract of ['./review-game.css', './review-stamp.css', './editorial-governance.css', './review-game.js', './editorial-governance.js', './editorial-office.js']) {
+for (const contract of [
+  './review-game.css', './review-archive.css', './review-stamp.css', './editorial-governance.css',
+  './review-game.js', './editorial-desk.js', './editorial-governance.js', './editorial-office.js'
+]) {
   assert(loader.includes(contract), `Editorial lazy loader missing asset: ${contract}`);
 }
 for (const contract of ['syncEditorialEntry', 'data-action="open-editorial-office"', "launcher.style.display = 'inline-flex'", 'newsflow:edition-rendered', "label.textContent = '编辑部'"]) {
   assert(loader.includes(contract), `Editorial lazy loader missing direct-entry contract: ${contract}`);
 }
-for (const retired of ['./editorial-mode.css', 'newsflow_mode_v3', 'cachedMode', '当前为读者模式', 'roleTrigger']) {
-  assert(!loader.includes(retired), `Retired editorial mode contract returned: ${retired}`);
+for (const retired of ['./editorial-mode.css', './review-archive.js', 'newsflow_mode_v3', 'cachedMode', '当前为读者模式', 'roleTrigger']) {
+  assert(!loader.includes(retired), `Retired editorial contract returned: ${retired}`);
 }
 
 for (const contract of [
@@ -83,7 +88,11 @@ for (const contract of [
 assert(serviceWorker.includes("const ASSET_VERSION = '__NEWSFLOW_VERSION__'"), 'Service Worker must derive its deployed version from package.json at build time.');
 assert(serviceWorker.includes("versioned('./editorial-loader.js')"), 'Reader app shell must cache the small editorial loader.');
 assert(serviceWorker.includes("versioned('./pwa-install.js')"), 'Reader app shell must cache the PWA install controller.');
-for (const eagerEditorAsset of ["versioned('./editorial-mode.css')", "versioned('./review-game.css')", "versioned('./editorial-governance.css')", "versioned('./review-game.js')", "versioned('./editorial-governance.js')", "versioned('./editorial-office.js')"]) {
+for (const eagerEditorAsset of [
+  "versioned('./editorial-mode.css')", "versioned('./review-game.css')", "versioned('./review-archive.css')",
+  "versioned('./editorial-governance.css')", "versioned('./review-game.js')", "versioned('./editorial-desk.js')",
+  "versioned('./editorial-governance.js')", "versioned('./editorial-office.js')"
+]) {
   assert(!serviceWorker.includes(eagerEditorAsset), `Service Worker still precaches editor-only asset: ${eagerEditorAsset}`);
 }
 
