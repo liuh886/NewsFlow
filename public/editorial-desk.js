@@ -121,7 +121,8 @@
 
     const title = archive.querySelector('.nf-review-archive-detail h2')?.textContent?.trim() || '这条稿件';
     const isChief = window.NewsFlowMode?.getEditorialRole?.() === 'editor_in_chief';
-    const hasPublicAdoption = Boolean(archive.querySelector(`[data-review-action="open-withdrawal"][data-candidate-id="${CSS.escape(candidateId)}"]`));
+    const hasPublicAdoption = [...archive.querySelectorAll('[data-review-action="open-withdrawal"][data-candidate-id]')]
+      .some((button) => button.dataset.candidateId === candidateId);
     const consequence = isChief && hasPublicAdoption
       ? '撤回后，稿件会重新进入待审稿；当前公开采用记录也会随主编决定同步撤下。'
       : '撤回后，这条编辑决定会被删除，稿件重新进入你的待审稿。';
