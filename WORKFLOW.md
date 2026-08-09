@@ -10,11 +10,11 @@ NewsFlow has one decisive publication gate:
 
 The stages are deliberately separate:
 
-1. automated/manual research discovers and verifies evidence;
+1. automated/manual research discovers and verifies evidence, with Editor Green Lane referrals receiving first-pass discovery priority;
 2. deterministic preflight decides whether an item is fit to become a **private Candidate**;
 3. reviewable Candidates are written directly to private Supabase;
-4. Editors produce advisory five-state opinions;
-5. the Editor-in-Chief produces the final five-state decision;
+4. Editors produce advisory five-state scores and may revise them repeatedly, including after the chief has made a publication decision;
+5. the Editor-in-Chief produces the final five-state publication decision;
 6. chief **封面文章 / 录用** creates a sanitized public adoption projection in Supabase;
 7. GitHub publication sync reads only that public projection and updates Reader Latest;
 8. adopted Signals are ranked into the active half-month Current Issue;
@@ -27,17 +27,18 @@ A content-pipeline `accepted` result means only **passed preflight for editorial
 1. `public/data/edition.json` is the single canonical Edition constitution.
 2. `config/content-workflow.json` defines the evidence-processing contract.
 3. source/discovery/scout registries define search and verification boundaries.
-4. the JSON Schema defines the transient Candidate exchange format.
-5. `scripts/update-content.mjs` is the deterministic, read-only evaluator.
-6. `scripts/apply-content.mjs --apply` writes reviewable Candidates directly to Supabase and records a sanitized audit; it cannot publish.
-7. Supabase `newsflow_candidates` is the durable private Candidate authority.
-8. Supabase `newsflow_editorial_reviews` stores normalized Editor/Chief five-state records.
-9. only the active owner / Editor-in-Chief review can create `newsflow_editorial_adoptions`.
-10. `supabase/newsflow-publication-projection.sql` turns an adopted private Candidate into the sanitized public `publication` snapshot; private Candidate rows remain inaccessible to Reader/publication workers.
-11. `scripts/sync-adopted-signals.mjs` consumes only the public adoption projection and updates public Reader Signals.
-12. `scripts/sync-live-issue.mjs` owns the live Current Issue lifecycle and ranking.
-13. `.github/workflows/publication-sync.yml` is the only GitHub publication writer and deployer.
-14. Agent-specific adapters may not weaken or extend this chain.
+4. Supabase `newsflow_editorial_referrals` is the private Editor Green Lane queue; it prioritizes discovery but never grants publication authority.
+5. the JSON Schema defines the transient Candidate exchange format.
+6. `scripts/update-content.mjs` is the deterministic, read-only evaluator.
+7. `scripts/apply-content.mjs --apply` writes reviewable Candidates directly to Supabase and records a sanitized audit; it cannot publish.
+8. Supabase `newsflow_candidates` is the durable private Candidate authority.
+9. Supabase `newsflow_editorial_reviews` stores normalized Editor/Chief five-state records.
+10. only the active owner / Editor-in-Chief review can create `newsflow_editorial_adoptions`.
+11. `supabase/newsflow-publication-projection.sql` turns an adopted private Candidate into the sanitized public `publication` snapshot; private Candidate rows remain inaccessible to Reader/publication workers.
+12. `scripts/sync-adopted-signals.mjs` consumes only the public adoption projection and updates public Reader Signals.
+13. `scripts/sync-live-issue.mjs` owns the live Current Issue lifecycle and ranking.
+14. `.github/workflows/publication-sync.yml` is the only GitHub publication writer and deployer.
+15. Agent-specific adapters may not weaken or extend this chain.
 
 If two layers conflict, stop before applying and report the conflict.
 
@@ -50,9 +51,26 @@ If two layers conflict, stop before applying and report the conflict.
 - Declare `as_of`, `coverage_start`, `coverage_end` and `Asia/Shanghai` before searching.
 - Record the required actor fields exactly.
 
-### 2. Discover broadly, verify narrowly
+### 2. Check the Editor Green Lane, then discover broadly
 
-- Search every active Storyline using normal and counter-evidence queries.
+Before normal discovery, read at most one queued Editor referral:
+
+```bash
+SUPABASE_URL=... \
+SUPABASE_SERVICE_ROLE_KEY=... \
+npm run editorial:referrals -- --limit=1
+```
+
+If the queue returns an item:
+
+- treat that URL as the first discovery lead for the run;
+- access the source and verify it exactly like any other item;
+- do not waive source registration, evidence, timeliness, duplication or quality gates;
+- if it earns a Candidate, preserve its canonical URL so the database can close the matching referral automatically;
+- if it does not earn a Candidate, leave it queued unless the editorial team explicitly dismisses it later.
+
+Then search every active Storyline using normal and counter-evidence queries.
+
 - Prefer primary records; use registered institutional/mainstream sources for context or corroboration.
 - Social scouts are discovery-only; follow them to canonical evidence.
 - Access full source material and verify dates, version, cutoff, methodology and project status where relevant.
@@ -115,6 +133,8 @@ npm run content:update -- --input=content/inbox/<candidate-pack>.json --apply
 - emits only sanitized run metadata/counts to the public audit surface;
 - leaves the transient Candidate pack outside durable Git history.
 
+If a newly persisted Candidate URL matches a queued Green Lane referral, the database marks that referral `ingested` and links its `candidate_id` automatically.
+
 After application:
 
 ```bash
@@ -124,32 +144,55 @@ npm run build
 
 There is **no repository → Supabase Candidate sync workflow**. Do not recreate one.
 
-### 7. Editor opinions
+### 7. Editor scores
 
-Appointed Editors enter the same Review Game and choose exactly one:
+Appointed Editors enter **本期评议**, which is driven by the current half-month chief-adoption set rather than `newsflow_candidates.active`.
 
-- 封面文章;
-- 录用;
-- 小修;
-- 大修;
-- 拒稿.
+For every manuscript the chief has collected in the current Issue window, Editors can repeatedly choose one advisory score:
 
-Their row in `newsflow_editorial_reviews` is advisory only. Editors can revise/undo their own opinion. They do not create adoption, do not close the Candidate and do not see another individual's review record.
+- 封面推荐 (`cover_story`);
+- 推荐 (`accept`);
+- 小修后推荐 (`minor_revision`);
+- 大修后再评 (`major_revision`);
+- 不推荐 (`reject`).
 
-### 8. Editor-in-Chief decision
+Editor behavior is deliberately different from chief behavior:
 
-The chief reviews the same Candidate and may see aggregate opinion counts from Editors.
+- an Editor score is advisory only;
+- an Editor may score a manuscript even after the chief has already accepted it and the Candidate is no longer active;
+- an Editor may change the score repeatedly; the normalized review row is updated in place;
+- Editor scores feed editorial consensus/ranking signals but never create or remove adoption;
+- Editors do not obtain publication authority by majority vote.
 
-The chief's five-state row is final editorial judgment:
+The older archive/review views remain useful for inspecting and retracting the Editor's own record, but the normal Editor work surface is the repeatable current-Issue scorecard.
 
-- any final chief decision closes the Candidate;
+### 8. Editor Green Lane referrals
+
+Editors and the chief may submit a recommended article URL from the Editorial Desk **绿色通道**.
+
+- The browser stores only the normalized HTTPS URL, submitter and queue status in private Supabase.
+- Successful submission is stamped **“拟录用，请等待系统更新”**.
+- That stamp means “priority discovery lead”, not formal publication acceptance.
+- The next content-collection run reads the oldest queued referral first via `npm run editorial:referrals -- --limit=1`.
+- The referral still has to pass normal source/evidence/preflight rules before becoming a Candidate.
+- Candidate insertion with the same canonical URL automatically changes the referral to `ingested`.
+
+Do not write Green Lane links into public Git history or directly into `public/data/news.json`.
+
+### 9. Editor-in-Chief decision
+
+The chief reviews private Candidates and may see aggregate opinion counts from Editors.
+
+The chief's five-state row is the final publication judgment:
+
+- a final chief decision closes the Candidate for the chief publication queue, but does **not** close Editor scoring for current-Issue adopted manuscripts;
 - `cover_story` / `accept` → database trigger creates/updates `newsflow_editorial_adoptions` and stores a sanitized public `publication` snapshot;
 - `minor_revision` / `major_revision` / `reject` → any pre-Issue adoption is removed;
 - deleting/undoing the chief review reopens the Candidate and removes its pre-Issue adoption.
 
 No majority vote, recommendation score or automatic fallback can override the chief.
 
-### 9. Chief adoption → Reader Latest
+### 10. Chief adoption → Reader Latest
 
 `.github/workflows/publication-sync.yml` is the sole publication worker.
 
@@ -165,7 +208,7 @@ No majority vote, recommendation score or automatic fallback can override the ch
 
 The same workflow applies explicitly published governance changes, validates/builds when state changes, commits main and deploys Pages.
 
-### 10. Live Current Issue
+### 11. Live Current Issue
 
 `scripts/sync-live-issue.mjs` owns the half-month lifecycle:
 
@@ -179,7 +222,7 @@ The same workflow applies explicitly published governance changes, validates/bui
 
 `publication-sync.yml` runs an idempotent Shanghai-midnight boundary check plus twice-hourly in-period synchronization. There is no second formal-Issue publisher.
 
-### 11. Chief governance changes
+### 12. Chief governance changes
 
 The chief can edit Edition judgment, active Storylines and trusted sources in **Publication Settings**.
 
@@ -189,7 +232,7 @@ The chief can edit Edition judgment, active Storylines and trusted sources in **
 
 The browser and publication worker never carry a GitHub token or Supabase service-role key for public publication reads.
 
-### 12. Clean transient input
+### 13. Clean transient input
 
 After the Candidate pack has been evaluated/persisted, remove the transient local file unless it is still needed for the active run. Candidate durability belongs to Supabase; public Git history is not an editorial manuscript archive.
 
@@ -198,6 +241,7 @@ After the Candidate pack has been evaluated/persisted, remove the transient loca
 Report:
 
 - run window + actor/workflow version;
+- Green Lane referral checked, if any;
 - sources and Storylines checked;
 - preflight counts;
 - Candidates persisted;
