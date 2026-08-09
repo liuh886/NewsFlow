@@ -11,14 +11,15 @@
     "auto_generated": true,
     "selection_mode": "live_editorial_ranking",
     "edition_version": "1.2",
-    "title": "得州数据中心并网暂停开始转化为真实资本风险：巨额押金面临长期冻结与更高不可退比例",
-    "standfirst": "得州暂停数据中心并网审批后，Batch Zero 项目此前按每兆瓦 5 万美元缴纳的并网担保资金面临不确定性；监管草案还可能把部分项目押金的不可退比例从 20% 提高到 80%。 本期持续追踪相关进展，封面与篇目将随重要性更新。",
+    "title": "SpaceX 与 Tesla 启动 168 亿美元 Terafab，AI 芯片供给开始向制造、封装、测试一体化纵向整合",
+    "standfirst": "SpaceX 与 Tesla 将初始投资 168 亿美元在得州 Grimes County 建设 Terafab；该设施计划在同一园区完成先进逻辑和存储芯片的制造、封装与测试，并服务 Tesla 机器人/自动驾驶与 SpaceX 数据中心需求。 本期持续追踪相关进展，封面与篇目将随重要性更新。",
     "judgment": "本期关注正在发生的关键变化；当前封面聚焦此刻最具影响力的进展，后续重大事件可能改变版面重点。",
-    "cover_signal_id": "texas-data-center-grid-deposit-risk-2026",
+    "cover_signal_id": "spacex-tesla-terafab-vertical-ai-chip-capacity-2026",
     "signal_ids": [
+      "spacex-tesla-terafab-vertical-ai-chip-capacity-2026",
       "texas-data-center-grid-deposit-risk-2026",
-      "openai-astra-critical-cyber-deployment-controls-2026",
-      "nvidia-lancium-stargate-power-investment-2026"
+      "amd-ai-data-center-revenue-rackscale-2026",
+      "apple-mac-qwen-china-production-integration-2026"
     ],
     "storyline_updates": [],
     "what_to_watch": [
@@ -37,19 +38,19 @@
       ]
     },
     "methodology": {
-      "candidate_count": 3,
-      "selected_count": 3,
-      "editorial_adoption_count": 3,
+      "candidate_count": 9,
+      "selected_count": 4,
+      "editorial_adoption_count": 9,
       "cover_story_count": 0,
       "editor_review_count": 0,
       "qualified_reader_feedback_count": 0,
       "selected_by_channel": {
-        "ai-infrastructure": 3
+        "ai-infrastructure": 4
       },
       "fixed_length": false,
       "editorial_view_changed": false
     },
-    "updated_at": "2026-08-09T05:18:37.542Z"
+    "updated_at": "2026-08-09T08:56:39.292Z"
   },
   {
     "id": "frontier-systems-review-2026-15",

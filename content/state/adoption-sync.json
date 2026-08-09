@@ -1,11 +1,17 @@
 {
   "schema_version": "1.0",
   "managed_signal_ids": [
+    "alibaba-qwen-openweight-revenue-sharing-2026",
+    "amd-ai-data-center-revenue-rackscale-2026",
+    "apple-mac-qwen-china-production-integration-2026",
     "nvidia-lancium-stargate-power-investment-2026",
     "openai-astra-critical-cyber-deployment-controls-2026",
-    "texas-data-center-grid-deposit-risk-2026"
+    "palantir-enterprise-ai-revenue-scale-2026",
+    "spacex-tesla-terafab-vertical-ai-chip-capacity-2026",
+    "texas-data-center-grid-deposit-risk-2026",
+    "us-openweight-ai-safety-test-exemption-2026"
   ],
-  "current_adoption_count": 3,
+  "current_adoption_count": 9,
   "formal_issue_signal_count": 12,
-  "last_synced_at": "2026-08-09T03:38:00.445Z"
+  "last_synced_at": "2026-08-09T08:56:39.092Z"
 }

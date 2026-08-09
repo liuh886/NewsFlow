@@ -1,5 +1,43 @@
 [
   {
+    "id": "apple-mac-qwen-china-production-integration-2026",
+    "channel_id": "ai-infrastructure",
+    "storyline_ids": [
+      "ai-application-layer",
+      "ai-model-layer"
+    ],
+    "event_type": "production_deployment",
+    "event_date": "2026-08-08",
+    "title": "Apple 在中国 Mac 上接入 Qwen，生成式 AI 从独立应用进入系统级生产入口",
+    "url": "https://www.reuters.com/business/retail-consumer/apple-says-mac-users-china-can-connect-alibabas-qwen-ai-service-2026-08-08/",
+    "source": "Reuters",
+    "published_at": "2026-08-08T12:35:00Z",
+    "quality_index": 9.4,
+    "source_tier": "Tier A",
+    "short_summary": "Apple 的使用指南显示，中国大陆符合条件的 Mac 用户可将 Alibaba Qwen 接入 Siri 和 Writing Tools；用户需主动启用，Qwen 可处理更复杂请求并辅助生成文本或图像。",
+    "long_summary": "这项集成提供的是生产入口证据，而不是使用量或收入证据。生成式 AI 被嵌入操作系统级的 Siri 与写作工具后，模型调用从独立应用转向更高频的系统工作流，潜在扩大推理需求与商业分发能力。Apple 同时规定 Alibaba 不得利用相关材料训练或改进模型，说明系统级模型集成也需要明确的数据边界。后续仍需用实际启用率、调用量或商业收入验证其需求强度。",
+    "key_quote": "",
+    "supporting_quotes": [],
+    "tags": [
+      "AI & Tech",
+      "Apple",
+      "Qwen",
+      "Production Deployment",
+      "China"
+    ],
+    "editorial_status": "adopted",
+    "editorial_decision": "accept",
+    "adopted_at": "2026-08-09T07:43:34.372+00:00",
+    "ranking": {
+      "version": "ranking-v2",
+      "reader_boost": 0,
+      "reader_minimum": 3,
+      "editorial_boost": 0,
+      "editor_review_count": 0,
+      "reader_feedback_count": 0
+    }
+  },
+  {
     "id": "nvidia-lancium-stargate-power-investment-2026",
     "channel_id": "ai-infrastructure",
     "storyline_ids": [
@@ -103,6 +141,193 @@
     "editorial_status": "adopted",
     "editorial_decision": "accept",
     "adopted_at": "2026-08-08T16:03:53.62+00:00",
+    "ranking": {
+      "version": "ranking-v2",
+      "reader_boost": 0,
+      "reader_minimum": 3,
+      "editorial_boost": 0,
+      "editor_review_count": 0,
+      "reader_feedback_count": 0
+    }
+  },
+  {
+    "id": "alibaba-qwen-openweight-revenue-sharing-2026",
+    "channel_id": "ai-infrastructure",
+    "storyline_ids": [
+      "ai-model-layer",
+      "ai-application-layer"
+    ],
+    "event_type": "model_opening",
+    "event_date": "2026-08-07",
+    "title": "Alibaba 拟为 Qwen3.8-Max 引入大客户收入分成，开放权重模型开始从免费分发转向商业许可",
+    "url": "https://www.reuters.com/business/retail-consumer/alibaba-plans-charge-big-users-its-next-open-source-ai-model-sources-say-2026-08-07/",
+    "source": "Reuters",
+    "published_at": "2026-08-07T01:04:54Z",
+    "quality_index": 9.2,
+    "source_tier": "Tier A",
+    "short_summary": "Reuters 援引知情人士称，Alibaba 计划要求 Qwen3.8-Max 的部分大型用户分享基于该模型产生的收入；具体比例尚未公开、讨论仍在进行，显示开放权重模型正在探索从低门槛分发转向按商业价值收费。",
+    "long_summary": "这一变化触及模型开放性与应用经济性的接口。开放权重模型过去常以免费或低成本分发换取开发者采用，而收入分成意味着模型提供方试图直接参与下游应用价值捕获。由于 Reuters 报道基于知情人士、方案仍在讨论中，当前只能视为商业模式方向而非已生效许可条款。若最终落地，它可能改变企业在自托管、模型切换和商业化规模扩大时的边际成本。",
+    "key_quote": "",
+    "supporting_quotes": [],
+    "tags": [
+      "AI & Tech",
+      "Qwen",
+      "Open Weights",
+      "Model Economics",
+      "Alibaba"
+    ],
+    "editorial_status": "adopted",
+    "editorial_decision": "accept",
+    "adopted_at": "2026-08-09T07:43:43.278+00:00",
+    "ranking": {
+      "version": "ranking-v2",
+      "reader_boost": 0,
+      "reader_minimum": 3,
+      "editorial_boost": 0,
+      "editor_review_count": 0,
+      "reader_feedback_count": 0
+    }
+  },
+  {
+    "id": "spacex-tesla-terafab-vertical-ai-chip-capacity-2026",
+    "channel_id": "ai-infrastructure",
+    "storyline_ids": [
+      "ai-chip-layer",
+      "ai-infrastructure-layer"
+    ],
+    "event_type": "foundry_capacity",
+    "event_date": "2026-08-06",
+    "title": "SpaceX 与 Tesla 启动 168 亿美元 Terafab，AI 芯片供给开始向制造、封装、测试一体化纵向整合",
+    "url": "https://www.reuters.com/business/media-telecom/spacex-says-terafab-be-built-texas-with-initial-investment-168-billion-2026-08-06/",
+    "source": "Reuters",
+    "published_at": "2026-08-06T14:25:56Z",
+    "quality_index": 9.8,
+    "source_tier": "Tier A",
+    "short_summary": "SpaceX 与 Tesla 将初始投资 168 亿美元在得州 Grimes County 建设 Terafab；该设施计划在同一园区完成先进逻辑和存储芯片的制造、封装与测试，并服务 Tesla 机器人/自动驾驶与 SpaceX 数据中心需求。",
+    "long_summary": "Terafab 的关键不是远期投资目标，而是已经披露的首期 168 亿美元资本投入和纵向一体化设计。它把晶圆制造、先进封装、测试和最终 AI/机器人需求放在同一资产体系中，反映大型 AI 使用方正在尝试缩短关键半导体环节的供应链。对芯片层而言，这是一项新的制造与封装产能布局；对基础设施层而言，它也说明算力项目的上游约束正在推动终端需求方直接投资芯片生产能力。后续扩建规模仍属于目标，不应视为已交付产能。",
+    "key_quote": "",
+    "supporting_quotes": [],
+    "tags": [
+      "AI & Tech",
+      "Semiconductors",
+      "Advanced Packaging",
+      "Tesla",
+      "SpaceX"
+    ],
+    "editorial_status": "adopted",
+    "editorial_decision": "accept",
+    "adopted_at": "2026-08-09T07:44:32.051+00:00",
+    "ranking": {
+      "version": "ranking-v2",
+      "reader_boost": 0,
+      "reader_minimum": 3,
+      "editorial_boost": 0,
+      "editor_review_count": 0,
+      "reader_feedback_count": 0
+    }
+  },
+  {
+    "id": "amd-ai-data-center-revenue-rackscale-2026",
+    "channel_id": "ai-infrastructure",
+    "storyline_ids": [
+      "ai-chip-layer",
+      "ai-infrastructure-layer"
+    ],
+    "event_type": "rack_scale_system",
+    "event_date": "2026-08-05",
+    "title": "AMD 数据中心收入翻倍至 67.2 亿美元，并把竞争从 GPU 推向 2027 年机架级 AI 系统",
+    "url": "https://www.reuters.com/business/amd-forecasts-upbeat-revenue-ai-data-center-demand-beats-quarterly-estimates-2026-08-04/",
+    "source": "Reuters",
+    "published_at": "2026-08-04T20:18:05Z",
+    "quality_index": 9.6,
+    "source_tier": "Tier A",
+    "short_summary": "AMD 第二季度数据中心收入同比增长超过一倍至 67.2 亿美元，同时披露 2027 年机架级平台将整合 MI500 GPU、Verano CPU 与 Pensando 网络组件；AI 芯片竞争正在从单颗加速器延伸到整机架系统交付。",
+    "long_summary": "这条信息同时提供需求与系统架构两个增量。数据中心业务的实际收入增长说明 AMD 的 AI 计算业务已经从产品路线图进入规模收入阶段；更重要的是，公司明确把下一代竞争单位定义为包含 GPU、CPU 与网络的机架级平台。对 NewsFlow 的芯片层和基础设施层而言，这意味着判断供给能力不能只看 GPU 数量，还要看整机架网络、CPU、互连与系统集成能否按计划交付。",
+    "key_quote": "",
+    "supporting_quotes": [],
+    "tags": [
+      "AI & Tech",
+      "AMD",
+      "Data Center",
+      "Rack-scale Systems",
+      "AI Chips"
+    ],
+    "editorial_status": "adopted",
+    "editorial_decision": "accept",
+    "adopted_at": "2026-08-09T07:43:59.996+00:00",
+    "ranking": {
+      "version": "ranking-v2",
+      "reader_boost": 0,
+      "reader_minimum": 3,
+      "editorial_boost": 0,
+      "editor_review_count": 0,
+      "reader_feedback_count": 0
+    }
+  },
+  {
+    "id": "us-openweight-ai-safety-test-exemption-2026",
+    "channel_id": "ai-infrastructure",
+    "storyline_ids": [
+      "ai-model-layer"
+    ],
+    "event_type": "deployment_requirement",
+    "event_date": "2026-08-04",
+    "title": "美国政府拟不对开放权重模型执行自愿安全测试，模型开放性开始直接影响合规路径",
+    "url": "https://www.reuters.com/legal/litigation/meta-anthropic-google-openai-meet-with-trump-white-house-amid-rogue-ai-agent-2026-08-04/",
+    "source": "Reuters",
+    "published_at": "2026-08-04T14:38:53Z",
+    "quality_index": 9,
+    "source_tier": "Tier A",
+    "short_summary": "Reuters 报道称，美国政府已告知开发者，开放权重 AI 模型不会进入拟议的自愿安全测试安排；针对具备高级网络攻击能力的其他前沿模型，相关测试仍计划保持自愿。",
+    "long_summary": "这条信息的价值在于模型开放性开始影响部署前的合规路径，而不仅是许可和分发方式。若框架按报道实施，同等级能力的开放权重模型与封闭前沿模型可能面临不同的自愿测试安排，从而影响发布节奏、安全评估成本和企业部署判断。由于相关框架当时尚未完整公开，NewsFlow 应把它作为正在形成的监管路径，而不是已经最终落地的法定规则。",
+    "key_quote": "",
+    "supporting_quotes": [],
+    "tags": [
+      "AI & Tech",
+      "Open Weights",
+      "AI Safety",
+      "Regulation",
+      "Deployment"
+    ],
+    "editorial_status": "adopted",
+    "editorial_decision": "accept",
+    "adopted_at": "2026-08-09T07:44:38.71+00:00",
+    "ranking": {
+      "version": "ranking-v2",
+      "reader_boost": 0,
+      "reader_minimum": 3,
+      "editorial_boost": 0,
+      "editor_review_count": 0,
+      "reader_feedback_count": 0
+    }
+  },
+  {
+    "id": "palantir-enterprise-ai-revenue-scale-2026",
+    "channel_id": "ai-infrastructure",
+    "storyline_ids": [
+      "ai-application-layer"
+    ],
+    "event_type": "application_revenue",
+    "event_date": "2026-08-04",
+    "title": "Palantir 上调全年收入指引，美国商业收入目标升至 34.24 亿美元，企业 AI 开始获得收入级验证",
+    "url": "https://www.reuters.com/technology/palantir-raises-annual-revenue-forecast-strong-demand-us-government-commercial-2026-08-03/",
+    "source": "Reuters",
+    "published_at": "2026-08-03T20:07:43Z",
+    "quality_index": 9.2,
+    "source_tier": "Tier A",
+    "short_summary": "Palantir 再次上调全年收入指引至约 81.5 亿美元，并预计美国商业收入超过 34.24 亿美元；第二季度总收入同比增长 93% 至 19.4 亿美元，为企业 AI 的生产部署提供了可量化的收入侧证据。",
+    "long_summary": "NewsFlow 的应用层需要区分演示、试点和真正产生收入的生产使用。Palantir 的增长仍包含政府业务，不能把全部收入归因于企业 AI，但美国商业收入指引上调和整体收入的高增长为需求侧提供了比用户数或试点数量更强的证据。它支持这样一个判断：至少在部分高价值工作流中，AI 软件已经开始转化为可持续合同与收入；下一步仍需观察这种收入增长能否覆盖模型推理、集成和基础设施成本。",
+    "key_quote": "",
+    "supporting_quotes": [],
+    "tags": [
+      "AI & Tech",
+      "Enterprise AI",
+      "Application Revenue",
+      "Palantir"
+    ],
+    "editorial_status": "adopted",
+    "editorial_decision": "accept",
+    "adopted_at": "2026-08-09T07:44:16.088+00:00",
     "ranking": {
       "version": "ranking-v2",
       "reader_boost": 0,
