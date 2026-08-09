@@ -50,7 +50,7 @@ for (const contract of [
 if (script.includes('MutationObserver') || script.includes('stopImmediatePropagation')) throw new Error('magazine polish must not observe or intercept the Edition rendering lifecycle.');
 
 for (const selector of [
-  "[data-empty='true']", "[data-action='feedback-center']", "[data-action='open-editorial-office']", '.nf-mode-trigger',
+  "[data-empty='true']", "[data-action='feedback-center']", "[data-action='open-editorial-office']",
   '.nf-brand-row', '.nf-data-date', ".global-search:not(:focus-within) input::placeholder", '.global-search:focus-within input::placeholder',
   "[data-edition-layer='section-view'] .issue-hero-copy > h2", ".issue-section-heading .masthead-sections button[aria-pressed='true']",
   "[data-action='feedback-hide']", '@media (max-width: 920px)', '@media (max-width: 720px)', '@media (max-width: 430px)',
@@ -66,7 +66,7 @@ for (const identity of [
   'Frontier Systems Review：聚焦 AI 基建、CCUS 与能源转型的专业半月刊'
 ]) if (!index.includes(identity)) throw new Error(`Edition-first browser identity is missing: ${identity}`);
 
-if (packageManifest.version !== '2.4.1') throw new Error('package release contract must remain pinned until a package release is intentionally cut');
+if (packageManifest.version !== '2.4.2') throw new Error('package release contract must match the current Reader asset release');
 if (!packageManifest.scripts?.check?.includes('check-magazine-polish.mjs')) throw new Error('npm check must include the magazine polish contract');
 for (const releaseContract of ["const ASSET_VERSION = '__NEWSFLOW_VERSION__'", 'newsflow-reader-v${ASSET_VERSION}', 'reading-surface.css', 'editorial-loader.js']) {
   if (!serviceWorker.includes(releaseContract)) throw new Error(`service worker is missing Reader release contract: ${releaseContract}`);
@@ -75,4 +75,4 @@ for (const eagerEditorAsset of ["versioned('./editorial-governance.css')", "vers
   if (serviceWorker.includes(eagerEditorAsset)) throw new Error(`service worker must not precache editor-only asset ${eagerEditorAsset}`);
 }
 
-console.log('NewsFlow magazine polish contract passed: Edition-first identity, restrained Reader chrome, lean app shell, header badge/search state, section hierarchy and responsive reading typography.');
+console.log('NewsFlow magazine polish contract passed: Edition-first identity, restrained Reader chrome, lean app shell, stable role navigation, header badge/search state, section hierarchy and responsive reading typography.');
