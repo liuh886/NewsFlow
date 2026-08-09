@@ -800,6 +800,12 @@
     const candidate = currentCandidate();
     if (!candidate) return renderComplete();
     const sourceUrl = safeUrl(candidate.url);
+    const existingReview = ownReviewFor(candidate.id);
+    const existingDecision = decisionById(existingReview?.decision);
+    const persistentDecisionLabel = isChief() ? '主编已裁决' : '我的编辑意见';
+    const persistentDecision = existingDecision
+      ? `<div class="nf-review-persistent-decision" aria-label="${escapeHtml(persistentDecisionLabel)}：${escapeHtml(existingDecision.label)}"><div class="nf-review-stamp is-${existingDecision.id} is-persistent">${escapeHtml(existingDecision.code)}</div><small>${escapeHtml(persistentDecisionLabel)} · ${escapeHtml(formatArchiveTime(existingReview?.decided_at))}</small></div>`
+      : '';
     return `<section class="nf-review-shell is-review" role="dialog" aria-modal="true" aria-labelledby="nf-review-title">
       <header class="nf-review-header">
         <div><strong>Frontier Systems Review</strong><span>${roleLabel()}</span></div>
@@ -808,8 +814,9 @@
       ${renderDeskTabs('pending')}
       <main class="nf-review-stage">
         <div class="nf-review-stack" aria-hidden="true"></div>
-        <article class="nf-review-card" tabindex="-1">
-          <div class="nf-review-card-meta"><span>MS-${escapeHtml(candidate.id.slice(-8).toUpperCase())}</span><span>MANUSCRIPT UNDER REVIEW</span></div>
+        <article class="nf-review-card ${existingDecision ? 'has-persistent-decision' : ''}" tabindex="-1">
+          <div class="nf-review-card-meta"><span>MS-${escapeHtml(candidate.id.slice(-8).toUpperCase())}</span><span>${existingDecision ? 'EDITORIAL DECISION RECORDED' : 'MANUSCRIPT UNDER REVIEW'}</span></div>
+          ${persistentDecision}
           <div class="nf-review-scope"><span>征稿范围</span><strong>${escapeHtml(activeStorylineTitle(candidate))}</strong></div>
           <h1 id="nf-review-title">${escapeHtml(candidate.title)}</h1>
           <p class="nf-review-summary">${escapeHtml(candidate.summary || '摘要待补充。')}</p>

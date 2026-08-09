@@ -13,6 +13,7 @@
   const styles = [
     './editorial-mode.css',
     './review-game.css',
+    './review-stamp.css',
     './editorial-governance.css'
   ];
   const scripts = [
