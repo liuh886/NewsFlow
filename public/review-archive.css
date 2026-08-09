@@ -1,116 +1,218 @@
-/* Decision archive: use the editorial desk as a workspace, not a scaled paper card. */
-@media (min-width: 761px) {
-  .nf-review-shell.is-archive .nf-review-stage {
-    place-items: stretch;
-    padding: clamp(12px, 1.4vw, 20px) clamp(16px, 2vw, 30px);
-  }
+/* Decision archive: one editorial workspace, not a card inside a card. */
+.nf-review-shell.is-archive {
+  grid-template-rows: auto auto minmax(0, 1fr);
+}
 
-  .nf-review-shell.is-archive .nf-review-stack {
-    display: none;
-  }
+.nf-review-shell.is-archive > .nf-review-decision-bar,
+.nf-review-shell.is-archive .nf-review-stack {
+  display: none;
+}
 
-  .nf-review-shell.is-archive .nf-review-card {
-    zoom: 1;
-  }
+.nf-review-shell.is-archive .nf-review-stage {
+  place-items: stretch;
+  padding: 0;
+  overflow: hidden;
+}
 
-  .nf-review-shell.is-archive .nf-review-archive-card {
-    width: 100%;
-    min-height: 100%;
-    height: 100%;
-    padding: clamp(18px, 1.8vw, 28px);
-    overflow: hidden;
-    border: 0;
-    background: transparent;
-    box-shadow: none;
-  }
+.nf-review-shell.is-archive .nf-review-card,
+.nf-review-shell.is-archive .nf-review-archive-card {
+  width: 100%;
+  max-width: none;
+  min-height: 0;
+  height: 100%;
+  margin: 0;
+  padding: clamp(18px, 2vw, 30px) clamp(22px, 3vw, 48px);
+  overflow: hidden;
+  border: 0;
+  background: transparent;
+  box-shadow: none;
+  zoom: 1;
+}
 
+.nf-review-shell.is-archive .nf-review-archive-card::before {
+  display: none;
+}
+
+.nf-review-shell.is-archive .nf-review-card-meta {
+  padding: 0 0 14px;
+  border-bottom: 1px solid color-mix(in srgb, var(--nf-review-line) 62%, transparent);
+}
+
+.nf-review-shell.is-archive .nf-review-archive-workspace {
+  display: grid;
+  grid-template-columns: minmax(390px, 0.82fr) minmax(0, 1.48fr);
+  gap: 0;
+  min-height: 0;
+  height: calc(100% - 30px);
+  margin-top: 0;
+  align-items: stretch;
+}
+
+.nf-review-shell.is-archive .nf-review-archive-list {
+  max-height: none;
+  height: 100%;
+  padding-right: clamp(18px, 2vw, 30px);
+  overflow: auto;
+  border: 0;
+}
+
+.nf-review-shell.is-archive .nf-review-archive-row {
+  min-height: 86px;
+  grid-template-columns: 38px minmax(0, 1fr) 96px 112px;
+  gap: 14px;
+  padding: 13px 8px;
+  border-top: 0;
+  border-bottom: 1px solid color-mix(in srgb, var(--nf-review-line) 60%, transparent);
+}
+
+.nf-review-shell.is-archive .nf-review-archive-row:first-child {
+  border-top: 0;
+}
+
+.nf-review-shell.is-archive .nf-review-archive-row strong {
+  font-size: 18px;
+  line-height: 1.22;
+}
+
+.nf-review-shell.is-archive .nf-review-archive-index,
+.nf-review-shell.is-archive .nf-review-archive-row small {
+  font-size: 9px;
+}
+
+.nf-review-shell.is-archive .nf-review-archive-row em {
+  padding: 8px 9px 6px;
+  font-size: 10px;
+}
+
+.nf-review-shell.is-archive .nf-review-archive-detail {
+  grid-template-columns: minmax(0, 1fr) 220px;
+  align-content: start;
+  gap: clamp(24px, 2.2vw, 34px);
+  min-height: 0;
+  height: 100%;
+  padding: 6px 0 0 clamp(28px, 3vw, 46px);
+  overflow: auto;
+  border-left: 1px solid color-mix(in srgb, var(--nf-review-line) 74%, transparent);
+}
+
+.nf-review-shell.is-archive .nf-review-archive-detail h2 {
+  margin-top: 8px;
+  font-size: clamp(34px, 3vw, 48px);
+  line-height: 1;
+}
+
+.nf-review-shell.is-archive .nf-review-archive-detail p {
+  font-size: 15px;
+  line-height: 1.58;
+}
+
+.nf-review-shell.is-archive .nf-review-archive-source {
+  font-size: 9px !important;
+}
+
+.nf-review-shell.is-archive .nf-review-archive-detail aside {
+  padding-left: 0;
+  border-left: 0;
+}
+
+.nf-review-shell.is-archive .nf-review-archive-detail .nf-review-stamp {
+  margin: 0 0 22px;
+  font-size: 25px;
+}
+
+.nf-review-shell.is-archive .nf-review-importance {
+  max-width: 560px;
+  margin-top: 20px;
+}
+
+.nf-review-shell.is-archive .nf-review-importance div {
+  padding: 9px 0;
+}
+
+.nf-review-shell.is-archive .nf-review-importance dt,
+.nf-review-shell.is-archive .nf-review-importance dd {
+  font-size: 10px;
+}
+
+.nf-review-shell.is-archive .nf-review-history-block {
+  padding-top: 18px;
+}
+
+.nf-review-shell.is-archive .nf-review-history-block h3,
+.nf-review-shell.is-archive .nf-review-history li {
+  font-size: 9px;
+}
+
+.nf-review-shell.is-archive .nf-review-basement {
+  position: absolute;
+  right: clamp(22px, 3vw, 48px);
+  bottom: 12px;
+  margin: 0;
+  font-size: 11px;
+}
+
+@media (max-width: 980px) and (min-width: 761px) {
   .nf-review-shell.is-archive .nf-review-archive-workspace {
-    grid-template-columns: minmax(430px, 0.9fr) minmax(0, 1.45fr);
-    gap: clamp(24px, 2.2vw, 36px);
-    min-height: 0;
-    height: calc(100% - 30px);
-    margin-top: 12px;
-  }
-
-  .nf-review-shell.is-archive .nf-review-archive-list {
-    max-height: calc(100dvh - 246px);
-    border-top-color: color-mix(in srgb, var(--nf-review-line) 78%, transparent);
-    border-bottom-color: color-mix(in srgb, var(--nf-review-line) 78%, transparent);
+    grid-template-columns: minmax(330px, 0.9fr) minmax(0, 1.1fr);
   }
 
   .nf-review-shell.is-archive .nf-review-archive-row {
-    min-height: 88px;
-    grid-template-columns: 42px minmax(0, 1fr) 104px 122px;
-    gap: 16px;
-    padding: 14px 10px;
+    grid-template-columns: 32px minmax(0, 1fr) 82px;
   }
 
-  .nf-review-shell.is-archive .nf-review-archive-row strong {
-    font-size: 18px;
-    line-height: 1.22;
-  }
-
-  .nf-review-shell.is-archive .nf-review-archive-index,
-  .nf-review-shell.is-archive .nf-review-archive-row small {
-    font-size: 9px;
-  }
-
-  .nf-review-shell.is-archive .nf-review-archive-row em {
-    padding: 8px 10px 6px;
-    font-size: 11px;
+  .nf-review-shell.is-archive .nf-review-archive-row > small:last-child {
+    display: none;
   }
 
   .nf-review-shell.is-archive .nf-review-archive-detail {
-    grid-template-columns: minmax(0, 1fr) 240px;
-    gap: 32px;
-    min-height: 0;
-    padding-left: clamp(26px, 2.4vw, 38px);
-  }
-
-  .nf-review-shell.is-archive .nf-review-archive-detail h2 {
-    margin-top: 8px;
-    font-size: clamp(36px, 3.35vw, 52px);
-    line-height: 0.98;
-  }
-
-  .nf-review-shell.is-archive .nf-review-archive-detail p {
-    font-size: 16px;
-    line-height: 1.58;
-  }
-
-  .nf-review-shell.is-archive .nf-review-archive-source {
-    font-size: 9px !important;
+    grid-template-columns: 1fr;
   }
 
   .nf-review-shell.is-archive .nf-review-archive-detail aside {
-    padding-left: 24px;
+    padding-top: 16px;
+    border-top: 1px solid color-mix(in srgb, var(--nf-review-line) 60%, transparent);
+  }
+}
+
+@media (max-width: 760px) {
+  .nf-review-shell.is-archive .nf-review-stage {
+    overflow: auto;
   }
 
-  .nf-review-shell.is-archive .nf-review-archive-detail .nf-review-stamp {
-    margin-bottom: 24px;
-    font-size: 26px;
+  .nf-review-shell.is-archive .nf-review-card,
+  .nf-review-shell.is-archive .nf-review-archive-card {
+    height: auto;
+    min-height: calc(100dvh - 102px);
+    padding: 18px 16px 28px;
   }
 
-  .nf-review-shell.is-archive .nf-review-importance {
-    max-width: 560px;
-    margin-top: 22px;
+  .nf-review-shell.is-archive .nf-review-archive-workspace {
+    grid-template-columns: 1fr;
+    height: auto;
   }
 
-  .nf-review-shell.is-archive .nf-review-importance div {
-    padding: 10px 0;
+  .nf-review-shell.is-archive .nf-review-archive-list {
+    max-height: 42dvh;
+    height: auto;
+    padding-right: 0;
   }
 
-  .nf-review-shell.is-archive .nf-review-importance dt,
-  .nf-review-shell.is-archive .nf-review-importance dd {
-    font-size: 10px;
+  .nf-review-shell.is-archive .nf-review-archive-detail {
+    grid-template-columns: 1fr;
+    height: auto;
+    padding: 22px 0 0;
+    overflow: visible;
+    border-top: 1px solid var(--nf-review-line);
+    border-left: 0;
   }
 
-  .nf-review-shell.is-archive .nf-review-history-block {
-    padding-top: 20px;
+  .nf-review-shell.is-archive .nf-review-archive-detail aside {
+    padding-top: 16px;
+    border-top: 1px solid color-mix(in srgb, var(--nf-review-line) 60%, transparent);
   }
 
-  .nf-review-shell.is-archive .nf-review-history-block h3,
-  .nf-review-shell.is-archive .nf-review-history li {
-    font-size: 9px;
+  .nf-review-shell.is-archive .nf-review-basement {
+    position: static;
+    margin-top: 18px;
   }
 }
