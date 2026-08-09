@@ -45,7 +45,7 @@ for (const contract of [
   'compactTrigger: true',
   'proUpgrade',
   'US$1/月开通 Newsflow Pro',
-  '受邀编辑可通过主编邀请链接获得 3 个月 Pro',
+  '受邀编辑可通过主编邀请链接获得 3 个月 Newsflow Pro 免费体验',
   'sb_publishable_',
 ]) {
   if (!config.includes(contract)) throw new Error(`NewsFlow account config is missing ${contract}`);
