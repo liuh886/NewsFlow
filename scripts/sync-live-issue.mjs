@@ -44,12 +44,13 @@ const issues = await readJson('public/data/issues.json');
 const now = new Date();
 const cycle = cycleFor(now);
 
-const maxSignals = Math.max(1, Number(edition.materiality?.max_signals_per_issue || 5));
-const maxSignalsPerChannel = Math.max(1, Number(edition.materiality?.max_signals_per_channel || maxSignals));
-const eligible = news.filter((item) => {
+const maxSignals = Math.max(1, Number(edition.materiality?.max_signals_per_issue || 24));
+const maxSignalsPerChannel = Math.max(1, Number(edition.materiality?.max_signals_per_channel || 8));
+
+const eligibleForCoverage = (start, end) => news.filter((item) => {
   if (item?.editorial_status !== 'adopted') return false;
   const key = shanghaiDateKey(item.published_at || item.event_date || '');
-  return key && key >= cycle.start && key <= cycle.end;
+  return key && key >= start && key <= end;
 });
 
 const rankIssueSignals = (left, right) => {
@@ -65,31 +66,72 @@ const rankIssueSignals = (left, right) => {
   return new Date(right.published_at || 0).getTime() - new Date(left.published_at || 0).getTime();
 };
 
-const selected = [];
-const selectedByChannel = new Map();
-for (const item of [...eligible].sort(rankIssueSignals)) {
-  const channelId = String(item.channel_id || 'unassigned');
-  const channelCount = selectedByChannel.get(channelId) || 0;
-  if (channelCount >= maxSignalsPerChannel || selected.length >= maxSignals) continue;
-  selected.push(item);
-  selectedByChannel.set(channelId, channelCount + 1);
-}
+const channelCounts = (items) => {
+  const counts = new Map();
+  for (const item of items) {
+    const channelId = String(item.channel_id || 'unassigned');
+    counts.set(channelId, (counts.get(channelId) || 0) + 1);
+  }
+  return counts;
+};
 
-const frozenIssues = issues.map((issue) => {
-  if (issue?.lifecycle !== 'live') return issue;
-  if (issue.coverage_start === cycle.start && issue.coverage_end === cycle.end) return issue;
+const selectFinalSignals = (items) => {
+  const selected = [];
+  const selectedByChannel = new Map();
+  for (const item of [...items].sort(rankIssueSignals)) {
+    const channelId = String(item.channel_id || 'unassigned');
+    const channelCount = selectedByChannel.get(channelId) || 0;
+    if (channelCount >= maxSignalsPerChannel || selected.length >= maxSignals) continue;
+    selected.push(item);
+    selectedByChannel.set(channelId, channelCount + 1);
+  }
+  return { selected, selectedByChannel };
+};
+
+const finalizeIssue = (issue) => {
+  const eligible = eligibleForCoverage(issue.coverage_start, issue.coverage_end);
+  const { selected, selectedByChannel } = selectFinalSignals(eligible);
+  const cover = selected[0] || null;
   return {
     ...issue,
+    status: 'published',
     lifecycle: 'frozen',
-    frozen_at: issue.frozen_at || cycle.opened_at
+    frozen_at: issue.frozen_at || cycle.opened_at,
+    selection_mode: 'final_editorial_ranking',
+    cover_signal_id: cover ? String(cover.id) : '',
+    signal_ids: selected.map((item) => String(item.id)),
+    methodology: {
+      ...(issue.methodology || {}),
+      candidate_count: eligible.length,
+      selected_count: selected.length,
+      editorial_adoption_count: eligible.length,
+      cover_story_count: selected.filter((item) => item.editorial_decision === 'cover_story').length,
+      editor_review_count: selected.reduce((sum, item) => sum + Number(item.ranking?.editor_review_count || 0), 0),
+      qualified_reader_feedback_count: selected.reduce((sum, item) => sum + Number(item.ranking?.reader_feedback_count || 0), 0),
+      selected_by_channel: Object.fromEntries(selectedByChannel),
+      final_issue_max_signals: maxSignals,
+      final_channel_max_signals: maxSignalsPerChannel,
+      finalized: true,
+      fixed_length: false
+    }
   };
+};
+
+const normalizedIssues = issues.map((issue) => {
+  if (issue?.lifecycle !== 'live') return issue;
+  if (issue.coverage_start === cycle.start && issue.coverage_end === cycle.end) return issue;
+  return finalizeIssue(issue);
 });
-const currentIndex = frozenIssues.findIndex((issue) => issue.coverage_start === cycle.start && issue.coverage_end === cycle.end);
-const currentExisting = currentIndex >= 0 ? frozenIssues[currentIndex] : null;
-const maxIssueNumber = frozenIssues.reduce((max, issue) => Math.max(max, Number(issue.issue_number || 0)), 0);
+
+const eligible = eligibleForCoverage(cycle.start, cycle.end);
+const liveSelected = [...eligible].sort(rankIssueSignals);
+const liveSelectedByChannel = channelCounts(liveSelected);
+const currentIndex = normalizedIssues.findIndex((issue) => issue.coverage_start === cycle.start && issue.coverage_end === cycle.end);
+const currentExisting = currentIndex >= 0 ? normalizedIssues[currentIndex] : null;
+const maxIssueNumber = normalizedIssues.reduce((max, issue) => Math.max(max, Number(issue.issue_number || 0)), 0);
 const issueNumber = Number(currentExisting?.issue_number || (maxIssueNumber + 1));
-const cover = selected[0] || null;
-const selectedIds = selected.map((item) => String(item.id));
+const cover = liveSelected[0] || null;
+const selectedIds = liveSelected.map((item) => String(item.id));
 const issue = {
   ...(currentExisting || {}),
   id: currentExisting?.id || `${edition.id}-${cycle.year}-${pad2(issueNumber)}`,
@@ -101,32 +143,36 @@ const issue = {
   lifecycle: 'live',
   frozen_at: null,
   auto_generated: true,
-  selection_mode: 'live_editorial_ranking',
+  selection_mode: 'live_editorial_evaluation',
   edition_version: edition.schema_version,
   title: cover?.title || `Issue ${issueNumber} · 本期编选中`,
   standfirst: cover
     ? `${cover.short_summary || cover.long_summary || ''} 本期持续追踪相关进展，封面与篇目将随重要性更新。`
     : '本期已进入出版周期。重要进展将在完成编辑审阅后陆续进入本期。',
-  judgment: selected.length
-    ? '本期关注正在发生的关键变化；当前封面聚焦此刻最具影响力的进展，后续重大事件可能改变版面重点。'
-    : '本期尚无入选文章，编辑部持续追踪关键进展。',
+  judgment: liveSelected.length
+    ? '本期刊期仍在开放评估中；所有已录用进展均向读者与编辑开放，封面与最终篇目将在刊期结束时按重要性收敛。'
+    : '本期尚无已录用文章，编辑部持续追踪关键进展。',
   cover_signal_id: cover ? String(cover.id) : '',
   signal_ids: selectedIds,
   storyline_updates: [],
   what_to_watch: (edition.storylines || []).flatMap((storyline) => storyline.watch_for || []).slice(0, 3),
   ranking: {
-    version: 'live-v2',
-    policy: 'chief_cover_then_evidence_quality_then_editor_consensus_then_reader_signal_then_recency',
+    version: 'live-v3',
+    policy: 'all_adopted_visible_until_freeze_then_chief_cover_then_evidence_quality_then_editor_consensus_then_reader_signal_then_recency',
     authority_order: ['evidence_gate', 'editor_in_chief', 'editor_consensus', 'reader_consensus']
   },
   methodology: {
     candidate_count: eligible.length,
-    selected_count: selected.length,
+    selected_count: liveSelected.length,
     editorial_adoption_count: eligible.length,
-    cover_story_count: selected.filter((item) => item.editorial_decision === 'cover_story').length,
-    editor_review_count: selected.reduce((sum, item) => sum + Number(item.ranking?.editor_review_count || 0), 0),
-    qualified_reader_feedback_count: selected.reduce((sum, item) => sum + Number(item.ranking?.reader_feedback_count || 0), 0),
-    selected_by_channel: Object.fromEntries(selectedByChannel),
+    evaluation_pool_count: liveSelected.length,
+    cover_story_count: liveSelected.filter((item) => item.editorial_decision === 'cover_story').length,
+    editor_review_count: liveSelected.reduce((sum, item) => sum + Number(item.ranking?.editor_review_count || 0), 0),
+    qualified_reader_feedback_count: liveSelected.reduce((sum, item) => sum + Number(item.ranking?.reader_feedback_count || 0), 0),
+    selected_by_channel: Object.fromEntries(liveSelectedByChannel),
+    final_issue_max_signals: maxSignals,
+    final_channel_max_signals: maxSignalsPerChannel,
+    finalized: false,
     fixed_length: false,
     editorial_view_changed: false
   }
@@ -142,13 +188,13 @@ if (semanticChanged) issue.updated_at = now.toISOString();
 else if (currentExisting?.updated_at) issue.updated_at = currentExisting.updated_at;
 
 const nextIssues = currentIndex >= 0
-  ? frozenIssues.map((entry, index) => index === currentIndex ? issue : entry)
-  : [issue, ...frozenIssues];
+  ? normalizedIssues.map((entry, index) => index === currentIndex ? issue : entry)
+  : [issue, ...normalizedIssues];
 nextIssues.sort((a, b) => new Date(b.coverage_start || b.published_at || 0).getTime() - new Date(a.coverage_start || a.published_at || 0).getTime());
 
 if (JSON.stringify(nextIssues) !== JSON.stringify(issues)) {
   await writeJson('public/data/issues.json', nextIssues);
-  console.log(`Live Issue ${issueNumber} synced: ${selected.length} Signal(s), cover ${issue.cover_signal_id || 'none'}, coverage ${cycle.start}..${cycle.end}.`);
+  console.log(`Live Issue ${issueNumber} synced: ${liveSelected.length} adopted Signal(s) visible for evaluation, cover ${issue.cover_signal_id || 'none'}, coverage ${cycle.start}..${cycle.end}. Final cap ${maxSignals}/${maxSignalsPerChannel} per channel.`);
 } else {
   console.log(`Live Issue ${issueNumber}: no semantic change.`);
 }

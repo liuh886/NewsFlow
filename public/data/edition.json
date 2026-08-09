@@ -78,8 +78,8 @@
     "minimum_quality": 8,
     "evidence_confidence_minimum": 4,
     "editorial_value_minimum": 4,
-    "max_signals_per_issue": 6,
-    "max_signals_per_channel": 4,
+    "max_signals_per_issue": 24,
+    "max_signals_per_channel": 8,
     "minimum_signals_per_channel": 0,
     "rules": [
       "publication recency alone is not novelty",
@@ -89,6 +89,8 @@
       "state explicitly when evidence does not change the editorial view",
       "classify every AI Signal by the five-layer model and allow cross-layer links when evidence connects supply to demand",
       "do not treat energy, announced chip capacity, model benchmarks or application demos as delivered end-to-end value",
+      "keep every adopted Signal visible in the live Issue so readers and editors can evaluate it before the issue freezes",
+      "apply issue and channel maximums only when the Issue freezes at the end of its publication cycle",
       "never fill a channel or issue to a fixed length"
     ]
   },
