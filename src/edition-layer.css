@@ -18,8 +18,10 @@
 .app-shell[data-product-model='magazine-edition'] .brand-name {
   overflow: hidden;
   font-family: var(--font-editorial);
-  font-size: 17px;
+  font-size: 28px;
   font-weight: 600;
+  line-height: .92;
+  letter-spacing: -0.045em;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
@@ -117,6 +119,31 @@
 .app-shell[data-product-model='magazine-edition'] .top-actions .icon-button {
   width: 36px;
   height: 36px;
+}
+
+.app-shell[data-product-model='magazine-edition'] .top-actions .nf-mode-launcher {
+  width: auto;
+  min-width: 68px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 0 10px;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  color: var(--ink);
+  background: color-mix(in srgb, var(--paper) 92%, transparent);
+}
+
+.nf-mode-launcher-label {
+  font: 700 9px/1 var(--font-mono, monospace);
+  letter-spacing: .08em;
+}
+
+.app-shell[data-product-model='magazine-edition'] .nf-mode-launcher[data-newsflow-role='editor'],
+.app-shell[data-product-model='magazine-edition'] .nf-mode-launcher[data-newsflow-role='chief'] {
+  border-color: color-mix(in srgb, var(--signal) 55%, var(--line));
+  color: var(--signal);
 }
 
 .app-shell[data-product-model='magazine-edition'] .mobile-menu-button {
@@ -562,6 +589,16 @@
   font-size: 9px;
 }
 
+.app-shell[data-product-model='magazine-edition'] .article-card[data-channel-id='ccus-energy-transition'] .article-index,
+.app-shell[data-product-model='magazine-edition'] .issue-signal-link[data-channel-id='ccus-energy-transition'] > span:first-child {
+  color: var(--live);
+}
+
+.app-shell[data-product-model='magazine-edition'] .article-card[data-channel-id='ai-infrastructure'] .article-index,
+.app-shell[data-product-model='magazine-edition'] .issue-signal-link[data-channel-id='ai-infrastructure'] > span:first-child {
+  color: var(--signal);
+}
+
 .app-shell[data-product-model='magazine-edition'] .feed-list.grid .article-index {
   display: block;
 }
@@ -947,7 +984,7 @@
     display: none;
   }
   .app-shell[data-product-model='magazine-edition'] .top-actions { padding-right: 0; }
-  .app-shell[data-product-model='magazine-edition'] .brand-name { font-size: 16px; }
+  .app-shell[data-product-model='magazine-edition'] .brand-name { font-size: 23px; }
   .app-shell[data-product-model='magazine-edition'] .workspace { padding-inline: 17px; }
   .app-shell[data-product-model='magazine-edition'] .masthead { padding: 20px 0 25px; }
   .app-shell[data-product-model='magazine-edition'] .masthead-title {

@@ -372,6 +372,97 @@ html.nf-review-game-open body {
   cursor: default;
 }
 
+.nf-review-header-actions > .nf-review-mode-button {
+  padding-inline: 12px;
+  border: 1px solid var(--nf-review-line);
+  border-radius: 999px;
+  color: var(--nf-review-ink);
+  background: var(--nf-review-paper-raised);
+}
+
+.nf-review-shortcut-guide {
+  position: fixed;
+  z-index: 8;
+  top: 82px;
+  right: clamp(16px, 3vw, 40px);
+  width: min(330px, calc(100vw - 32px));
+  padding: 20px;
+  border: 1px solid var(--nf-review-line);
+  color: var(--nf-review-ink);
+  background: var(--nf-review-paper-raised);
+  box-shadow: 10px 12px 0 color-mix(in srgb, var(--nf-review-line) 24%, transparent);
+}
+
+.nf-review-shortcut-guide > div {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 4px 12px;
+  padding-bottom: 14px;
+  border-bottom: 3px double var(--nf-review-ink);
+}
+
+.nf-review-shortcut-guide > div > span {
+  grid-column: 1;
+  color: var(--nf-review-red);
+  font: 700 8px/1 var(--font-mono, monospace);
+  letter-spacing: .12em;
+}
+
+.nf-review-shortcut-guide h2 {
+  grid-column: 1;
+  margin: 3px 0 0;
+  font: 600 28px/1 var(--font-editorial, Georgia, serif);
+}
+
+.nf-review-shortcut-guide > div > button {
+  grid-column: 2;
+  grid-row: 1 / 3;
+  width: 34px;
+  height: 34px;
+  border: 1px solid var(--nf-review-line);
+  border-radius: 50%;
+  color: inherit;
+  background: transparent;
+  cursor: pointer;
+  font-size: 20px;
+}
+
+.nf-review-shortcut-guide dl {
+  margin: 14px 0 0;
+}
+
+.nf-review-shortcut-guide dl > div {
+  display: grid;
+  grid-template-columns: 110px 1fr;
+  align-items: center;
+  min-height: 38px;
+  border-bottom: 1px solid color-mix(in srgb, var(--nf-review-line) 58%, transparent);
+}
+
+.nf-review-shortcut-guide dl > div:last-child {
+  border-bottom: 0;
+}
+
+.nf-review-shortcut-guide dt {
+  display: flex;
+  gap: 5px;
+}
+
+.nf-review-shortcut-guide kbd {
+  min-width: 30px;
+  padding: 5px 7px;
+  border: 1px solid var(--nf-review-line);
+  border-radius: 4px;
+  background: var(--nf-review-paper);
+  font: 700 9px/1 var(--font-mono, monospace);
+  text-align: center;
+}
+
+.nf-review-shortcut-guide dd {
+  margin: 0;
+  font: 600 12px/1.3 var(--font-ui, system-ui, sans-serif);
+}
+
 .nf-review-stage {
   position: relative;
   min-height: 0;
@@ -564,27 +655,198 @@ html.nf-review-game-open body {
 }
 
 .nf-review-decision:hover,
-.nf-review-decision:focus-visible {
+.nf-review-decision:focus-visible,
+.nf-review-decision.is-keyboard-selected {
   color: var(--nf-review-paper);
   background: var(--nf-review-ink);
   outline: none;
 }
 
+.nf-review-overview-stage {
+  min-height: 0;
+  overflow: auto;
+  padding: clamp(18px, 3vw, 38px);
+}
+
+.nf-review-overview-card {
+  width: min(1220px, 100%);
+  min-height: min(640px, calc(100dvh - 190px));
+  margin: 0 auto;
+  padding: clamp(26px, 4vw, 52px);
+  border: 1px solid var(--nf-review-line);
+  background: var(--nf-review-paper-raised);
+  box-shadow: 0 20px 62px rgba(43, 31, 23, 0.11);
+}
+
+.nf-review-overview-heading {
+  display: flex;
+  align-items: end;
+  justify-content: space-between;
+  gap: 28px;
+  padding-bottom: 25px;
+  border-bottom: 4px double var(--nf-review-ink);
+}
+
+.nf-review-overview-heading span,
+.nf-review-overview-queue header span {
+  color: var(--nf-review-red);
+  font: 700 8px/1.3 var(--font-mono, monospace);
+  letter-spacing: .1em;
+}
+
+.nf-review-overview-heading h1 {
+  margin: 5px 0 0;
+  font: 600 clamp(34px, 5vw, 58px)/.96 var(--font-editorial, Georgia, serif);
+  letter-spacing: -.045em;
+}
+
+.nf-review-overview-heading p {
+  margin: 12px 0 0;
+  color: var(--nf-review-muted);
+  font: 500 14px/1.5 var(--font-editorial, Georgia, serif);
+}
+
+.nf-review-overview-heading button {
+  min-width: 128px;
+  min-height: 42px;
+  border: 1px solid var(--nf-review-ink);
+  color: var(--nf-review-paper);
+  background: var(--nf-review-ink);
+  cursor: pointer;
+  font: 700 10px/1 var(--font-ui, system-ui, sans-serif);
+}
+
+.nf-review-overview-heading button:disabled {
+  opacity: .48;
+  cursor: default;
+}
+
+.nf-review-overview-stats {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  border-bottom: 1px solid var(--nf-review-line);
+}
+
+.nf-review-overview-stats > div {
+  min-width: 0;
+  padding: 20px 18px 18px 0;
+  border-right: 1px solid var(--nf-review-line);
+}
+
+.nf-review-overview-stats > div + div {
+  padding-left: 18px;
+}
+
+.nf-review-overview-stats > div:last-child {
+  border-right: 0;
+}
+
+.nf-review-overview-stats span,
+.nf-review-overview-stats small {
+  display: block;
+  color: var(--nf-review-muted);
+  font: 700 8px/1.4 var(--font-mono, monospace);
+}
+
+.nf-review-overview-stats strong {
+  display: block;
+  margin: 6px 0 4px;
+  font: 600 38px/1 var(--font-editorial, Georgia, serif);
+}
+
+.nf-review-overview-queue {
+  margin-top: 28px;
+}
+
+.nf-review-overview-queue > header {
+  display: flex;
+  align-items: end;
+  justify-content: space-between;
+  gap: 20px;
+  padding-bottom: 12px;
+  border-bottom: 2px solid var(--nf-review-ink);
+}
+
+.nf-review-overview-queue h2 {
+  margin: 4px 0 0;
+  font: 600 24px/1.05 var(--font-editorial, Georgia, serif);
+}
+
+.nf-review-overview-list > button {
+  width: 100%;
+  display: grid;
+  grid-template-columns: 34px minmax(0, 1fr) 74px;
+  align-items: center;
+  gap: 14px;
+  min-height: 64px;
+  padding: 10px 8px;
+  border: 0;
+  border-bottom: 1px solid var(--nf-review-line);
+  color: var(--nf-review-ink);
+  background: transparent;
+  cursor: pointer;
+  text-align: left;
+}
+
+.nf-review-overview-list > button:hover,
+.nf-review-overview-list > button:focus-visible {
+  background: color-mix(in srgb, var(--nf-review-gold) 7%, transparent);
+  outline: none;
+}
+
+.nf-review-overview-list > button > span:first-child,
+.nf-review-overview-list small {
+  color: var(--nf-review-muted);
+  font: 700 8px/1.45 var(--font-mono, monospace);
+}
+
+.nf-review-overview-list strong,
+.nf-review-overview-list small {
+  display: block;
+}
+
+.nf-review-overview-list strong {
+  overflow: hidden;
+  font: 600 15px/1.3 var(--font-editorial, Georgia, serif);
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.nf-review-overview-list em {
+  justify-self: end;
+  color: var(--nf-review-muted);
+  font: 700 9px/1 var(--font-mono, monospace);
+  font-style: normal;
+}
+
+.nf-review-overview-list em.is-pending { color: var(--nf-review-red); }
+.nf-review-overview-list em.is-reviewed,
+.nf-review-overview-list em.is-accept { color: var(--nf-review-green); }
+.nf-review-overview-list em.is-cover_story { color: var(--nf-review-gold); }
+.nf-review-overview-list em.is-minor_revision { color: var(--nf-review-blue); }
+
 .nf-review-decision.is-cover_story:hover,
-.nf-review-decision.is-cover_story:focus-visible { background: var(--nf-review-gold); }
+.nf-review-decision.is-cover_story:focus-visible,
+.nf-review-decision.is-cover_story.is-keyboard-selected { background: var(--nf-review-gold); }
 .nf-review-decision.is-accept:hover,
-.nf-review-decision.is-accept:focus-visible { background: var(--nf-review-green); }
+.nf-review-decision.is-accept:focus-visible,
+.nf-review-decision.is-accept.is-keyboard-selected { background: var(--nf-review-green); }
 .nf-review-decision.is-minor_revision:hover,
-.nf-review-decision.is-minor_revision:focus-visible { background: var(--nf-review-blue); }
+.nf-review-decision.is-minor_revision:focus-visible,
+.nf-review-decision.is-minor_revision.is-keyboard-selected { background: var(--nf-review-blue); }
 .nf-review-decision.is-major_revision:hover,
 .nf-review-decision.is-major_revision:focus-visible,
+.nf-review-decision.is-major_revision.is-keyboard-selected,
 .nf-review-decision.is-reject:hover,
-.nf-review-decision.is-reject:focus-visible { background: var(--nf-review-red); }
+.nf-review-decision.is-reject:focus-visible,
+.nf-review-decision.is-reject.is-keyboard-selected { background: var(--nf-review-red); }
 
 .nf-review-decision:hover span,
 .nf-review-decision:focus-visible span,
+.nf-review-decision.is-keyboard-selected span,
 .nf-review-decision:hover kbd,
-.nf-review-decision:focus-visible kbd {
+.nf-review-decision:focus-visible kbd,
+.nf-review-decision.is-keyboard-selected kbd {
   color: inherit;
 }
 
@@ -766,13 +1028,24 @@ html.nf-review-game-open body {
 }
 
 .nf-review-archive-card {
+  width: min(1320px, 100%);
   min-height: min(590px, calc(100dvh - 250px));
   padding: clamp(24px, 3.4vw, 42px);
   overflow: auto;
 }
 
-.nf-review-archive-list {
+.nf-review-archive-workspace {
+  display: grid;
+  grid-template-columns: minmax(320px, .78fr) minmax(0, 1.22fr);
+  gap: clamp(28px, 3.4vw, 52px);
+  align-items: start;
   margin-top: 16px;
+}
+
+.nf-review-archive-list {
+  max-height: min(620px, calc(100dvh - 310px));
+  overflow: auto;
+  border-top: 1px solid var(--nf-review-line);
   border-bottom: 1px solid var(--nf-review-line);
 }
 
@@ -839,9 +1112,9 @@ html.nf-review-game-open body {
   display: grid;
   grid-template-columns: minmax(0, 1fr) 210px;
   gap: 28px;
-  margin-top: 22px;
-  padding-top: 22px;
-  border-top: 4px double var(--nf-review-ink);
+  min-width: 0;
+  padding-left: clamp(24px, 3vw, 44px);
+  border-left: 4px double var(--nf-review-ink);
 }
 
 .nf-review-archive-detail h2 {
@@ -1063,6 +1336,19 @@ html.nf-review-game-open body {
     padding: 0 5px;
   }
 
+  .nf-review-header-actions > .nf-review-mode-button {
+    max-width: 92px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .nf-review-shortcut-guide {
+    top: 68px;
+    right: 10px;
+    width: min(310px, calc(100vw - 20px));
+  }
+
   .nf-review-stage {
     padding: 12px 10px 8px;
     align-items: start;
@@ -1169,6 +1455,52 @@ html.nf-review-game-open body {
     padding: 22px 16px 26px 22px;
   }
 
+  .nf-review-overview-stage {
+    padding: 10px;
+  }
+
+  .nf-review-overview-card {
+    min-height: calc(100dvh - 132px);
+    padding: 24px 18px;
+    box-shadow: none;
+  }
+
+  .nf-review-overview-heading {
+    align-items: stretch;
+    flex-direction: column;
+    gap: 18px;
+  }
+
+  .nf-review-overview-heading button {
+    width: 100%;
+  }
+
+  .nf-review-overview-stats {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .nf-review-overview-stats > div:nth-child(2) {
+    border-right: 0;
+  }
+
+  .nf-review-overview-stats > div:nth-child(n + 3) {
+    border-top: 1px solid var(--nf-review-line);
+  }
+
+  .nf-review-overview-list > button {
+    grid-template-columns: 25px minmax(0, 1fr) 56px;
+    gap: 8px;
+  }
+
+  .nf-review-archive-workspace {
+    grid-template-columns: 1fr;
+    gap: 24px;
+  }
+
+  .nf-review-archive-list {
+    max-height: 38dvh;
+  }
+
   .nf-review-archive-row {
     grid-template-columns: 25px minmax(0, 1fr) 66px;
     gap: 8px;
@@ -1189,6 +1521,9 @@ html.nf-review-game-open body {
 
   .nf-review-archive-detail {
     grid-template-columns: 1fr;
+    padding: 22px 0 0;
+    border-top: 4px double var(--nf-review-ink);
+    border-left: 0;
   }
 
   .nf-review-archive-detail aside {

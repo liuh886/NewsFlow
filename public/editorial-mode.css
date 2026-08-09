@@ -87,6 +87,31 @@ html.nf-mode-dialog-open body {
   font: 500 18px/1.6 var(--font-editorial, Georgia, serif);
 }
 
+.nf-mode-current {
+  display: flex;
+  align-items: baseline;
+  gap: 12px;
+  margin: -8px 0 22px;
+  padding: 11px 0;
+  border-block: 1px solid var(--nf-mode-line);
+}
+
+.nf-mode-current span,
+.nf-mode-current small {
+  color: var(--nf-mode-muted);
+  font: 700 8px/1 var(--font-mono, monospace);
+  letter-spacing: .1em;
+}
+
+.nf-mode-current strong {
+  color: var(--nf-mode-red);
+  font: 600 24px/1 var(--font-editorial, Georgia, serif);
+}
+
+.nf-mode-current small {
+  margin-left: auto;
+}
+
 .nf-mode-close {
   width: 40px;
   height: 40px;
@@ -126,6 +151,16 @@ html.nf-mode-dialog-open body {
 .nf-mode-card.is-selected {
   border-color: var(--nf-mode-red);
   outline: none;
+}
+
+.nf-mode-card.is-locked {
+  border-style: dashed;
+}
+
+.nf-mode-card.is-locked > b {
+  color: var(--nf-mode-paper);
+  border-color: var(--nf-mode-red);
+  background: var(--nf-mode-red);
 }
 
 .nf-mode-number {

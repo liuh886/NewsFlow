@@ -31,14 +31,16 @@ for (const retired of ['guest-editor', 'review-candidates.json', 'pipeline-revie
 }
 
 for (const contract of [
-  'const REACTION_HOLD_MS = 3000', 'const openFormal = async', 'const renderReview = () =>', 'const renderDecisionBar = (disabled = false) =>',
+  'const REACTION_HOLD_MS = 3000', 'const openFormal = async', 'const openOverview = async', 'const renderOverview = () =>', 'const renderReview = () =>', 'const renderDecisionBar = (disabled = false) =>',
   "from('newsflow_candidates')", "from('newsflow_editorial_reviews')", "onConflict: 'candidate_id,reviewer_user_id'",
   "state.editorialRole === 'editor_in_chief'", 'opinionCounts', '尚无其他编辑完成本稿评议',
   'countdown: 3', 'nf-review-countdown', 'window.setTimeout(advance, REACTION_HOLD_MS)',
   'window.NewsFlowReviewGame', 'editor_review_game_open', 'editor_review_decision', 'newsflow:switch-role',
   "from('newsflow_editorial_consensus')", "from('newsflow_editorial_withdrawals')", "from('newsflow_editorial_events')",
   "client.rpc('newsflow_withdraw_candidate'", "client.rpc('newsflow_restore_withdrawn_candidate'",
-  '决定档案', '退稿库', 'editorial_boost', 'reader_boost'
+  '决定档案', '退稿库', '编辑部总览', '信号与处理状态', 'editorial_boost', 'reader_boost',
+  "event.key === 'ArrowLeft'", "event.key === 'ArrowRight'", "event.key === 'ArrowUp'", "event.key === 'ArrowDown'",
+  "event.key === 'Enter'", 'renderShortcutGuide', 'is-keyboard-selected', '切换稿件', '确认当前裁决'
 ]) if (!game.includes(contract)) throw new Error(`review game missing contract: ${contract}`);
 if (game.includes('localStorage') || game.includes('saveProductData') || game.includes('FORMAL_STORAGE_KEY')) {
   throw new Error('Review decisions must live only in normalized Supabase review rows.');
@@ -53,15 +55,16 @@ if (mode.includes("id: 'accept'") || mode.includes('renderDesk') || mode.include
 for (const contract of [
   "const MODE_STORAGE_KEY = 'newsflow_mode_v3'", "const INVITE_PARAM = 'editor-invite'",
   "from('newsflow_editorial_members')", "from('newsflow_editorial_invitations')", "role: 'editor'",
-  "roleCard('reader'", "roleCard('editor'", '编辑模式需要主编任命',
+  "roleCard('reader'", "roleCard('editor'", '编辑模式属于 NewsFlow Pro',
   'window.NewsFlowReviewGame?.isOpen?.()', 'window.NewsFlowReviewGame?.openFormal?.()', 'createEditorInvite', 'openGovernance',
   'syncModeLauncher', '[data-action="open-editorial-office"]', 'window.NewsFlowMode',
-  '同步获得 3 个月 NewsFlow Pro', 'window.HaoAccount?.refresh?.()'
+  '同步获得 3 个月 NewsFlow Pro', 'window.HaoAccount?.refresh?.()', "window.HaoAccount?.can?.('newsflow.pro')", "action === 'upgrade'",
+  'nf-mode-launcher-label', 'nf-mode-current', '当前为读者模式，打开模式切换'
 ]) if (!mode.includes(contract)) throw new Error(`mode controller missing contract: ${contract}`);
 if (mode.includes('data-editorial-role-trigger') || mode.includes('nf-mode-trigger')) {
   throw new Error('Mode controller must reuse the canonical editorial launcher instead of mounting a role-sized header control.');
 }
-if (!loader.includes("launcher.style.display = 'grid'") || loader.includes('roleTrigger')) {
+if (!loader.includes("launcher.style.display = 'inline-flex'") || !loader.includes('cachedMode') || loader.includes('roleTrigger')) {
   throw new Error('Editorial loader must preserve one fixed canonical launcher across lazy-runtime state changes.');
 }
 if (mode.includes('syncFormalEditorialState') || mode.includes('FORMAL_STORAGE_KEY')) throw new Error('Mode controller must not persist a second editorial decision store.');
@@ -72,11 +75,11 @@ if (mode.includes("void syncModePreference('editor')") || mode.includes('window.
 for (const selector of [
   '.nf-review-stack', '.nf-review-card', '.nf-review-decision-bar', 'grid-template-columns: repeat(5',
   '.nf-review-stamp', '.nf-review-countdown', 'zoom: 0.8', 'overflow: hidden',
-  '.nf-review-tabs', '.nf-review-archive-card', '.nf-review-withdrawal-dialog',
+  '.nf-review-tabs', '.nf-review-archive-card', '.nf-review-archive-workspace', '.nf-review-overview-card', '.nf-review-overview-stats', '.nf-review-withdrawal-dialog', '.nf-review-shortcut-guide',
   '@media (min-width: 761px)', '@media (max-width: 760px)', '@media (prefers-reduced-motion: reduce)'
 ]) if (!gameCss.includes(selector)) throw new Error(`review game CSS missing ${selector}`);
 if (gameCss.includes('.nf-settlement')) throw new Error('Retired local Issue settlement CSS must be deleted.');
-for (const selector of ['.nf-mode-dialog', '.nf-mode-grid', '@media (max-width: 720px)']) if (!modeCss.includes(selector)) throw new Error(`mode CSS missing ${selector}`);
+for (const selector of ['.nf-mode-dialog', '.nf-mode-grid', '.nf-mode-current', '@media (max-width: 720px)']) if (!modeCss.includes(selector)) throw new Error(`mode CSS missing ${selector}`);
 if (modeCss.includes('.nf-mode-trigger')) throw new Error('Obsolete role trigger CSS must be deleted.');
 
 if (!sw.includes("versioned('./editorial-loader.js')")) throw new Error('service worker must cache the small editorial loader.');

@@ -44,6 +44,7 @@ for (const contract of [
   "'NewsArticle'",
   "'PublicationIssue'",
   "resolve(dist, 'feed.xml')",
+  "resolve(dist, 'rss.xml')",
   "resolve(dist, 'sitemap.xml')",
   "resolve(dist, 'robots.txt')",
   "replaceAll('__NEWSFLOW_VERSION__', appVersion)"
@@ -60,7 +61,7 @@ for (const contract of ['ensureMobileReaderSearch', 'syncEditionDialogAccessibil
 for (const contract of ['./editorial-mode.css', './review-game.css', './editorial-governance.css', './review-game.js', './editorial-governance.js', './editorial-office.js']) {
   assert(loader.includes(contract), `Editorial lazy loader missing asset: ${contract}`);
 }
-for (const contract of ['syncEditorialEntry', 'data-action="open-editorial-office"', "launcher.style.display = 'grid'", 'newsflow:edition-rendered', '进入审稿模式']) {
+for (const contract of ['syncEditorialEntry', 'data-action="open-editorial-office"', "launcher.style.display = 'inline-flex'", 'newsflow:edition-rendered', '当前为读者模式']) {
   assert(loader.includes(contract), `Editorial lazy loader missing reachable mode-switch contract: ${contract}`);
 }
 assert(!loader.includes('roleTrigger'), 'Editorial lazy loader must not swap the canonical launcher for a role-sized header control.');

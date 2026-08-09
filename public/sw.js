@@ -25,6 +25,7 @@ const APP_SHELL = [
   './icon.svg',
   './manifest.webmanifest',
   './feed.xml',
+  './rss.xml',
   './data/topics.json',
   './data/news.json',
   './data/edition.json',
@@ -101,7 +102,7 @@ self.addEventListener('fetch', (event) => {
     event.respondWith(networkFirst(event.request, './index.html'));
     return;
   }
-  if (url.pathname.includes('/data/') || url.pathname.endsWith('/feed.xml')) {
+  if (url.pathname.includes('/data/') || url.pathname.endsWith('/feed.xml') || url.pathname.endsWith('/rss.xml')) {
     event.respondWith(networkFirst(event.request));
     return;
   }

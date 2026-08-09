@@ -19,8 +19,8 @@
       en: 'NewsFlow account',
     },
     description: {
-      zh: '读者可持续阅读公开刊物；编辑席位由主编任命并要求 NewsFlow Pro。接受编辑邀请时会同步获得 3 个月 NewsFlow Pro。',
-      en: 'Readers keep access to the public journal. Editorial seats are appointed by the Editor-in-Chief and require NewsFlow Pro; accepting an editor invitation includes three months of NewsFlow Pro.',
+      zh: '公开期刊保持开放；NewsFlow Pro 可进入编辑部提交评议，受邀编辑同步获得 3 个月 Pro，主编仍拥有唯一最终出版权。',
+      en: 'The public journal remains open. NewsFlow Pro can submit editorial reviews, invited editors receive three months of Pro, and the Editor-in-Chief retains sole publication authority.',
     },
     privacyNote: {
       zh: '公开 Edition、信号流与 GitHub 出版流程保持开放；Pro 只控制编辑工作区访问，不改变正式事实记录。',
@@ -28,7 +28,7 @@
     },
     features: [
       { zh: 'Free：阅读正式刊物与公开信号流', en: 'Free: read formal editions and public signals' },
-      { zh: 'Pro + 任命：进入编辑部、审稿与决策档案', en: 'Pro + appointment: access the editorial office, reviews, and decision archive' },
+      { zh: 'NewsFlow Pro 解锁编辑评议权限与决策档案', en: 'NewsFlow Pro unlocks editorial review and the decision archive' },
       { zh: '接受编辑邀请赠送 3 个月 NewsFlow Pro', en: 'Editor invitations include three months of NewsFlow Pro' },
     ],
     feedbackEnabled: true,

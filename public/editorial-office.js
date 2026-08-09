@@ -30,8 +30,10 @@
     || state.account?.user?.user_metadata?.full_name
     || state.account?.user?.email
     || 'NewsFlow Member';
-  const isEditorialMember = () => ['editor_in_chief', 'editor'].includes(state.editorialRole);
   const isChief = () => state.editorialRole === 'editor_in_chief';
+  const isPro = () => state.account?.isPro === true || window.HaoAccount?.can?.('newsflow.pro') === true;
+  const isEditorialMember = () => isChief() || isPro();
+  const activeModeLabel = () => state.mode === 'editor' ? (isChief() ? '主编' : '编辑') : '读者';
 
   const ensureRoot = () => {
     let root = document.getElementById(ROOT_ID);
@@ -116,7 +118,7 @@
     if (!rawToken) return false;
     state.handlingInvite = true;
     try {
-      if (isEditorialMember()) {
+      if (['editor_in_chief', 'editor'].includes(state.editorialRole)) {
         clearInviteParam();
         return true;
       }
@@ -171,7 +173,7 @@
       return;
     }
     if (!isEditorialMember()) {
-      state.notice = '编辑模式需要主编任命。读者不能自行取得审稿权限。';
+      state.notice = '编辑模式属于 NewsFlow Pro。开通 Pro，或接受主编任命后即可进入；编辑意见不会自动出版。';
       state.dialogOpen = true;
       renderDialog();
       return;
@@ -196,7 +198,7 @@
   const setMode = async (mode) => {
     if (!['reader', 'editor'].includes(mode)) return;
     if (mode === 'editor' && !isEditorialMember()) {
-      state.notice = '编辑模式需要主编任命。';
+      state.notice = '编辑模式属于 NewsFlow Pro。开通 Pro，或接受主编任命后即可进入。';
       renderDialog();
       return;
     }
@@ -225,11 +227,12 @@
     const footnote = isChief()
       ? '最终出版权 · 可维护 Edition、长期议题、信源与编辑席位。'
       : '评审权 · 没有正式出版权。';
+    const available = isEditorialMember();
     return `
-      <button class="nf-mode-card ${state.mode === 'editor' ? 'is-selected' : ''} ${isEditorialMember() ? '' : 'is-locked'}" ${isEditorialMember() ? 'data-mode-action="choose" data-role="editor"' : 'disabled'}>
+      <button class="nf-mode-card ${state.mode === 'editor' ? 'is-selected' : ''} ${available ? '' : 'is-locked'}" ${available ? 'data-mode-action="choose" data-role="editor"' : 'data-mode-action="upgrade"'}>
         <span class="nf-mode-number">02</span>
         <span class="nf-mode-copy"><span>${english}</span><strong>${title}</strong><em>${description}</em><small>${footnote}</small></span>
-        <b>${state.loadingRole ? '核验中' : isEditorialMember() ? (state.mode === 'editor' ? '当前模式' : '进入') : '需要任命'}</b>
+        <b>${state.loadingRole ? '核验中' : available ? (state.mode === 'editor' ? '进入审稿' : '进入') : '开通 Pro'}</b>
       </button>`;
   };
 
@@ -245,10 +248,11 @@
       <section class="nf-mode-dialog" role="dialog" aria-modal="true" aria-labelledby="nf-mode-title">
         <header><div><span>FRONTIER SYSTEMS REVIEW</span><h2 id="nf-mode-title">你以什么身份进入编辑部？</h2></div><button class="nf-mode-close" data-mode-action="close" aria-label="关闭">×</button></header>
         <p>欢迎，${escapeHtml(accountName())}。机器负责收集，编辑负责评议，主编负责出版；读者只看到主编已经采用的内容。</p>
+        <div class="nf-mode-current" aria-live="polite"><span>当前模式</span><strong>${escapeHtml(activeModeLabel())}</strong><small>选择下方身份即可切换</small></div>
         ${state.notice ? `<div class="nf-mode-notice" role="status">${escapeHtml(state.notice)}</div>` : ''}
         <div class="nf-mode-grid">${roleCard('reader')}${roleCard('editor')}</div>
         ${isChief() ? '<div class="nf-mode-chief-actions"><button data-mode-action="open-governance">刊物设置</button><button data-mode-action="create-invite">任命编辑</button></div>' : ''}
-        <footer>${isChief() ? '主编拥有最终出版与刊物治理权限。' : isEditorialMember() ? '编辑意见会进入主编评审视图，但不会自动公开。' : '编辑席位只能通过主编签发的任命链接获得。'}</footer>
+        <footer>${isChief() ? '主编拥有最终出版与刊物治理权限。' : isEditorialMember() ? 'NewsFlow Pro 与受邀编辑可提交评议；编辑意见不会自动公开。' : '开通 NewsFlow Pro 可获得编辑权限；受邀编辑同时获赠 3 个月 Pro。'}</footer>
       </section>`;
     document.documentElement.classList.add('nf-mode-dialog-open');
     window.dispatchEvent(new CustomEvent('newsflow:editorial-rendered'));
@@ -259,13 +263,15 @@
     const launcher = document.querySelector('.top-actions > [data-action="open-editorial-office"]');
     if (!launcher) return;
     const role = state.mode === 'editor' && isChief() ? 'chief'
-      : state.mode === 'editor' && state.editorialRole === 'editor' ? 'editor'
+      : state.mode === 'editor' && isEditorialMember() ? 'editor'
         : 'reader';
+    const label = launcher.querySelector('.nf-mode-launcher-label');
+    if (label) label.textContent = role === 'chief' ? '主编' : role === 'editor' ? '编辑' : '读者';
     launcher.dataset.newsflowRole = role;
     launcher.setAttribute('aria-label', role === 'chief'
-      ? '进入主编审稿模式'
-      : role === 'editor' ? '进入编辑审稿模式' : '选择 NewsFlow 身份');
-    launcher.title = role === 'chief' ? '主编审稿模式' : role === 'editor' ? '编辑审稿模式' : '选择身份';
+      ? '当前为主编模式，打开模式切换'
+      : role === 'editor' ? '当前为编辑模式，打开模式切换' : '当前为读者模式，打开模式切换');
+    launcher.title = `当前：${role === 'chief' ? '主编' : role === 'editor' ? '编辑' : '读者'}模式`;
   }
 
   const hydrateAccount = async (snapshot) => {
@@ -306,6 +312,12 @@
     if (!target) return;
     const action = target.dataset.modeAction;
     if (action === 'choose') await setMode(target.dataset.role || '');
+    else if (action === 'upgrade') {
+      state.dialogOpen = false;
+      state.notice = '';
+      renderDialog();
+      openAccount();
+    }
     else if (action === 'open-dialog') {
       if (!state.account?.user) openAccount();
       else { state.dialogOpen = true; renderDialog(); }
@@ -327,8 +339,23 @@
   window.addEventListener('newsflow:rendered', syncModeLauncher);
   window.addEventListener('newsflow:open-editorial-office', () => {
     if (!state.account?.user) openAccount();
-    else if (state.mode === 'editor' && isEditorialMember()) openEditorGame();
     else { state.dialogOpen = true; renderDialog(); }
+  });
+  window.addEventListener('newsflow:open-editorial-overview', () => {
+    if (!state.account?.user) {
+      openAccount();
+      return;
+    }
+    if (!isEditorialMember()) {
+      state.notice = '编辑部总览属于 NewsFlow Pro。开通 Pro，或接受主编任命后即可进入。';
+      state.dialogOpen = true;
+      renderDialog();
+      return;
+    }
+    state.mode = 'editor';
+    localStorage.setItem(modeStorageKey(), 'editor');
+    syncModeLauncher();
+    window.NewsFlowReviewGame?.openOverview?.();
   });
   window.addEventListener('newsflow:switch-role', (event) => {
     const mode = event.detail?.role === 'editor' ? 'editor' : 'reader';
@@ -348,7 +375,7 @@
 
   window.NewsFlowMode = Object.freeze({
     getRole: () => state.mode,
-    getEditorialRole: () => state.editorialRole,
+    getEditorialRole: () => isChief() ? 'editor_in_chief' : isPro() ? 'editor' : '',
     isChief,
     choose: () => { state.dialogOpen = true; renderDialog(); },
     enterEditor: openEditorGame,

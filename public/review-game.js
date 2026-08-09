@@ -37,6 +37,8 @@
     editorialRole: '',
     userId: '',
     index: 0,
+    decisionCursor: 1,
+    shortcutsOpen: false,
     reaction: null,
     archiveFilter: 'archive',
     archiveSelectionId: '',
@@ -266,6 +268,8 @@
     state.packet = [];
     state.records = [];
     state.index = 0;
+    state.decisionCursor = 1;
+    state.shortcutsOpen = false;
     state.reaction = null;
     state.archiveFilter = 'archive';
     state.archiveSelectionId = '';
@@ -288,6 +292,7 @@
       state.packet = includeReviewed
         ? state.candidates.filter((candidate) => candidate.active || state.ownReviews.has(candidate.id))
         : state.candidates.filter((candidate) => candidate.active && !state.ownReviews.has(candidate.id));
+      syncDecisionCursor();
       state.phase = state.packet.length ? 'review' : 'complete';
       track('editor_review_game_open', {
         pending_count: state.packet.length,
@@ -303,6 +308,61 @@
   };
 
   const currentCandidate = () => state.packet[state.index] || null;
+
+  const syncDecisionCursor = () => {
+    const existingDecision = state.ownReviews.get(currentCandidate()?.id)?.decision || '';
+    const existingIndex = DECISIONS.findIndex((decision) => decision.id === existingDecision);
+    state.decisionCursor = existingIndex >= 0 ? existingIndex : 1;
+  };
+
+  const openOverview = async () => {
+    resetTransientState();
+    state.phase = 'loading';
+    setOverlayOpen(true);
+    render();
+    try {
+      await loadReviewData();
+      state.phase = 'overview';
+      track('editorial_overview_open', {
+        pending_count: pendingCandidates().length,
+        total_count: state.candidates.length
+      });
+      render();
+    } catch (error) {
+      state.error = error?.message || '编辑部总览暂时无法加载。';
+      state.phase = 'error';
+      render();
+    }
+  };
+
+  const selectedDecision = () => DECISIONS[state.decisionCursor] || DECISIONS[1];
+
+  const focusSelectedDecision = () => {
+    window.requestAnimationFrame(() => {
+      ensureRoot().querySelector('.nf-review-decision.is-keyboard-selected')?.focus();
+    });
+  };
+
+  const moveDecisionCursor = (direction) => {
+    if (state.phase !== 'review' || state.busy) return;
+    state.decisionCursor = (state.decisionCursor + direction + DECISIONS.length) % DECISIONS.length;
+    render();
+    focusSelectedDecision();
+    announce(`已选择${selectedDecision().label}，按 Enter 确认。`);
+  };
+
+  const moveManuscript = (direction) => {
+    if (state.phase !== 'review' || state.busy || state.packet.length < 2) return;
+    const nextIndex = Math.max(0, Math.min(state.packet.length - 1, state.index + direction));
+    if (nextIndex === state.index) {
+      announce(direction < 0 ? '已经是第一篇稿件。' : '已经是最后一篇稿件。');
+      return;
+    }
+    state.index = nextIndex;
+    syncDecisionCursor();
+    render();
+    announce(`第 ${state.index + 1} 篇，共 ${state.packet.length} 篇。`);
+  };
 
   const persistDecision = async (candidate, decisionId) => {
     const client = await getClient();
@@ -449,6 +509,7 @@
 
   const openArchiveSection = (filter = 'archive') => {
     clearReactionTimers();
+    state.shortcutsOpen = false;
     state.archiveFilter = filter === 'rejects' ? 'rejects' : 'archive';
     const items = state.archiveFilter === 'rejects' ? rejectedCandidates() : closedCandidates();
     if (!items.some((candidate) => candidate.id === state.archiveSelectionId)) {
@@ -578,14 +639,53 @@
   const renderError = () => `<section class="nf-review-shell" role="dialog" aria-modal="true"><div class="nf-review-paper"><span class="nf-review-label">EDITORIAL DESK</span><div class="nf-review-seal">!</div><h1>审稿台暂未就绪</h1><p>${escapeHtml(state.error)}</p><div class="nf-review-actions is-centered"><button class="is-primary" data-review-action="retry">重新加载</button><button data-review-action="close-game">返回期刊</button></div></div></section>`;
 
   const renderDeskTabs = (active = 'pending') => `<nav class="nf-review-tabs" aria-label="编辑部稿件状态">
+    <button class="${active === 'overview' ? 'is-active' : ''}" data-review-action="open-overview">总览</button>
     <button class="${active === 'pending' ? 'is-active' : ''}" data-review-action="open-pending">待审稿 <b>${pendingCandidates().length}</b></button>
     <button class="${active === 'archive' ? 'is-active' : ''}" data-review-action="open-archive">决定档案 <b>${closedCandidates().length}</b></button>
     <button class="${active === 'rejects' ? 'is-active' : ''}" data-review-action="open-rejects">退稿库 <b>${rejectedCandidates().length}</b></button>
   </nav>`;
 
+  const overviewStatus = (candidate) => {
+    if (candidate.active && !state.ownReviews.has(candidate.id)) return { id: 'pending', label: '待处理' };
+    if (candidate.active && state.ownReviews.has(candidate.id)) return { id: 'reviewed', label: isChief() ? '已裁决' : '已评议' };
+    const disposition = archiveDisposition(candidate);
+    return { id: disposition.id, label: disposition.label };
+  };
+
+  const renderOverview = () => {
+    const pending = pendingCandidates();
+    const active = state.candidates.filter((candidate) => candidate.active);
+    const adopted = state.adoptions.size;
+    const rejected = rejectedCandidates();
+    const aiPending = pending.filter((candidate) => candidate.channel_id === 'ai-infrastructure').length;
+    const ccusPending = pending.filter((candidate) => candidate.channel_id === 'ccus-energy-transition').length;
+    const signals = [...state.candidates]
+      .sort((a, b) => new Date(b.date || 0).getTime() - new Date(a.date || 0).getTime())
+      .slice(0, 16);
+    return `<section class="nf-review-shell is-review is-overview" role="dialog" aria-modal="true" aria-labelledby="nf-overview-title">
+      <header class="nf-review-header"><div><strong>Frontier Systems Review</strong><span>${roleLabel()}</span></div><div class="nf-review-header-actions"><button class="nf-review-mode-button" data-review-action="switch-reader">当前：${isChief() ? '主编' : '编辑'} · 切换读者</button>${isChief() ? '<button data-review-action="open-governance">刊物设置</button><button data-review-action="open-invite">任命编辑</button>' : ''}<button class="nf-review-close" data-review-action="close-game" aria-label="返回期刊">×</button></div></header>
+      ${renderDeskTabs('overview')}
+      <main class="nf-review-overview-stage"><article class="nf-review-overview-card">
+        <div class="nf-review-overview-heading"><div><span>EDITORIAL DESK · SIGNAL BOARD</span><h1 id="nf-overview-title">编辑部总览</h1><p>先看全局，再决定下一稿。数字负责提醒，不负责替主编做决定。</p></div><button class="is-primary" data-review-action="open-pending" ${pending.length ? '' : 'disabled'}>${pending.length ? '继续审稿 →' : '本轮已清空'}</button></div>
+        <section class="nf-review-overview-stats" aria-label="编辑部状态"><div><span>待处理</span><strong>${String(pending.length).padStart(2, '0')}</strong><small>AI ${aiPending} · CCUS ${ccusPending}</small></div><div><span>活跃稿件</span><strong>${String(active.length).padStart(2, '0')}</strong><small>仍在编辑流程中</small></div><div><span>已采用</span><strong>${String(adopted).padStart(2, '0')}</strong><small>主编公开采用记录</small></div><div><span>退稿</span><strong>${String(rejected.length).padStart(2, '0')}</strong><small>保留在地下室，可复查</small></div></section>
+        <section class="nf-review-overview-queue"><header><div><span>MANUSCRIPT INDEX</span><h2>信号与处理状态</h2></div><span>最近 ${signals.length} / 共 ${state.candidates.length}</span></header>${signals.length ? `<div class="nf-review-overview-list">${signals.map((candidate, index) => {
+          const status = overviewStatus(candidate);
+          return `<button data-review-action="overview-select" data-candidate-id="${escapeHtml(candidate.id)}"><span>${String(index + 1).padStart(2, '0')}</span><span><strong>${escapeHtml(candidate.title)}</strong><small>${escapeHtml(activeStorylineTitle(candidate))} · ${escapeHtml(candidate.source || 'Editorial submission')}</small></span><em class="is-${status.id}">${escapeHtml(status.label)}</em></button>`;
+        }).join('')}</div>` : '<div class="nf-review-archive-empty"><h2>编辑台暂时没有稿件</h2><p>这不是故障，只是新闻机器难得安静了一会儿。</p></div>'}</section>
+      </article></main>
+      ${state.notice ? `<div class="nf-review-notice" role="status">${escapeHtml(state.notice)}</div>` : ''}
+      ${renderInviteDialog()}
+    </section>`;
+  };
+
   const renderDecisionBar = (disabled = false) => `<div class="nf-review-decision-bar" aria-label="编辑裁决">
-    ${DECISIONS.map((decision) => `<button class="nf-review-decision is-${decision.id}" data-review-action="decision" data-decision="${decision.id}" ${disabled || state.busy ? 'disabled' : ''}><kbd>${decision.key}</kbd><span>${decision.code}</span><strong>${decision.label}</strong></button>`).join('')}
+    ${DECISIONS.map((decision, index) => `<button class="nf-review-decision is-${decision.id} ${!disabled && index === state.decisionCursor ? 'is-keyboard-selected' : ''}" data-review-action="decision" data-decision="${decision.id}" aria-pressed="${String(!disabled && index === state.decisionCursor)}" ${disabled || state.busy ? 'disabled' : ''}><kbd>${decision.key}</kbd><span>${decision.code}</span><strong>${decision.label}</strong></button>`).join('')}
   </div>`;
+
+  const renderShortcutGuide = () => state.shortcutsOpen ? `<aside class="nf-review-shortcut-guide" aria-labelledby="nf-review-shortcut-title">
+    <div><span>KEYBOARD DESK</span><h2 id="nf-review-shortcut-title">快捷审稿</h2><button data-review-action="toggle-shortcuts" aria-label="关闭快捷键说明">×</button></div>
+    <dl><div><dt><kbd>←</kbd><kbd>→</kbd></dt><dd>切换稿件</dd></div><div><dt><kbd>↑</kbd><kbd>↓</kbd></dt><dd>选择裁决</dd></div><div><dt><kbd>Enter</kbd></dt><dd>确认当前裁决</dd></div><div><dt><kbd>1–5</kbd></dt><dd>直接裁决</dd></div><div><dt><kbd>Z</kbd></dt><dd>撤销上次裁决</dd></div></dl>
+  </aside>` : '';
 
   const formatArchiveTime = (value) => {
     const date = new Date(value || 0);
@@ -650,16 +750,18 @@
     const selectedDisposition = selected ? archiveDisposition(selected) : null;
     const selectedWithdrawal = selected ? withdrawalFor(selected.id) : null;
     return `<section class="nf-review-shell is-review is-archive" role="dialog" aria-modal="true" aria-labelledby="nf-archive-title">
-      <header class="nf-review-header"><div><strong>Frontier Systems Review</strong><span>${roleLabel()}</span></div><div class="nf-review-header-actions">${isChief() ? '<button data-review-action="open-governance">刊物设置</button><button data-review-action="open-invite">任命编辑</button>' : ''}<button class="nf-review-close" data-review-action="close-game" aria-label="返回期刊">×</button></div></header>
+      <header class="nf-review-header"><div><strong>Frontier Systems Review</strong><span>${roleLabel()}</span></div><div class="nf-review-header-actions"><button class="nf-review-mode-button" data-review-action="switch-reader">当前：${isChief() ? '主编' : '编辑'} · 切换读者</button>${isChief() ? '<button data-review-action="open-governance">刊物设置</button><button data-review-action="open-invite">任命编辑</button>' : ''}<button class="nf-review-close" data-review-action="close-game" aria-label="返回期刊">×</button></div></header>
       ${renderDeskTabs(state.archiveFilter)}
       <main class="nf-review-stage"><div class="nf-review-stack" aria-hidden="true"></div><article class="nf-review-card nf-review-archive-card">
         <div class="nf-review-card-meta"><span id="nf-archive-title">EDITORIAL ARCHIVE</span><span>${items.length} RECORDS</span></div>
-        ${items.length ? `<div class="nf-review-archive-list">${items.map((candidate, index) => {
+        <div class="nf-review-archive-workspace">
+        ${items.length ? `<nav class="nf-review-archive-list" aria-label="决定档案目录">${items.map((candidate, index) => {
           const disposition = archiveDisposition(candidate);
           const consensus = consensusFor(candidate.id);
           return `<button class="nf-review-archive-row ${selected?.id === candidate.id ? 'is-selected' : ''}" data-review-action="select-archive" data-candidate-id="${escapeHtml(candidate.id)}"><span class="nf-review-archive-index">${String(index + 1).padStart(2, '0')}</span><span><strong>${escapeHtml(candidate.title)}</strong><small>${escapeHtml(candidate.source || 'Editorial submission')} · ${escapeHtml(candidate.date.slice(0, 10) || 'date pending')}</small></span><em class="is-${disposition.id}">${escapeHtml(disposition.label)}</em><small>编辑共识 ${Number(consensus.editorial_boost || 0) >= 0 ? '+' : ''}${Number(consensus.editorial_boost || 0).toFixed(2)}</small></button>`;
-        }).join('')}</div>` : '<div class="nf-review-archive-empty"><h2>这里还很安静</h2><p>退稿不会消失，它只是被编辑部礼貌地放进了地下室。</p></div>'}
+        }).join('')}</nav>` : '<div class="nf-review-archive-empty"><h2>这里还很安静</h2><p>退稿不会消失，它只是被编辑部礼貌地放进了地下室。</p></div>'}
         ${selected ? `<section class="nf-review-archive-detail"><div><span class="nf-review-label">SELECTED RECORD</span><h2>${escapeHtml(selected.title)}</h2><p>${escapeHtml(selected.summary || '摘要待补充。')}</p><p class="nf-review-archive-source">${escapeHtml(selected.source)} · ${escapeHtml(activeStorylineTitle(selected))}</p>${renderImportance(selected)}</div><aside><div class="nf-review-stamp is-${selectedDisposition.id}">${escapeHtml(selectedDisposition.code)}</div>${selectedWithdrawal ? `<p>撤稿原因：<strong>${escapeHtml(WITHDRAWAL_REASONS.find((reason) => reason.id === selectedWithdrawal.reason_code)?.label || selectedWithdrawal.reason_code)}</strong></p><p>${escapeHtml(selectedWithdrawal.note || '未附补充说明。')}</p><time>${escapeHtml(formatArchiveTime(selectedWithdrawal.withdrawn_at))}</time>` : `<p>主编决定：<strong>${escapeHtml(decisionById(finalDecisionFor(selected.id))?.label || '尚未裁决')}</strong></p>`}<div class="nf-review-archive-actions">${isChief() && state.adoptions.has(selected.id) && !selectedWithdrawal ? `<button class="is-danger" data-review-action="open-withdrawal" data-candidate-id="${escapeHtml(selected.id)}">撤稿</button>` : ''}${isChief() && selectedWithdrawal ? `<button class="is-primary" data-review-action="restore-withdrawal" data-candidate-id="${escapeHtml(selected.id)}">恢复采用</button>` : ''}<button data-review-action="review-selected" data-candidate-id="${escapeHtml(selected.id)}">重新审阅</button></div></aside><section class="nf-review-history-block"><h3>决定记录</h3>${renderArchiveEvents(selected.id)}</section></section>` : ''}
+        </div>
         ${state.archiveFilter === 'rejects' ? '<p class="nf-review-basement">退稿不会消失，它只是被编辑部礼貌地放进了地下室。</p>' : ''}
       </article></main>
       ${renderDecisionBar(true)}
@@ -682,7 +784,7 @@
     return `<section class="nf-review-shell is-review" role="dialog" aria-modal="true" aria-labelledby="nf-review-title">
       <header class="nf-review-header">
         <div><strong>Frontier Systems Review</strong><span>${roleLabel()}</span></div>
-        <div class="nf-review-header-actions"><span>${String(state.index + 1).padStart(2, '0')} / ${String(state.packet.length).padStart(2, '0')}</span>${isChief() ? '<button data-review-action="open-governance">刊物设置</button><button data-review-action="open-invite">任命编辑</button>' : ''}<button data-review-action="undo" ${state.records.length && !state.busy ? '' : 'disabled'}>Z 撤销</button><button class="nf-review-close" data-review-action="close-game" aria-label="返回期刊">×</button></div>
+        <div class="nf-review-header-actions"><span>${String(state.index + 1).padStart(2, '0')} / ${String(state.packet.length).padStart(2, '0')}</span><button data-review-action="toggle-shortcuts" aria-expanded="${String(state.shortcutsOpen)}">快捷键</button><button class="nf-review-mode-button" data-review-action="switch-reader">当前：${isChief() ? '主编' : '编辑'} · 切换读者</button>${isChief() ? '<button data-review-action="open-governance">刊物设置</button><button data-review-action="open-invite">任命编辑</button>' : ''}<button data-review-action="undo" ${state.records.length && !state.busy ? '' : 'disabled'}>Z 撤销</button><button class="nf-review-close" data-review-action="close-game" aria-label="返回期刊">×</button></div>
       </header>
       ${renderDeskTabs('pending')}
       <main class="nf-review-stage">
@@ -699,7 +801,7 @@
       </main>
       ${renderDecisionBar()}
       ${state.notice ? `<div class="nf-review-notice" role="status">${escapeHtml(state.notice)}</div>` : ''}
-      ${renderInviteDialog()}
+      ${renderShortcutGuide()}${renderInviteDialog()}
     </section>`;
   };
 
@@ -707,7 +809,7 @@
     const reaction = state.reaction;
     if (!reaction) return renderReview();
     return `<section class="nf-review-shell is-review is-reacting" role="dialog" aria-modal="true">
-      <header class="nf-review-header"><div><strong>Frontier Systems Review</strong><span>${roleLabel()}</span></div><div class="nf-review-header-actions"><span>${String(state.index + 1).padStart(2, '0')} / ${String(state.packet.length).padStart(2, '0')}</span><button data-review-action="undo" ${state.busy ? 'disabled' : ''}>Z 撤销</button></div></header>
+      <header class="nf-review-header"><div><strong>Frontier Systems Review</strong><span>${roleLabel()}</span></div><div class="nf-review-header-actions"><span>${String(state.index + 1).padStart(2, '0')} / ${String(state.packet.length).padStart(2, '0')}</span><button class="nf-review-mode-button" data-review-action="switch-reader">当前：${isChief() ? '主编' : '编辑'} · 切换读者</button><button data-review-action="undo" ${state.busy ? 'disabled' : ''}>Z 撤销</button></div></header>
       ${renderDeskTabs('pending')}
       <main class="nf-review-stage"><article class="nf-review-card is-stamped"><div class="nf-review-card-meta"><span>EDITORIAL DECISION</span><span>${isChief() ? 'FINAL EDITORIAL RECORD' : 'EDITORIAL OPINION'}</span></div><h1>${escapeHtml(reaction.candidate.title)}</h1><div class="nf-review-stamp is-${reaction.decision.id}">${escapeHtml(reaction.decision.code)}</div><p class="nf-review-reaction-line">${escapeHtml(reaction.line)}</p><div class="nf-review-countdown" role="timer" aria-live="polite" aria-label="${reaction.countdown} 秒后进入下一稿">（${reaction.countdown}）</div><button class="nf-review-next" data-review-action="advance">下一稿 →</button></article></main>
       ${renderInviteDialog()}
@@ -743,6 +845,7 @@
     let content = '';
     if (state.phase === 'loading') content = renderLoading();
     else if (state.phase === 'error') content = renderError();
+    else if (state.phase === 'overview') content = renderOverview();
     else if (state.phase === 'review') content = renderReview();
     else if (state.phase === 'reaction') content = renderReaction();
     else if (state.phase === 'archive') content = renderArchive();
@@ -758,18 +861,33 @@
     if (!target) return;
     const action = target.dataset.reviewAction;
     if (action === 'decision') await recordDecision(target.dataset.decision || '');
+    else if (action === 'toggle-shortcuts') { state.shortcutsOpen = !state.shortcutsOpen; render(); }
     else if (action === 'advance') advance();
     else if (action === 'undo') await undoLastDecision();
     else if (action === 'close-game') closeGame();
     else if (action === 'retry') await openFormal();
     else if (action === 'review-all') await openFormal({ includeReviewed: true });
+    else if (action === 'open-overview') {
+      clearReactionTimers();
+      state.withdrawalDialog = null;
+      state.shortcutsOpen = false;
+      state.phase = 'overview';
+      render();
+    }
     else if (action === 'open-pending') openReviewSection();
     else if (action === 'open-archive') openArchiveSection('archive');
     else if (action === 'open-rejects') openArchiveSection('rejects');
     else if (action === 'select-archive') { state.archiveSelectionId = target.dataset.candidateId || ''; state.withdrawalDialog = null; render(); }
+    else if (action === 'overview-select') {
+      const candidate = state.candidates.find((item) => item.id === target.dataset.candidateId);
+      if (candidate) {
+        if (candidate.active) { state.packet = [candidate]; state.index = 0; state.records = []; state.phase = 'review'; syncDecisionCursor(); render(); }
+        else { state.archiveSelectionId = candidate.id; openArchiveSection(finalDecisionFor(candidate.id) === 'reject' ? 'rejects' : 'archive'); }
+      }
+    }
     else if (action === 'review-selected') {
       const candidate = state.candidates.find((item) => item.id === target.dataset.candidateId);
-      if (candidate) { state.packet = [candidate]; state.index = 0; state.records = []; state.phase = 'review'; render(); }
+      if (candidate) { state.packet = [candidate]; state.index = 0; state.records = []; state.phase = 'review'; syncDecisionCursor(); render(); }
     }
     else if (action === 'open-withdrawal') openWithdrawalDialog(target.dataset.candidateId || '');
     else if (action === 'close-withdrawal') { state.withdrawalDialog = null; render(); }
@@ -786,6 +904,12 @@
   };
 
   const handleKeydown = (event) => {
+    if (state.shortcutsOpen && event.key === 'Escape') {
+      event.preventDefault();
+      state.shortcutsOpen = false;
+      render();
+      return;
+    }
     if (state.phase === 'archive' && event.key === 'Escape') {
       if (state.withdrawalDialog) { state.withdrawalDialog = null; render(); }
       else closeGame();
@@ -801,10 +925,34 @@
       return;
     }
     if (state.phase !== 'review') return;
+    if (event.key === 'ArrowLeft' || event.key === 'ArrowRight') {
+      event.preventDefault();
+      moveManuscript(event.key === 'ArrowLeft' ? -1 : 1);
+      return;
+    }
+    if (state.phase === 'overview' && event.key === 'Escape') {
+      event.preventDefault();
+      closeGame();
+      return;
+    }
+    if (event.key === 'ArrowUp' || event.key === 'ArrowDown') {
+      event.preventDefault();
+      moveDecisionCursor(event.key === 'ArrowUp' ? -1 : 1);
+      return;
+    }
+    if (event.key === 'Enter') {
+      const interactive = document.activeElement?.closest?.('button, a');
+      if (interactive && !interactive.matches('.nf-review-decision')) return;
+      event.preventDefault();
+      void recordDecision(selectedDecision().id);
+      return;
+    }
     const decision = DECISIONS.find((item) => item.key === event.key);
     if (decision) {
       event.preventDefault();
+      state.decisionCursor = DECISIONS.indexOf(decision);
       void recordDecision(decision.id);
+      return;
     }
     if (event.key === 'Escape') closeGame();
   };
@@ -820,6 +968,7 @@
 
   window.NewsFlowReviewGame = Object.freeze({
     openFormal,
+    openOverview,
     close: closeGame,
     isOpen: () => state.phase !== 'idle'
   });
