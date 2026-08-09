@@ -34,7 +34,8 @@
       ],
       proTitle: { zh: 'Newsflow Pro', en: 'Newsflow Pro' },
       proFeatures: [
-        { zh: '进入编辑台，对候选稿件提交接受、小修、大修或拒稿等评议', en: 'Enter the editorial desk and submit Accept, Minor Revision, Major Revision, or Reject reviews' },
+        { zh: '浏览候选稿件与编辑材料，获得正式刊物之外的编辑视图', en: 'Browse candidate manuscripts and editorial material beyond the published edition' },
+        { zh: '对候选稿件提交接受、小修、大修或拒稿等评议', en: 'Submit Accept, Minor Revision, Major Revision, or Reject reviews on candidate manuscripts' },
         { zh: '查看自己的评议记录与编辑决策档案', en: 'Review your editorial history and decision archive' },
       ],
       note: {
@@ -42,8 +43,8 @@
         en: 'Invited editors can receive a limited Newsflow Pro free trial, with subscription management available during the trial.',
       },
       checkoutDescription: {
-        zh: 'US$1/月开通 Newsflow Pro，进入编辑台提交评议并查看自己的编辑决策档案；正式刊物阅读仍永久免费。',
-        en: 'Newsflow Pro is US$1/month and unlocks the editorial desk, review submission, and your editorial decision archive. Published reading remains free.',
+        zh: 'US$1/月开通 Newsflow Pro，进入编辑部浏览候选稿件、提交评议并查看自己的编辑决策档案；正式刊物阅读仍永久免费。',
+        en: 'Newsflow Pro is US$1/month and unlocks candidate manuscripts, editorial reviews, and your decision archive. Published reading remains free.',
       },
       ctaTitle: { zh: '开通 Newsflow Pro', en: 'Upgrade to Newsflow Pro' },
     },
