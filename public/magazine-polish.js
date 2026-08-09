@@ -83,32 +83,6 @@ const normalizeMastheadMeta = () => {
   meta.dataset.magazinePolished = 'true';
 };
 
-const updateLatestChangeState = () => {
-  const intro = appRoot?.querySelector('.post-issue-intro');
-  if (!intro) return;
-  const label = intro.querySelector('.section-label');
-  const description = intro.querySelector('p');
-  const movement = intro.querySelector('.movement');
-  const lead = appRoot.querySelector('.lead-story');
-
-  if (label && !label.dataset.originalText) label.dataset.originalText = label.textContent || '';
-  if (description && !description.dataset.originalText) description.dataset.originalText = description.textContent || '';
-  if (movement && !movement.dataset.originalText) movement.dataset.originalText = movement.textContent || '';
-
-  if (lead) {
-    intro.dataset.empty = 'false';
-    if (label?.dataset.originalText) label.textContent = label.dataset.originalText;
-    if (description?.dataset.originalText) description.textContent = description.dataset.originalText;
-    if (movement?.dataset.originalText) movement.textContent = movement.dataset.originalText;
-    return;
-  }
-
-  intro.dataset.empty = 'true';
-  if (label) label.textContent = '当前筛选暂无新变化';
-  if (description) description.textContent = '当前频道、时间或阅读条件下没有达到展示门槛的重大信号；调整筛选即可返回完整编辑台。';
-  if (movement) movement.textContent = '等待信号';
-};
-
 const enhanceMagazineTriggers = () => {
   appRoot?.querySelectorAll('[data-edition-action^="open-"]').forEach((button) => {
     button.setAttribute('aria-haspopup', 'dialog');
@@ -198,7 +172,6 @@ const decorateMagazine = () => {
   const shell = appRoot?.querySelector('.app-shell[data-product-model="magazine-edition"]');
   if (!shell) return;
   normalizeMastheadMeta();
-  updateLatestChangeState();
   enhanceMagazineTriggers();
   syncMagazinePanelState();
   decorateDataFreshness();
