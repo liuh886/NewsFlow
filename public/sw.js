@@ -12,6 +12,7 @@ const APP_SHELL = [
   versioned('./reading-surface.css'),
   versioned('./account-integration.css'),
   versioned('./startup-resilience.js'),
+  versioned('./pwa-install.js'),
   versioned('./editorial-app.js'),
   versioned('./polish.js'),
   versioned('./edition-layer.js'),
