@@ -41,6 +41,23 @@ try {
     throw new Error('Reader freshness date is not rendered as a compact badge beside the publication name.');
   }
 
+  const desktopSearchContract = await page.evaluate(() => {
+    const candidates = [...document.querySelectorAll('#app .global-search, #app .mobile-reader-search')];
+    const visible = candidates.filter((element) => {
+      const style = getComputedStyle(element);
+      const rect = element.getBoundingClientRect();
+      return !element.hidden && style.display !== 'none' && style.visibility !== 'hidden' && rect.width > 0 && rect.height > 0;
+    });
+    return {
+      globalCount: document.querySelectorAll('#app .global-search').length,
+      visibleCount: visible.length,
+      visibleClasses: visible.map((element) => element.className),
+    };
+  });
+  if (desktopSearchContract.globalCount !== 1 || desktopSearchContract.visibleCount !== 1 || !desktopSearchContract.visibleClasses[0]?.includes('global-search')) {
+    throw new Error(`Desktop Reader exposes duplicate search controls: ${JSON.stringify(desktopSearchContract)}`);
+  }
+
   const searchInput = page.locator('#global-search');
   const collapsedPlaceholderOpacity = await searchInput.evaluate((input) => getComputedStyle(input, '::placeholder').opacity);
   if (Number.parseFloat(collapsedPlaceholderOpacity) !== 0) {
