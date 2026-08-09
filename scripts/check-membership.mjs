@@ -37,7 +37,7 @@ for (const contract of [
   'window.HaoAccountConfig',
   "productCode: 'newsflow'",
   "entitlementCode: 'newsflow.pro'",
-  'billingEnabled: false',
+  'billingEnabled: true',
   'feedbackEnabled: true',
   "mountSelectors: ['.top-actions']",
   'compactTrigger: true',
@@ -71,4 +71,4 @@ if (combined.includes('membership-widget.js') || combined.includes('membership-w
   throw new Error('NewsFlow must not load the retired local membership widget');
 }
 
-console.log('NewsFlow account uses the native topbar mount and shared Google/GitHub/X account shell v4.');
+console.log('NewsFlow account uses the native topbar mount, Pro billing and shared Google/GitHub/X account shell v4.');

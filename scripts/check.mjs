@@ -140,8 +140,14 @@ for (const contract of [
 if (liveCompiler.includes("from('newsflow_editorial_adoptions')") || liveCompiler.includes('SUPABASE_SERVICE_ROLE_KEY')) throw new Error('Live Issue compiler must consume authoritative public Signals, not create a second Supabase read path.');
 
 const editionLayer = await read('src/edition-layer.js');
-for (const contract of ['renderIssueDrawer', "data-edition-action=\"open-issue\"", '历期精选', '历期刊物', '阅读本期 →']) {
-  if (!editionLayer.includes(contract)) throw new Error(`Historical Issue reading contract missing: ${contract}`);
+for (const contract of [
+  'renderIssueDrawer', 'publishedIssueById', 'const issues = publishedIssues();', 'readerUtilityState',
+  "data-edition-action=\"open-issue\"", 'data-issue-current', '期刊目录', '全部刊期', '查看本期'
+]) {
+  if (!editionLayer.includes(contract)) throw new Error(`Issue-first publication contract missing: ${contract}`);
+}
+for (const retiredUi of ['data-target="latest-change"', '最新更新', '历期精选', '历期刊物']) {
+  if (editionLayer.includes(retiredUi)) throw new Error(`Retired parallel-latest/archive UI returned: ${retiredUi}`);
 }
 for (const operatorCopy of ['冻结后不再改写', '已经冻结的刊期', '自动流程不会自行改写']) {
   if (editionLayer.includes(operatorCopy)) throw new Error(`Reader exposes operator-facing implementation copy: ${operatorCopy}`);
@@ -170,4 +176,4 @@ for (const name of runFiles.filter((file) => file.endsWith('.json'))) {
   if ('decisions' in run || 'candidates' in run) throw new Error(`Public scan audit exposes Candidate detail: ${name}`);
 }
 
-console.log(`NewsFlow repository contract passed: ${news.length} authoritative public Signals, ${storylines.length} Storylines, Supabase-private Candidates, public publication projection, live Current Issue and readable historical Issues.`);
+console.log(`NewsFlow repository contract passed: ${news.length} authoritative public Signals, ${storylines.length} Storylines, Supabase-private Candidates, public publication projection, issue-first homepage and current-inclusive TOC.`);
