@@ -47,7 +47,7 @@ for (const contract of ['NETWORK_TIMEOUT_MS = 5000', 'fetchWithTimeout', 'warmAp
 for (const contract of ['ensureMobileReaderSearch', 'syncEditionDialogAccessibility', 'trapEditionFocus']) {
   if (!polishJs.includes(contract)) throw new Error(`Reader interaction polish is missing ${contract}`);
 }
-for (const contract of ['.mobile-menu-button', 'display: none', 'grid-template-columns: repeat(5, minmax(0, 1fr))']) {
+for (const contract of ['.mobile-menu-button::before', 'mask-image:', 'grid-template-columns: repeat(5, minmax(0, 1fr))']) {
   if (!navigationCss.includes(contract)) throw new Error(`Reader mobile navigation contract is missing ${contract}`);
 }
 
@@ -111,4 +111,4 @@ if (!Number.isInteger(status.signal_count) || status.signal_count < 1) throw new
 const statusCheck = spawnSync(process.execPath, [resolve(root, 'scripts/update-data-status.mjs'), '--check'], { encoding: 'utf8' });
 if (statusCheck.status !== 0) throw new Error(statusCheck.stderr || statusCheck.stdout);
 
-console.log('NewsFlow product polish passed: issue-first Reader, continuous side-sheet reading, single five-item mobile navigation, permission-routed editorial dashboard and live freshness.');
+console.log('NewsFlow product polish passed: issue-first Reader, continuous side-sheet reading, explicit mobile tools, permission-routed editorial dashboard and live freshness.');
