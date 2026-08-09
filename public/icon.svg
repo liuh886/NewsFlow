@@ -1,4 +1,4 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" role="img" aria-label="NewsFlow">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" role="img" aria-label="Newsflow">
   <rect width="512" height="512" rx="116" fill="#f4f1ea"/>
   <circle cx="256" cy="256" r="168" fill="#17191c"/>
   <path d="M167 331V181h35l108 98v-98h35v150h-31L202 229v102h-35Z" fill="#f4f1ea"/>

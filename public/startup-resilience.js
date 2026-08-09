@@ -31,15 +31,15 @@
     app.innerHTML = `<main class="loading-screen" data-startup-recovery="true">
       <div class="loading-lockup">
         <div class="loading-mark">N</div>
-        <strong>NewsFlow 启动未完成</strong>
-        <span>已停止继续等待。重新加载会清理 NewsFlow 的旧应用缓存并获取当前版本。</span>
+        <strong>Newsflow 启动未完成</strong>
+        <span>已停止继续等待。重新加载会清理 Newsflow 的旧应用缓存并获取当前版本。</span>
         <button type="button" class="nf-office-primary" data-startup-retry>重新加载当前版本</button>
       </div>
     </main>`;
 
     app.querySelector('[data-startup-retry]')?.addEventListener('click', () => void hardReload());
     const status = document.getElementById('app-status');
-    if (status) status.textContent = 'NewsFlow 启动未完成，可重新加载当前版本。';
+    if (status) status.textContent = 'Newsflow 启动未完成，可重新加载当前版本。';
   };
 
   const watchdogTimer = window.setTimeout(showRecovery, STARTUP_WATCHDOG_MS);

@@ -40,7 +40,7 @@ for (const contract of ["from('newsflow_governance_drafts')", '刊物判断', '�
   if (!governance.includes(contract)) throw new Error(`Governance surface missing ${contract}`);
 }
 for (const contract of [
-  'cover_signal_id', 'Published with NewsFlow', "new CustomEvent('newsflow:edition-rendered')", '#section/',
+  'cover_signal_id', 'Published with Newsflow', "new CustomEvent('newsflow:edition-rendered')", '#section/',
   "issue?.lifecycle === 'live'", 'publishedIssueById', 'const issues = publishedIssues();', 'readerUtilityState',
   '期刊目录', 'data-issue-current'
 ]) {

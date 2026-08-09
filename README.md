@@ -1,6 +1,6 @@
-# NewsFlow
+# Newsflow
 
-NewsFlow is a GitHub-native publication engine with a private editorial workflow behind a premium Reader experience.
+Newsflow is a GitHub-native publication engine with a private editorial workflow behind a premium Reader experience.
 
 > **Machines collect. Editors advise. The Editor-in-Chief decides. Readers see only adopted publication content.**
 
@@ -10,10 +10,10 @@ The reference publication is **Frontier Systems Review**, focused on AI infrastr
 
 The product is considered **feature-stable** at the current Reader v3 + Editorial Governance v2 baseline.
 
-NewsFlow has three roles and one publication gate:
+Newsflow has three roles and one publication gate:
 
 - **主编 / Editor-in-Chief** — the only final publication authority. Cover Story and Accept create public adoption. The chief also owns Edition judgment, Storylines, trusted-source policy and Editor appointments.
-- **编辑 / Editor** — NewsFlow Pro users use the same five-state Review Game, but every decision is advisory only. Accepting a chief invitation also grants three months of NewsFlow Pro.
+- **编辑 / Editor** — Newsflow Pro users use the same five-state Review Game, but every decision is advisory only. Accepting a chief invitation also grants three months of Newsflow Pro.
 - **读者 / Reader** — sees only chief-adopted Signals, formal Issues, Sections, Storylines, evidence and Archive. Candidate manuscripts, review votes, revision states and rejected material remain private.
 
 UI mode never grants authority. Editorial authority comes from authenticated Supabase membership.
@@ -137,7 +137,7 @@ An authorized local Agent can run `npm run feedback:refresh` before research. Th
 
 ## Syndication and email delivery
 
-Every build emits both Atom (`feed.xml`) and RSS 2.0 (`rss.xml`) from chief-adopted public Signals. The Reader does not expose a subscription control yet, but either endpoint can be connected to a feed-to-email provider without adding subscriber data, background jobs or database usage to NewsFlow itself.
+Every build emits both Atom (`feed.xml`) and RSS 2.0 (`rss.xml`) from chief-adopted public Signals. The Reader does not expose a subscription control yet, but either endpoint can be connected to a feed-to-email provider without adding subscriber data, background jobs or database usage to Newsflow itself.
 
 ## Runtime ownership
 

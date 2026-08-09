@@ -21,19 +21,19 @@
   const installHelpCopy = () => {
     if (isIOS()) {
       return {
-        lead: 'iPhone / iPad 由浏览器负责把 NewsFlow 加到主屏幕。',
-        steps: ['使用 Safari 打开 NewsFlow', '点“分享”', '选择“添加到主屏幕”，然后确认“添加”']
+        lead: 'iPhone / iPad 由浏览器负责把 Newsflow 加到主屏幕。',
+        steps: ['使用 Safari 打开 Newsflow', '点“分享”', '选择“添加到主屏幕”，然后确认“添加”']
       };
     }
     if (isAndroid()) {
       return {
-        lead: '浏览器暂时还没有开放原生安装提示，但 NewsFlow 仍可安装。',
+        lead: '浏览器暂时还没有开放原生安装提示，但 Newsflow 仍可安装。',
         steps: ['继续使用当前页面；Chrome 通常会在首次交互并停留一段时间后开放安装', '或者打开浏览器菜单', '选择“安装应用”或“添加到主屏幕”']
       };
     }
     return {
       lead: '浏览器暂时还没有开放原生安装提示。',
-      steps: ['打开浏览器主菜单', '选择“安装 NewsFlow”“安装应用”或“创建快捷方式”', '如果当前浏览器不支持 PWA 安装，可在 Chrome、Edge 或 Safari 中打开本页']
+      steps: ['打开浏览器主菜单', '选择“安装 Newsflow”“安装应用”或“创建快捷方式”', '如果当前浏览器不支持 PWA 安装，可在 Chrome、Edge 或 Safari 中打开本页']
     };
   };
 
@@ -47,12 +47,12 @@
       <button class="edition-overlay" type="button" data-newsflow-install-close aria-label="关闭安装说明"></button>
       <section class="edition-panel" role="dialog" aria-modal="true" aria-labelledby="newsflow-install-title">
         <header class="edition-panel-head">
-          <span>Install NewsFlow</span>
+          <span>Install Newsflow</span>
           <button type="button" data-newsflow-install-close aria-label="关闭安装说明">×</button>
         </header>
         <div class="edition-panel-body">
           <p class="section-label">PWA</p>
-          <h2 id="newsflow-install-title">安装 NewsFlow</h2>
+          <h2 id="newsflow-install-title">安装 Newsflow</h2>
           <p class="panel-question">${copy.lead}</p>
           <section>
             <ol>${copy.steps.map((step) => `<li>${step}</li>`).join('')}</ol>
@@ -77,7 +77,7 @@
     section.innerHTML = `
       <p class="section-label">应用</p>
       <div class="sidebar-list">
-        <button class="nav-button" type="button" data-newsflow-install-action aria-label="安装 NewsFlow 应用">
+        <button class="nav-button" type="button" data-newsflow-install-action aria-label="安装 Newsflow 应用">
           <span class="nav-name"><span class="nav-indicator"></span><span>安装应用</span></span>
         </button>
       </div>`;

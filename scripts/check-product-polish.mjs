@@ -55,7 +55,7 @@ for (const contract of [
 if (gameJs.includes('openGuest') || gameJs.includes('localStorage')) throw new Error('Review game may not reintroduce public guest packets or local editorial decisions.');
 
 for (const contract of [
-  'cover_signal_id', '阅读封面文章', 'Published with NewsFlow', 'AI 基建', 'CCUS 与能源转型',
+  'cover_signal_id', '阅读封面文章', 'Published with Newsflow', 'AI 基建', 'CCUS 与能源转型',
   "firstEditorialAnchor.insertAdjacentHTML('beforebegin', renderCurrentIssue(edition, issue))", '#section/', "channelSort: 'newest'", "data-sort=\"selected\"",
   'readerUtilityState', 'publishedIssueById', 'const issues = publishedIssues();', '期刊目录', '全部刊期', 'data-issue-current'
 ]) if (!editionJs.includes(contract)) throw new Error(`Premium Reader IA/section contract is missing ${contract}`);
@@ -65,13 +65,16 @@ for (const retired of ['renderPostIssueIntro', 'data-target="latest-change"', '�
 for (const selector of ['.issue-hero-copy h2', 'font-size: clamp(48px, 6.2vw, 76px)', '.issue-judgment-band', '.global-search:focus-within']) {
   if (!editionCss.includes(selector)) throw new Error(`Premium Reader visual hierarchy is missing ${selector}`);
 }
-for (const contract of ["data-channel-id=\"${escapeEditionHtml(signal.channel_id || '')}\"", "data-channel-id='ccus-energy-transition'", "data-channel-id='ai-infrastructure'", 'font-size: 28px']) {
+for (const contract of ["data-channel-id=\"${escapeEditionHtml(signal.channel_id || '')}\"", "data-channel-id='ccus-energy-transition'", "data-channel-id='ai-infrastructure'", "brandName.textContent = 'Newsflow'", 'font-size: 28px']) {
   if (!`${editionJs}\n${editionCss}`.includes(contract)) throw new Error(`Reader topic/brand distinction is missing ${contract}`);
+}
+if (!editionJs.includes("<span>${String(index + 1).padStart(2, '0')}</span>") || editionJs.includes("? '选' : String(index + 1)")) {
+  throw new Error('Channel article markers must remain numeric in every sort mode.');
 }
 if (!editionCss.includes('.source-verification')) throw new Error('Reader source provenance styling is missing.');
 
 for (const contract of [
-  "const ROOT_ID = 'newsflow-reading-surface-root'", '#read/', 'canonicalArticleUrl', 'NewsFlow Editorial Desk', '发生了什么', '为什么重要',
+  "const ROOT_ID = 'newsflow-reading-surface-root'", '#read/', 'canonicalArticleUrl', 'Newsflow Editorial Desk', '发生了什么', '为什么重要',
   '证据与来源', '长期议题', '相关阅读', 'decorateReadingLinks', "window.addEventListener('newsflow:rendered'",
   "window.addEventListener('newsflow:edition-rendered'", "surface: 'reading_surface'"
 ]) if (!readingJs.includes(contract)) throw new Error(`Reading Surface is missing ${contract}`);

@@ -25,6 +25,7 @@ const requiredFiles = [
   'supabase/migrations/20260809062526_newsflow_private_pro_editor_access.sql',
   'supabase/migrations/20260809062717_newsflow_pro_editor_role_visibility.sql',
   'supabase/migrations/20260809063350_pro_editor_access.sql',
+  'supabase/migrations/20260809071339_restore_editor_access_function_execute.sql',
   'supabase/tests/feedback_rls_assertions.sql',
   '.github/workflows/pages.yml', '.github/workflows/publication-sync.yml',
   'WORKFLOW.md', 'DESIGN.md', 'README.md'
@@ -115,6 +116,16 @@ for (const contract of [
   'newsflow_governance_drafts', 'newsflow_governance_publications'
 ]) if (!editorialSql.toLowerCase().includes(contract.toLowerCase())) throw new Error(`Editorial SQL missing ${contract}`);
 if (!editorialSql.includes('update public.newsflow_candidates set active = false') || !editorialSql.includes('update public.newsflow_candidates set active = true')) throw new Error('Canonical editorial SQL must close/reopen Candidates with the chief decision lifecycle.');
+
+const editorAccessFix = await read('supabase/migrations/20260809071339_restore_editor_access_function_execute.sql');
+for (const contract of [
+  'create or replace function private.newsflow_has_editor_access()',
+  "a.role = 'owner'", "m.role = 'editor_in_chief'", "e.entitlement_code = 'newsflow.pro'",
+  'grant execute on function private.newsflow_has_editor_access() to authenticated'
+]) if (!editorAccessFix.includes(contract)) throw new Error(`Editor access repair missing ${contract}`);
+if (/grant execute on function private\.newsflow_has_editor_access\(\) to (?:anon|public|service_role)/i.test(editorAccessFix)) {
+  throw new Error('Editor access helper may only be executable by authenticated users.');
+}
 
 const projectionSql = await read('supabase/newsflow-publication-projection.sql');
 for (const contract of [

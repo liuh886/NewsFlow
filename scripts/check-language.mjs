@@ -21,7 +21,7 @@ if (!index.includes('<html lang="zh-CN"')) throw new Error('NewsFlow HTML langua
 if (manifest.lang !== edition.language) throw new Error('PWA manifest language must match Edition language.');
 if (edition.language !== 'zh-CN') throw new Error('The reference Edition is explicitly Chinese.');
 
-for (const contract of ['机构 / 一手源', 'NewsFlow · 证据视图', '正式出版数据暂时不可用', '主编采用记录']) {
+for (const contract of ['机构 / 一手源', 'Newsflow · 证据视图', '正式出版数据暂时不可用', '主编采用记录']) {
   if (!appSource.includes(contract)) throw new Error(`Reader render source is missing localized contract: ${contract}`);
 }
 for (const forbidden of ['信号评分', '高置信度', '评分 ${getQuality']) {

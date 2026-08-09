@@ -1,8 +1,8 @@
 {
   "id": "./",
   "name": "Frontier Systems Review",
-  "short_name": "NewsFlow",
-  "description": "聚焦 AI 基建、CCUS 与能源转型的专业半月刊，由 NewsFlow 持续更新证据与长期议题。",
+  "short_name": "Newsflow",
+  "description": "聚焦 AI 基建、CCUS 与能源转型的专业半月刊，由 Newsflow 持续更新证据与长期议题。",
   "lang": "zh-CN",
   "dir": "ltr",
   "start_url": "./",
