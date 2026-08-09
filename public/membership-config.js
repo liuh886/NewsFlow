@@ -19,19 +19,34 @@
       en: 'NewsFlow account',
     },
     description: {
-      zh: 'NewsFlow 阅读始终免费。Pro 面向希望参与编辑的人：进入编辑台评议候选文章、保存评议与决策记录。受邀编辑可通过主编邀请链接获得 3 个月 Pro；最终出版决定仍由主编完成。',
-      en: 'Reading NewsFlow always stays free. Pro is for people who want to participate in editorial work: review candidate stories and keep review and decision records. Invited editors can receive three months of Pro through an Editor-in-Chief invitation; final publication decisions remain with the Editor-in-Chief.',
+      zh: 'NewsFlow 阅读始终免费。登录用于参与编辑、保存个人评议记录，以及管理 NewsFlow Pro。',
+      en: 'Reading NewsFlow always stays free. Sign in to participate in editorial work, keep your review history, and manage NewsFlow Pro.',
     },
     privacyNote: {
       zh: '公开 Edition、信号流与 GitHub 出版流程保持开放；Pro 只控制编辑工作区访问，不改变正式事实记录。',
       en: 'Public editions, signal feeds, and the GitHub publishing workflow remain open. Pro controls editorial workspace access only and never alters the factual record.',
     },
-    features: [
-      { zh: 'Free · 阅读每期正式刊物、公开信号流与专题', en: 'Free · Read every published edition, public signal feed, and special topic' },
-      { zh: 'Pro · 进入编辑台，对候选稿件提交接受、小修、大修或拒稿等评议', en: 'Pro · Enter the editorial desk and submit Accept, Minor Revision, Major Revision, or Reject reviews' },
-      { zh: 'Pro · 查看自己的评议记录与编辑决策档案', en: 'Pro · Review your editorial history and decision archive' },
-      { zh: '编辑邀请 · 通过主编邀请链接可获得 3 个月 NewsFlow Pro', en: 'Editor invitation · Receive three months of NewsFlow Pro through an Editor-in-Chief invite' },
-    ],
+    proUpgrade: {
+      title: { zh: 'Free 与 NewsFlow Pro', en: 'Free and NewsFlow Pro' },
+      freeTitle: { zh: '阅读始终开放', en: 'Reading always stays open' },
+      freeFeatures: [
+        { zh: '阅读每期正式刊物、公开信号流与专题', en: 'Read every published edition, public signal feed, and special topic' },
+      ],
+      proTitle: { zh: '参与编辑工作流', en: 'Join the editorial workflow' },
+      proFeatures: [
+        { zh: '进入编辑台，对候选稿件提交接受、小修、大修或拒稿等评议', en: 'Enter the editorial desk and submit Accept, Minor Revision, Major Revision, or Reject reviews' },
+        { zh: '查看自己的评议记录与编辑决策档案', en: 'Review your editorial history and decision archive' },
+      ],
+      note: {
+        zh: '受邀编辑可通过主编邀请链接获得 3 个月 Pro；最终出版决定仍由主编完成。',
+        en: 'Invited editors can receive three months of Pro through an Editor-in-Chief invite; final publication decisions remain with the Editor-in-Chief.',
+      },
+      checkoutDescription: {
+        zh: 'US$1/月开通 NewsFlow Pro，进入编辑台提交评议并查看自己的编辑决策档案；正式刊物阅读仍永久免费。',
+        en: 'NewsFlow Pro is US$1/month and unlocks the editorial desk, review submission, and your editorial decision archive. Published reading remains free.',
+      },
+      ctaTitle: { zh: '开通 NewsFlow Pro', en: 'Upgrade to NewsFlow Pro' },
+    },
     feedbackEnabled: true,
     feedbackTitle: { zh: '给主编的反馈', en: 'Feedback for the editor' },
     feedbackPrompt: {
