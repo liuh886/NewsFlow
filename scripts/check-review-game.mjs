@@ -6,13 +6,13 @@ import { spawnSync } from 'node:child_process';
 const root = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 const read = (path) => readFile(resolve(root, path), 'utf8');
 const required = [
-  'public/review-game.js', 'public/review-game.css', 'public/editorial-office.js',
+  'public/review-game.js', 'public/review-game.css', 'public/review-stamp.css', 'public/editorial-office.js',
   'public/editorial-mode.css', 'public/editorial-loader.js', 'public/data/editorial-reactions.json'
 ];
 for (const file of required) await access(resolve(root, file));
 
-const [index, loader, game, gameCss, mode, modeCss, sw, reactionsText] = await Promise.all([
-  read('index.html'), read('public/editorial-loader.js'), read('public/review-game.js'), read('public/review-game.css'),
+const [index, loader, game, gameCss, stampCss, mode, modeCss, sw, reactionsText] = await Promise.all([
+  read('index.html'), read('public/editorial-loader.js'), read('public/review-game.js'), read('public/review-game.css'), read('public/review-stamp.css'),
   read('public/editorial-office.js'), read('public/editorial-mode.css'), read('public/sw.js'),
   read('public/data/editorial-reactions.json')
 ]);
@@ -22,7 +22,7 @@ for (const file of ['public/editorial-loader.js', 'public/review-game.js', 'publ
 }
 
 if (!index.includes('./editorial-loader.js?v=__NEWSFLOW_VERSION__')) throw new Error('index must load the small editorial runtime loader.');
-for (const eagerAsset of ['./editorial-mode.css', './review-game.css', './review-game.js', './editorial-office.js']) {
+for (const eagerAsset of ['./editorial-mode.css', './review-game.css', './review-stamp.css', './review-game.js', './editorial-office.js']) {
   if (index.includes(eagerAsset)) throw new Error(`Reader must not eagerly load editor-only asset: ${eagerAsset}`);
   if (!loader.includes(eagerAsset)) throw new Error(`editorial-loader is missing ${eagerAsset}`);
 }
@@ -40,7 +40,8 @@ for (const contract of [
   "client.rpc('newsflow_withdraw_candidate'", "client.rpc('newsflow_restore_withdrawn_candidate'",
   '决定档案', '退稿库', '编辑部总览', '信号与处理状态', 'editorial_boost', 'reader_boost',
   "event.key === 'ArrowLeft'", "event.key === 'ArrowRight'", "event.key === 'ArrowUp'", "event.key === 'ArrowDown'",
-  "event.key === 'Enter'", 'renderShortcutGuide', 'is-keyboard-selected', '切换稿件', '确认当前裁决'
+  "event.key === 'Enter'", 'renderShortcutGuide', 'is-keyboard-selected', '切换稿件', '确认当前裁决',
+  'ownReviewFor(candidate.id)', 'nf-review-persistent-decision', 'EDITORIAL DECISION RECORDED', '主编已裁决'
 ]) if (!game.includes(contract)) throw new Error(`review game missing contract: ${contract}`);
 if (game.includes('localStorage') || game.includes('saveProductData') || game.includes('FORMAL_STORAGE_KEY')) {
   throw new Error('Review decisions must live only in normalized Supabase review rows.');
@@ -82,11 +83,15 @@ for (const selector of [
   '@media (min-width: 761px)', '@media (max-width: 760px)', '@media (prefers-reduced-motion: reduce)'
 ]) if (!gameCss.includes(selector)) throw new Error(`review game CSS missing ${selector}`);
 if (gameCss.includes('.nf-settlement')) throw new Error('Retired local Issue settlement CSS must be deleted.');
+for (const selector of [
+  '.nf-review-persistent-decision', '.nf-review-stamp.is-persistent', 'mix-blend-mode: multiply',
+  '@media (max-width: 760px)', '@media (prefers-reduced-motion: reduce)'
+]) if (!stampCss.includes(selector)) throw new Error(`persistent review stamp CSS missing ${selector}`);
 for (const selector of ['.nf-mode-dialog', '.nf-mode-grid', '.nf-mode-current', '@media (max-width: 720px)']) if (!modeCss.includes(selector)) throw new Error(`mode CSS missing ${selector}`);
 if (modeCss.includes('.nf-mode-trigger')) throw new Error('Obsolete role trigger CSS must be deleted.');
 
 if (!sw.includes("versioned('./editorial-loader.js')")) throw new Error('service worker must cache the small editorial loader.');
-for (const editorAsset of ["versioned('./review-game.js')", "versioned('./review-game.css')", "versioned('./editorial-office.js')", "versioned('./editorial-mode.css')"]) {
+for (const editorAsset of ["versioned('./review-game.js')", "versioned('./review-game.css')", "versioned('./review-stamp.css')", "versioned('./editorial-office.js')", "versioned('./editorial-mode.css')"]) {
   if (sw.includes(editorAsset)) throw new Error(`Reader app shell must not precache editor-only asset: ${editorAsset}`);
 }
 for (const forbidden of ['./data/review-candidates.json', './data/pipeline-reviews.json', './data/guest-editor-invites.json']) if (sw.includes(forbidden)) throw new Error(`service worker must not cache private editorial data: ${forbidden}`);
@@ -96,4 +101,4 @@ const reactions = JSON.parse(reactionsText);
 for (const decision of ['cover_story', 'accept', 'minor_revision', 'major_revision', 'reject']) {
   if (!Array.isArray(reactions[decision]) || reactions[decision].length < 4) throw new Error(`reaction library is too shallow for ${decision}.`);
 }
-console.log('NewsFlow review game contract passed: lazy editor runtime, stable canonical role launcher, Pro-gated editor access, invite-triggered Pro refresh, advisory reviews, chief-only authority and three-second five-state review.');
+console.log('NewsFlow review game contract passed: lazy editor runtime, stable canonical role launcher, Pro-gated editor access, invite-triggered Pro refresh, durable Supabase-backed decision stamps, advisory reviews, chief-only authority and three-second five-state review.');
