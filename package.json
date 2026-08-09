@@ -1,6 +1,6 @@
 {
   "name": "newsflow",
-  "version": "2.4.8",
+  "version": "2.4.9",
   "private": true,
   "type": "module",
   "scripts": {
@@ -10,6 +10,7 @@
     "content:check": "node scripts/update-content.mjs --check",
     "content:update": "node scripts/apply-content.mjs",
     "content:status": "node scripts/update-data-status.mjs",
+    "editorial:referrals": "node scripts/pull-editorial-referrals.mjs",
     "feedback:pull": "node scripts/pull-feedback.mjs",
     "feedback:profile": "node skills/newsflow-recommender/scripts/build-profile.mjs",
     "feedback:rank": "node skills/newsflow-recommender/scripts/rank-signals.mjs",
