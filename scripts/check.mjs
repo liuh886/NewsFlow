@@ -21,6 +21,7 @@ const requiredFiles = [
   'config/content-discovery.json', 'content/state/adoption-sync.json', 'content/state/governance-sync.json',
   'supabase/newsflow-editorial.sql', 'supabase/newsflow-publication-projection.sql',
   'supabase/migrations/20260809040109_close_feedback_loop_free_plan.sql', 'supabase/tests/feedback_rls_test.sql',
+  'supabase/tests/feedback_rls_assertions.sql',
   '.github/workflows/pages.yml', '.github/workflows/publication-sync.yml',
   'WORKFLOW.md', 'DESIGN.md', 'README.md'
 ];

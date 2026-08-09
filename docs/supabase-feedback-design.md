@@ -45,14 +45,17 @@ npm run feedback:rank:local
 
 ## Deployment
 
-Apply the migrations in timestamp order and run the RLS tests before enabling Pages:
+This Supabase project is shared with other applications, so apply only the two NewsFlow migration files through the authorized Management API instead of pushing the repository's partial migration history:
 
 ```bash
 npx supabase login
 npx supabase link --project-ref blgwlycfcwvsupmqyqwn
-npx supabase db push
-npx supabase test db
+npx supabase db query --linked --file supabase/migrations/20260803232713_create_newsflow_feedback.sql
+npx supabase db query --linked --file supabase/migrations/20260809040109_close_feedback_loop_free_plan.sql
+npx supabase db query --linked --file supabase/tests/feedback_rls_assertions.sql
 ```
+
+The assertion file uses a transaction and rolls it back. It requires no pgTAP extension and leaves no test accounts or feedback rows behind.
 
 Then configure these GitHub repository variables:
 
