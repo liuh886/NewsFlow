@@ -196,8 +196,11 @@ try {
 
   const editorialEntry = page.locator('#app .top-actions > [data-action="open-editorial-office"]');
   await editorialEntry.waitFor({ state: 'visible', timeout: 10_000 });
-  if ((await editorialEntry.getAttribute('aria-label')) !== '进入审稿模式') {
+  if ((await editorialEntry.getAttribute('aria-label')) !== '当前为读者模式，打开模式切换') {
     throw new Error('Mobile Reader does not expose the editorial mode switch with the expected label.');
+  }
+  if ((await editorialEntry.locator('.nf-mode-launcher-label').innerText()).trim() !== '读者') {
+    throw new Error('Mobile Reader does not visibly identify the current mode.');
   }
   const launcherBeforeRuntime = await editorialEntry.boundingBox();
   await page.evaluate(async () => {

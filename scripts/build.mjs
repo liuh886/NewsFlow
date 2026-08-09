@@ -61,6 +61,7 @@ const htmlDocument = ({ title, description, canonical, type = 'website', publish
   <meta name="robots" content="index,follow,max-image-preview:large" />
   <link rel="canonical" href="${escapeHtml(canonical)}" />
   <link rel="alternate" type="application/atom+xml" title="${PUBLICATION_NAME}" href="${absoluteUrl('feed.xml')}" />
+  <link rel="alternate" type="application/rss+xml" title="${PUBLICATION_NAME}" href="${absoluteUrl('rss.xml')}" />
   <link rel="icon" href="${absoluteUrl('icon.svg')}" type="image/svg+xml" />
   <meta property="og:type" content="${type}" />
   <meta property="og:locale" content="zh_CN" />
@@ -188,6 +189,18 @@ const generatePublicationPages = async () => {
     .join('');
   await writeFile(resolve(dist, 'feed.xml'), `<?xml version="1.0" encoding="utf-8"?>\n<feed xmlns="http://www.w3.org/2005/Atom"><id>${PUBLIC_BASE_URL}</id><title>${PUBLICATION_NAME}</title><subtitle>AI 基建、CCUS 与能源转型的专业半月刊</subtitle><link href="${PUBLIC_BASE_URL}"/><link rel="self" href="${absoluteUrl('feed.xml')}"/><updated>${escapeXml(latestUpdated)}</updated>${feedEntries}</feed>\n`, 'utf8');
 
+  const rssItems = [...publicNews]
+    .sort((a, b) => new Date(b.adopted_at || b.published_at || 0).getTime() - new Date(a.adopted_at || a.published_at || 0).getTime())
+    .map((item) => {
+      const published = new Date(item.published_at || item.adopted_at || latestUpdated);
+      const pubDate = Number.isNaN(published.getTime()) ? new Date(latestUpdated).toUTCString() : published.toUTCString();
+      return `<item><guid isPermaLink="true">${escapeXml(articleUrl(item.id))}</guid><title>${escapeXml(item.title)}</title><link>${escapeXml(articleUrl(item.id))}</link><pubDate>${escapeXml(pubDate)}</pubDate><description>${escapeXml(concise(item.short_summary || item.long_summary || ''))}</description><category>${escapeXml(channelName(item.channel_id))}</category></item>`;
+    })
+    .join('');
+  const latestDate = new Date(latestUpdated);
+  const lastBuildDate = Number.isNaN(latestDate.getTime()) ? new Date(0).toUTCString() : latestDate.toUTCString();
+  await writeFile(resolve(dist, 'rss.xml'), `<?xml version="1.0" encoding="utf-8"?>\n<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom"><channel><title>${PUBLICATION_NAME}</title><link>${PUBLIC_BASE_URL}</link><description>AI 基建、CCUS 与能源转型的专业半月刊</description><language>zh-CN</language><lastBuildDate>${escapeXml(lastBuildDate)}</lastBuildDate><atom:link href="${absoluteUrl('rss.xml')}" rel="self" type="application/rss+xml"/>${rssItems}</channel></rss>\n`, 'utf8');
+
   const sitemapEntries = [
     { loc: PUBLIC_BASE_URL, lastmod: latestUpdated },
     ...publishedIssues.map((issue) => ({ loc: issueUrl(issue.issue_number), lastmod: issue.updated_at || issue.published_at || issue.coverage_end || issue.coverage_start })),
@@ -266,4 +279,4 @@ await build({
 });
 await generatePublicationPages();
 
-console.log(`NewsFlow build complete: v${appVersion}; static article/issue pages + Atom feed + sitemap generated; public Reader contains adopted publication data only; Supabase sync ${supabaseConfig.enabled ? 'enabled' : 'disabled'}; Cloudflare RUM ${cloudflareAnalyticsToken ? 'enabled' : 'disabled'}.`);
+console.log(`NewsFlow build complete: v${appVersion}; static article/issue pages + Atom/RSS feeds + sitemap generated; public Reader contains adopted publication data only; Supabase sync ${supabaseConfig.enabled ? 'enabled' : 'disabled'}; Cloudflare RUM ${cloudflareAnalyticsToken ? 'enabled' : 'disabled'}.`);

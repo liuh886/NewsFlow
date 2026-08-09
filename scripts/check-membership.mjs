@@ -41,6 +41,7 @@ for (const contract of [
   'feedbackEnabled: true',
   "mountSelectors: ['.top-actions']",
   'compactTrigger: true',
+  'NewsFlow Pro 解锁编辑评议权限',
   'sb_publishable_',
 ]) {
   if (!config.includes(contract)) throw new Error(`NewsFlow account config is missing ${contract}`);

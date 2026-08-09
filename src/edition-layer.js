@@ -144,7 +144,7 @@ const renderCurrentIssue = (edition, issue) => {
   const coverSignal = signals.find((signal) => signal.id === coverSignalId) || null;
   const secondarySignals = coverSignalId ? signals.filter((signal) => signal.id !== coverSignalId) : signals;
   const signalButtons = secondarySignals.map((signal, index) => `
-    <button class="issue-signal-link" data-action="open" data-id="${escapeEditionHtml(signal.id)}">
+    <button class="issue-signal-link" data-action="open" data-id="${escapeEditionHtml(signal.id)}" data-channel-id="${escapeEditionHtml(signal.channel_id || '')}">
       <span>${String(index + 1).padStart(2, '0')}</span>
       <span>${escapeEditionHtml(signal.title || `打开本期文章 ${index + 1}`)}</span>
     </button>`).join('');
@@ -184,7 +184,7 @@ const renderChannelView = () => {
   const signals = sortedChannelSignals(channel.id);
   const selected = selectedSignalIds();
   const list = signals.slice(0, 10).map((item, index) => `
-    <button class="issue-signal-link" data-action="open" data-id="${escapeEditionHtml(item.id)}">
+    <button class="issue-signal-link" data-action="open" data-id="${escapeEditionHtml(item.id)}" data-channel-id="${escapeEditionHtml(item.channel_id || channel.id)}">
       <span>${selected.has(String(item.id)) ? '选' : String(index + 1).padStart(2, '0')}</span>
       <span>${escapeEditionHtml(item.title)}</span>
     </button>`).join('');

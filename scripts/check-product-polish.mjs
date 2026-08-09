@@ -36,6 +36,7 @@ if (!appJs.includes('AbortSignal.timeout(5000)')) throw new Error('Reader data o
 for (const contract of ['按时间排序', '按你的反馈排序', 'personalizationReady', 'recommendationScore(b) - recommendationScore(a)']) {
   if (!appJs.includes(contract)) throw new Error(`Reader utility ranking contract is missing ${contract}`);
 }
+if (!appJs.includes('data-channel-id="${escapeHtml(item.channel_id || \'\')}"')) throw new Error('Reader cards must expose their canonical channel for topic numbering.');
 for (const forbidden of ['verifiedFallbackItems', './data/ai_digest.json', '信号评分', '高置信度', '评分 ${getQuality']) {
   if (appJs.includes(forbidden)) throw new Error(`Reader must not expose or synthesize internal editorial content: ${forbidden}`);
 }
@@ -63,6 +64,9 @@ for (const retired of ['renderPostIssueIntro', 'data-target="latest-change"', '�
 }
 for (const selector of ['.issue-hero-copy h2', 'font-size: clamp(48px, 6.2vw, 76px)', '.issue-judgment-band', '.global-search:focus-within']) {
   if (!editionCss.includes(selector)) throw new Error(`Premium Reader visual hierarchy is missing ${selector}`);
+}
+for (const contract of ["data-channel-id=\"${escapeEditionHtml(signal.channel_id || '')}\"", "data-channel-id='ccus-energy-transition'", "data-channel-id='ai-infrastructure'", 'font-size: 28px']) {
+  if (!`${editionJs}\n${editionCss}`.includes(contract)) throw new Error(`Reader topic/brand distinction is missing ${contract}`);
 }
 if (!editionCss.includes('.source-verification')) throw new Error('Reader source provenance styling is missing.');
 

@@ -24,12 +24,12 @@ for (const contract of ['ensureMobileReaderSearch', 'syncEditionDialogAccessibil
   if (!polish.includes(contract)) throw new Error(`Reader polish missing ${contract}`);
 }
 
-for (const contract of ["from('newsflow_editorial_members')", 'window.NewsFlowReviewGame?.isOpen?.()', 'window.NewsFlowReviewGame?.openFormal?.()', 'window.NewsFlowMode']) {
+for (const contract of ["from('newsflow_editorial_members')", "window.HaoAccount?.can?.('newsflow.pro')", 'window.NewsFlowReviewGame?.isOpen?.()', 'window.NewsFlowReviewGame?.openFormal?.()', 'window.NewsFlowMode']) {
   if (!mode.includes(contract)) throw new Error(`Mode controller missing ${contract}`);
 }
 if (mode.includes('window.setTimeout(openEditorGame')) throw new Error('Account hydration must not reopen the Review Game.');
 
-for (const contract of ["from('newsflow_candidates')", "from('newsflow_editorial_reviews')", "state.editorialRole === 'editor_in_chief'", 'window.NewsFlowReviewGame']) {
+for (const contract of ["from('newsflow_candidates')", "from('newsflow_editorial_reviews')", "state.editorialRole === 'editor_in_chief'", 'openOverview', 'window.NewsFlowReviewGame']) {
   if (!game.includes(contract)) throw new Error(`Review Game missing ${contract}`);
 }
 for (const retired of ['openGuest', 'openSettlement', 'CLOSE ISSUE', 'saveProductData']) {
@@ -65,13 +65,13 @@ for (const editorAsset of ['./review-game.js', './editorial-office.js', './edito
 for (const retired of ['review-candidates.json', 'pipeline-reviews.json', 'guest-editor-invites.json', 'ai_digest.json']) {
   if (index.includes(retired) || sw.includes(retired) || build.includes(retired)) throw new Error(`Reader artifact exposes retired data: ${retired}`);
 }
-for (const contract of ["const ASSET_VERSION = '__NEWSFLOW_VERSION__'", 'newsflow-reader-v${ASSET_VERSION}', './data/source-registry.json', './data/governance-status.json', './feed.xml']) {
+for (const contract of ["const ASSET_VERSION = '__NEWSFLOW_VERSION__'", 'newsflow-reader-v${ASSET_VERSION}', './data/source-registry.json', './data/governance-status.json', './feed.xml', './rss.xml']) {
   if (!sw.includes(contract)) throw new Error(`Service worker missing ${contract}`);
 }
 for (const editorAsset of ["versioned('./review-game.js')", "versioned('./editorial-office.js')", "versioned('./editorial-governance.js')"]) {
   if (sw.includes(editorAsset)) throw new Error(`Reader app shell must not precache editor-only asset ${editorAsset}`);
 }
-for (const contract of ['generatePublicationPages', "resolve(dist, 'feed.xml')", "resolve(dist, 'sitemap.xml')"]) {
+for (const contract of ['generatePublicationPages', "resolve(dist, 'feed.xml')", "resolve(dist, 'rss.xml')", "resolve(dist, 'sitemap.xml')"]) {
   if (!build.includes(contract)) throw new Error(`Build missing static publication contract ${contract}`);
 }
 if (!pages.includes("cancel-in-progress: ${{ github.event_name == 'pull_request' }}")) throw new Error('Pages main deployment cancellation policy regressed.');

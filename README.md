@@ -13,7 +13,7 @@ The product is considered **feature-stable** at the current Reader v3 + Editoria
 NewsFlow has three roles and one publication gate:
 
 - **主编 / Editor-in-Chief** — the only final publication authority. Cover Story and Accept create public adoption. The chief also owns Edition judgment, Storylines, trusted-source policy and Editor appointments.
-- **编辑 / Editor** — uses the same five-state Review Game, but every decision is advisory only.
+- **编辑 / Editor** — NewsFlow Pro users use the same five-state Review Game, but every decision is advisory only. Accepting a chief invitation also grants three months of NewsFlow Pro.
 - **读者 / Reader** — sees only chief-adopted Signals, formal Issues, Sections, Storylines, evidence and Archive. Candidate manuscripts, review votes, revision states and rejected material remain private.
 
 UI mode never grants authority. Editorial authority comes from authenticated Supabase membership.
@@ -59,7 +59,7 @@ Five decisions:
 4. 大修 / MAJOR REVISION
 5. 拒稿 / REJECT
 
-Desktop shortcuts are `1–5`; `Z` undoes the previous decision. Decision feedback remains visible for three seconds before auto-advance.
+Desktop shortcuts are `←/→` for manuscripts, `↑/↓` for decisions and `Enter` to confirm; `1–5` decide directly and `Z` undoes the previous decision. Decision feedback remains visible for three seconds before auto-advance.
 
 For an Editor, the five-state review is an opinion only. For the Editor-in-Chief, the same review row is the final editorial record. Only chief `cover_story` / `accept` is projected into `newsflow_editorial_adoptions`.
 
@@ -134,6 +134,10 @@ Publication synchronization uses one writer lock. It commits canonical state to 
 The PWA stores explicit feedback locally first. Signed-in readers may synchronize one current row per Signal through owner-only Supabase RLS. Neutral rows are deleted, each account is capped at 256 rows, and no passive analytics or server-side profile is stored. After three preference-bearing actions, the Reader reorders already-published Signals using quality, freshness and bounded preference affinity. Feedback cannot weaken evidence gates or publish.
 
 An authorized local Agent can run `npm run feedback:refresh` before research. The resulting snapshot and profile are gitignored ranking state without user identifiers.
+
+## Syndication and email delivery
+
+Every build emits both Atom (`feed.xml`) and RSS 2.0 (`rss.xml`) from chief-adopted public Signals. The Reader does not expose a subscription control yet, but either endpoint can be connected to a feed-to-email provider without adding subscriber data, background jobs or database usage to NewsFlow itself.
 
 ## Runtime ownership
 

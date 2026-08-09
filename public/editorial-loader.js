@@ -25,15 +25,34 @@
   let ready = false;
   let replaying = false;
 
+  const cachedMode = () => {
+    const userId = String(window.HaoAccount?.getState?.()?.user?.id || '');
+    const key = userId ? `newsflow_mode_v3:${userId}` : 'newsflow_mode_v3';
+    return localStorage.getItem(key) === 'editor' ? 'editor' : 'reader';
+  };
+
   const syncEditorialEntry = () => {
     window.requestAnimationFrame(() => {
       const actions = document.querySelector('.app-shell[data-product-model="magazine-edition"] .top-actions');
       const launcher = actions?.querySelector(':scope > [data-action="open-editorial-office"]');
       if (!launcher) return;
-      launcher.style.display = 'grid';
-      if (!launcher.dataset.newsflowRole) {
-        launcher.setAttribute('aria-label', '进入审稿模式');
-        launcher.title = '审稿模式';
+      launcher.classList.add('nf-mode-launcher');
+      launcher.style.display = 'inline-flex';
+      let label = launcher.querySelector('.nf-mode-launcher-label');
+      if (!label) {
+        label = document.createElement('span');
+        label.className = 'nf-mode-launcher-label';
+        launcher.append(label);
+      }
+      if (!ready) {
+        const mode = cachedMode();
+        launcher.dataset.newsflowRole = mode;
+        label.textContent = mode === 'editor' ? '编辑' : '读者';
+        launcher.setAttribute(
+          'aria-label',
+          mode === 'editor' ? '当前为编辑模式，打开模式切换' : '当前为读者模式，打开模式切换',
+        );
+        launcher.title = `当前：${label.textContent}模式`;
       }
     });
   };
@@ -99,10 +118,21 @@
       replaying = false;
     });
   });
+  window.addEventListener('newsflow:open-editorial-overview', () => {
+    if (ready || replaying) return;
+    void ensureEditorialRuntime().then(() => {
+      replaying = true;
+      window.dispatchEvent(new CustomEvent('newsflow:open-editorial-overview', {
+        detail: { lazyLoaded: true }
+      }));
+      replaying = false;
+    });
+  });
   window.addEventListener('newsflow:rendered', syncEditorialEntry);
   window.addEventListener('newsflow:edition-rendered', syncEditorialEntry);
   window.addEventListener('newsflow:editorial-rendered', syncEditorialEntry);
   window.addEventListener('newsflow:editorial-runtime-ready', syncEditorialEntry);
+  window.addEventListener('hao:account-changed', syncEditorialEntry);
 
   syncEditorialEntry();
   window.NewsFlowEditorialLoader = Object.freeze({ ensure: ensureEditorialRuntime });
