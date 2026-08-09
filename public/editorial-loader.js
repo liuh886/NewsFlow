@@ -18,7 +18,7 @@
   ];
   const scripts = [
     './review-game.js',
-    './review-archive.js',
+    './editorial-desk.js',
     './editorial-governance.js',
     './editorial-office.js'
   ];
