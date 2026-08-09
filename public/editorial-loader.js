@@ -14,6 +14,7 @@
     './review-game.css',
     './review-archive.css',
     './review-stamp.css',
+    './editorial-desk.css',
     './editorial-governance.css'
   ];
   const scripts = [
