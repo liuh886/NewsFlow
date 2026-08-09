@@ -132,10 +132,11 @@
       if (error) throw error;
       await readMembership();
       clearInviteParam();
-      state.notice = '编辑任命已生效。你的审稿意见会被主编看到，但不会自动改变正式刊物。';
+      state.notice = '编辑任命已生效，并已同步获得 3 个月 NewsFlow Pro。你的审稿意见会被主编看到，但不会自动改变正式刊物。';
       state.mode = 'editor';
       localStorage.setItem(modeStorageKey(), 'editor');
       await syncModePreference('editor');
+      window.setTimeout(() => void window.HaoAccount?.refresh?.(), 0);
       return true;
     } catch (error) {
       state.notice = '这份编辑任命无效、已过期或已被使用。';
