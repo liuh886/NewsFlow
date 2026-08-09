@@ -46,17 +46,19 @@
     "minimum_channel_share": 0.2
   },
   "cloud_sync": {
-    "enabled": false,
+    "enabled": true,
     "provider": "supabase",
     "mode": "current_state_upsert",
     "local_first": true,
     "fallback_to_export": true,
-    "maximum_batch_rows": 20,
-    "debounce_seconds": 5,
+    "maximum_batch_rows": 12,
+    "maximum_rows_per_reader": 256,
+    "debounce_seconds": 8,
     "sync_realtime": false,
     "upload_exposure_events": false,
     "upload_titles_summaries_or_excerpts": false,
     "raw_event_retention_days": 0,
+    "store_server_profiles": false,
     "required_rls_owner_column": "user_id"
   },
   "governance": {

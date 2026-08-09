@@ -90,6 +90,7 @@ Private workflow state:
 - Supabase `newsflow_editorial_reviews`
 - editorial membership and invitation records
 - governance drafts/publication queue
+- Supabase `signal_feedback` bounded reader current state
 
 The browser never receives a GitHub token or Supabase service-role credential.
 
@@ -106,17 +107,17 @@ source research / automated discovery
         ├─ minor / major / reject → private only
         └─ cover / accept
               → newsflow_editorial_adoptions
-              → hourly editorial sync
+              → twice-hourly editorial sync
               → public/data/news.json → Reader Latest
-              → 1st / 15th publisher
-              → public/data/issues.json → formal Issue
+              → live half-month Issue compiler
+              → public/data/issues.json → Current / frozen Issue
 ```
 
 Collection has no direct publication path. `scripts/update-content.mjs` is read-only. `scripts/apply-content.mjs --apply` writes reviewable Candidates directly to private Supabase and records only a sanitized public scan audit.
 
 ## Formal publication
 
-`.github/workflows/publish-edition.yml` runs at 09:15 Asia/Shanghai on the 1st and 15th.
+`.github/workflows/publication-sync.yml` is the sole publication writer. It synchronizes twice hourly and checks the Shanghai half-month boundary at midnight.
 
 - 1st: previous month 16th through month-end.
 - 15th: current month 1st through 14th.
@@ -126,11 +127,18 @@ Collection has no direct publication path. `scripts/update-content.mjs` is read-
 - Cover Story becomes `cover_signal_id`.
 - Quality scores support discovery/review only; there is no score-only publication fallback.
 
-Formal publication and hourly editorial synchronization share one publication-writer lock so they cannot concurrently rewrite `main`.
+Publication synchronization uses one writer lock. It commits canonical state to `main`; the separate Frontend workflow is the sole Pages builder/deployer.
+
+## Adaptive reader feedback
+
+The PWA stores explicit feedback locally first. Signed-in readers may synchronize one current row per Signal through owner-only Supabase RLS. Neutral rows are deleted, each account is capped at 256 rows, and no passive analytics or server-side profile is stored. After three preference-bearing actions, the Reader reorders already-published Signals using quality, freshness and bounded preference affinity. Feedback cannot weaken evidence gates or publish.
+
+An authorized local Agent can run `npm run feedback:refresh` before research. The resulting snapshot and profile are gitignored ranking state without user identifiers.
 
 ## Runtime ownership
 
-- `src/editorial-app.js` — public Signals, chronological Latest and quick evidence;
+- `src/editorial-app.js` — public Signals, local-first adaptive Latest and quick evidence;
+- `src/supabase-feedback.js` — bounded authenticated current-state synchronization;
 - `src/edition-layer.js` — Edition, Current Issue, Sections, Storylines and Archive;
 - `public/reading-surface.js/.css` — premium article reading;
 - `public/editorial-office.js` — mode selection, editorial identity and appointment entry;
@@ -140,7 +148,8 @@ Formal publication and hourly editorial synchronization share one publication-wr
 - `scripts/apply-content.mjs` — direct private Candidate submission;
 - `scripts/sync-adopted-signals.mjs` — chief adoption → Reader Latest;
 - `scripts/sync-editorial-governance.mjs` — chief governance publication → canonical GitHub files;
-- `scripts/publish-edition.mjs` — semi-monthly Issue compiler.
+- `scripts/sync-live-issue.mjs` — live/frozen half-month Issue compiler;
+- `scripts/pull-feedback.mjs` — private identifier-free bridge from Supabase current state to the local Agent.
 
 Retired architecture is deleted rather than wrapped: public Candidate/review JSON, repository-to-Supabase Candidate synchronization, local editorial decision stores, product-account publication projection, local Issue settlement, anonymous Guest real-Candidate packets, catalog-only sync and duplicate Edition YAML must not return.
 
@@ -153,7 +162,7 @@ npm run build
 python -m http.server 4173 --directory dist
 ```
 
-Direct Candidate submission requires `SUPABASE_URL` and `SUPABASE_SERVICE_ROLE_KEY`. Browser builds receive only the configured publishable Supabase key.
+Direct Candidate submission and private Agent feedback refresh require local `SUPABASE_URL` and `SUPABASE_SERVICE_ROLE_KEY`. Browser builds receive only repository-variable project URL and publishable key.
 
 ## CI and deployment
 
@@ -162,8 +171,8 @@ The stable CI surface is intentionally small:
 - **NewsFlow Repository Contract** — publication, privacy and authority invariants;
 - **NewsFlow Frontend** — contracts, static build and one real-browser acceptance smoke against the built `dist` artifact;
 - **CI Governance** — workflow/package policy;
-- **Sync chief editorial state** — only meaningful chief adoption/governance changes write back to GitHub and deploy;
-- **Publish autonomous edition** — freezes formal Issues twice monthly;
+- **Sync publication state** — only meaningful chief adoption/governance or Issue-boundary changes write back to GitHub;
+- **NewsFlow Frontend** — the sole Pages build/deploy path;
 - **Supabase activity heartbeat** — read-only project activity guard.
 
 The browser acceptance gate verifies Reader startup, opens/closes a Reading Surface article, checks mobile horizontal overflow and fails on uncaught runtime errors. It lives inside the existing Frontend workflow; there is no browser matrix or duplicate CI workflow.

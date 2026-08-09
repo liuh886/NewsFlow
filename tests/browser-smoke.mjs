@@ -20,6 +20,56 @@ try {
     timeout: 15_000,
   });
 
+  await page.evaluate(() => {
+    localStorage.setItem('newsflow_feedback_v1', JSON.stringify([
+      {
+        event_id: 'smoke-useful-1',
+        occurred_at: '2026-08-09T02:00:00.000Z',
+        edition_id: 'frontier-systems-review',
+        signal_id: 'nvidia-lancium-stargate-power-investment-2026',
+        action: 'useful',
+        channel_id: 'ai-infrastructure',
+        storyline_ids: ['ai-energy-foundation'],
+        tags: ['Data Center'],
+        source: 'Reuters',
+      },
+      {
+        event_id: 'smoke-bookmark-2',
+        occurred_at: '2026-08-09T02:01:00.000Z',
+        edition_id: 'frontier-systems-review',
+        signal_id: 'texas-data-center-grid-deposit-risk-2026',
+        action: 'bookmark',
+        channel_id: 'ai-infrastructure',
+        storyline_ids: ['ai-energy-foundation'],
+        tags: ['Data Center'],
+        source: 'Reuters',
+      },
+      {
+        event_id: 'smoke-negative-3',
+        occurred_at: '2026-08-09T02:02:00.000Z',
+        edition_id: 'frontier-systems-review',
+        signal_id: 'openai-astra-critical-cyber-deployment-controls-2026',
+        action: 'not_interested',
+        channel_id: 'ai-infrastructure',
+        storyline_ids: ['ai-model-layer'],
+        tags: ['Cybersecurity'],
+        source: 'Reuters',
+      },
+    ]));
+  });
+  await page.reload({ waitUntil: 'domcontentloaded' });
+  await page.locator('#app .app-shell[data-product-model="magazine-edition"]').waitFor({ state: 'visible' });
+  await page.locator('#app [data-action="feedback-center"]').evaluate((button) => button.click());
+  const preferenceCount = await page.locator('#app .feedback-stats strong').first().innerText();
+  await page.locator('#app button[data-action="close-feedback"]').evaluate((button) => button.click());
+  const adaptiveSort = await page.locator('#app .feed-heading span').innerText();
+  if (!adaptiveSort.includes('按你的反馈排序')) {
+    const storageSnapshot = await page.evaluate(() => Object.fromEntries(Object.keys(localStorage)
+      .filter((key) => key.includes('feedback') || key.includes('bookmark'))
+      .map((key) => [key, localStorage.getItem(key)])));
+    throw new Error(`Reader did not activate preference ranking after three explicit actions: ${adaptiveSort}; count=${preferenceCount}; stored=${JSON.stringify(storageSnapshot)}`);
+  }
+
   const bodyText = await page.locator('body').innerText();
   for (const operatorCopy of ['冻结后不再改写', '已经冻结的刊期', '自动流程不会自行改写']) {
     if (bodyText.includes(operatorCopy)) throw new Error(`Reader exposes operator-facing copy: ${operatorCopy}`);

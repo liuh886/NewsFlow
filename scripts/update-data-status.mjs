@@ -67,7 +67,8 @@ const serialized = `${JSON.stringify(payload, null, 2)}\n`;
 
 if (checkOnly) {
   const current = await readFile(outputPath, 'utf8');
-  if (current !== serialized) {
+  const normalizeNewlines = (value) => value.replace(/\r\n/g, '\n');
+  if (normalizeNewlines(current) !== normalizeNewlines(serialized)) {
     throw new Error('public/data/data-status.json is stale. Run npm run content:status after every completed scan or applied content change.');
   }
   console.log(`NewsFlow data status is current through ${payload.updated_at} with ${payload.signal_count} public Signals.`);

@@ -12,6 +12,8 @@ dist
 dist-ssr
 *.local
 content/inbox/
+content/feedback/cloud/
+content/state/reader-profile.local.json
 
 # Editor directories and files
 .vscode/*

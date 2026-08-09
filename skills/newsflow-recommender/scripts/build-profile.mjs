@@ -8,6 +8,7 @@ const args = new Map(process.argv.slice(2).map((entry) => {
   return [key, rest.join('=') || true];
 }));
 const apply = args.has('apply');
+const output = String(args.get('output') || 'content/state/reader-profile.json');
 const readJson = async (path) => JSON.parse(await readFile(resolve(root, path), 'utf8'));
 const policy = await readJson('config/recommendation-policy.json');
 const eventInput = await readJson(String(args.get('events') || 'content/feedback/events.json'));
@@ -82,7 +83,7 @@ const profile = {
 };
 
 if (apply) {
-  await writeFile(resolve(root, 'content/state/reader-profile.json'), `${JSON.stringify(profile, null, 2)}\n`, 'utf8');
+  await writeFile(resolve(root, output), `${JSON.stringify(profile, null, 2)}\n`, 'utf8');
   console.log(`Recommendation profile updated from ${events.length} feedback events.`);
 } else {
   console.log(JSON.stringify(profile, null, 2));

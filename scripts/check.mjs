@@ -16,9 +16,11 @@ const requiredFiles = [
   'public/data/governance-status.json', 'public/data/editorial-reactions.json', 'public/data/supabase-config.json',
   'scripts/build.mjs', 'scripts/update-content.mjs', 'scripts/apply-content.mjs', 'scripts/sync-live-issue.mjs',
   'scripts/sync-adopted-signals.mjs', 'scripts/sync-editorial-governance.mjs', 'scripts/update-data-status.mjs',
+  'scripts/pull-feedback.mjs', 'scripts/check-feedback-loop.mjs',
   'schemas/content-candidate-pack.schema.json', 'config/content-workflow.json', 'config/content-sources.json',
   'config/content-discovery.json', 'content/state/adoption-sync.json', 'content/state/governance-sync.json',
   'supabase/newsflow-editorial.sql', 'supabase/newsflow-publication-projection.sql',
+  'supabase/migrations/20260809040109_close_feedback_loop_free_plan.sql', 'supabase/tests/feedback_rls_test.sql',
   '.github/workflows/pages.yml', '.github/workflows/publication-sync.yml',
   'WORKFLOW.md', 'DESIGN.md', 'README.md'
 ];
@@ -29,7 +31,8 @@ const retiredFiles = [
   'public/data/guest-editor-invites.json', 'content/state/pipeline-review-queue.json', 'scripts/sync-supabase.mjs',
   '.github/workflows/supabase-sync.yml', 'scripts/aggregate-pipeline-reviews.mjs',
   'scripts/sync-supabase-catalog.mjs', 'editions/reference/edition.yaml',
-  'scripts/publish-edition.mjs', '.github/workflows/publish-edition.yml', '.github/workflows/editorial-sync.yml'
+  'scripts/publish-edition.mjs', '.github/workflows/publish-edition.yml', '.github/workflows/editorial-sync.yml',
+  '.github/workflows/review-pipeline.yml'
 ];
 for (const file of retiredFiles) {
   try {
@@ -49,7 +52,8 @@ const syntaxFiles = [
   'public/magazine-polish.js', 'public/reading-surface.js', 'public/editorial-office.js', 'public/review-game.js',
   'public/editorial-governance.js', 'public/sw.js', 'scripts/build.mjs', 'scripts/update-content.mjs',
   'scripts/apply-content.mjs', 'scripts/sync-live-issue.mjs', 'scripts/sync-adopted-signals.mjs',
-  'scripts/sync-editorial-governance.mjs', 'scripts/update-data-status.mjs'
+  'scripts/sync-editorial-governance.mjs', 'scripts/update-data-status.mjs', 'scripts/pull-feedback.mjs',
+  'scripts/check-feedback-loop.mjs'
 ];
 for (const file of syntaxFiles) {
   const syntax = spawnSync(process.execPath, ['--check', resolve(root, file)], { encoding: 'utf8' });
@@ -76,7 +80,8 @@ if (supabaseConfig.schema_version !== '1.0' || supabaseConfig.enabled !== false 
 if (packageManifest.dependencies?.['@supabase/supabase-js'] !== '2.112.0'
   || packageManifest.devDependencies?.supabase !== '2.111.0'
   || packageManifest.devDependencies?.esbuild !== '0.28.1') throw new Error('Pinned runtime/toolchain dependencies changed unexpectedly.');
-if (!packageManifest.scripts?.['editorial:sync'] || !packageManifest.scripts?.['content:update'] || !packageManifest.scripts?.['issue:sync']) throw new Error('Core editorial scripts are missing.');
+if (!packageManifest.scripts?.['editorial:sync'] || !packageManifest.scripts?.['content:update'] || !packageManifest.scripts?.['issue:sync']
+  || !packageManifest.scripts?.['feedback:refresh'] || !packageManifest.scripts?.['feedback:rank']) throw new Error('Core editorial or recommendation scripts are missing.');
 if (packageManifest.scripts?.['publish:edition'] || packageManifest.scripts?.['publish:edition:dry-run']) throw new Error('Retired frozen-edition publisher scripts must not return.');
 if (packageManifest.scripts?.['supabase:sync']) throw new Error('Repository-to-Supabase Candidate synchronization must not return.');
 
@@ -145,12 +150,16 @@ const [pagesWorkflow, publicationWorkflow] = await Promise.all([
   read('.github/workflows/pages.yml'), read('.github/workflows/publication-sync.yml')
 ]);
 if (!pagesWorkflow.includes('npm run check') || !pagesWorkflow.includes('npm run build')) throw new Error('Pages workflow must validate before building.');
+for (const contract of ['vars.NEWSFLOW_SUPABASE_URL', 'vars.NEWSFLOW_SUPABASE_PUBLISHABLE_KEY', 'actions/deploy-pages@v4']) {
+  if (!pagesWorkflow.includes(contract)) throw new Error(`Pages workflow missing deployment contract: ${contract}`);
+}
 for (const contract of [
   "cron: '17,47 * * * *'", "cron: '0 16 * * *'", 'group: newsflow-publication-writer', 'SUPABASE_PUBLISHABLE_KEY',
   'npm run editorial:sync', 'npm run issue:sync', 'npm run content:status', 'npm run check', 'npm run build',
-  'public/data/issues.json', 'actions/upload-pages-artifact@v4', 'actions/deploy-pages@v4', 'git pull --rebase origin main'
+  'public/data/issues.json', 'vars.NEWSFLOW_SUPABASE_URL', 'vars.NEWSFLOW_SUPABASE_PUBLISHABLE_KEY', 'git pull --rebase origin main'
 ]) if (!publicationWorkflow.includes(contract)) throw new Error(`Publication sync workflow missing ${contract}`);
-if (publicationWorkflow.includes('SUPABASE_SERVICE_ROLE_KEY') || publicationWorkflow.includes('npm run supabase:sync')) {
+if (publicationWorkflow.includes('SUPABASE_SERVICE_ROLE_KEY') || publicationWorkflow.includes('npm run supabase:sync')
+  || publicationWorkflow.includes('actions/upload-pages-artifact') || publicationWorkflow.includes('actions/deploy-pages')) {
   throw new Error('Publication sync must not carry service-role credentials or resurrect Candidate synchronization.');
 }
 

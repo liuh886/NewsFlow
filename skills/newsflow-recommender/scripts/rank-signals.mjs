@@ -9,7 +9,7 @@ const args = new Map(process.argv.slice(2).map((entry) => {
 }));
 const readJson = async (path) => JSON.parse(await readFile(resolve(root, path), 'utf8'));
 const policy = await readJson('config/recommendation-policy.json');
-const profile = await readJson('content/state/reader-profile.json');
+const profile = await readJson(String(args.get('profile') || 'content/state/reader-profile.json'));
 const news = (await readJson(String(args.get('input') || 'public/data/news.json'))).filter((item) => item.status !== 'archived');
 const limit = Math.max(1, Number(args.get('limit') || 10));
 const asOf = args.get('as-of') ? new Date(String(args.get('as-of'))) : new Date(Math.max(...news.map((item) => new Date(item.published_at).getTime())));

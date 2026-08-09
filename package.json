@@ -4,12 +4,17 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "check": "node scripts/check.mjs && node scripts/check-frontend-architecture.mjs && node scripts/check-language.mjs && node scripts/check-membership.mjs && node scripts/check-magazine-polish.mjs && node scripts/check-review-game.mjs && node scripts/check-editorial-governance.mjs && node scripts/check-product-polish.mjs && node scripts/check-ga4.mjs && node scripts/check-web-standards.mjs",
+    "check": "node scripts/check.mjs && node scripts/check-feedback-loop.mjs && node scripts/check-frontend-architecture.mjs && node scripts/check-language.mjs && node scripts/check-membership.mjs && node scripts/check-magazine-polish.mjs && node scripts/check-review-game.mjs && node scripts/check-editorial-governance.mjs && node scripts/check-product-polish.mjs && node scripts/check-ga4.mjs && node scripts/check-web-standards.mjs",
     "build": "node scripts/build.mjs",
     "issue:sync": "node scripts/sync-live-issue.mjs",
     "content:check": "node scripts/update-content.mjs --check",
     "content:update": "node scripts/apply-content.mjs",
     "content:status": "node scripts/update-data-status.mjs",
+    "feedback:pull": "node scripts/pull-feedback.mjs",
+    "feedback:profile": "node skills/newsflow-recommender/scripts/build-profile.mjs",
+    "feedback:rank": "node skills/newsflow-recommender/scripts/rank-signals.mjs",
+    "feedback:rank:local": "node skills/newsflow-recommender/scripts/rank-signals.mjs --profile=content/state/reader-profile.local.json --limit=10",
+    "feedback:refresh": "node scripts/pull-feedback.mjs --apply && node skills/newsflow-recommender/scripts/build-profile.mjs --events=content/feedback/cloud/current-state.json --output=content/state/reader-profile.local.json --apply",
     "editorial:sync": "node scripts/sync-editorial-governance.mjs && node scripts/sync-adopted-signals.mjs && node scripts/update-data-status.mjs"
   },
   "engines": {
