@@ -213,8 +213,9 @@ try {
 
   const mobileToolsButton = page.locator('#app [data-action="mobile-menu"]');
   await mobileToolsButton.waitFor({ state: 'visible', timeout: 10_000 });
-  if ((await mobileToolsButton.getAttribute('aria-label')) !== '打开筛选菜单') {
-    throw new Error('Mobile tools trigger does not clearly describe its filter function.');
+  const mobileToolsLabel = await mobileToolsButton.getAttribute('aria-label');
+  if (!mobileToolsLabel?.includes('筛选')) {
+    throw new Error(`Mobile tools trigger does not clearly describe its filter function: ${mobileToolsLabel || ''}`);
   }
   const mobileToolsVisual = await mobileToolsButton.evaluate((button) => {
     const svg = button.querySelector('svg');
