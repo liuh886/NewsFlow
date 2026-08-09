@@ -105,6 +105,13 @@ const readerUtilityState = () => {
   return { active, label };
 };
 
+const setEditionSurfaceHidden = (node, hidden) => {
+  if (!node) return;
+  node.hidden = hidden;
+  if (hidden) node.style.setProperty('display', 'none', 'important');
+  else node.style.removeProperty('display');
+};
+
 const renderPublicationNav = () => `
   <nav class="publication-nav" data-edition-layer="navigation" aria-label="刊物导航">
     <button type="button" data-edition-action="go-home" data-target="current-issue">本期</button>
@@ -340,8 +347,8 @@ const syncSectionView = (main, masthead, issue, utility) => {
     main.querySelector('.empty-state')
   ].filter(Boolean);
   const channel = channelDefinition(editionState.activeChannelId);
-  publicationNodes.forEach((node) => { node.hidden = Boolean(channel || utility.active); });
-  utilityNodes.forEach((node) => { node.hidden = Boolean(channel || !utility.active); });
+  publicationNodes.forEach((node) => setEditionSurfaceHidden(node, Boolean(channel || utility.active)));
+  utilityNodes.forEach((node) => setEditionSurfaceHidden(node, Boolean(channel || !utility.active)));
 
   const title = masthead.querySelector('.masthead-title');
   const deck = masthead.querySelector('.masthead-deck');
