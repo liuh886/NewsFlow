@@ -32,6 +32,9 @@ for (const contract of [
 for (const retired of ['MODE_STORAGE_KEY', 'newsflow_mode_v3', 'roleCard(', 'renderDialog', '你以什么身份进入编辑部？']) {
   if (office.includes(retired) || loader.includes(retired)) throw new Error(`Retired identity-mode path returned: ${retired}`);
 }
+if (!office.includes("removeAttribute('data-newsflow-role')") || !loader.includes("removeAttribute('data-newsflow-role')")) {
+  throw new Error('Editorial permission must not leak into Reader navigation controls.');
+}
 
 for (const contract of ["from('newsflow_candidates')", "from('newsflow_editorial_reviews')", "state.editorialRole === 'editor_in_chief'", 'openOverview', 'window.NewsFlowReviewGame']) {
   if (!game.includes(contract)) throw new Error(`Review Game missing ${contract}`);
@@ -60,7 +63,7 @@ if (reading.includes('stopImmediatePropagation') || reading.includes('window.fet
 for (const contract of ['width: min(760px, 54vw)', 'background: var(--surface-raised)', '@keyframes nf-reading-sheet-in']) {
   if (!readingCss.includes(contract)) throw new Error(`Reading side sheet missing ${contract}`);
 }
-for (const contract of ['.mobile-menu-button', 'display: none', 'repeat(5, minmax(0, 1fr))']) {
+for (const contract of ['.mobile-menu-button::before', 'mask-image:', 'repeat(5, minmax(0, 1fr))']) {
   if (!navigationCss.includes(contract)) throw new Error(`Mobile navigation missing ${contract}`);
 }
 if (startup.includes('window.fetch =')) throw new Error('Startup resilience must not patch fetch.');
@@ -86,4 +89,4 @@ for (const contract of ['generatePublicationPages', "resolve(dist, 'feed.xml')",
 }
 if (!pages.includes("cancel-in-progress: ${{ github.event_name == 'pull_request' }}")) throw new Error('Pages main deployment cancellation policy regressed.');
 
-console.log('NewsFlow frontend architecture contract passed: issue-first Reader, side-sheet reading, single mobile navigation, permission-routed editorial dashboard and explicit lifecycle boundaries.');
+console.log('NewsFlow frontend architecture contract passed: issue-first Reader, side-sheet reading, explicit mobile tools, permission-routed editorial dashboard and explicit lifecycle boundaries.');
