@@ -34,7 +34,7 @@ for (const contract of ['STARTUP_WATCHDOG_MS = 8000', 'data-startup-recovery="tr
 if (startupJs.includes('window.fetch =') || startupJs.includes('nativeFetch')) throw new Error('Startup resilience must not own or monkey-patch application data fetching.');
 if (!appJs.includes('AbortSignal.timeout(5000)')) throw new Error('Reader data owner must bound publication requests directly.');
 for (const contract of ['按时间排序', '按你的反馈排序', 'personalizationReady', 'recommendationScore(b) - recommendationScore(a)']) {
-  if (!appJs.includes(contract)) throw new Error(`Latest stream adaptive ranking contract is missing ${contract}`);
+  if (!appJs.includes(contract)) throw new Error(`Reader utility ranking contract is missing ${contract}`);
 }
 for (const forbidden of ['verifiedFallbackItems', './data/ai_digest.json', '信号评分', '高置信度', '评分 ${getQuality']) {
   if (appJs.includes(forbidden)) throw new Error(`Reader must not expose or synthesize internal editorial content: ${forbidden}`);
@@ -55,10 +55,12 @@ if (gameJs.includes('openGuest') || gameJs.includes('localStorage')) throw new E
 
 for (const contract of [
   'cover_signal_id', '阅读封面文章', 'Published with NewsFlow', 'AI 基建', 'CCUS 与能源转型',
-  "heading.textContent = '最新'", "firstEditorialAnchor.insertAdjacentHTML('beforebegin', renderCurrentIssue(edition, issue))",
-  "issueNode.insertAdjacentHTML('afterend', renderPostIssueIntro(issue))", '#section/', "channelSort: 'newest'", "data-sort=\"selected\"",
-  "issue?.lifecycle === 'live'", 'archivedIssues'
+  "firstEditorialAnchor.insertAdjacentHTML('beforebegin', renderCurrentIssue(edition, issue))", '#section/', "channelSort: 'newest'", "data-sort=\"selected\"",
+  'readerUtilityState', 'publishedIssueById', 'const issues = publishedIssues();', '期刊目录', '全部刊期', 'data-issue-current'
 ]) if (!editionJs.includes(contract)) throw new Error(`Premium Reader IA/section contract is missing ${contract}`);
+for (const retired of ['renderPostIssueIntro', 'data-target="latest-change"', '最新更新', 'archivedIssues']) {
+  if (editionJs.includes(retired)) throw new Error(`Retired parallel latest/archive path returned: ${retired}`);
+}
 for (const selector of ['.issue-hero-copy h2', 'font-size: clamp(48px, 6.2vw, 76px)', '.issue-judgment-band', '.global-search:focus-within']) {
   if (!editionCss.includes(selector)) throw new Error(`Premium Reader visual hierarchy is missing ${selector}`);
 }
@@ -96,4 +98,4 @@ if (!Number.isInteger(status.signal_count) || status.signal_count < 1) throw new
 const statusCheck = spawnSync(process.execPath, [resolve(root, 'scripts/update-data-status.mjs'), '--check'], { encoding: 'utf8' });
 if (statusCheck.status !== 0) throw new Error(statusCheck.stderr || statusCheck.stdout);
 
-console.log('NewsFlow product polish passed: premium publication-only Reader, lazy private editorial runtime, chief governance surface and live freshness.');
+console.log('NewsFlow product polish passed: issue-first publication Reader, current-inclusive TOC, lazy private editorial runtime, chief governance surface and live freshness.');
