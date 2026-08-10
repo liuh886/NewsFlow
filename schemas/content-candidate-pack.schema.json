@@ -39,7 +39,7 @@
             "storyline_ids_scanned": {"type": "array", "uniqueItems": true, "items": {"type": "string", "minLength": 1}},
             "surface_types_scanned": {"type": "array", "uniqueItems": true, "items": {"type": "string", "minLength": 1}},
             "x_topic_query_ids_run": {"type": "array", "uniqueItems": true, "items": {"type": "string", "minLength": 1}},
-            "x_query_runtime": {"enum": ["native_x", "web_search", "mixed", "not_run"]},
+            "x_query_runtime": {"enum": ["native_x", "not_run"]},
             "origin_yield": {
               "type": "array",
               "items": {
