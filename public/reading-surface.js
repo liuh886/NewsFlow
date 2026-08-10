@@ -10,6 +10,7 @@
     news: [],
     activeId: '',
     returnFocus: null,
+    returnPanelScroll: null,
     openedBySurface: false
   };
 
@@ -54,6 +55,26 @@
     const match = window.location.hash.match(/^#read\/(.+)$/);
     if (!match) return '';
     try { return decodeURIComponent(match[1]); } catch { return match[1]; }
+  };
+
+  const editionPanelRoute = () => (/^#(?:archive|storylines|storyline\/|issue\/)/.test(window.location.hash) ? window.location.hash : '');
+
+  const captureEditionPanelScroll = () => {
+    const route = editionPanelRoute();
+    const panel = document.querySelector('#app [data-edition-layer="panel"] .edition-panel');
+    if (!route || !panel) return null;
+    return { route, scrollTop: panel.scrollTop };
+  };
+
+  const restoreEditionPanelScroll = () => {
+    const snapshot = state.returnPanelScroll;
+    if (!snapshot || state.activeId || window.location.hash !== snapshot.route) return;
+    requestAnimationFrame(() => {
+      const panel = document.querySelector('#app [data-edition-layer="panel"] .edition-panel');
+      if (!panel) return;
+      panel.scrollTop = snapshot.scrollTop;
+      state.returnPanelScroll = null;
+    });
   };
 
   const orderedChannelItems = (item) => state.news
@@ -200,6 +221,7 @@
     const openingNewSurface = !state.activeId;
     if (openingNewSurface) {
       state.returnFocus = document.activeElement instanceof HTMLElement ? document.activeElement : null;
+      state.returnPanelScroll = captureEditionPanelScroll();
     }
     state.activeId = itemId(item);
     if (!options.replace) state.openedBySurface = !options.fromRoute;
@@ -266,6 +288,7 @@
       else if (action === 'read') open(internal.dataset.id || '', { replace: true });
       else if (action === 'storyline') {
         const storylineId = internal.dataset.storylineId || '';
+        state.returnPanelScroll = null;
         close();
         requestAnimationFrame(() => document.querySelector(`[data-edition-action="open-storyline"][data-storyline-id="${CSS.escape(storylineId)}"]`)?.click());
       }
@@ -284,14 +307,27 @@
   }, true);
 
   window.addEventListener('newsflow:rendered', () => requestAnimationFrame(decorateReadingLinks));
-  window.addEventListener('newsflow:edition-rendered', () => requestAnimationFrame(decorateReadingLinks));
+  window.addEventListener('newsflow:edition-rendered', () => requestAnimationFrame(() => {
+    decorateReadingLinks();
+    restoreEditionPanelScroll();
+  }));
   window.addEventListener('popstate', syncFromRoute);
   window.addEventListener('hashchange', syncFromRoute);
   window.addEventListener('keydown', (event) => {
     if (!state.activeId) return;
     if (event.key === 'Escape') {
       event.preventDefault();
+      event.stopPropagation();
       close();
+      return;
+    }
+    if (event.key === 'ArrowUp' || event.key === 'ArrowDown') {
+      const shell = document.querySelector(`#${ROOT_ID} .nf-reading-shell`);
+      if (!shell) return;
+      event.preventDefault();
+      event.stopPropagation();
+      const direction = event.key === 'ArrowUp' ? -1 : 1;
+      shell.scrollBy({ top: direction * Math.max(96, shell.clientHeight * 0.12), behavior: 'auto' });
       return;
     }
     if (event.key === 'ArrowLeft' || event.key === 'ArrowRight') {
@@ -300,10 +336,11 @@
       const target = event.key === 'ArrowLeft' ? adjacent.previous : adjacent.next;
       if (target) {
         event.preventDefault();
+        event.stopPropagation();
         open(itemId(target), { replace: true });
       }
     }
-  });
+  }, true);
 
   const initialize = async () => {
     try {
