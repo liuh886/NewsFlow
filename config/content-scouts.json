@@ -8,7 +8,62 @@
     "identity_review_days": 90,
     "independence_rule": "accounts in the same evidence_family count as one source"
   },
-  "layers": ["energy", "chips", "infrastructure", "models", "applications"],
+  "layers": ["energy", "chips", "infrastructure", "models", "applications", "ccus-projects", "ccus-markets", "ccus-policy"],
+  "rotation_policy": {
+    "fixed_scouts": "bounded_subset_each_run",
+    "topic_search": "at_least_one_query_per_active_channel",
+    "deep_review": "rotate_undercovered_layers_before_repeating_high-yield_accounts"
+  },
+  "topic_queries": [
+    {
+      "id": "ai-energy-problems",
+      "layers": ["energy"],
+      "query": "(AI OR data center) (grid OR interconnection OR transformer OR turbine OR power) has:links -is:retweet",
+      "purpose": "surface emerging power, equipment, siting and queue constraints beyond the fixed scout list"
+    },
+    {
+      "id": "ai-chip-bottlenecks",
+      "layers": ["chips"],
+      "query": "(AI chip OR accelerator OR HBM OR CoWoS OR packaging) (yield OR supply OR capacity OR cost OR bottleneck) has:links -is:retweet",
+      "purpose": "surface semiconductor bottleneck migration, qualification and supply-chain arguments"
+    },
+    {
+      "id": "ai-infrastructure-operations",
+      "layers": ["infrastructure"],
+      "query": "(AI data center OR AI cluster) (utilization OR cooling OR network OR outage OR financing OR TCO) has:links -is:retweet",
+      "purpose": "surface operational and economic evidence that project announcements miss"
+    },
+    {
+      "id": "ai-model-economics",
+      "layers": ["models"],
+      "query": "(model OR agent) (inference cost OR system card OR task horizon OR open weights OR reliability) has:links -is:retweet",
+      "purpose": "surface capability-cost, openness and deployment-control questions"
+    },
+    {
+      "id": "ai-application-reality",
+      "layers": ["applications"],
+      "query": "(AI agent OR enterprise AI OR robotics) (productivity OR paid usage OR deployment OR failure OR workflow) has:links -is:retweet",
+      "purpose": "surface adoption, workflow redesign and failure evidence"
+    },
+    {
+      "id": "ccus-project-reality",
+      "layers": ["ccus-projects"],
+      "query": "(CCS OR CCUS OR carbon capture) (FID OR EPC OR commissioning OR capture rate OR cancellation OR delay) has:links -is:retweet",
+      "purpose": "surface project-conversion, delivery and operational evidence"
+    },
+    {
+      "id": "ccus-market-formation",
+      "layers": ["ccus-markets"],
+      "query": "(CCS OR CCUS OR CO2 storage) (financing OR tariff OR capacity contract OR cost OR utilization OR supply chain) has:links -is:retweet",
+      "purpose": "surface capital, network utilization, cost and industry-formation arguments"
+    },
+    {
+      "id": "ccus-policy-friction",
+      "layers": ["ccus-policy"],
+      "query": "(CCS OR CCUS OR carbon storage) (Class VI OR MRV OR liability OR permit OR cross-border OR policy) has:links -is:retweet",
+      "purpose": "surface regulatory friction, policy durability and responsibility questions"
+    }
+  ],
   "scouts": [
     {
       "id": "jesse-jenkins",
@@ -165,6 +220,32 @@
       "allowed_uses": ["lead_discovery", "counter_evidence_discovery", "methodology_context"],
       "promotion_policy": "discovery_only",
       "limitations": ["critical commentary is a counter-evidence lead, not automatic refutation; follow to the cited study, dataset or analysis"]
+    },
+    {
+      "id": "global-ccs-institute-x",
+      "name": "Global CCS Institute",
+      "handle": "GlobalCCS",
+      "x_url": "https://x.com/GlobalCCS",
+      "layers": ["ccus-projects", "ccus-markets", "ccus-policy"],
+      "topics": ["global CCS pipeline", "technology", "project delivery", "policy", "market development", "regional trends"],
+      "canonical_sources": ["https://www.globalccsinstitute.com/"],
+      "evidence_family": "global-ccs-institute",
+      "allowed_uses": ["lead_discovery", "industry_context", "report_discovery", "counter_evidence_discovery"],
+      "promotion_policy": "discovery_only",
+      "limitations": ["the Institute advocates CCS deployment; follow posts to the underlying report, project record or public policy document and preserve stakeholder attribution"]
+    },
+    {
+      "id": "ieaghg-x",
+      "name": "IEA Greenhouse Gas R&D Programme",
+      "handle": "IEAGHG",
+      "x_url": "https://x.com/IEAGHG",
+      "layers": ["ccus-projects", "ccus-markets", "ccus-policy"],
+      "topics": ["CCUS technical research", "capture cost", "storage", "monitoring", "GHGT research", "technology evidence"],
+      "canonical_sources": ["https://ieaghg.org/"],
+      "evidence_family": "ieaghg",
+      "allowed_uses": ["lead_discovery", "technical_report_discovery", "research_context", "counter_evidence_discovery"],
+      "promotion_policy": "discovery_only",
+      "limitations": ["conference and social posts are discovery leads; use the full report, paper, proceedings or methodology before factual promotion"]
     }
   ]
 }
