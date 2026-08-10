@@ -1,0 +1,85 @@
+name: Paid discovery probe
+
+on:
+  workflow_dispatch:
+    inputs:
+      provider:
+        description: Paid search provider to use once
+        required: true
+        type: choice
+        options:
+          - xai
+          - tavily
+      xai_mode:
+        description: xAI X-search mode
+        required: true
+        default: topics
+        type: choice
+        options:
+          - topics
+          - scouts
+      tavily_purpose:
+        description: Tavily allowed use case
+        required: true
+        default: verify
+        type: choice
+        options:
+          - verify
+          - gap
+          - social-x
+      query:
+        description: Tavily query; ignored for xAI
+        required: false
+        type: string
+
+permissions:
+  contents: read
+
+concurrency:
+  group: newsflow-paid-discovery
+  cancel-in-progress: false
+
+jobs:
+  probe:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    steps:
+      - name: Checkout main
+        uses: actions/checkout@v6
+        with:
+          ref: main
+
+      - name: Set up Node
+        uses: actions/setup-node@v6
+        with:
+          node-version: 22
+
+      - name: Run one bounded xAI X-search request
+        if: inputs.provider == 'xai'
+        env:
+          XAI_API_KEY: ${{ secrets.XAI_API_KEY }}
+          XAI_DISCOVERY_MODE: ${{ inputs.xai_mode }}
+          XAI_DISCOVERY_DAYS: '3'
+          XAI_DISCOVERY_MAX_LEADS: '6'
+        run: node scripts/pull-xai-discovery.mjs > discovery-output.json
+
+      - name: Run one basic Tavily query
+        if: inputs.provider == 'tavily'
+        env:
+          TAVILY_API_KEY: ${{ secrets.TAVILY_API_KEY }}
+          TAVILY_PURPOSE: ${{ inputs.tavily_purpose }}
+          TAVILY_QUERY: ${{ inputs.query }}
+          TAVILY_MAX_RESULTS: '5'
+          TAVILY_RESERVE_CREDITS: '100'
+          TAVILY_DAYS: '7'
+        run: node scripts/pull-tavily-discovery.mjs > discovery-output.json
+
+      - name: Publish bounded result summary
+        run: |
+          echo '## Paid discovery probe' >> "$GITHUB_STEP_SUMMARY"
+          echo '' >> "$GITHUB_STEP_SUMMARY"
+          echo 'Manual-only run. No Candidate or Reader publication was written.' >> "$GITHUB_STEP_SUMMARY"
+          echo '' >> "$GITHUB_STEP_SUMMARY"
+          echo '```json' >> "$GITHUB_STEP_SUMMARY"
+          cat discovery-output.json >> "$GITHUB_STEP_SUMMARY"
+          echo '```' >> "$GITHUB_STEP_SUMMARY"
