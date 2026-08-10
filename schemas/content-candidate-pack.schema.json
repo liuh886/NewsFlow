@@ -28,6 +28,17 @@
             "workflow_version": {"const": "1.0.0"},
             "model": {"type": "string", "minLength": 1}
           }
+        },
+        "collection_observations": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["source_ids_scanned", "scout_ids_scanned", "material_lead_count", "full_text_review_count"],
+          "properties": {
+            "source_ids_scanned": {"type": "array", "uniqueItems": true, "items": {"type": "string", "minLength": 1}},
+            "scout_ids_scanned": {"type": "array", "uniqueItems": true, "items": {"type": "string", "minLength": 1}},
+            "material_lead_count": {"type": "integer", "minimum": 0},
+            "full_text_review_count": {"type": "integer", "minimum": 0}
+          }
         }
       }
     },
