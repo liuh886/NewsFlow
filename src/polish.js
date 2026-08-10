@@ -164,6 +164,40 @@ let editionPanelReturnFocus = null;
 let syncingEditionRoute = false;
 let initialEditionRouteSynced = false;
 
+const activeEditionPanel = () => appRoot?.querySelector('[data-edition-layer="panel"] .edition-panel') || null;
+
+const rememberEditionPanelScroll = () => {
+  const panel = activeEditionPanel();
+  if (!panel || !window.history.state?.newsflowEdition) return;
+  window.history.replaceState({
+    ...window.history.state,
+    newsflowEditionScrollTop: panel.scrollTop
+  }, '', window.location.href);
+};
+
+const restoreEditionPanelScroll = () => {
+  const top = Number(window.history.state?.newsflowEditionScrollTop);
+  if (!Number.isFinite(top) || top < 0) return;
+  window.requestAnimationFrame(() => {
+    const panel = activeEditionPanel();
+    if (panel) panel.scrollTop = top;
+  });
+};
+
+const scrollEditionPanelWithKeyboard = (event) => {
+  const panel = activeEditionPanel();
+  if (!panel || document.body.classList.contains('nf-reading-open')) return false;
+  if (!['ArrowUp', 'ArrowDown'].includes(event.key) || event.metaKey || event.ctrlKey || event.altKey) return false;
+  const active = document.activeElement;
+  if (active?.matches?.('input, textarea, select, [contenteditable="true"]')) return false;
+  event.preventDefault();
+  event.stopPropagation();
+  const direction = event.key === 'ArrowUp' ? -1 : 1;
+  const distance = Math.max(180, Math.min(panel.clientHeight * 0.72, 560));
+  panel.scrollBy({ top: direction * distance, behavior: 'smooth' });
+  return true;
+};
+
 const setEditionBackgroundInert = (inert) => {
   const shell = appRoot?.querySelector('.app-shell');
   const panelLayer = shell?.querySelector('[data-edition-layer="panel"]');
@@ -177,7 +211,7 @@ const setEditionBackgroundInert = (inert) => {
 };
 
 const syncEditionDialogAccessibility = () => {
-  const panel = appRoot?.querySelector('[data-edition-layer="panel"] .edition-panel');
+  const panel = activeEditionPanel();
   if (panel && !editionPanelOpen) {
     if (!editionPanelReturnFocus) editionPanelReturnFocus = captureFocusReference(document.activeElement);
     editionPanelOpen = true;
@@ -230,8 +264,10 @@ const syncEditionRouteFromLocation = () => {
 
   syncingEditionRoute = true;
   try {
-    if (target) target.click();
-    else if (appRoot?.querySelector('[data-edition-layer="panel"]')) {
+    if (target) {
+      target.click();
+      restoreEditionPanelScroll();
+    } else if (appRoot?.querySelector('[data-edition-layer="panel"]')) {
       appRoot.querySelector('[data-edition-action="close-panel"]')?.click();
     }
   } finally {
@@ -240,7 +276,7 @@ const syncEditionRouteFromLocation = () => {
 };
 
 const trapEditionFocus = (event) => {
-  const panel = appRoot?.querySelector('[data-edition-layer="panel"] .edition-panel');
+  const panel = activeEditionPanel();
   if (!panel || event.key !== 'Tab') return;
   const focusable = [...panel.querySelectorAll(focusableSelector)].filter((element) => !element.hidden && element.getClientRects().length);
   if (!focusable.length) return;
@@ -411,6 +447,7 @@ document.addEventListener('click', (event) => {
   }
 
   if (editionAction && ['open-archive', 'open-storylines', 'open-storyline', 'open-issue'].includes(editionAction)) {
+    if (!syncingEditionRoute) rememberEditionPanelScroll();
     if (!editionPanelOpen) editionPanelReturnFocus = captureFocusReference(target);
     pushEditionRoute(editionRouteForAction(target));
   } else if (editionAction === 'close-panel' && !syncingEditionRoute) {
@@ -436,6 +473,7 @@ document.addEventListener('click', (event) => {
 }, true);
 
 document.addEventListener('keydown', (event) => {
+  if (scrollEditionPanelWithKeyboard(event)) return;
   trapSearchFocus(event);
   trapEditionFocus(event);
   if (event.key === 'Escape' && searchWasOpen) {
