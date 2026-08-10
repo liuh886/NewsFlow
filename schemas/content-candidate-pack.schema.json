@@ -32,7 +32,15 @@
         "collection_observations": {
           "type": "object",
           "additionalProperties": false,
-          "required": ["source_ids_scanned", "scout_ids_scanned", "material_lead_count", "full_text_review_count"],
+          "required": [
+            "source_ids_scanned",
+            "scout_ids_scanned",
+            "x_topic_query_ids_run",
+            "x_query_runtime",
+            "x_post_read_count",
+            "material_lead_count",
+            "full_text_review_count"
+          ],
           "properties": {
             "source_ids_scanned": {"type": "array", "uniqueItems": true, "items": {"type": "string", "minLength": 1}},
             "scout_ids_scanned": {"type": "array", "uniqueItems": true, "items": {"type": "string", "minLength": 1}},
@@ -40,6 +48,7 @@
             "surface_types_scanned": {"type": "array", "uniqueItems": true, "items": {"type": "string", "minLength": 1}},
             "x_topic_query_ids_run": {"type": "array", "uniqueItems": true, "items": {"type": "string", "minLength": 1}},
             "x_query_runtime": {"enum": ["native_x", "not_run"]},
+            "x_post_read_count": {"type": "integer", "minimum": 0},
             "origin_yield": {
               "type": "array",
               "items": {
