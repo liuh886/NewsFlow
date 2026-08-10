@@ -1,10 +1,10 @@
 {
   "schema_version": "1.0",
   "edition_id": "frontier-systems-review",
-  "updated_at": "2026-08-10T06:18:00.000Z",
+  "updated_at": "2026-08-10T07:09:00.000Z",
   "timezone": "Asia/Shanghai",
   "source": "content-run",
   "signal_count": 22,
   "latest_signal_at": "2026-08-09T12:07:00.000Z",
-  "audit_artifact": "20260810T061800Z-42e25914dd.json"
+  "audit_artifact": "20260810T070900Z-08a631f512.json"
 }
