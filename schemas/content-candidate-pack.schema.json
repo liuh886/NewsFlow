@@ -36,6 +36,9 @@
           "properties": {
             "source_ids_scanned": {"type": "array", "uniqueItems": true, "items": {"type": "string", "minLength": 1}},
             "scout_ids_scanned": {"type": "array", "uniqueItems": true, "items": {"type": "string", "minLength": 1}},
+            "storyline_ids_scanned": {"type": "array", "uniqueItems": true, "items": {"type": "string", "minLength": 1}},
+            "surface_types_scanned": {"type": "array", "uniqueItems": true, "items": {"type": "string", "minLength": 1}},
+            "x_topic_query_ids_run": {"type": "array", "uniqueItems": true, "items": {"type": "string", "minLength": 1}},
             "material_lead_count": {"type": "integer", "minimum": 0},
             "full_text_review_count": {"type": "integer", "minimum": 0}
           }
@@ -71,6 +74,16 @@
         "long_summary": {"$ref": "#/$defs/nonEmptyText"},
         "tags": {"type": "array", "minItems": 1, "items": {"$ref": "#/$defs/nonEmptyText"}},
         "storyline_ids": {"type": "array", "minItems": 1, "items": {"$ref": "#/$defs/nonEmptyText"}},
+        "discovery_origin": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["type", "id"],
+          "properties": {
+            "type": {"enum": ["green_lane", "x_scout", "x_topic", "specialist", "primary", "institutional", "mainstream", "dataset", "paper", "conference", "filing", "engineering_procurement", "other"]},
+            "id": {"type": "string", "minLength": 1},
+            "url": {"type": "string", "format": "uri", "pattern": "^https://"}
+          }
+        },
         "scores": {
           "type": "object",
           "additionalProperties": false,
