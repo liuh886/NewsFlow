@@ -67,6 +67,7 @@ const base = {
   scout_ids: mode === 'scouts' ? selected.map((item) => item.id) : [],
   request_count: 0,
   x_search_tool_call_count: 0,
+  x_search_output_item_count: 0,
   citation_count: 0,
   cost_usd: 0,
   max_leads: maxLeads,
@@ -135,7 +136,11 @@ const text = output.flatMap((item) => Array.isArray(item.content) ? item.content
   .map((part) => part.text)
   .join('\n')
   .trim();
-const xSearchCalls = output.filter((item) => item?.type === 'x_search_call').length;
+const xSearchOutputItems = output.filter((item) => item?.type === 'x_search_call').length;
+const serverSideToolsUsed = Number(payload?.usage?.num_server_side_tools_used ?? 0);
+const xSearchCalls = Number.isFinite(serverSideToolsUsed) && serverSideToolsUsed >= 0
+  ? serverSideToolsUsed
+  : xSearchOutputItems;
 const urls = new Set();
 const visit = (value) => {
   if (!value) return;
@@ -156,6 +161,7 @@ console.log(JSON.stringify({
   runtime: 'native_x',
   request_count: 1,
   x_search_tool_call_count: xSearchCalls,
+  x_search_output_item_count: xSearchOutputItems,
   citation_count: urls.size,
   cost_usd: Math.round(costUsd * 1_000_000) / 1_000_000,
   x_urls: [...urls].slice(0, maxLeads),
