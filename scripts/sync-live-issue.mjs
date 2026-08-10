@@ -134,8 +134,6 @@ const amendPreviousFrozenIssue = (issue) => {
   if (!lateAdoptions.length) return issue;
 
   const amendedIds = [...existingIds, ...lateAdoptions.map((item) => String(item.id))];
-  const amendedSignals = amendedIds.map((id) => newsById.get(id)).filter(Boolean);
-  const selectedByChannel = channelCounts(amendedSignals);
   return {
     ...issue,
     signal_ids: amendedIds,
@@ -143,13 +141,10 @@ const amendPreviousFrozenIssue = (issue) => {
     revision_note: issue.revision_note || '主编在下一刊期内补录属于本刊期覆盖窗口的迟到录用稿件；原封面与既有篇目顺序保持不变。',
     methodology: {
       ...(issue.methodology || {}),
-      candidate_count: eligible.length,
-      selected_count: amendedSignals.length,
-      editorial_adoption_count: eligible.length,
-      cover_story_count: amendedSignals.filter((item) => item.editorial_decision === 'cover_story').length,
-      editor_review_count: amendedSignals.reduce((sum, item) => sum + Number(item.ranking?.editor_review_count || 0), 0),
-      qualified_reader_feedback_count: amendedSignals.reduce((sum, item) => sum + Number(item.ranking?.reader_feedback_count || 0), 0),
-      selected_by_channel: Object.fromEntries(selectedByChannel),
+      // A frozen Issue keeps the candidate-pool audit captured at freeze. Late
+      // chief adoptions amend the published contents; they must not retroactively
+      // redefine historical candidate/review statistics.
+      selected_count: amendedIds.length,
       editorial_view_changed: true,
       post_freeze_amendment_count: Number(issue.methodology?.post_freeze_amendment_count || 0) + lateAdoptions.length
     }
