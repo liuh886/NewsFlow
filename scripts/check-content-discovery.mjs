@@ -4,6 +4,7 @@ import { spawnSync } from 'node:child_process';
 
 const root = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 const evaluator = resolve(root, 'scripts', 'update-content.mjs');
+const yieldReporter = resolve(root, 'scripts', 'report-discovery-yield.mjs');
 const now = new Date();
 const coverageStart = new Date(now.getTime() - 24 * 60 * 60 * 1000);
 const actor = {
@@ -68,4 +69,15 @@ impossibleYield.run.collection_observations.origin_yield = [
 ];
 expectFail(impossibleYield, /full_text_review_count exceeds lead_count/i, 'impossible origin yield');
 
-console.log('NewsFlow discovery telemetry contract passed: native-only X runtime and origin-yield invariants are enforced.');
+const yieldResult = spawnSync(process.execPath, [yieldReporter], { cwd: root, encoding: 'utf8' });
+if (yieldResult.status !== 0) throw new Error(`discovery yield report should run:\n${yieldResult.stderr || yieldResult.stdout}`);
+let yieldReport;
+try {
+  yieldReport = JSON.parse(yieldResult.stdout);
+} catch {
+  throw new Error(`discovery yield report must emit JSON:\n${yieldResult.stdout}`);
+}
+if (!Number.isInteger(yieldReport.telemetry_run_count) || yieldReport.telemetry_run_count < 1) throw new Error('discovery yield report must include at least one telemetry run');
+if (!Array.isArray(yieldReport.origins) || !yieldReport.origins.length) throw new Error('discovery yield report must expose aggregated origins');
+
+console.log('NewsFlow discovery telemetry contract passed: native-only X runtime, origin-yield invariants and derived yield reporting are enforced.');
