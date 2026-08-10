@@ -10,7 +10,7 @@ NewsFlow has one decisive publication gate:
 
 The stages are deliberately separate:
 
-1. automated/manual research discovers and verifies evidence, with Editor Green Lane referrals receiving first-pass discovery priority;
+1. automated/manual research discovers questions, arguments and verifiable evidence, with Editor Green Lane referrals receiving first-pass discovery priority;
 2. deterministic preflight decides whether an item is fit to become a **private Candidate**;
 3. reviewable Candidates are written directly to private Supabase;
 4. Editors produce advisory five-state scores and may revise them repeatedly, including after the chief has made a publication decision;
@@ -50,8 +50,9 @@ If two layers conflict, stop before applying and report the conflict.
 - Reader profile can prioritize search only; it may never weaken sourcing/evidence thresholds.
 - Declare `as_of`, `coverage_start`, `coverage_end` and `Asia/Shanghai` before searching.
 - Record the required actor fields exactly.
+- When the runtime can observe collection activity, populate `run.collection_observations` with the registered source IDs and X-scout IDs actually checked plus bounded counts for material leads and full-text reviews. These observations are telemetry only; they do not change source weights or editorial thresholds.
 
-### 2. Check the Editor Green Lane, then collect primary-first
+### 2. Check the Editor Green Lane, then collect questions and evidence
 
 Before normal discovery, read at most one queued Editor referral:
 
@@ -69,41 +70,57 @@ If the queue returns an item:
 - if it earns a Candidate, preserve its canonical URL so the database can close the matching referral automatically;
 - if it does not earn a Candidate, leave it queued unless the editorial team explicitly dismisses it later.
 
-Then collect every active Storyline in three passes. `source_ids` in `config/content-discovery.json` are intentionally ordered with authoritative records before media.
+Then collect every active Storyline through four bounded passes. `source_ids` in `config/content-discovery.json` deliberately mix authoritative records, registered specialist analysis and independent media because NewsFlow needs both **events** and **questions worth thinking about**.
 
-**Pass A — primary records**
+**Pass A — problem discovery and emerging arguments**
 
-- Start with `primary`, `standards_body`, `intergovernmental` and relevant `corporate_primary` sources.
+- Scan the registered X scouts and relevant long-form specialist sources during the normal run rather than relegating them to exceptional use.
+- Their value is often the framing itself: a bottleneck, failure mode, engineering trade-off, market contradiction or new way to formulate the problem may be material even when no conventional news event occurred.
+- X posts remain discovery-only under `config/content-scouts.json`; follow factual claims to the linked paper, filing, dataset, benchmark, repository, company document or other canonical evidence.
+- A registered long-form specialist article may itself become a Candidate when its analytical diagnosis is the material contribution, the full text is accessible, authorship is clear, factual claims are traceable and the piece passes the same quality gate as any other source. Use `expert_analysis` or `technical_diagnosis` rather than pretending it is an event announcement.
+- Do not force a specialist argument into a primary-source URL when doing so would erase the actual intellectual contribution. Primary evidence verifies facts; it does not replace the analyst's argument.
+
+**Pass B — primary records**
+
+- Check `primary`, `standards_body`, `intergovernmental` and relevant `corporate_primary` sources for evidence that confirms, complicates or falsifies the questions surfaced in Pass A and for material developments that did not first appear in commentary.
 - For grid and energy stories, prefer system-operator or regulator records over summaries of those records.
 - For semiconductor supply, distinguish sample, qualification, high-volume production, commercial shipment and delivered system capacity.
 - For model deployment, prefer system cards, deployment-safety records and first-party technical documentation when the claim is about that provider's model.
-- For CCUS, prefer permit registers, storage licences, regulatory decisions, FID/financial-close records and operating data over announced project pipelines.
 - Corporate sources prove facts about the reporting company only; keep forecasts and leadership claims attributed.
 
-**Pass B — independent discovery and corroboration**
+For **CCUS**, every run must cover two distinct evidence tracks:
 
-- Use Reuters, Financial Times and Associated Press to discover material events, quantify disputes and independently corroborate company claims.
-- When a media report points to an accessible regulator filing, company release, system card or project record containing the material fact, follow it and prefer that canonical primary URL for the Candidate.
+1. **project state** — FID, financing, permit, construction, commissioning, injection, operating data, delay and cancellation;
+2. **industry state** — pipeline-to-FID conversion, capital allocation, cost curves, equipment/vendor capacity, network utilisation, developer entry/exit, regional divergence, policy durability and changes in the industry's dominant thesis.
+
+A CCUS industry Signal does **not** need a single project announcement as its trigger. A high-quality institutional report, industry analysis, cost study or well-supported argument can earn attention when it changes how the sector should be understood. Separate observed deployment from modeled forecasts and attribute stakeholder views.
+
+**Pass C — independent reporting and corroboration**
+
+- Use Reuters, Financial Times and Associated Press to discover material events, quantify disputes and independently corroborate company or institutional claims.
+- When a media report points to an accessible regulator filing, company release, system card or project record containing the material fact, follow it and prefer that canonical primary URL when the Candidate is fundamentally about that fact.
 - Keep the media source as corroboration when it adds independent facts, unnamed-source reporting or conflict context that the primary record does not contain.
 - Do not create duplicate Candidates for the primary record and the media report about the same event.
 
-**Pass C — counter-evidence and specialist discovery**
+**Pass D — counter-evidence**
 
-- Run the configured `counter_queries` after the primary pass, not as a second copy of the normal scan.
-- Social scouts and Tier B specialist sources are discovery/context tools, not routine daily evidence feeds.
-- Follow specialist or social claims to the underlying paper, filing, dataset, benchmark artifact or project record before factual use.
+- Run the configured `counter_queries` as an explicit attempt to weaken the current editorial view, not as a second copy of the normal scan.
+- Revisit scouts, specialist analysis and stakeholder reports when they surface credible counter-theses or implementation failures.
+- A disagreement is useful only when the underlying evidence or reasoning is inspectable; do not reward contrarianism by itself.
 
 Collection discipline:
 
-- Do not scan every registered source merely because it exists; use the Storyline's ordered `source_ids` and stop expanding once the run has enough evidence to establish whether there is a material delta.
+- Do not scan every registered source merely because it exists. Complete a bounded problem-discovery pass, then use the Storyline's routed sources to resolve the most material questions.
+- For CCUS, do not stop after finding project announcements; complete at least one industry-state query in the run.
 - Access full source material before scoring. Search snippets, headlines and inaccessible summaries are not evidence.
-- Normalize URLs before comparison and compare the event against existing public Signals before spending time drafting a Candidate.
-- Recency alone is not novelty. A new article about an already-covered event is not a new Signal unless it adds a material fact, stage change, metric, contradiction or implementation consequence.
+- Normalize URLs before comparison and compare the event or argument against existing public Signals before spending time drafting a Candidate.
+- Recency alone is not novelty. A new article about an already-covered event is not a new Signal unless it adds a material fact, stage change, metric, contradiction, analytical framework or implementation consequence.
 - A zero-candidate run is a valid and often preferable result.
 
 ### 3. Earn editorial attention
 
 - Compare against existing **public** Signals and state the information delta.
+- For analytical pieces, state the thesis delta as clearly as an event delta: what question or causal mechanism is newly sharpened, and what evidence would falsify it?
 - Score facts, source, timeliness, news quality and industry impact.
 - Reject immaterial/repeated items.
 - A zero-candidate pack is valid.
@@ -120,6 +137,15 @@ Include:
 - verification state;
 - claim-level evidence;
 - five preflight score dimensions.
+
+When available, also include sanitized collection telemetry in `run.collection_observations`:
+
+- `source_ids_scanned` — registered source IDs actually checked;
+- `scout_ids_scanned` — registered X-scout IDs actually checked;
+- `material_lead_count` — leads that survived the initial relevance/novelty screen;
+- `full_text_review_count` — sources whose full text was actually inspected.
+
+This telemetry is accumulated for later source-yield analysis only. Do **not** use it yet to auto-remove, auto-demote or auto-promote sources.
 
 The pack is an exchange artifact, not durable editorial storage. Do not commit it to the public repository.
 
@@ -157,7 +183,10 @@ npm run content:update -- --input=content/inbox/<candidate-pack>.json --apply
 - writes accepted/reviewable Candidate payloads directly to private `newsflow_candidates`;
 - never writes `public/data/news.json`;
 - emits only sanitized run metadata/counts to the public audit surface;
+- preserves `run.collection_observations` inside that sanitized run audit when supplied;
 - leaves the transient Candidate pack outside durable Git history.
+
+A zero-Candidate run may still be applied when it carries useful collection observations; it records the scan without creating a manuscript or changing Reader state.
 
 If a newly persisted Candidate URL matches a queued Green Lane referral, the database marks that referral `ingested` and links its `candidate_id` automatically.
 
@@ -268,7 +297,10 @@ Report:
 
 - run window + actor/workflow version;
 - Green Lane referral checked, if any;
-- primary sources checked before media/specialist expansion;
+- X scouts / specialist problem-discovery sources checked;
+- primary and independent sources checked;
+- for CCUS, both project-state and industry-state coverage;
+- collection observation counts when available;
 - sources and Storylines checked;
 - preflight counts;
 - Candidates persisted;
@@ -279,8 +311,8 @@ Do not report a Candidate as published unless chief adoption and public GitHub s
 
 ## Terminal outcomes
 
-- `completed_no_material_change` — research complete; no Candidate earned attention.
+- `completed_no_material_change` — research complete; no Candidate earned attention; an observation-only audit may still be recorded.
 - `completed_dry_run` — Candidate pack evaluated; nothing persisted.
-- `completed_applied` — reviewable Candidates persisted privately; no Reader publication implied.
+- `completed_applied` — reviewable Candidates and/or sanitized collection observations were persisted; no Reader publication implied.
 - `needs_human_review` — at least one Candidate requires editorial judgment.
 - `blocked` — required evidence/access/contract inputs unavailable; never fabricate a substitute.
