@@ -133,4 +133,8 @@
 
   syncEditorialEntry();
   window.NewsFlowEditorialLoader = Object.freeze({ ensure: ensureEditorialRuntime });
+
+  if (new URLSearchParams(window.location.search).has('editor-invite')) {
+    void ensureEditorialRuntime();
+  }
 })();
