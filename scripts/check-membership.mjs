@@ -47,12 +47,14 @@ for (const contract of [
   'Newsflow Pro',
   '浏览候选稿件与编辑材料',
   'US$1/月开通 Newsflow Pro',
-  '受邀编辑可以获得限时 Newsflow Pro 免费体验',
   'sb_publishable_',
   "current.searchParams.has('editor-invite')",
   'redirectUrl: inviteRedirectUrl',
 ]) {
   if (!config.includes(contract)) throw new Error(`NewsFlow account config is missing ${contract}`);
+}
+if (config.includes('受邀编辑可以获得限时 Newsflow Pro 免费体验') || config.includes('Invited editors receive three months of complimentary Newsflow Pro')) {
+  throw new Error('Editor appointment benefits belong on the invitation guide, not the generic account upgrade surface.');
 }
 for (const contract of [
   'hao-account-newsflow',
