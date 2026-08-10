@@ -15,16 +15,16 @@ const clampInteger = (value, fallback, min, max) => {
   const parsed = Number.parseInt(String(value ?? ''), 10);
   return Number.isInteger(parsed) ? Math.min(max, Math.max(min, parsed)) : fallback;
 };
-const mode = String(args.get('mode') || 'topics');
+const mode = String(args.get('mode') || process.env.XAI_DISCOVERY_MODE || 'topics');
 if (!['topics', 'scouts'].includes(mode)) throw new Error('--mode must be topics or scouts');
 
-const days = clampInteger(args.get('days'), 3, 1, 7);
-const maxLeads = clampInteger(args.get('max-leads'), 6, 1, 8);
+const days = clampInteger(args.get('days') || process.env.XAI_DISCOVERY_DAYS, 3, 1, 7);
+const maxLeads = clampInteger(args.get('max-leads') || process.env.XAI_DISCOVERY_MAX_LEADS, 6, 1, 8);
 const topicById = new Map((config.topic_queries || []).map((item) => [item.id, item]));
 const scoutById = new Map((config.scouts || []).map((item) => [item.id, item]));
 
-const requestedTopicIds = parseIds(args.get('topic-ids'));
-const requestedScoutIds = parseIds(args.get('scout-ids'));
+const requestedTopicIds = parseIds(args.get('topic-ids') || process.env.XAI_DISCOVERY_TOPIC_IDS);
+const requestedScoutIds = parseIds(args.get('scout-ids') || process.env.XAI_DISCOVERY_SCOUT_IDS);
 for (const id of requestedTopicIds) if (!topicById.has(id)) throw new Error(`Unknown X topic query: ${id}`);
 for (const id of requestedScoutIds) if (!scoutById.has(id)) throw new Error(`Unknown X scout: ${id}`);
 
