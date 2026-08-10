@@ -45,6 +45,28 @@
       "allowed_uses": ["primary_evidence", "regulatory_decision", "docket_record"]
     },
     {
+      "id": "ercot",
+      "name": "Electric Reliability Council of Texas",
+      "domain": "ercot.com",
+      "class": "primary",
+      "tier": "Tier A",
+      "channels": ["ai-infrastructure"],
+      "storylines": ["ai-energy-foundation", "ai-infrastructure-layer"],
+      "allowed_uses": ["primary_evidence", "large_load_interconnection", "system_operations", "market_and_reliability_rule"],
+      "limitations": ["queue, study and forecast records describe system process and expected load; they do not prove a data center is financed, built or operating"]
+    },
+    {
+      "id": "pjm",
+      "name": "PJM Interconnection",
+      "domain": "pjm.com",
+      "class": "primary",
+      "tier": "Tier A",
+      "channels": ["ai-infrastructure"],
+      "storylines": ["ai-energy-foundation", "ai-infrastructure-layer"],
+      "allowed_uses": ["primary_evidence", "large_load_integration", "capacity_and_reliability", "market_rule"],
+      "limitations": ["planning assumptions and stakeholder proposals are not final interconnection approval or delivered generation capacity"]
+    },
+    {
       "id": "europa",
       "name": "European Union",
       "domain": "europa.eu",
@@ -63,6 +85,30 @@
       "channels": ["ccus-energy-transition"],
       "storylines": ["ccus-project-delivery", "ccus-network-economics", "evidence-governance"],
       "allowed_uses": ["primary_evidence", "project_status", "regulatory_decision"]
+    },
+    {
+      "id": "us-epa-class-vi",
+      "name": "U.S. EPA Class VI Geologic Sequestration",
+      "domain": "epa.gov",
+      "path_prefixes": ["/uic/"],
+      "class": "primary",
+      "tier": "Tier A",
+      "channels": ["ccus-energy-transition"],
+      "storylines": ["ccus-project-delivery", "evidence-governance"],
+      "allowed_uses": ["primary_evidence", "storage_permit", "permit_application", "monitoring_and_compliance"],
+      "limitations": ["permit applications and projects under review are not operating storage capacity; distinguish application, draft permit, final permit and injection status"]
+    },
+    {
+      "id": "nsta-carbon-storage",
+      "name": "North Sea Transition Authority Carbon Storage",
+      "domain": "nstauthority.co.uk",
+      "path_prefixes": ["/regulatory-information/carbon-storage/", "/regulatory-information/licensing-and-consents/", "/news-publications/"],
+      "class": "primary",
+      "tier": "Tier A",
+      "channels": ["ccus-energy-transition"],
+      "storylines": ["ccus-project-delivery", "ccus-network-economics", "evidence-governance"],
+      "allowed_uses": ["primary_evidence", "storage_licence", "storage_permit", "operational_guidance", "public_register"],
+      "limitations": ["licence awards and guidance do not by themselves prove project FID, construction completion or first injection"]
     },
     {
       "id": "global-ccs-institute",
@@ -206,6 +252,31 @@
       "allowed_uses": ["corroboration", "independent_reporting", "financial_context"]
     },
     {
+      "id": "openai-deployment-safety",
+      "name": "OpenAI Deployment Safety Hub",
+      "domain": "deploymentsafety.openai.com",
+      "class": "corporate_primary",
+      "tier": "Tier A",
+      "channels": ["ai-infrastructure"],
+      "storylines": ["ai-model-layer", "ai-infrastructure-layer"],
+      "allowed_uses": ["model_system_card", "capability_evaluation", "deployment_requirement", "safety_control"],
+      "leader_watch": {"role": "frontier-model capability and deployment controls"},
+      "limitations": ["system cards are first-party evidence for OpenAI models; deployment and safety conclusions must remain attributed and should not be generalized to the whole model market"]
+    },
+    {
+      "id": "anthropic-system-cards",
+      "name": "Anthropic System Cards",
+      "domain": "anthropic.com",
+      "path_prefixes": ["/system-cards", "/news/"],
+      "class": "corporate_primary",
+      "tier": "Tier A",
+      "channels": ["ai-infrastructure"],
+      "storylines": ["ai-model-layer", "ai-infrastructure-layer"],
+      "allowed_uses": ["model_system_card", "capability_evaluation", "deployment_requirement", "company_model_status"],
+      "leader_watch": {"role": "frontier-model capability, safeguards and deployment"},
+      "limitations": ["system cards and company updates are first-party evidence for Anthropic models; forecasts and comparative claims require attribution"]
+    },
+    {
       "id": "nvidia-ir",
       "name": "NVIDIA Investor Relations",
       "domain": "investor.nvidia.com",
@@ -241,6 +312,44 @@
       "allowed_uses": ["company_filing", "company_results", "foundry_capacity_and_process_ramp"],
       "leader_watch": {"role": "advanced logic manufacturing and packaging"},
       "limitations": ["process-roadmap, capacity and demand statements are company disclosures; intended capacity is not delivered wafer output"]
+    },
+    {
+      "id": "micron-ir",
+      "name": "Micron Investor Relations",
+      "domain": "investors.micron.com",
+      "path_prefixes": ["/news-releases/"],
+      "class": "corporate_primary",
+      "tier": "Tier A",
+      "channels": ["ai-infrastructure"],
+      "storylines": ["ai-chip-layer", "ai-infrastructure-layer"],
+      "allowed_uses": ["company_results", "memory_supply", "hbm_and_dram_ramp", "advanced_packaging", "storage_supply"],
+      "leader_watch": {"role": "HBM, DRAM and AI storage supply"},
+      "limitations": ["shipment, qualification, capacity and market-demand claims are company disclosures; separate samples, high-volume production and customer deployment"]
+    },
+    {
+      "id": "sk-hynix-news",
+      "name": "SK hynix Newsroom",
+      "domain": "news.skhynix.com",
+      "class": "corporate_primary",
+      "tier": "Tier A",
+      "channels": ["ai-infrastructure"],
+      "storylines": ["ai-chip-layer", "ai-infrastructure-layer"],
+      "allowed_uses": ["company_results", "memory_supply", "hbm_and_dram_ramp", "advanced_packaging", "ai_server_memory"],
+      "leader_watch": {"role": "HBM and full-stack AI memory supply"},
+      "limitations": ["technology leadership and demand statements are company claims; distinguish samples, qualification, mass production and actual customer shipment"]
+    },
+    {
+      "id": "samsung-semiconductor-news",
+      "name": "Samsung Global Newsroom Semiconductors",
+      "domain": "news.samsung.com",
+      "path_prefixes": ["/global/"],
+      "class": "corporate_primary",
+      "tier": "Tier A",
+      "channels": ["ai-infrastructure"],
+      "storylines": ["ai-chip-layer", "ai-infrastructure-layer"],
+      "allowed_uses": ["memory_supply", "hbm_and_dram_ramp", "foundry_status", "advanced_packaging", "storage_supply"],
+      "leader_watch": {"role": "memory, foundry and advanced packaging for AI systems"},
+      "limitations": ["use only semiconductor disclosures relevant to the registered Storylines; separate product samples and roadmap targets from mass production and commercial shipment"]
     },
     {
       "id": "amd-ir",
@@ -316,6 +425,18 @@
       "allowed_uses": ["company_project_status", "power_agreement", "supply_chain_agreement"],
       "leader_watch": {"role": "AI data-center development and infrastructure financing"},
       "limitations": ["community and sustainability claims need external context"]
+    },
+    {
+      "id": "palantir-ir",
+      "name": "Palantir Investor Relations",
+      "domain": "investors.palantir.com",
+      "class": "corporate_primary",
+      "tier": "Tier A",
+      "channels": ["ai-infrastructure"],
+      "storylines": ["ai-application-layer"],
+      "allowed_uses": ["company_results", "application_revenue", "production_deployment", "sec_filing"],
+      "leader_watch": {"role": "enterprise AI production deployment and application revenue"},
+      "limitations": ["company revenue is not automatically AI-attributable; isolate disclosed AI-related metrics and distinguish management attribution from independently measured productivity"]
     },
     {
       "id": "schneider-electric",
