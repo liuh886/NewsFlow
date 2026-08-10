@@ -51,7 +51,7 @@ If two layers conflict, stop before applying and report the conflict.
 - Declare `as_of`, `coverage_start`, `coverage_end` and `Asia/Shanghai` before searching.
 - Record the required actor fields exactly.
 
-### 2. Check the Editor Green Lane, then discover broadly
+### 2. Check the Editor Green Lane, then collect primary-first
 
 Before normal discovery, read at most one queued Editor referral:
 
@@ -69,11 +69,37 @@ If the queue returns an item:
 - if it earns a Candidate, preserve its canonical URL so the database can close the matching referral automatically;
 - if it does not earn a Candidate, leave it queued unless the editorial team explicitly dismisses it later.
 
-Then search every active Storyline using normal and counter-evidence queries.
+Then collect every active Storyline in three passes. `source_ids` in `config/content-discovery.json` are intentionally ordered with authoritative records before media.
 
-- Prefer primary records; use registered institutional/mainstream sources for context or corroboration.
-- Social scouts are discovery-only; follow them to canonical evidence.
-- Access full source material and verify dates, version, cutoff, methodology and project status where relevant.
+**Pass A — primary records**
+
+- Start with `primary`, `standards_body`, `intergovernmental` and relevant `corporate_primary` sources.
+- For grid and energy stories, prefer system-operator or regulator records over summaries of those records.
+- For semiconductor supply, distinguish sample, qualification, high-volume production, commercial shipment and delivered system capacity.
+- For model deployment, prefer system cards, deployment-safety records and first-party technical documentation when the claim is about that provider's model.
+- For CCUS, prefer permit registers, storage licences, regulatory decisions, FID/financial-close records and operating data over announced project pipelines.
+- Corporate sources prove facts about the reporting company only; keep forecasts and leadership claims attributed.
+
+**Pass B — independent discovery and corroboration**
+
+- Use Reuters, Financial Times and Associated Press to discover material events, quantify disputes and independently corroborate company claims.
+- When a media report points to an accessible regulator filing, company release, system card or project record containing the material fact, follow it and prefer that canonical primary URL for the Candidate.
+- Keep the media source as corroboration when it adds independent facts, unnamed-source reporting or conflict context that the primary record does not contain.
+- Do not create duplicate Candidates for the primary record and the media report about the same event.
+
+**Pass C — counter-evidence and specialist discovery**
+
+- Run the configured `counter_queries` after the primary pass, not as a second copy of the normal scan.
+- Social scouts and Tier B specialist sources are discovery/context tools, not routine daily evidence feeds.
+- Follow specialist or social claims to the underlying paper, filing, dataset, benchmark artifact or project record before factual use.
+
+Collection discipline:
+
+- Do not scan every registered source merely because it exists; use the Storyline's ordered `source_ids` and stop expanding once the run has enough evidence to establish whether there is a material delta.
+- Access full source material before scoring. Search snippets, headlines and inaccessible summaries are not evidence.
+- Normalize URLs before comparison and compare the event against existing public Signals before spending time drafting a Candidate.
+- Recency alone is not novelty. A new article about an already-covered event is not a new Signal unless it adds a material fact, stage change, metric, contradiction or implementation consequence.
+- A zero-candidate run is a valid and often preferable result.
 
 ### 3. Earn editorial attention
 
@@ -242,6 +268,7 @@ Report:
 
 - run window + actor/workflow version;
 - Green Lane referral checked, if any;
+- primary sources checked before media/specialist expansion;
 - sources and Storylines checked;
 - preflight counts;
 - Candidates persisted;
