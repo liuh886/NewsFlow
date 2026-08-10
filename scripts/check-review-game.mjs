@@ -6,14 +6,14 @@ import { spawnSync } from 'node:child_process';
 const root = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 const read = (path) => readFile(resolve(root, path), 'utf8');
 const required = [
-  'public/review-game.js', 'public/review-game.css', 'public/review-stamp.css', 'public/editorial-office.js',
+  'public/review-game.js', 'public/review-game.css', 'public/review-stamp.css', 'public/editor-referral.css', 'public/editorial-office.js',
   'public/editorial-loader.js', 'public/data/editorial-reactions.json'
 ];
 for (const file of required) await access(resolve(root, file));
 
-const [index, loader, game, gameCss, stampCss, office, sw, reactionsText] = await Promise.all([
+const [index, loader, game, gameCss, stampCss, referralCss, office, sw, reactionsText] = await Promise.all([
   read('index.html'), read('public/editorial-loader.js'), read('public/review-game.js'), read('public/review-game.css'), read('public/review-stamp.css'),
-  read('public/editorial-office.js'), read('public/sw.js'), read('public/data/editorial-reactions.json')
+  read('public/editor-referral.css'), read('public/editorial-office.js'), read('public/sw.js'), read('public/data/editorial-reactions.json')
 ]);
 for (const file of ['public/editorial-loader.js', 'public/review-game.js', 'public/editorial-office.js', 'public/sw.js']) {
   const syntax = spawnSync(process.execPath, ['--check', resolve(root, file)], { encoding: 'utf8' });
@@ -21,12 +21,12 @@ for (const file of ['public/editorial-loader.js', 'public/review-game.js', 'publ
 }
 
 if (!index.includes('./editorial-loader.js?v=__NEWSFLOW_VERSION__')) throw new Error('index must load the small editorial runtime loader.');
-for (const eagerAsset of ['./review-game.css', './review-stamp.css', './review-game.js', './editorial-office.js']) {
+for (const eagerAsset of ['./review-game.css', './review-stamp.css', './editor-referral.css', './review-game.js', './editorial-office.js']) {
   if (index.includes(eagerAsset)) throw new Error(`Reader must not eagerly load editor-only asset: ${eagerAsset}`);
   if (!loader.includes(eagerAsset)) throw new Error(`editorial-loader is missing ${eagerAsset}`);
 }
-if (!loader.includes("new URLSearchParams(window.location.search).has('editor-invite')") || !loader.includes('void ensureEditorialRuntime();')) {
-  throw new Error('Editor invitation links must eagerly enter the otherwise-lazy appointment runtime.');
+if (!loader.includes("new URLSearchParams(window.location.search).has('editor-ref')") || !loader.includes('void ensureEditorialRuntime();')) {
+  throw new Error('Editor referral links must eagerly enter the otherwise-lazy appointment runtime.');
 }
 if (index.includes('./editorial-mode.css') || loader.includes('./editorial-mode.css')) throw new Error('Retired identity-choice UI must stay deleted.');
 for (const retired of ['guest-editor', 'review-candidates.json', 'pipeline-reviews.json', 'guest-editor-invites.json', 'newsflow_review_game_v4_guest']) {
@@ -47,7 +47,8 @@ for (const contract of [
   'ownReviewFor(candidate.id)', 'nf-review-persistent-decision', 'EDITORIAL DECISION RECORDED', '主编已裁决',
   'const isRejectedCandidate = (candidate) =>', "!['cover_story', 'accept'].includes(finalDecision)",
   'const rejectedCandidates = () => state.candidates.filter(isRejectedCandidate)', "openArchiveSection(isRejectedCandidate(candidate) ? 'rejects' : 'archive')",
-  '退稿库收录所有未获录用的主编终局稿件'
+  '退稿库收录所有未获录用的主编终局稿件',
+  'renderReferralCard', 'renderReferralDialog', '我的邀请链接', 'direct_referrals', 'navigator.share', 'data-review-action="copy-referral"'
 ]) if (!game.includes(contract)) throw new Error(`review game missing contract: ${contract}`);
 if (game.includes('localStorage') || game.includes('saveProductData') || game.includes('FORMAL_STORAGE_KEY')) {
   throw new Error('Review decisions must live only in normalized Supabase review rows.');
@@ -59,15 +60,18 @@ for (const [id, key] of [['cover_story','1'],['accept','2'],['minor_revision','3
 
 if (game.includes('MutationObserver') || office.includes('MutationObserver')) throw new Error('editorial runtime must stay lifecycle-driven and may not use MutationObserver.');
 for (const contract of [
-  "const INVITE_PARAM = 'editor-invite'", "from('newsflow_editorial_members')", "from('newsflow_editorial_invitations')", "role: 'editor'",
-  "window.HaoAccount?.can?.('newsflow.pro')", 'isEditorialMember', 'openEditorialOverview', 'window.HaoAccount?.open?.()',
-  'window.NewsFlowReviewGame?.openOverview?.()', '开通 Newsflow Pro，进入编辑部', 'createEditorInvite', 'openGovernance',
+  "const REFERRAL_PARAM = 'editor-ref'", "from('newsflow_editorial_members')", "from('newsflow_editor_referrals')", 'referral_code',
+  "client.rpc('newsflow_accept_editor_referral'", "window.HaoAccount?.can?.('newsflow.pro')", 'isEditorialMember', 'openEditorialOverview', 'window.HaoAccount?.open?.()',
+  'window.NewsFlowReviewGame?.openOverview?.()', '开通 Newsflow Pro，进入编辑部', 'getEditorReferral', 'openGovernance',
   'syncEditorialEntry', '[data-action="open-editorial-office"]', 'window.NewsFlowMode', 'window.HaoAccount?.refresh?.()',
-  'renderInviteGuide', '登录并接受任命', '操作流程：选择登录方式', "state.inviteStatus = 'accepted'", "state.inviteStatus = 'failed'",
-  '邀请链接仍保留，你可以重试'
+  'renderReferralGuide', '登录并接受邀请', '获得自己的专属邀请链接', "state.referralStatus = 'accepted'", "state.referralStatus = 'failed'",
+  '链接会保留，你可以重试'
 ]) if (!office.includes(contract)) throw new Error(`editorial permission router missing contract: ${contract}`);
-for (const retired of ['MODE_STORAGE_KEY', 'newsflow_mode_v3', 'roleCard(', 'nf-mode-dialog', 'renderDialog', 'syncModePreference', '你以什么身份进入编辑部？']) {
-  if (office.includes(retired) || loader.includes(retired)) throw new Error(`retired role-choice architecture returned: ${retired}`);
+for (const retired of [
+  'MODE_STORAGE_KEY', 'newsflow_mode_v3', 'roleCard(', 'nf-mode-dialog', 'renderDialog', 'syncModePreference', '你以什么身份进入编辑部？',
+  'editor-invite', 'newsflow_editorial_invitations', 'invitation_hash', 'hashToken', 'randomToken', 'createEditorInvite', 'open-invite', '一次性编辑任命'
+]) {
+  if (office.includes(retired) || loader.includes(retired) || game.includes(retired)) throw new Error(`retired editor invitation architecture returned: ${retired}`);
 }
 if (!loader.includes("launcher.style.display = 'inline-flex'") || !loader.includes("label.textContent = '编辑部'") || loader.includes('cachedMode') || loader.includes('localStorage')) {
   throw new Error('Editorial loader must expose one neutral 编辑部 entry without cached role modes.');
@@ -87,9 +91,12 @@ for (const selector of [
   '.nf-review-persistent-decision', '.nf-review-stamp.is-persistent', 'mix-blend-mode: multiply',
   '@media (max-width: 760px)', '@media (prefers-reduced-motion: reduce)'
 ]) if (!stampCss.includes(selector)) throw new Error(`persistent review stamp CSS missing ${selector}`);
+for (const selector of ['.nf-editor-referral-code', '.nf-review-referral-card', '.nf-gov-referral-network', '.nf-gov-referral-row']) {
+  if (!referralCss.includes(selector)) throw new Error(`editor referral CSS missing ${selector}`);
+}
 
 if (!sw.includes("versioned('./editorial-loader.js')")) throw new Error('service worker must cache the small editorial loader.');
-for (const editorAsset of ["versioned('./review-game.js')", "versioned('./review-game.css')", "versioned('./review-stamp.css')", "versioned('./editorial-office.js')"]) {
+for (const editorAsset of ["versioned('./review-game.js')", "versioned('./review-game.css')", "versioned('./review-stamp.css')", "versioned('./editor-referral.css')", "versioned('./editorial-office.js')"]) {
   if (sw.includes(editorAsset)) throw new Error(`Reader app shell must not precache editor-only asset: ${editorAsset}`);
 }
 for (const forbidden of ['./data/review-candidates.json', './data/pipeline-reviews.json', './data/guest-editor-invites.json']) if (sw.includes(forbidden)) throw new Error(`service worker must not cache private editorial data: ${forbidden}`);
@@ -99,4 +106,4 @@ const reactions = JSON.parse(reactionsText);
 for (const decision of ['cover_story', 'accept', 'minor_revision', 'major_revision', 'reject']) {
   if (!Array.isArray(reactions[decision]) || reactions[decision].length < 4) throw new Error(`reaction library is too shallow for ${decision}.`);
 }
-console.log('NewsFlow review game contract passed: visible one-time editor appointment, non-adoption rejection archive, durable Supabase-backed review decisions and chief-only publication authority.');
+console.log('NewsFlow review game contract passed: attributable editor referrals, non-adoption rejection archive, durable Supabase-backed review decisions and chief-only publication authority.');

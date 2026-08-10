@@ -47,8 +47,8 @@
     error: '',
     accessDenied: false,
     busy: false,
-    inviteDialogOpen: false,
-    invite: null
+    referralDialogOpen: false,
+    referral: null
   };
 
   let advanceTimer = 0;
@@ -212,7 +212,7 @@
 
   const accessDeniedMessage = () => isChief()
     ? '主编权限正在同步，请重新加载；若仍失败，请返回账户检查登录状态。'
-    : '开通 Newsflow Pro 即可进入编辑部、参与审稿并查看决定档案。受邀编辑会自动获得 3 个月 Pro。';
+    : '开通 Newsflow Pro 即可进入编辑部、参与审稿并查看决定档案。';
 
   const loadReviewData = async () => {
     const account = accountState();
@@ -276,6 +276,12 @@
         .filter((review) => String(review.reviewer_user_id) === state.userId)
         .map((review) => [String(review.candidate_id), review])
     );
+    try {
+      state.referral = await window.NewsFlowMode?.getEditorReferral?.() || null;
+    } catch (error) {
+      state.referral = null;
+      console.warn('NewsFlow editor referral summary unavailable:', error);
+    }
   };
 
   const resetTransientState = () => {
@@ -293,8 +299,8 @@
     state.error = '';
     state.accessDenied = false;
     state.busy = false;
-    state.inviteDialogOpen = false;
-    state.invite = null;
+    state.referralDialogOpen = false;
+    state.referral = null;
   };
 
   const openFormal = async (options = {}) => {
@@ -607,51 +613,64 @@
     clearReactionTimers();
     state.phase = 'idle';
     state.reaction = null;
-    state.inviteDialogOpen = false;
+    state.referralDialogOpen = false;
     setOverlayOpen(false);
     render();
     window.dispatchEvent(new CustomEvent('newsflow:review-game-closed'));
   };
 
-  const openInviteDialog = async () => {
-    if (!isChief()) return;
-    state.inviteDialogOpen = true;
-    state.invite = { loading: true };
-    render();
-    try {
-      state.invite = await window.NewsFlowMode?.createEditorInvite?.();
-    } catch (error) {
-      state.invite = { error: error?.message || '任命链接生成失败。' };
-    }
+  const openReferralDialog = () => {
+    if (!state.referral?.url) return;
+    state.referralDialogOpen = true;
     render();
   };
 
-  const copyInvite = async () => {
-    if (!state.invite?.url) return;
+  const copyReferral = async () => {
+    if (!state.referral?.url) return;
     try {
-      await navigator.clipboard.writeText(state.invite.url);
-      flash('编辑任命链接已复制。');
+      await navigator.clipboard.writeText(state.referral.url);
+      flash('专属编辑邀请链接已复制。');
     } catch {
       flash('复制失败，请手动复制链接。');
     }
   };
 
-  const renderInviteDialog = () => {
-    if (!state.inviteDialogOpen || !isChief()) return '';
-    const body = state.invite?.loading
-      ? '<p>正在签发一次性编辑任命…</p>'
-      : state.invite?.error
-        ? `<p>${escapeHtml(state.invite.error)}</p>`
-        : `<p>受邀者登录后接受任命，即成为本刊 Editor。其五档裁决只形成编辑意见，不获得正式出版权。</p><div class="nf-review-link-preview">${escapeHtml(state.invite?.url || '')}</div><p>有效期至 ${escapeHtml(String(state.invite?.expires_at || '').slice(0, 10))}，仅可接受一次。</p>`;
-    return `<div class="nf-review-dialog-backdrop" data-review-action="close-invite"></div>
-      <section class="nf-review-invite-dialog" role="dialog" aria-modal="true" aria-labelledby="nf-review-invite-title">
-        <button class="nf-review-close" data-review-action="close-invite" aria-label="关闭任命">×</button>
-        <span class="nf-review-label">EDITORIAL APPOINTMENT</span>
+  const shareReferral = async () => {
+    if (!state.referral?.url) return;
+    if (!navigator.share) {
+      await copyReferral();
+      return;
+    }
+    try {
+      await navigator.share({
+        title: 'Newsflow 编辑邀请',
+        text: `使用编辑识别码 ${state.referral.code} 加入 Frontier Systems Review 编辑部。`,
+        url: state.referral.url
+      });
+    } catch (error) {
+      if (error?.name !== 'AbortError') flash('系统分享未完成，可以复制链接发送。');
+    }
+  };
+
+  const renderReferralDialog = () => {
+    if (!state.referralDialogOpen || !state.referral?.url) return '';
+    return `<div class="nf-review-dialog-backdrop" data-review-action="close-referral"></div>
+      <section class="nf-review-invite-dialog" role="dialog" aria-modal="true" aria-labelledby="nf-review-referral-title">
+        <button class="nf-review-close" data-review-action="close-referral" aria-label="关闭编辑邀请链接">×</button>
+        <span class="nf-review-label">EDITOR REFERRAL</span>
         <div class="nf-review-seal is-small">ED</div>
-        <h2 id="nf-review-invite-title">任命一位编辑</h2>
-        ${body}
-        ${state.invite?.url ? '<div class="nf-review-actions"><button class="is-primary" data-review-action="copy-invite">复制任命链接</button></div>' : ''}
+        <h2 id="nf-review-referral-title">我的邀请链接</h2>
+        <p>这是你的长期专属编辑邀请链接，可分享给多位新编辑。成功接受后会记录邀请关系，对方也会获得自己的专属链接。</p>
+        <div class="nf-editor-referral-code"><span>EDITOR CODE</span><strong>${escapeHtml(state.referral.code)}</strong></div>
+        <div class="nf-review-link-preview">${escapeHtml(state.referral.url)}</div>
+        <p>已成功邀请 ${Number(state.referral.direct_referrals || 0)} 位编辑。接受邀请会赠送 3 个月 Newsflow Pro，不会创建付费订阅。</p>
+        <div class="nf-review-actions"><button class="is-primary" data-review-action="copy-referral">复制链接</button><button data-review-action="share-referral">分享</button></div>
       </section>`;
+  };
+
+  const renderReferralCard = () => {
+    if (!state.referral?.url) return '';
+    return `<section class="nf-review-referral-card" aria-label="我的编辑邀请链接"><div><span>EDITOR REFERRAL</span><h2>我的邀请链接</h2><p>专属链接可以邀请多位新编辑；成功接受后会留下传播关系，并为新编辑生成自己的识别码。</p></div><div class="nf-review-referral-identity"><span>识别码</span><strong>${escapeHtml(state.referral.code)}</strong><small>已成功邀请 ${Number(state.referral.direct_referrals || 0)} 位</small></div><div class="nf-review-referral-actions"><button data-review-action="copy-referral">复制链接</button><button data-review-action="share-referral">分享</button><button data-review-action="open-referral">查看详情</button></div></section>`;
   };
 
   const renderLoading = () => `<section class="nf-review-shell" role="dialog" aria-modal="true"><div class="nf-review-loading"><div class="nf-review-seal">NF</div><span>正在整理私有送审稿件</span></div></section>`;
@@ -676,6 +695,9 @@
     return { id: disposition.id, label: disposition.label };
   };
 
+  const headerReferralButton = () => state.referral?.url ? '<button data-review-action="open-referral">邀请编辑</button>' : '';
+  const chiefSettingsButton = () => isChief() ? '<button data-review-action="open-governance">刊物设置</button>' : '';
+
   const renderOverview = () => {
     const pending = pendingCandidates();
     const active = state.candidates.filter((candidate) => candidate.active);
@@ -687,18 +709,19 @@
       .sort((a, b) => new Date(b.date || 0).getTime() - new Date(a.date || 0).getTime())
       .slice(0, 16);
     return `<section class="nf-review-shell is-review is-overview" role="dialog" aria-modal="true" aria-labelledby="nf-overview-title">
-      <header class="nf-review-header"><div><strong>Frontier Systems Review</strong><span>${roleLabel()}</span></div><div class="nf-review-header-actions"><button class="nf-review-mode-button" data-review-action="switch-reader">当前：${isChief() ? '主编' : '编辑'} · 切换读者</button>${isChief() ? '<button data-review-action="open-governance">刊物设置</button><button data-review-action="open-invite">任命编辑</button>' : ''}<button class="nf-review-close" data-review-action="close-game" aria-label="返回期刊">×</button></div></header>
+      <header class="nf-review-header"><div><strong>Frontier Systems Review</strong><span>${roleLabel()}</span></div><div class="nf-review-header-actions"><button class="nf-review-mode-button" data-review-action="switch-reader">当前：${isChief() ? '主编' : '编辑'} · 切换读者</button>${chiefSettingsButton()}${headerReferralButton()}<button class="nf-review-close" data-review-action="close-game" aria-label="返回期刊">×</button></div></header>
       ${renderDeskTabs('overview')}
       <main class="nf-review-overview-stage"><article class="nf-review-overview-card">
         <div class="nf-review-overview-heading"><div><span>EDITORIAL DESK · SIGNAL BOARD</span><h1 id="nf-overview-title">编辑部总览</h1><p>先看全局，再决定下一稿。数字负责提醒，不负责替主编做决定。</p></div><button class="is-primary" data-review-action="open-pending" ${pending.length ? '' : 'disabled'}>${pending.length ? '继续审稿 →' : '本轮已清空'}</button></div>
         <section class="nf-review-overview-stats" aria-label="编辑部状态"><div><span>待处理</span><strong>${String(pending.length).padStart(2, '0')}</strong><small>AI ${aiPending} · CCUS ${ccusPending}</small></div><div><span>活跃稿件</span><strong>${String(active.length).padStart(2, '0')}</strong><small>仍在编辑流程中</small></div><div><span>已采用</span><strong>${String(adopted).padStart(2, '0')}</strong><small>主编公开采用记录</small></div><div><span>退稿</span><strong>${String(rejected.length).padStart(2, '0')}</strong><small>未录用稿件，保留复查</small></div></section>
+        ${renderReferralCard()}
         <section class="nf-review-overview-queue"><header><div><span>MANUSCRIPT INDEX</span><h2>信号与处理状态</h2></div><span>最近 ${signals.length} / 共 ${state.candidates.length}</span></header>${signals.length ? `<div class="nf-review-overview-list">${signals.map((candidate, index) => {
           const status = overviewStatus(candidate);
           return `<button data-review-action="overview-select" data-candidate-id="${escapeHtml(candidate.id)}"><span>${String(index + 1).padStart(2, '0')}</span><span><strong>${escapeHtml(candidate.title)}</strong><small>${escapeHtml(activeStorylineTitle(candidate))} · ${escapeHtml(candidate.source || 'Editorial submission')}</small></span><em class="is-${status.id}">${escapeHtml(status.label)}</em></button>`;
         }).join('')}</div>` : '<div class="nf-review-archive-empty"><h2>编辑台暂时没有稿件</h2><p>这不是故障，只是新闻机器难得安静了一会儿。</p></div>'}</section>
       </article></main>
       ${state.notice ? `<div class="nf-review-notice" role="status">${escapeHtml(state.notice)}</div>` : ''}
-      ${renderInviteDialog()}
+      ${renderReferralDialog()}
     </section>`;
   };
 
@@ -774,7 +797,7 @@
     const selectedDisposition = selected ? archiveDisposition(selected) : null;
     const selectedWithdrawal = selected ? withdrawalFor(selected.id) : null;
     return `<section class="nf-review-shell is-review is-archive" role="dialog" aria-modal="true" aria-labelledby="nf-archive-title">
-      <header class="nf-review-header"><div><strong>Frontier Systems Review</strong><span>${roleLabel()}</span></div><div class="nf-review-header-actions"><button class="nf-review-mode-button" data-review-action="switch-reader">当前：${isChief() ? '主编' : '编辑'} · 切换读者</button>${isChief() ? '<button data-review-action="open-governance">刊物设置</button><button data-review-action="open-invite">任命编辑</button>' : ''}<button class="nf-review-close" data-review-action="close-game" aria-label="返回期刊">×</button></div></header>
+      <header class="nf-review-header"><div><strong>Frontier Systems Review</strong><span>${roleLabel()}</span></div><div class="nf-review-header-actions"><button class="nf-review-mode-button" data-review-action="switch-reader">当前：${isChief() ? '主编' : '编辑'} · 切换读者</button>${chiefSettingsButton()}${headerReferralButton()}<button class="nf-review-close" data-review-action="close-game" aria-label="返回期刊">×</button></div></header>
       ${renderDeskTabs(state.archiveFilter)}
       <main class="nf-review-stage"><div class="nf-review-stack" aria-hidden="true"></div><article class="nf-review-card nf-review-archive-card">
         <div class="nf-review-card-meta"><span id="nf-archive-title">EDITORIAL ARCHIVE</span><span>${items.length} RECORDS</span></div>
@@ -790,7 +813,7 @@
       </article></main>
       ${renderDecisionBar(true)}
       ${state.notice ? `<div class="nf-review-notice" role="status">${escapeHtml(state.notice)}</div>` : ''}
-      ${renderWithdrawalDialog()}${renderInviteDialog()}
+      ${renderWithdrawalDialog()}${renderReferralDialog()}
     </section>`;
   };
 
@@ -814,7 +837,7 @@
     return `<section class="nf-review-shell is-review" role="dialog" aria-modal="true" aria-labelledby="nf-review-title">
       <header class="nf-review-header">
         <div><strong>Frontier Systems Review</strong><span>${roleLabel()}</span></div>
-        <div class="nf-review-header-actions"><span>${String(state.index + 1).padStart(2, '0')} / ${String(state.packet.length).padStart(2, '0')}</span><button data-review-action="toggle-shortcuts" aria-expanded="${String(state.shortcutsOpen)}">快捷键</button><button class="nf-review-mode-button" data-review-action="switch-reader">当前：${isChief() ? '主编' : '编辑'} · 切换读者</button>${isChief() ? '<button data-review-action="open-governance">刊物设置</button><button data-review-action="open-invite">任命编辑</button>' : ''}<button data-review-action="undo" ${state.records.length && !state.busy ? '' : 'disabled'}>Z 撤销</button><button class="nf-review-close" data-review-action="close-game" aria-label="返回期刊">×</button></div>
+        <div class="nf-review-header-actions"><span>${String(state.index + 1).padStart(2, '0')} / ${String(state.packet.length).padStart(2, '0')}</span><button data-review-action="toggle-shortcuts" aria-expanded="${String(state.shortcutsOpen)}">快捷键</button><button class="nf-review-mode-button" data-review-action="switch-reader">当前：${isChief() ? '主编' : '编辑'} · 切换读者</button>${chiefSettingsButton()}${headerReferralButton()}<button data-review-action="undo" ${state.records.length && !state.busy ? '' : 'disabled'}>Z 撤销</button><button class="nf-review-close" data-review-action="close-game" aria-label="返回期刊">×</button></div>
       </header>
       ${renderDeskTabs('pending')}
       <main class="nf-review-stage">
@@ -832,7 +855,7 @@
       </main>
       ${renderDecisionBar()}
       ${state.notice ? `<div class="nf-review-notice" role="status">${escapeHtml(state.notice)}</div>` : ''}
-      ${renderShortcutGuide()}${renderInviteDialog()}
+      ${renderShortcutGuide()}${renderReferralDialog()}
     </section>`;
   };
 
@@ -843,7 +866,7 @@
       <header class="nf-review-header"><div><strong>Frontier Systems Review</strong><span>${roleLabel()}</span></div><div class="nf-review-header-actions"><span>${String(state.index + 1).padStart(2, '0')} / ${String(state.packet.length).padStart(2, '0')}</span><button class="nf-review-mode-button" data-review-action="switch-reader">当前：${isChief() ? '主编' : '编辑'} · 切换读者</button><button data-review-action="undo" ${state.busy ? 'disabled' : ''}>Z 撤销</button></div></header>
       ${renderDeskTabs('pending')}
       <main class="nf-review-stage"><article class="nf-review-card is-stamped"><div class="nf-review-card-meta"><span>EDITORIAL DECISION</span><span>${isChief() ? 'FINAL EDITORIAL RECORD' : 'EDITORIAL OPINION'}</span></div><h1>${escapeHtml(reaction.candidate.title)}</h1><div class="nf-review-stamp is-${reaction.decision.id}">${escapeHtml(reaction.decision.code)}</div><p class="nf-review-reaction-line">${escapeHtml(reaction.line)}</p><div class="nf-review-countdown" role="timer" aria-live="polite" aria-label="${reaction.countdown} 秒后进入下一稿">（${reaction.countdown}）</div><button class="nf-review-next" data-review-action="advance">下一稿 →</button></article></main>
-      ${renderInviteDialog()}
+      ${renderReferralDialog()}
     </section>`;
   };
 
@@ -864,10 +887,10 @@
         <span class="nf-review-label">EDITORIAL DISPOSITION REPORT</span><div class="nf-review-seal">✓</div>
         <p class="nf-review-publication">${roleLabel()}</p><h1 id="nf-review-complete-title">${title}</h1><p class="nf-review-paper-copy">${body}</p>
         ${hasRound ? `<div class="nf-review-results">${DECISIONS.map((decision) => `<div><span>${decision.label}</span><strong>${counts[decision.id] || 0}</strong></div>`).join('')}</div>` : ''}
-        <div class="nf-review-actions is-centered"><button class="is-primary" data-review-action="close-game">完成并返回期刊</button><button data-review-action="open-archive">查看决定档案</button><button data-review-action="open-rejects">打开退稿库</button><button data-review-action="review-all">重审已处理</button>${isChief() ? '<button data-review-action="open-governance">刊物设置</button><button data-review-action="open-invite">任命编辑</button>' : ''}<button data-review-action="switch-reader">切换读者模式</button></div>
+        <div class="nf-review-actions is-centered"><button class="is-primary" data-review-action="close-game">完成并返回期刊</button><button data-review-action="open-archive">查看决定档案</button><button data-review-action="open-rejects">打开退稿库</button><button data-review-action="review-all">重审已处理</button>${chiefSettingsButton()}${headerReferralButton()}<button data-review-action="switch-reader">切换读者模式</button></div>
       </div>
       ${state.notice ? `<div class="nf-review-notice" role="status">${escapeHtml(state.notice)}</div>` : ''}
-      ${renderInviteDialog()}
+      ${renderReferralDialog()}
     </section>`;
   };
 
@@ -881,9 +904,9 @@
     else if (state.phase === 'reaction') content = renderReaction();
     else if (state.phase === 'archive') content = renderArchive();
     else if (state.phase === 'complete') content = renderComplete();
-    else content = renderInviteDialog();
+    else content = renderReferralDialog();
     root.innerHTML = content;
-    setOverlayOpen(state.phase !== 'idle' || state.inviteDialogOpen);
+    setOverlayOpen(state.phase !== 'idle' || state.referralDialogOpen);
     window.requestAnimationFrame(() => root.querySelector('.nf-review-card, .is-primary, .nf-review-close, button')?.focus());
   }
 
@@ -929,9 +952,10 @@
     else if (action === 'close-withdrawal') { state.withdrawalDialog = null; render(); }
     else if (action === 'confirm-withdrawal') await submitWithdrawal();
     else if (action === 'restore-withdrawal') await restoreWithdrawal(target.dataset.candidateId || '');
-    else if (action === 'open-invite') await openInviteDialog();
-    else if (action === 'close-invite') { state.inviteDialogOpen = false; state.invite = null; render(); }
-    else if (action === 'copy-invite') await copyInvite();
+    else if (action === 'open-referral') openReferralDialog();
+    else if (action === 'close-referral') { state.referralDialogOpen = false; render(); }
+    else if (action === 'copy-referral') await copyReferral();
+    else if (action === 'share-referral') await shareReferral();
     else if (action === 'open-governance') window.NewsFlowMode?.openGovernance?.();
     else if (action === 'switch-reader') {
       closeGame();

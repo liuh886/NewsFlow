@@ -6,14 +6,14 @@ import { fileURLToPath } from 'node:url';
 const root = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 const read = (path) => readFile(resolve(root, path), 'utf8');
 for (const file of [
-  'public/editorial-loader.js', 'public/editorial-governance.js', 'public/editorial-governance.css',
+  'public/editorial-loader.js', 'public/editorial-governance.js', 'public/editorial-governance.css', 'public/editor-referral.css',
   'scripts/sync-editorial-governance.mjs', 'scripts/sync-adopted-signals.mjs',
   'content/state/governance-sync.json', 'content/state/adoption-sync.json',
   'public/data/governance-status.json', 'supabase/newsflow-publication-projection.sql'
 ]) await access(resolve(root, file));
 
-const [index, loader, governance, css, game, mode, build, sw, governanceSync, adoptionSync, sql, projectionSql] = await Promise.all([
-  read('index.html'), read('public/editorial-loader.js'), read('public/editorial-governance.js'), read('public/editorial-governance.css'),
+const [index, loader, governance, css, referralCss, game, mode, build, sw, governanceSync, adoptionSync, sql, projectionSql] = await Promise.all([
+  read('index.html'), read('public/editorial-loader.js'), read('public/editorial-governance.js'), read('public/editorial-governance.css'), read('public/editor-referral.css'),
   read('public/review-game.js'), read('public/editorial-office.js'), read('scripts/build.mjs'), read('public/sw.js'),
   read('scripts/sync-editorial-governance.mjs'), read('scripts/sync-adopted-signals.mjs'), read('supabase/newsflow-editorial.sql'),
   read('supabase/newsflow-publication-projection.sql')
@@ -23,32 +23,36 @@ for (const file of ['public/editorial-loader.js', 'public/editorial-governance.j
   if (syntax.status !== 0) throw new Error(`${file} syntax failed:\n${syntax.stderr}`);
 }
 if (!index.includes('./editorial-loader.js?v=__NEWSFLOW_VERSION__')) throw new Error('index must load the lazy editorial runtime entrypoint.');
-for (const asset of ['./editorial-governance.css', './editorial-governance.js']) {
+for (const asset of ['./editorial-governance.css', './editorial-governance.js', './editor-referral.css']) {
   if (index.includes(asset)) throw new Error(`Reader must not eagerly load ${asset}`);
   if (!loader.includes(asset)) throw new Error(`editorial-loader is missing ${asset}`);
 }
 
 for (const contract of [
   "{ id: 'edition', label: '刊物判断'", "{ id: 'storyline', label: '长期议题'", "{ id: 'source', label: '信源'", "{ id: 'editorial', label: '编辑部'",
-  "from('newsflow_governance_drafts')", "from('newsflow_editorial_members')", "from('newsflow_editorial_invitations')",
+  "from('newsflow_governance_drafts')", "from('newsflow_editorial_members')", "client.rpc('newsflow_editor_referral_network')",
   "status: 'draft'", "status: 'published'", '发布到 GitHub', 'source-registry.json', 'governance-status.json',
-  '主编当前判断', '反证条件', 'Allowed uses', 'Limitations', '任命编辑', 'window.NewsFlowGovernance'
+  '主编当前判断', '反证条件', 'Allowed uses', 'Limitations', '传播链', 'direct_referrals', 'total_descendants', 'window.NewsFlowGovernance'
 ]) if (!governance.includes(contract)) throw new Error(`governance UI missing contract: ${contract}`);
+for (const retired of ['newsflow_editorial_invitations', 'create-invite', 'copy-invite', '14-day one-time links', '生成一次性链接']) {
+  if (governance.includes(retired)) throw new Error(`retired one-time governance invitation returned: ${retired}`);
+}
 if (governance.includes('service_role') || governance.includes('github_token') || governance.includes('GITHUB_TOKEN')) throw new Error('browser governance UI must never contain privileged credentials.');
 
 for (const selector of [
   '.nf-governance-shell', '.nf-gov-tabs', '.nf-gov-split', '.nf-gov-index', '.nf-gov-editor', '.nf-gov-field',
   '.nf-gov-board-stats', '.nf-review-opinions', '@media (max-width: 900px)', '@media (max-width: 720px)'
 ]) if (!css.includes(selector)) throw new Error(`governance CSS missing ${selector}`);
+for (const selector of ['.nf-gov-referral-network', '.nf-gov-referral-row']) if (!referralCss.includes(selector)) throw new Error(`referral governance CSS missing ${selector}`);
 
 for (const contract of ["state.editorialRole === 'editor_in_chief'", 'opinionCounts', '尚无其他编辑完成本稿评议']) if (!game.includes(contract)) throw new Error(`chief review view missing ${contract}`);
-for (const contract of ["from('newsflow_editorial_members')", "const INVITE_PARAM = 'editor-invite'", 'createEditorInvite', 'openGovernance']) if (!mode.includes(contract)) throw new Error(`mode authority missing ${contract}`);
+for (const contract of ["from('newsflow_editorial_members')", "const REFERRAL_PARAM = 'editor-ref'", "client.rpc('newsflow_accept_editor_referral'", 'getEditorReferral', 'openGovernance']) if (!mode.includes(contract)) throw new Error(`mode authority missing ${contract}`);
 
 for (const forbidden of ['review-candidates.json', 'pipeline-reviews.json', 'guest-editor-invites.json']) {
   if (build.includes(forbidden) || sw.includes(forbidden)) throw new Error(`Reader bundle exposes private editorial data: ${forbidden}`);
 }
 for (const publicAsset of ['source-registry.json', 'governance-status.json']) if (!sw.includes(publicAsset)) throw new Error(`PWA Reader data asset missing ${publicAsset}`);
-for (const editorAsset of ["versioned('./editorial-governance.js')", "versioned('./editorial-governance.css')"]) if (sw.includes(editorAsset)) throw new Error(`PWA Reader shell must not precache editor-only asset ${editorAsset}`);
+for (const editorAsset of ["versioned('./editorial-governance.js')", "versioned('./editorial-governance.css')", "versioned('./editor-referral.css')"]) if (sw.includes(editorAsset)) throw new Error(`PWA Reader shell must not precache editor-only asset ${editorAsset}`);
 
 for (const contract of [
   'newsflow_governance_publications', 'public/data/edition.json', 'public/data/storylines.json',
@@ -64,9 +68,13 @@ for (const contract of [
 for (const forbidden of ["from('newsflow_candidates')", 'SUPABASE_SERVICE_ROLE_KEY']) if (adoptionSync.includes(forbidden)) throw new Error(`adoption compiler crossed the private Candidate boundary: ${forbidden}`);
 
 for (const contract of [
-  'newsflow_editorial_members', 'newsflow_editorial_reviews', 'newsflow_candidates', 'payload jsonb',
+  'newsflow_editorial_members', 'referral_code text', 'newsflow_editor_referrals', 'newsflow_accept_editor_referral', 'newsflow_editor_referral_network',
+  'newsflow_editorial_reviews', 'newsflow_candidates', 'payload jsonb',
   'newsflow_governance_drafts', 'newsflow_governance_publications', 'newsflow_sync_chief_adoption'
 ]) if (!sql.includes(contract)) throw new Error(`Supabase governance schema missing ${contract}`);
+for (const retired of ['newsflow_editorial_invitations', 'invitation_hash', 'newsflow_editor_invite_valid', 'newsflow_mark_editor_invitation_accepted']) {
+  if (sql.includes(retired)) throw new Error(`retired one-time Supabase invitation contract returned: ${retired}`);
+}
 if (!sql.includes("role = 'owner'")) throw new Error('Only the shared owner may be Editor-in-Chief publication authority.');
 if (!sql.includes('update public.newsflow_candidates set active = false') || !sql.includes('update public.newsflow_candidates set active = true')) throw new Error('Chief Candidate lifecycle contract is missing.');
 
@@ -77,4 +85,4 @@ for (const contract of [
 ]) if (!projectionSql.includes(contract)) throw new Error(`public projection schema missing ${contract}`);
 if (projectionSql.includes('grant select on table public.newsflow_candidates to anon')) throw new Error('Private Candidate manuscripts must remain inaccessible to anonymous Reader clients.');
 
-console.log('NewsFlow editorial governance contract passed: lazy chief governance UI, private Candidate lifecycle, sanitized public publication projection and publishable-key GitHub synchronization.');
+console.log('NewsFlow editorial governance contract passed: attributable editor network, lazy chief governance UI, private Candidate lifecycle, sanitized public publication projection and publishable-key GitHub synchronization.');

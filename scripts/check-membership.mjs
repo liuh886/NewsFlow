@@ -48,13 +48,16 @@ for (const contract of [
   '浏览候选稿件与编辑材料',
   'US$1/月开通 Newsflow Pro',
   'sb_publishable_',
-  "current.searchParams.has('editor-invite')",
-  'redirectUrl: inviteRedirectUrl',
+  "current.searchParams.has('editor-ref')",
+  'redirectUrl: referralRedirectUrl',
 ]) {
   if (!config.includes(contract)) throw new Error(`NewsFlow account config is missing ${contract}`);
 }
 if (config.includes('受邀编辑可以获得限时 Newsflow Pro 免费体验') || config.includes('Invited editors receive three months of complimentary Newsflow Pro')) {
-  throw new Error('Editor appointment benefits belong on the invitation guide, not the generic account upgrade surface.');
+  throw new Error('Editor appointment benefits belong on the referral landing guide, not the generic account upgrade surface.');
+}
+if (config.includes('editor-invite') || config.includes('inviteRedirectUrl')) {
+  throw new Error('Retired one-time editor invitation redirect returned.');
 }
 for (const contract of [
   'hao-account-newsflow',
@@ -82,4 +85,4 @@ if (combined.includes('membership-widget.js') || combined.includes('membership-w
   throw new Error('NewsFlow must not load the retired local membership widget');
 }
 
-console.log('NewsFlow account uses the native topbar mount, invite-aware auth redirects, the current shared account shell and benefit-led editorial access copy.');
+console.log('NewsFlow account uses the native topbar mount, referral-aware auth redirects, the current shared account shell and benefit-led editorial access copy.');
