@@ -1,0 +1,70 @@
+{
+  "schema_version": "1.0",
+  "edition_id": "frontier-systems-review",
+  "workflow": {
+    "id": "newsflow-content-update",
+    "version": "1.0.0",
+    "actor": {
+      "agent_id": "chatgpt",
+      "runtime": "ChatGPT",
+      "workflow_id": "newsflow-content-update",
+      "workflow_version": "1.0.0",
+      "model": "GPT-5.6 Sol"
+    }
+  },
+  "run": {
+    "as_of": "2026-08-10T06:18:00Z",
+    "coverage_start": "2026-07-14T16:00:00Z",
+    "coverage_end": "2026-08-10T06:18:00Z",
+    "timezone": "Asia/Shanghai",
+    "collection_observations": {
+      "source_ids_scanned": [
+        "reuters",
+        "uk-government",
+        "nsta-carbon-storage",
+        "sean-goedecke",
+        "ieaghg"
+      ],
+      "scout_ids_scanned": [
+        "jesse-jenkins",
+        "simon-willison",
+        "global-ccs-institute-x"
+      ],
+      "storyline_ids_scanned": [
+        "ai-energy-foundation",
+        "ai-chip-layer",
+        "ai-infrastructure-layer",
+        "ai-model-layer",
+        "ai-application-layer",
+        "ccus-project-delivery",
+        "ccus-network-economics",
+        "evidence-governance"
+      ],
+      "surface_types_scanned": [
+        "specialist-and-x",
+        "primary-records",
+        "project-and-permit-records",
+        "industry-reports",
+        "independent-reporting"
+      ],
+      "x_topic_query_ids_run": [
+        "ai-energy-problems",
+        "ai-chip-bottlenecks",
+        "ai-application-reality",
+        "ccus-market-formation"
+      ],
+      "material_lead_count": 9,
+      "full_text_review_count": 10
+    }
+  },
+  "applied": true,
+  "summary": {
+    "candidate_count": 6,
+    "reviewable_count": 6,
+    "accepted_by_machine_gate_count": 6,
+    "needs_review_count": 0,
+    "rejected_count": 0
+  },
+  "publication_effect": "none",
+  "editorial_effect": "supabase_private_candidates_only"
+}
