@@ -39,7 +39,8 @@ for (const eagerEditorAsset of [
   '<link rel="stylesheet" href="./editorial-mode.css',
   '<link rel="stylesheet" href="./review-game.css',
   '<link rel="stylesheet" href="./review-archive.css',
-  '<link rel="stylesheet" href="./editorial-governance.css'
+  '<link rel="stylesheet" href="./editorial-governance.css',
+  '<link rel="stylesheet" href="./editor-referral.css'
 ]) assert(!index.includes(eagerEditorAsset), `Reader still eagerly loads editor-only asset: ${eagerEditorAsset}`);
 
 for (const contract of [
@@ -74,15 +75,15 @@ for (const contract of ['storylineIndexOpen', 'renderStorylineIndexDrawer', 'Res
 assert(!editionLayer.includes("editionState.activeStorylineId = editionState.storylines[0]?.id || '';\n    editionState.activeIssueId = '';\n    editionState.archiveOpen = false;\n    syncEditionPanels();\n  } else if (action === 'open-archive')"), 'Long-term topic index must not collapse to the first storyline.');
 
 for (const contract of [
-  './review-game.css', './review-archive.css', './review-stamp.css', './editorial-governance.css',
+  './review-game.css', './review-archive.css', './review-stamp.css', './editorial-governance.css', './editor-referral.css',
   './review-game.js', './editorial-desk.js', './editorial-governance.js', './editorial-office.js'
 ]) {
   assert(loader.includes(contract), `Editorial lazy loader missing asset: ${contract}`);
 }
-for (const contract of ['syncEditorialEntry', 'data-action="open-editorial-office"', "launcher.style.display = 'inline-flex'", 'newsflow:edition-rendered', "label.textContent = '编辑部'"]) {
+for (const contract of ['syncEditorialEntry', 'data-action="open-editorial-office"', "launcher.style.display = 'inline-flex'", 'newsflow:edition-rendered', "label.textContent = '编辑部'", "has('editor-ref')"]) {
   assert(loader.includes(contract), `Editorial lazy loader missing direct-entry contract: ${contract}`);
 }
-for (const retired of ['./editorial-mode.css', './review-archive.js', 'newsflow_mode_v3', 'cachedMode', '当前为读者模式', 'roleTrigger']) {
+for (const retired of ['./editorial-mode.css', './review-archive.js', 'newsflow_mode_v3', 'cachedMode', '当前为读者模式', 'roleTrigger', 'editor-invite']) {
   assert(!loader.includes(retired), `Retired editorial contract returned: ${retired}`);
 }
 
@@ -103,7 +104,7 @@ assert(serviceWorker.includes("versioned('./editorial-loader.js')"), 'Reader app
 assert(serviceWorker.includes("versioned('./pwa-install.js')"), 'Reader app shell must cache the PWA install controller.');
 for (const eagerEditorAsset of [
   "versioned('./editorial-mode.css')", "versioned('./review-game.css')", "versioned('./review-archive.css')",
-  "versioned('./editorial-governance.css')", "versioned('./review-game.js')", "versioned('./editorial-desk.js')",
+  "versioned('./editorial-governance.css')", "versioned('./editor-referral.css')", "versioned('./review-game.js')", "versioned('./editorial-desk.js')",
   "versioned('./editorial-governance.js')", "versioned('./editorial-office.js')"
 ]) {
   assert(!serviceWorker.includes(eagerEditorAsset), `Service Worker still precaches editor-only asset: ${eagerEditorAsset}`);
@@ -116,4 +117,4 @@ assert(manifest.icons.some((icon) => icon.sizes === '192x192'), 'PWA manifest mu
 assert(manifest.icons.some((icon) => icon.sizes === '512x512'), 'PWA manifest must declare a 512x512 install icon.');
 assert(/^\d+\.\d+\.\d+$/.test(String(packageManifest.version || '')), 'package.json must remain the single semantic version source.');
 
-console.log(`NewsFlow web standards contract passed for v${packageManifest.version}: canonical publication pages, feed/sitemap, lazy permission-routed editor runtime, persistent PWA install entry, mobile search, accessible edition dialogs, long-term topic index routing, reader and nested panel interaction continuity, and unified build versioning.`);
+console.log(`NewsFlow web standards contract passed for v${packageManifest.version}: canonical publication pages, feed/sitemap, lazy permission-routed editor runtime, attributable editor referral entry, persistent PWA install entry, mobile search, accessible edition dialogs, long-term topic index routing, reader and nested panel interaction continuity, and unified build versioning.`);
