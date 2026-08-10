@@ -21,11 +21,10 @@
     governanceStatus: null,
     drafts: new Map(),
     members: [],
-    invitations: [],
+    referralNetwork: [],
     selectedStoryline: '',
     selectedSource: '',
     newSource: null,
-    invite: null,
     notice: '',
     error: ''
   };
@@ -50,7 +49,7 @@
     if (!root) {
       root = document.createElement('div');
       root.id = ROOT_ID;
-      document.body.appendChild(root);
+      document.body.append(root);
     }
     return root;
   };
@@ -59,6 +58,12 @@
     const response = await fetch(path, { cache: 'no-store', signal: AbortSignal.timeout(DATA_TIMEOUT_MS) });
     if (!response.ok) throw new Error(`${path}: ${response.status}`);
     return response.json();
+  };
+
+  const formatDate = (value) => {
+    const date = new Date(value || 0);
+    if (Number.isNaN(date.getTime())) return '日期未知';
+    return new Intl.DateTimeFormat('zh-CN', { year: 'numeric', month: '2-digit', day: '2-digit' }).format(date);
   };
 
   const mergedPayload = (kind, targetId, base = {}) => ({
@@ -81,25 +86,25 @@
     if (!isChief()) throw new Error('只有主编可以维护刊物治理。');
     const client = await getClient();
     if (!client) throw new Error('主编治理数据库暂不可用。');
-    const [edition, storylines, sources, governanceStatus, draftsResult, membersResult, invitationsResult] = await Promise.all([
+    const [edition, storylines, sources, governanceStatus, draftsResult, membersResult, referralNetworkResult] = await Promise.all([
       fetchJson('./data/edition.json'),
       fetchJson('./data/storylines.json'),
       fetchJson('./data/source-registry.json'),
       fetchJson('./data/governance-status.json').catch(() => null),
       client.from('newsflow_governance_drafts').select('id,kind,target_id,payload,status,updated_at,published_at'),
-      client.from('newsflow_editorial_members').select('user_id,role,active,appointed_at,updated_at').order('appointed_at', { ascending: true }),
-      client.from('newsflow_editorial_invitations').select('id,expires_at,accepted_at,created_at').order('created_at', { ascending: false }).limit(12)
+      client.from('newsflow_editorial_members').select('user_id,role,active,referral_code,appointed_by,appointed_at,updated_at').order('appointed_at', { ascending: true }),
+      client.rpc('newsflow_editor_referral_network')
     ]);
     if (draftsResult.error) throw draftsResult.error;
     if (membersResult.error) throw membersResult.error;
-    if (invitationsResult.error) throw invitationsResult.error;
+    if (referralNetworkResult.error) throw referralNetworkResult.error;
     state.edition = edition;
     state.storylines = Array.isArray(storylines) ? storylines : [];
     state.sources = Array.isArray(sources) ? sources : [];
     state.governanceStatus = governanceStatus;
     state.drafts = new Map((draftsResult.data || []).map((draft) => [draftKey(draft.kind, draft.target_id), draft]));
     state.members = membersResult.data || [];
-    state.invitations = invitationsResult.data || [];
+    state.referralNetwork = referralNetworkResult.data || [];
     const activeStorylines = state.storylines.filter((item) => item.status !== 'retired');
     if (!activeStorylines.some((item) => item.id === state.selectedStoryline)) state.selectedStoryline = activeStorylines[0]?.id || '';
     if (!state.sources.some((item) => item.id === state.selectedSource)) state.selectedSource = state.sources[0]?.id || '';
@@ -200,7 +205,7 @@
       <nav class="nf-gov-index is-sources" aria-label="信源"><button class="nf-gov-add" data-gov-action="new-source">＋ 新增信源</button>${sourceList.map((item) => `<button class="${!isNew && item.id === base.id ? 'is-active' : ''}" data-gov-action="select-source" data-id="${escapeHtml(item.id)}"><span>${escapeHtml(item.tier || '')}</span><strong>${escapeHtml(item.name)}</strong><small>${escapeHtml(item.domain)}</small></button>`).join('')}</nav>
       <section class="nf-gov-editor" data-gov-form="source" data-target-id="${escapeHtml(targetId)}">
         <header><div><span>TRUSTED SOURCE REGISTRY</span><h2>${isNew ? '新增信源' : escapeHtml(payload.name || base.name)}</h2></div>${isNew ? '<span class="nf-gov-status is-draft">新信源</span>' : renderDraftStatus('source', base.id)}</header>
-        <div class="nf-gov-pair">${field('Source ID', 'source_id', isNew ? payload.id || '' : base.id, { textarea: false, readonly: !isNew, help: '小写字母、数字与连字符；发布后作为稳定标识。' })}${field('Name', 'name', payload.name || '', { textarea: false })}</div>
+        <div class="nf-gov-pair">${field('Source ID', 'source_id', isNew ? payload.id || '' : base.id, { textarea: false, readonly: !isNew, help: '小写字母、数字和连字符；发布后作为稳定标识。' })}${field('Name', 'name', payload.name || '', { textarea: false })}</div>
         <div class="nf-gov-pair">${field('Domain', 'domain', payload.domain || '', { textarea: false })}${field('Tier', 'tier', payload.tier || 'Tier A', { textarea: false })}</div>
         <div class="nf-gov-pair">${field('Class', 'class', payload.class || 'primary', { textarea: false })}${field('Path prefixes · 每行一项', 'path_prefixes', lines(payload.path_prefixes), { rows: 3 })}</div>
         ${field('Channels · 逗号分隔', 'channels', (payload.channels || []).join(', '), { rows: 2 })}
@@ -212,16 +217,30 @@
     </div>`;
   };
 
+  const renderReferralNetwork = () => {
+    if (!state.referralNetwork.length) return '<div class="nf-gov-referral-network"><header><div><span>EDITOR REFERRAL NETWORK</span><h3>传播链</h3></div></header><p class="nf-gov-intro">目前还没有编辑传播关系。</p></div>';
+    return `<div class="nf-gov-referral-network">
+      <header><div><span>EDITOR REFERRAL NETWORK</span><h3>传播链</h3></div><span>${state.referralNetwork.length} MEMBERS</span></header>
+      ${state.referralNetwork.map((member) => {
+        const depth = Math.max(0, Math.min(12, Number(member.depth || 0)));
+        const name = String(member.display_name || '').trim() || `${member.role === 'editor_in_chief' ? '主编' : '编辑'} ${member.referral_code || ''}`;
+        const role = member.role === 'editor_in_chief' ? '主编' : '编辑';
+        const status = member.active ? '有效' : '已停用';
+        return `<article class="nf-gov-referral-row ${member.active ? '' : 'is-inactive'}" style="--referral-depth:${depth}"><div><strong>${depth ? '↳ ' : ''}${escapeHtml(name)}</strong><small>${escapeHtml(member.referral_code || '')} · ${escapeHtml(role)} · ${escapeHtml(status)} · ${escapeHtml(formatDate(member.joined_at))}</small></div><b>直接邀请 ${Number(member.direct_referrals || 0)}</b><b>下级总计 ${Number(member.total_descendants || 0)}</b></article>`;
+      }).join('')}
+    </div>`;
+  };
+
   const renderEditorialBoard = () => {
     const chiefCount = state.members.filter((member) => member.active && member.role === 'editor_in_chief').length;
     const editorCount = state.members.filter((member) => member.active && member.role === 'editor').length;
-    const pendingInvites = state.invitations.filter((invite) => !invite.accepted_at && new Date(invite.expires_at).getTime() > Date.now()).length;
+    const referralEdges = state.referralNetwork.filter((member) => member.parent_user_id).length;
     return `<section class="nf-gov-editor is-board">
       <header><div><span>EDITORIAL BOARD</span><h2>编辑部</h2></div><span class="nf-gov-status">权限来自 Supabase RLS</span></header>
-      <p class="nf-gov-intro">主编拥有最终出版权；编辑拥有独立评审权。编辑意见不会按多数票自动出版，也不会在 Reader 暴露。</p>
-      <div class="nf-gov-board-stats"><div><span>主编</span><strong>${chiefCount}</strong><small>final authority</small></div><div><span>编辑</span><strong>${editorCount}</strong><small>advisory review</small></div><div><span>待接受任命</span><strong>${pendingInvites}</strong><small>14-day one-time links</small></div></div>
-      <div class="nf-gov-board-action"><div><span>任命编辑</span><p>生成一次性链接。对方必须登录后接受，才能读取私有 Candidate 并提交编辑意见。</p></div><button data-gov-action="create-invite">生成任命链接</button></div>
-      ${state.invite?.url ? `<div class="nf-gov-invite"><span>EDITOR APPOINTMENT</span><code>${escapeHtml(state.invite.url)}</code><button data-gov-action="copy-invite">复制</button><small>有效期至 ${escapeHtml(String(state.invite.expires_at || '').slice(0, 10))}</small></div>` : ''}
+      <p class="nf-gov-intro">主编拥有最终出版权；编辑拥有独立评审权。每位正式编辑拥有自己的专属邀请链接；接受邀请形成可追溯的编辑传播关系，但不会改变主编的最终出版权限。</p>
+      <div class="nf-gov-board-stats"><div><span>主编</span><strong>${chiefCount}</strong><small>final authority</small></div><div><span>编辑</span><strong>${editorCount}</strong><small>active editors</small></div><div><span>传播关系</span><strong>${referralEdges}</strong><small>accepted referrals</small></div></div>
+      <div class="nf-gov-board-action"><div><span>编辑传播</span><p>每位正式编辑在“编辑部总览”查看和分享自己的专属识别码链接。这里只展示已经成功接受的传播链，不按点击或访问计数。</p></div></div>
+      ${renderReferralNetwork()}
       <div class="nf-gov-sync-note"><strong>GitHub 同步</strong><p>主编在本页面发布 Edition / Storyline / Source 变更后，会先进入私有 publication queue，再由 GitHub Actions 拉取并提交到 main。网页端不持有 GitHub token。</p><small>最近同步：${escapeHtml(state.governanceStatus?.last_applied_at ? String(state.governanceStatus.last_applied_at).replace('T', ' ').slice(0, 16) : '尚无在线治理变更')}</small></div>
     </section>`;
   };
@@ -316,32 +335,6 @@
     }
   };
 
-  const createInvite = async () => {
-    if (state.busy || !isChief()) return;
-    state.busy = true;
-    render();
-    try {
-      state.invite = await window.NewsFlowMode?.createEditorInvite?.();
-      await load();
-      flash('编辑任命链接已签发。');
-    } catch (error) {
-      flash(error?.message || '任命链接生成失败。');
-    } finally {
-      state.busy = false;
-      render();
-    }
-  };
-
-  const copyInvite = async () => {
-    if (!state.invite?.url) return;
-    try {
-      await navigator.clipboard.writeText(state.invite.url);
-      flash('任命链接已复制。');
-    } catch {
-      flash('复制失败，请手动复制。');
-    }
-  };
-
   const renderBody = () => {
     if (state.loading) return '<div class="nf-gov-loading">正在读取刊物治理状态…</div>';
     if (state.error) return `<div class="nf-gov-error"><strong>刊物设置暂未就绪</strong><p>${escapeHtml(state.error)}</p><button data-gov-action="reload">重试</button></div>`;
@@ -377,8 +370,6 @@
     else if (action === 'new-source') { state.newSource = emptySource(); render(); }
     else if (action === 'save') await saveGovernance(target.dataset.kind || '', false);
     else if (action === 'publish') await saveGovernance(target.dataset.kind || '', true);
-    else if (action === 'create-invite') await createInvite();
-    else if (action === 'copy-invite') await copyInvite();
   };
 
   const root = ensureRoot();
