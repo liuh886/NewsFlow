@@ -55,13 +55,18 @@
       ],
       "material_lead_count": 9,
       "full_text_review_count": 10
+    },
+    "preflight": {
+      "mode": "connector_contract_check",
+      "note": "Candidates were checked against the current evaluator contract and written through the connected Supabase service; the repository-local apply-content CLI was not executed in this connector runtime."
     }
   },
   "applied": true,
   "summary": {
     "candidate_count": 6,
     "reviewable_count": 6,
-    "accepted_by_machine_gate_count": 6,
+    "contract_validated_count": 6,
+    "accepted_by_machine_gate_count": 0,
     "needs_review_count": 0,
     "rejected_count": 0
   },
