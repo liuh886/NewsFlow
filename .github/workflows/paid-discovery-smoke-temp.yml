@@ -14,7 +14,7 @@ concurrency:
   cancel-in-progress: false
 
 jobs:
-  xai-smoke:
+  tavily-smoke:
     runs-on: ubuntu-24.04
     timeout-minutes: 5
     steps:
@@ -26,17 +26,19 @@ jobs:
         with:
           node-version: 22
 
-      - name: Run one bounded xAI X-search request
+      - name: Run one bounded Tavily verification request
         env:
-          XAI_API_KEY: ${{ secrets.XAI_API_KEY }}
-          XAI_DISCOVERY_MODE: topics
-          XAI_DISCOVERY_DAYS: '3'
-          XAI_DISCOVERY_MAX_LEADS: '6'
-        run: node scripts/pull-xai-discovery.mjs > discovery-output.json
+          TAVILY_API_KEY: ${{ secrets.TAVILY_API_KEY }}
+          TAVILY_PURPOSE: verify
+          TAVILY_QUERY: 'OpenAI Hugging Face model evaluation security incident August 2026'
+          TAVILY_MAX_RESULTS: '3'
+          TAVILY_RESERVE_CREDITS: '100'
+          TAVILY_DAYS: '14'
+        run: node scripts/pull-tavily-discovery.mjs > discovery-output.json
 
       - name: Publish result
         run: |
-          echo '## xAI paid discovery smoke' >> "$GITHUB_STEP_SUMMARY"
+          echo '## Tavily paid verification smoke' >> "$GITHUB_STEP_SUMMARY"
           echo '```json' >> "$GITHUB_STEP_SUMMARY"
           cat discovery-output.json >> "$GITHUB_STEP_SUMMARY"
           echo '```' >> "$GITHUB_STEP_SUMMARY"
