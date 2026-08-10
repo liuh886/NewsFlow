@@ -180,7 +180,12 @@
   const withdrawalFor = (candidateId) => state.withdrawals.get(String(candidateId)) || null;
   const finalDecisionFor = (candidateId) => chiefReviewFor(candidateId)?.decision || '';
   const closedCandidates = () => state.candidates.filter((candidate) => finalDecisionFor(candidate.id) || ownReviewFor(candidate.id));
-  const rejectedCandidates = () => state.candidates.filter((candidate) => finalDecisionFor(candidate.id) === 'reject' || withdrawalFor(candidate.id));
+  const isRejectedCandidate = (candidate) => {
+    if (withdrawalFor(candidate.id)) return true;
+    const finalDecision = finalDecisionFor(candidate.id);
+    return Boolean(finalDecision) && !['cover_story', 'accept'].includes(finalDecision);
+  };
+  const rejectedCandidates = () => state.candidates.filter(isRejectedCandidate);
 
   const selectReaction = (decisionId, manuscriptId) => {
     const lines = Array.isArray(state.reactions?.[decisionId]) ? state.reactions[decisionId] : [];
@@ -686,7 +691,7 @@
       ${renderDeskTabs('overview')}
       <main class="nf-review-overview-stage"><article class="nf-review-overview-card">
         <div class="nf-review-overview-heading"><div><span>EDITORIAL DESK · SIGNAL BOARD</span><h1 id="nf-overview-title">编辑部总览</h1><p>先看全局，再决定下一稿。数字负责提醒，不负责替主编做决定。</p></div><button class="is-primary" data-review-action="open-pending" ${pending.length ? '' : 'disabled'}>${pending.length ? '继续审稿 →' : '本轮已清空'}</button></div>
-        <section class="nf-review-overview-stats" aria-label="编辑部状态"><div><span>待处理</span><strong>${String(pending.length).padStart(2, '0')}</strong><small>AI ${aiPending} · CCUS ${ccusPending}</small></div><div><span>活跃稿件</span><strong>${String(active.length).padStart(2, '0')}</strong><small>仍在编辑流程中</small></div><div><span>已采用</span><strong>${String(adopted).padStart(2, '0')}</strong><small>主编公开采用记录</small></div><div><span>退稿</span><strong>${String(rejected.length).padStart(2, '0')}</strong><small>保留在地下室，可复查</small></div></section>
+        <section class="nf-review-overview-stats" aria-label="编辑部状态"><div><span>待处理</span><strong>${String(pending.length).padStart(2, '0')}</strong><small>AI ${aiPending} · CCUS ${ccusPending}</small></div><div><span>活跃稿件</span><strong>${String(active.length).padStart(2, '0')}</strong><small>仍在编辑流程中</small></div><div><span>已采用</span><strong>${String(adopted).padStart(2, '0')}</strong><small>主编公开采用记录</small></div><div><span>退稿</span><strong>${String(rejected.length).padStart(2, '0')}</strong><small>未录用稿件，保留复查</small></div></section>
         <section class="nf-review-overview-queue"><header><div><span>MANUSCRIPT INDEX</span><h2>信号与处理状态</h2></div><span>最近 ${signals.length} / 共 ${state.candidates.length}</span></header>${signals.length ? `<div class="nf-review-overview-list">${signals.map((candidate, index) => {
           const status = overviewStatus(candidate);
           return `<button data-review-action="overview-select" data-candidate-id="${escapeHtml(candidate.id)}"><span>${String(index + 1).padStart(2, '0')}</span><span><strong>${escapeHtml(candidate.title)}</strong><small>${escapeHtml(activeStorylineTitle(candidate))} · ${escapeHtml(candidate.source || 'Editorial submission')}</small></span><em class="is-${status.id}">${escapeHtml(status.label)}</em></button>`;
@@ -781,7 +786,7 @@
         }).join('')}</nav>` : '<div class="nf-review-archive-empty"><h2>这里还很安静</h2><p>退稿不会消失，它只是被编辑部礼貌地放进了地下室。</p></div>'}
         ${selected ? `<section class="nf-review-archive-detail"><div><span class="nf-review-label">SELECTED RECORD</span><h2>${escapeHtml(selected.title)}</h2><p>${escapeHtml(selected.summary || '摘要待补充。')}</p><p class="nf-review-archive-source">${escapeHtml(selected.source)} · ${escapeHtml(activeStorylineTitle(selected))}</p>${renderImportance(selected)}</div><aside><div class="nf-review-stamp is-${selectedDisposition.id}">${escapeHtml(selectedDisposition.code)}</div>${selectedWithdrawal ? `<p>撤稿原因：<strong>${escapeHtml(WITHDRAWAL_REASONS.find((reason) => reason.id === selectedWithdrawal.reason_code)?.label || selectedWithdrawal.reason_code)}</strong></p><p>${escapeHtml(selectedWithdrawal.note || '未附补充说明。')}</p><time>${escapeHtml(formatArchiveTime(selectedWithdrawal.withdrawn_at))}</time>` : `<p>主编决定：<strong>${escapeHtml(decisionById(finalDecisionFor(selected.id))?.label || '尚未裁决')}</strong></p>`}<div class="nf-review-archive-actions">${isChief() && state.adoptions.has(selected.id) && !selectedWithdrawal ? `<button class="is-danger" data-review-action="open-withdrawal" data-candidate-id="${escapeHtml(selected.id)}">撤稿</button>` : ''}${isChief() && selectedWithdrawal ? `<button class="is-primary" data-review-action="restore-withdrawal" data-candidate-id="${escapeHtml(selected.id)}">恢复采用</button>` : ''}<button data-review-action="review-selected" data-candidate-id="${escapeHtml(selected.id)}">重新审阅</button></div></aside><section class="nf-review-history-block"><h3>决定记录</h3>${renderArchiveEvents(selected.id)}</section></section>` : ''}
         </div>
-        ${state.archiveFilter === 'rejects' ? '<p class="nf-review-basement">退稿不会消失，它只是被编辑部礼貌地放进了地下室。</p>' : ''}
+        ${state.archiveFilter === 'rejects' ? '<p class="nf-review-basement">退稿库收录所有未获录用的主编终局稿件，包括小修、大修与拒稿；撤稿记录也保留在此。</p>' : ''}
       </article></main>
       ${renderDecisionBar(true)}
       ${state.notice ? `<div class="nf-review-notice" role="status">${escapeHtml(state.notice)}</div>` : ''}
@@ -913,7 +918,7 @@
       const candidate = state.candidates.find((item) => item.id === target.dataset.candidateId);
       if (candidate) {
         if (candidate.active) { state.packet = [candidate]; state.index = 0; state.records = []; state.phase = 'review'; syncDecisionCursor(); render(); }
-        else { state.archiveSelectionId = candidate.id; openArchiveSection(finalDecisionFor(candidate.id) === 'reject' ? 'rejects' : 'archive'); }
+        else { state.archiveSelectionId = candidate.id; openArchiveSection(isRejectedCandidate(candidate) ? 'rejects' : 'archive'); }
       }
     }
     else if (action === 'review-selected') {

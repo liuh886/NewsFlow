@@ -59,7 +59,11 @@ for (const contract of ['captureEditionPanelScroll', 'restoreEditionPanelScroll'
   assert(readingSurface.includes(contract), `Reading Surface missing interaction-continuity contract: ${contract}`);
 }
 
-for (const contract of ['ensureMobileReaderSearch', 'syncEditionDialogAccessibility', 'trapEditionFocus', 'syncEditionRouteFromLocation']) {
+for (const contract of [
+  'ensureMobileReaderSearch', 'syncEditionDialogAccessibility', 'trapEditionFocus', 'syncEditionRouteFromLocation',
+  'rememberEditionPanelScroll', 'restoreEditionPanelScroll', 'newsflowEditionScrollTop', 'scrollEditionPanelWithKeyboard',
+  "['ArrowUp', 'ArrowDown']", 'panel.scrollBy'
+]) {
   assert(polish.includes(contract), `Reader polish missing interaction contract: ${contract}`);
 }
 
@@ -106,4 +110,4 @@ assert(manifest.icons.some((icon) => icon.sizes === '192x192'), 'PWA manifest mu
 assert(manifest.icons.some((icon) => icon.sizes === '512x512'), 'PWA manifest must declare a 512x512 install icon.');
 assert(/^\d+\.\d+\.\d+$/.test(String(packageManifest.version || '')), 'package.json must remain the single semantic version source.');
 
-console.log(`NewsFlow web standards contract passed for v${packageManifest.version}: canonical publication pages, feed/sitemap, lazy permission-routed editor runtime, persistent PWA install entry, mobile search, accessible edition dialogs, reader interaction continuity and unified build versioning.`);
+console.log(`NewsFlow web standards contract passed for v${packageManifest.version}: canonical publication pages, feed/sitemap, lazy permission-routed editor runtime, persistent PWA install entry, mobile search, accessible edition dialogs, reader and nested panel interaction continuity, and unified build versioning.`);

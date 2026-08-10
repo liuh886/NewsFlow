@@ -25,6 +25,9 @@ for (const eagerAsset of ['./review-game.css', './review-stamp.css', './review-g
   if (index.includes(eagerAsset)) throw new Error(`Reader must not eagerly load editor-only asset: ${eagerAsset}`);
   if (!loader.includes(eagerAsset)) throw new Error(`editorial-loader is missing ${eagerAsset}`);
 }
+if (!loader.includes("new URLSearchParams(window.location.search).has('editor-invite')") || !loader.includes('void ensureEditorialRuntime();')) {
+  throw new Error('Editor invitation links must eagerly enter the otherwise-lazy appointment runtime.');
+}
 if (index.includes('./editorial-mode.css') || loader.includes('./editorial-mode.css')) throw new Error('Retired identity-choice UI must stay deleted.');
 for (const retired of ['guest-editor', 'review-candidates.json', 'pipeline-reviews.json', 'guest-editor-invites.json', 'newsflow_review_game_v4_guest']) {
   if (index.includes(retired) || sw.includes(retired) || game.includes(retired)) throw new Error(`retired/public editorial path still referenced: ${retired}`);
@@ -41,7 +44,10 @@ for (const contract of [
   '决定档案', '退稿库', '编辑部总览', '信号与处理状态', 'editorial_boost', 'reader_boost',
   "event.key === 'ArrowLeft'", "event.key === 'ArrowRight'", "event.key === 'ArrowUp'", "event.key === 'ArrowDown'",
   "event.key === 'Enter'", 'renderShortcutGuide', 'is-keyboard-selected', '切换稿件', '确认当前裁决',
-  'ownReviewFor(candidate.id)', 'nf-review-persistent-decision', 'EDITORIAL DECISION RECORDED', '主编已裁决'
+  'ownReviewFor(candidate.id)', 'nf-review-persistent-decision', 'EDITORIAL DECISION RECORDED', '主编已裁决',
+  'const isRejectedCandidate = (candidate) =>', "!['cover_story', 'accept'].includes(finalDecision)",
+  'const rejectedCandidates = () => state.candidates.filter(isRejectedCandidate)', "openArchiveSection(isRejectedCandidate(candidate) ? 'rejects' : 'archive')",
+  '退稿库收录所有未获录用的主编终局稿件'
 ]) if (!game.includes(contract)) throw new Error(`review game missing contract: ${contract}`);
 if (game.includes('localStorage') || game.includes('saveProductData') || game.includes('FORMAL_STORAGE_KEY')) {
   throw new Error('Review decisions must live only in normalized Supabase review rows.');
@@ -56,7 +62,9 @@ for (const contract of [
   "const INVITE_PARAM = 'editor-invite'", "from('newsflow_editorial_members')", "from('newsflow_editorial_invitations')", "role: 'editor'",
   "window.HaoAccount?.can?.('newsflow.pro')", 'isEditorialMember', 'openEditorialOverview', 'window.HaoAccount?.open?.()',
   'window.NewsFlowReviewGame?.openOverview?.()', '开通 Newsflow Pro，进入编辑部', 'createEditorInvite', 'openGovernance',
-  'syncEditorialEntry', '[data-action="open-editorial-office"]', 'window.NewsFlowMode', 'window.HaoAccount?.refresh?.()'
+  'syncEditorialEntry', '[data-action="open-editorial-office"]', 'window.NewsFlowMode', 'window.HaoAccount?.refresh?.()',
+  'renderInviteGuide', '登录并接受任命', '操作流程：选择登录方式', "state.inviteStatus = 'accepted'", "state.inviteStatus = 'failed'",
+  '邀请链接仍保留，你可以重试'
 ]) if (!office.includes(contract)) throw new Error(`editorial permission router missing contract: ${contract}`);
 for (const retired of ['MODE_STORAGE_KEY', 'newsflow_mode_v3', 'roleCard(', 'nf-mode-dialog', 'renderDialog', 'syncModePreference', '你以什么身份进入编辑部？']) {
   if (office.includes(retired) || loader.includes(retired)) throw new Error(`retired role-choice architecture returned: ${retired}`);
@@ -91,4 +99,4 @@ const reactions = JSON.parse(reactionsText);
 for (const decision of ['cover_story', 'accept', 'minor_revision', 'major_revision', 'reject']) {
   if (!Array.isArray(reactions[decision]) || reactions[decision].length < 4) throw new Error(`reaction library is too shallow for ${decision}.`);
 }
-console.log('NewsFlow review game contract passed: lazy editor runtime, direct permission-routed dashboard entry, Pro conversion, durable Supabase-backed decision stamps, advisory reviews and chief-only authority.');
+console.log('NewsFlow review game contract passed: visible one-time editor appointment, non-adoption rejection archive, durable Supabase-backed review decisions and chief-only publication authority.');
