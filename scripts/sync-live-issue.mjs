@@ -23,6 +23,12 @@ const shanghaiDateKey = (value) => {
   const { year, monthIndex, day } = asShanghaiParts(date);
   return dateKey(year, monthIndex, day);
 };
+const previousDayKey = (value) => {
+  const date = new Date(`${value}T00:00:00Z`);
+  if (Number.isNaN(date.getTime())) return '';
+  date.setUTCDate(date.getUTCDate() - 1);
+  return date.toISOString().slice(0, 10);
+};
 const cycleFor = (now = new Date()) => {
   const { year, monthIndex, day } = asShanghaiParts(now);
   const startDay = day < 15 ? 1 : 15;
@@ -43,6 +49,7 @@ const news = await readJson('public/data/news.json');
 const issues = await readJson('public/data/issues.json');
 const now = new Date();
 const cycle = cycleFor(now);
+const newsById = new Map(news.map((item) => [String(item.id || ''), item]));
 
 const maxSignals = Math.max(1, Number(edition.materiality?.max_signals_per_issue || 24));
 const maxSignalsPerChannel = Math.max(1, Number(edition.materiality?.max_signals_per_channel || 8));
@@ -117,18 +124,62 @@ const finalizeIssue = (issue) => {
   };
 };
 
+const amendPreviousFrozenIssue = (issue) => {
+  const eligible = eligibleForCoverage(issue.coverage_start, issue.coverage_end);
+  const existingIds = (issue.signal_ids || []).map(String);
+  const existingIdSet = new Set(existingIds);
+  const lateAdoptions = [...eligible]
+    .filter((item) => !existingIdSet.has(String(item.id || '')))
+    .sort(rankIssueSignals);
+  if (!lateAdoptions.length) return issue;
+
+  const amendedIds = [...existingIds, ...lateAdoptions.map((item) => String(item.id))];
+  const amendedSignals = amendedIds.map((id) => newsById.get(id)).filter(Boolean);
+  const selectedByChannel = channelCounts(amendedSignals);
+  return {
+    ...issue,
+    signal_ids: amendedIds,
+    editorially_revised_at: now.toISOString(),
+    revision_note: issue.revision_note || '主编在下一刊期内补录属于本刊期覆盖窗口的迟到录用稿件；原封面与既有篇目顺序保持不变。',
+    methodology: {
+      ...(issue.methodology || {}),
+      candidate_count: eligible.length,
+      selected_count: amendedSignals.length,
+      editorial_adoption_count: eligible.length,
+      cover_story_count: amendedSignals.filter((item) => item.editorial_decision === 'cover_story').length,
+      editor_review_count: amendedSignals.reduce((sum, item) => sum + Number(item.ranking?.editor_review_count || 0), 0),
+      qualified_reader_feedback_count: amendedSignals.reduce((sum, item) => sum + Number(item.ranking?.reader_feedback_count || 0), 0),
+      selected_by_channel: Object.fromEntries(selectedByChannel),
+      editorial_view_changed: true,
+      post_freeze_amendment_count: Number(issue.methodology?.post_freeze_amendment_count || 0) + lateAdoptions.length
+    }
+  };
+};
+
 const normalizedIssues = issues.map((issue) => {
   if (issue?.lifecycle !== 'live') return issue;
   if (issue.coverage_start === cycle.start && issue.coverage_end === cycle.end) return issue;
   return finalizeIssue(issue);
 });
 
+// A frozen Issue is normally immutable. The immediately preceding Issue gets one
+// bounded grace window: while the next Issue is live, chief adoptions whose source
+// date belongs to that previous coverage window are appended as explicit amendments.
+// Older Issues remain hard-frozen, and existing cover/order are never recomputed.
+const previousCoverageEnd = previousDayKey(cycle.start);
+const previousFrozenIssue = normalizedIssues.find((issue) =>
+  issue?.lifecycle === 'frozen' && issue.coverage_end === previousCoverageEnd
+) || null;
+const amendedIssues = previousFrozenIssue
+  ? normalizedIssues.map((issue) => String(issue.id || '') === String(previousFrozenIssue.id || '') ? amendPreviousFrozenIssue(issue) : issue)
+  : normalizedIssues;
+
 const eligible = eligibleForCoverage(cycle.start, cycle.end);
 const liveSelected = [...eligible].sort(rankIssueSignals);
 const liveSelectedByChannel = channelCounts(liveSelected);
-const currentIndex = normalizedIssues.findIndex((issue) => issue.coverage_start === cycle.start && issue.coverage_end === cycle.end);
-const currentExisting = currentIndex >= 0 ? normalizedIssues[currentIndex] : null;
-const maxIssueNumber = normalizedIssues.reduce((max, issue) => Math.max(max, Number(issue.issue_number || 0)), 0);
+const currentIndex = amendedIssues.findIndex((issue) => issue.coverage_start === cycle.start && issue.coverage_end === cycle.end);
+const currentExisting = currentIndex >= 0 ? amendedIssues[currentIndex] : null;
+const maxIssueNumber = amendedIssues.reduce((max, issue) => Math.max(max, Number(issue.issue_number || 0)), 0);
 const issueNumber = Number(currentExisting?.issue_number || (maxIssueNumber + 1));
 const cover = liveSelected[0] || null;
 const selectedIds = liveSelected.map((item) => String(item.id));
@@ -188,13 +239,19 @@ if (semanticChanged) issue.updated_at = now.toISOString();
 else if (currentExisting?.updated_at) issue.updated_at = currentExisting.updated_at;
 
 const nextIssues = currentIndex >= 0
-  ? normalizedIssues.map((entry, index) => index === currentIndex ? issue : entry)
-  : [issue, ...normalizedIssues];
+  ? amendedIssues.map((entry, index) => index === currentIndex ? issue : entry)
+  : [issue, ...amendedIssues];
 nextIssues.sort((a, b) => new Date(b.coverage_start || b.published_at || 0).getTime() - new Date(a.coverage_start || a.published_at || 0).getTime());
 
 if (JSON.stringify(nextIssues) !== JSON.stringify(issues)) {
   await writeJson('public/data/issues.json', nextIssues);
   console.log(`Live Issue ${issueNumber} synced: ${liveSelected.length} adopted Signal(s) visible for evaluation, cover ${issue.cover_signal_id || 'none'}, coverage ${cycle.start}..${cycle.end}. Final cap ${maxSignals}/${maxSignalsPerChannel} per channel.`);
+  if (previousFrozenIssue) {
+    const amendedPrevious = nextIssues.find((entry) => String(entry.id || '') === String(previousFrozenIssue.id || ''));
+    const amendmentCount = Number(amendedPrevious?.methodology?.post_freeze_amendment_count || 0)
+      - Number(previousFrozenIssue.methodology?.post_freeze_amendment_count || 0);
+    if (amendmentCount > 0) console.log(`Previous frozen Issue ${previousFrozenIssue.issue_number} amended with ${amendmentCount} late chief adoption(s).`);
+  }
 } else {
   console.log(`Live Issue ${issueNumber}: no semantic change.`);
 }
