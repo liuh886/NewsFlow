@@ -145,19 +145,11 @@
       "英国 CO₂ 封存许可与网络接入安排能否进一步转化为获得融资、签订合同并进入建设的项目"
     ],
     "methodology": {
-      "candidate_count": 5,
+      "candidate_count": 14,
       "selected_count": 16,
       "primary_source_count": 8,
       "fixed_length": false,
       "editorial_view_changed": true,
-      "editorial_adoption_count": 5,
-      "cover_story_count": 0,
-      "editor_review_count": 0,
-      "qualified_reader_feedback_count": 0,
-      "selected_by_channel": {
-        "ai-infrastructure": 11,
-        "ccus-energy-transition": 5
-      },
       "post_freeze_amendment_count": 4
     }
   }
