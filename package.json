@@ -10,6 +10,7 @@
     "content:check": "node scripts/update-content.mjs --check",
     "content:update": "node scripts/apply-content.mjs",
     "content:status": "node scripts/update-data-status.mjs",
+    "content:yield": "node scripts/report-discovery-yield.mjs",
     "editorial:referrals": "node scripts/pull-editorial-referrals.mjs",
     "feedback:pull": "node scripts/pull-feedback.mjs",
     "feedback:profile": "node skills/newsflow-recommender/scripts/build-profile.mjs",
