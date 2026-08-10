@@ -4,8 +4,8 @@ const args = new Map(process.argv.slice(2).map((entry) => {
   return [key, rest.join('=') || true];
 }));
 
-const purpose = String(args.get('purpose') || '').trim();
-const query = String(args.get('query') || '').trim();
+const purpose = String(args.get('purpose') || process.env.TAVILY_PURPOSE || '').trim();
+const query = String(args.get('query') || process.env.TAVILY_QUERY || '').trim();
 if (!['verify', 'gap', 'social-x'].includes(purpose)) throw new Error('--purpose must be verify, gap, or social-x');
 if (!query) throw new Error('--query is required');
 
@@ -13,12 +13,12 @@ const clampInteger = (value, fallback, min, max) => {
   const parsed = Number.parseInt(String(value ?? ''), 10);
   return Number.isInteger(parsed) ? Math.min(max, Math.max(min, parsed)) : fallback;
 };
-const maxResults = clampInteger(args.get('max-results'), 5, 1, 5);
-const reserveCredits = clampInteger(args.get('reserve-credits'), 100, 0, 1000000);
-const days = clampInteger(args.get('days'), purpose === 'verify' ? 14 : 7, 1, 31);
+const maxResults = clampInteger(args.get('max-results') || process.env.TAVILY_MAX_RESULTS, 5, 1, 5);
+const reserveCredits = clampInteger(args.get('reserve-credits') || process.env.TAVILY_RESERVE_CREDITS, 100, 0, 1000000);
+const days = clampInteger(args.get('days') || process.env.TAVILY_DAYS, purpose === 'verify' ? 14 : 7, 1, 31);
 const parseDomains = (value) => String(value || '').split(',').map((item) => item.trim()).filter(Boolean);
-const includeDomains = purpose === 'social-x' ? ['x.com'] : parseDomains(args.get('include-domains'));
-const excludeDomains = parseDomains(args.get('exclude-domains'));
+const includeDomains = purpose === 'social-x' ? ['x.com'] : parseDomains(args.get('include-domains') || process.env.TAVILY_INCLUDE_DOMAINS);
+const excludeDomains = parseDomains(args.get('exclude-domains') || process.env.TAVILY_EXCLUDE_DOMAINS);
 
 const base = {
   schema_version: '1.0',
