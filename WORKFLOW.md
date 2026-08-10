@@ -76,10 +76,9 @@ Then collect every active Storyline through four bounded passes. `source_ids` in
 
 **Pass A — problem discovery and emerging arguments**
 
-- Scan a bounded subset of registered X scouts and relevant long-form specialist sources during the normal run rather than relegating them to exceptional use.
-- Run at least one configured X `topic_query` for each active channel. Fixed accounts tell us what known experts are thinking; topic search is specifically there to discover unfamiliar people, new terminology and problems outside the current network.
-- Select the query form by runtime, not by preference: if native X search is actually available, execute `native_query`; otherwise execute the paired `web_query` through the available web search engine. Never claim native X coverage when the runtime only used web indexing.
-- Record `x_query_runtime` as `native_x`, `web_search`, `mixed` or `not_run` so later yield analysis does not compare unlike collection surfaces as if they were equivalent.
+- Scan relevant registered long-form specialist sources every normal run. They are the stable problem-discovery surface when social-platform access is unavailable.
+- Scan a bounded subset of registered X scouts and run configured X `topic_queries` only when native X search/timeline access is actually available. Fixed accounts tell us what known experts are thinking; topic search is specifically there to discover unfamiliar people, new terminology and problems outside the current network.
+- X has only two runtime states: `native_x` or `not_run`. Do not simulate X collection with indexed web search, cached snippets or generic `site:x.com` queries. If native X is unavailable, record `not_run` and continue the run through canonical blogs, reports, primary records and independent media.
 - Rotate toward under-covered layers before repeatedly scanning the same high-yield accounts.
 - Their value is often the framing itself: a bottleneck, failure mode, engineering trade-off, market contradiction or new way to formulate the problem may be material even when no conventional news event occurred.
 - X posts remain discovery-only under `config/content-scouts.json`; follow factual claims to the linked paper, filing, dataset, benchmark, repository, company document or other canonical evidence.
@@ -160,13 +159,15 @@ When available, also include sanitized collection telemetry in `run.collection_o
 - `scout_ids_scanned` — registered fixed X-scout IDs actually checked;
 - `storyline_ids_scanned` — long-horizon Storylines actually covered;
 - `surface_types_scanned` — evidence-surface classes actually inspected;
-- `x_topic_query_ids_run` — configured X topic searches actually executed;
-- `x_query_runtime` — whether those searches used native X search, web indexing, a mixture, or were not run;
+- `x_topic_query_ids_run` — configured X topic searches actually executed; leave this empty when native X was unavailable;
+- `x_query_runtime` — `native_x` when X was genuinely queried, otherwise `not_run`;
 - `origin_yield` — per discovery origin, record `lead_count`, `full_text_review_count` and `candidate_count`; this is the bridge needed to learn whether a fixed scout, topic query, specialist source or other surface actually contributes useful material;
 - `material_lead_count` — leads that survived the initial relevance/novelty screen;
 - `full_text_review_count` — sources whose full text was actually inspected.
 
-`origin_yield` is attribution, not a ranking signal. Do not auto-remove, auto-demote or auto-promote a source because of a small sample or a low-yield run. Compare sources only after enough runs exist and keep runtime differences visible.
+`origin_yield` is attribution, not a ranking signal. Do not auto-remove, auto-demote or auto-promote a source because of a small sample or a low-yield run. Compare sources only after enough runs exist.
+
+Telemetry must be internally consistent. `scripts/update-content.mjs` rejects unknown source/scout/topic IDs, duplicate origin rows, impossible count order (`Candidate > full text > lead`), X topic activity marked as `not_run`, and Candidate origins that are not represented in the run's `origin_yield` when that telemetry is supplied.
 
 This telemetry is accumulated for later source-yield and coverage analysis only. Do **not** use it yet to auto-remove, auto-demote or auto-promote sources.
 
@@ -321,8 +322,8 @@ Report:
 
 - run window + actor/workflow version;
 - Green Lane referral checked, if any;
-- fixed X scouts and X topic-query discovery checked;
-- X query runtime (`native_x`, `web_search`, `mixed` or `not_run`);
+- fixed X scouts and X topic-query discovery checked only when native X access was available;
+- X query runtime (`native_x` or `not_run`);
 - Storylines and cross-cutting lenses covered;
 - primary, specialist, dataset/technical and independent evidence surfaces checked;
 - for CCUS, both project-state and industry-state coverage;

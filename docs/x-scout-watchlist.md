@@ -11,18 +11,18 @@ The machine-readable fixed scout list, topic searches and bias notes live in `co
 NewsFlow uses both:
 
 1. **Fixed scouts** — a bounded rotation of people or institutions with a strong record of surfacing inspectable artifacts and useful questions.
-2. **Topic search** — at least one configured topic query per active channel, specifically to discover unfamiliar people, new terminology and problems outside the existing network.
+2. **Topic search** — configured queries that discover unfamiliar people, new terminology and problems outside the existing network.
 
 A fixed expert list can become an echo chamber even when every individual source is high quality, so permanent scouts are a high-signal seed network rather than a complete map of the field.
 
-## Runtime-aware X search
+## Native-only X runtime
 
-Each configured topic search has two equivalent discovery forms:
+X discovery is executed only when the runtime has genuine X search/timeline access.
 
-- `native_query` — use only when the runtime genuinely has native X search;
-- `web_query` — use through an ordinary web search engine when X-native search is unavailable.
+- `native_x` — execute the configured `native_query` set and bounded fixed-scout scan.
+- `not_run` — X access is unavailable; do not simulate it with indexed web search, cached snippets or `site:x.com` queries. Continue through the registered long-form sources, primary records, institutional reports and independent media.
 
-Every run records `x_query_runtime` as `native_x`, `web_search`, `mixed` or `not_run`. Never report web-indexed X results as complete or real-time X coverage.
+This keeps the collection record honest: a run either queried X or it did not. The long-form specialist network is intentionally capable of carrying problem discovery when X is unavailable.
 
 ## Core list by layer
 
@@ -80,12 +80,12 @@ Configured searches cover:
 - CCUS financing, tariffs, network utilization, cost and supply-chain capacity;
 - CCUS permits, MRV, liability, cross-border rules and policy durability.
 
-A topic-search result does **not** need to come from an allowlisted scout to be useful. It is a lead. If an unfamiliar account links to a credible paper, dataset, filing or project record, follow the artifact through the normal evidence gate. Do not automatically add that account to the permanent scout list.
+A native X topic-search result does **not** need to come from an allowlisted scout to be useful. It is a lead. If an unfamiliar account links to a credible paper, dataset, filing or project record, follow the artifact through the normal evidence gate. Do not automatically add that account to the permanent scout list.
 
 ## Discovery workflow
 
 ```text
-Fixed scout or X topic search
+Native X scout/topic query (when available) OR registered long-form source
   ↓
 Question, claim or linked artifact?
   ├─ no  → context only; do not create a Candidate

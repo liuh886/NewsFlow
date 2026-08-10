@@ -11,8 +11,8 @@
   "layers": ["energy", "chips", "infrastructure", "models", "applications", "ccus-projects", "ccus-markets", "ccus-policy"],
   "rotation_policy": {
     "fixed_scouts": "bounded_subset_each_run",
-    "topic_search": "at_least_one_query_per_active_channel",
-    "runtime_query_selection": "native_x_search_when_available_else_web_query",
+    "topic_search": "at_least_one_query_per_active_channel_when_native_x_available",
+    "runtime_query_selection": "native_x_only_else_not_run",
     "deep_review": "rotate_undercovered_layers_before_repeating_high-yield_accounts"
   },
   "topic_queries": [
@@ -20,56 +20,48 @@
       "id": "ai-energy-problems",
       "layers": ["energy"],
       "native_query": "(AI OR data center) (grid OR interconnection OR transformer OR turbine OR power) has:links -is:retweet",
-      "web_query": "site:x.com \"data center\" grid interconnection transformer turbine power",
       "purpose": "surface emerging power, equipment, siting and queue constraints beyond the fixed scout list"
     },
     {
       "id": "ai-chip-bottlenecks",
       "layers": ["chips"],
       "native_query": "(AI chip OR accelerator OR HBM OR CoWoS OR packaging) (yield OR supply OR capacity OR cost OR bottleneck) has:links -is:retweet",
-      "web_query": "site:x.com AI chip accelerator HBM CoWoS packaging yield supply bottleneck",
       "purpose": "surface semiconductor bottleneck migration, qualification and supply-chain arguments"
     },
     {
       "id": "ai-infrastructure-operations",
       "layers": ["infrastructure"],
       "native_query": "(AI data center OR AI cluster) (utilization OR cooling OR network OR outage OR financing OR TCO) has:links -is:retweet",
-      "web_query": "site:x.com \"AI data center\" utilization cooling network outage financing TCO",
       "purpose": "surface operational and economic evidence that project announcements miss"
     },
     {
       "id": "ai-model-economics",
       "layers": ["models"],
       "native_query": "(model OR agent) (inference cost OR system card OR task horizon OR open weights OR reliability) has:links -is:retweet",
-      "web_query": "site:x.com AI model agent inference cost system card task horizon open weights reliability",
       "purpose": "surface capability-cost, openness and deployment-control questions"
     },
     {
       "id": "ai-application-reality",
       "layers": ["applications"],
       "native_query": "(AI agent OR enterprise AI OR robotics) (productivity OR paid usage OR deployment OR failure OR workflow) has:links -is:retweet",
-      "web_query": "site:x.com AI agent enterprise AI robotics productivity paid usage deployment failure workflow",
       "purpose": "surface adoption, workflow redesign and failure evidence"
     },
     {
       "id": "ccus-project-reality",
       "layers": ["ccus-projects"],
       "native_query": "(CCS OR CCUS OR carbon capture) (FID OR EPC OR commissioning OR capture rate OR cancellation OR delay) has:links -is:retweet",
-      "web_query": "site:x.com CCS CCUS carbon capture FID EPC commissioning capture rate cancellation delay",
       "purpose": "surface project-conversion, delivery and operational evidence"
     },
     {
       "id": "ccus-market-formation",
       "layers": ["ccus-markets"],
       "native_query": "(CCS OR CCUS OR CO2 storage) (financing OR tariff OR capacity contract OR cost OR utilization OR supply chain) has:links -is:retweet",
-      "web_query": "site:x.com CCS CCUS CO2 storage financing tariff capacity contract cost utilization supply chain",
       "purpose": "surface capital, network utilization, cost and industry-formation arguments"
     },
     {
       "id": "ccus-policy-friction",
       "layers": ["ccus-policy"],
       "native_query": "(CCS OR CCUS OR carbon storage) (Class VI OR MRV OR liability OR permit OR cross-border OR policy) has:links -is:retweet",
-      "web_query": "site:x.com CCS CCUS carbon storage Class VI MRV liability permit cross-border policy",
       "purpose": "surface regulatory friction, policy durability and responsibility questions"
     }
   ],

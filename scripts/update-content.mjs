@@ -151,6 +151,7 @@ if (scoutConfig.schema_version !== '1.0' || scoutConfig.platform !== 'X') config
 if (scoutConfig.default_policy?.promotion !== 'discovery_only'
   || scoutConfig.default_policy?.post_as_evidence !== false
   || scoutConfig.default_policy?.require_canonical_source !== true) configProblems.push('X scouts must remain discovery-only');
+if (scoutConfig.rotation_policy?.runtime_query_selection !== 'native_x_only_else_not_run') configProblems.push('X discovery must be native-only when available, otherwise not_run');
 const scoutLayers = new Set(scoutConfig.layers || []);
 const scoutIds = new Set();
 const scoutHandles = new Set();
@@ -164,6 +165,15 @@ for (const scout of scoutConfig.scouts || []) {
   if (!Array.isArray(scout.layers) || !scout.layers.length || scout.layers.some((layer) => !scoutLayers.has(layer))) configProblems.push(`scout ${scout.id} has invalid layers`);
   if (!Array.isArray(scout.canonical_sources) || !scout.canonical_sources.length) configProblems.push(`scout ${scout.id} has no canonical sources`);
 }
+const topicQueryIds = new Set();
+for (const topicQuery of scoutConfig.topic_queries || []) {
+  for (const field of ['id', 'native_query', 'purpose']) requireText(topicQuery, field, configProblems);
+  if (topicQueryIds.has(topicQuery.id)) configProblems.push(`duplicate X topic query id ${topicQuery.id}`);
+  topicQueryIds.add(topicQuery.id);
+  if (!Array.isArray(topicQuery.layers) || !topicQuery.layers.length || topicQuery.layers.some((layer) => !scoutLayers.has(layer))) configProblems.push(`X topic query ${topicQuery.id} has invalid layers`);
+  if (Object.hasOwn(topicQuery, 'web_query')) configProblems.push(`X topic query ${topicQuery.id} contains retired web_query fallback`);
+}
+if (!topicQueryIds.size) configProblems.push('X topic query registry is empty');
 
 if (discoveryConfig.schema_version !== '1.0' || discoveryConfig.timezone !== 'Asia/Shanghai') configProblems.push('invalid discovery configuration');
 for (const channelId of editionChannelIds) {
@@ -191,7 +201,7 @@ for (const channelId of editionChannelIds) {
 
 if (configProblems.length) throw new Error(`Content source configuration failed:\n- ${configProblems.join('\n- ')}`);
 if (checkOnly) {
-  console.log(`Content evaluator contract passed: ${sourceConfig.sources.length} trusted sources and ${edition.storylines.length} discovery plans cover ${news.length} published Signals; collection cannot publish.`);
+  console.log(`Content evaluator contract passed: ${sourceConfig.sources.length} trusted sources, ${scoutIds.size} fixed X scouts and ${topicQueryIds.size} native X topic queries cover ${edition.storylines.length} discovery plans and ${news.length} published Signals; collection cannot publish.`);
   process.exit(0);
 }
 
@@ -258,6 +268,62 @@ if (candidatePack.run?.timezone !== 'Asia/Shanghai') packProblems.push('run.time
 if (asOf && asOf.getTime() > now.getTime() + 300_000) packProblems.push(`as_of (${formatTimeForError(asOf)}) must not be in the future`);
 if (asOf && coverageEnd && coverageEnd > asOf) packProblems.push('coverage_end must not be later than as_of');
 if (coverageStart && coverageEnd && coverageStart > coverageEnd) packProblems.push('coverage_start must not be later than coverage_end');
+
+const observations = candidatePack.run?.collection_observations;
+const originRows = observations?.origin_yield || [];
+const originRowByKey = new Map();
+const candidateOriginCounts = new Map();
+const sourceBackedOriginTypes = new Set(['specialist', 'primary', 'institutional', 'mainstream']);
+const validateOriginId = (origin, reasons, label) => {
+  if (!origin) return;
+  if (origin.type === 'x_scout' && !scoutIds.has(origin.id)) reasons.push(`${label} uses unknown X scout ${origin.id}`);
+  if (origin.type === 'x_topic' && !topicQueryIds.has(origin.id)) reasons.push(`${label} uses unknown X topic query ${origin.id}`);
+  if (sourceBackedOriginTypes.has(origin.type) && !sourceIds.has(origin.id)) reasons.push(`${label} uses unknown registered source ${origin.id}`);
+};
+for (const candidate of candidatePack.candidates) {
+  if (!candidate.discovery_origin) continue;
+  validateOriginId(candidate.discovery_origin, packProblems, `Candidate ${candidate.id} discovery_origin`);
+  const key = `${candidate.discovery_origin.type}:${candidate.discovery_origin.id}`;
+  candidateOriginCounts.set(key, (candidateOriginCounts.get(key) || 0) + 1);
+}
+if (observations) {
+  for (const id of observations.source_ids_scanned || []) if (!sourceIds.has(id)) packProblems.push(`collection_observations uses unknown source ${id}`);
+  for (const id of observations.scout_ids_scanned || []) if (!scoutIds.has(id)) packProblems.push(`collection_observations uses unknown X scout ${id}`);
+  for (const id of observations.storyline_ids_scanned || []) if (!storylineIds.has(id)) packProblems.push(`collection_observations uses unknown Storyline ${id}`);
+  for (const id of observations.x_topic_query_ids_run || []) if (!topicQueryIds.has(id)) packProblems.push(`collection_observations uses unknown X topic query ${id}`);
+  const xTopicIdsRun = observations.x_topic_query_ids_run || [];
+  if (xTopicIdsRun.length && observations.x_query_runtime !== 'native_x') packProblems.push('X topic queries may run only with x_query_runtime=native_x');
+  if (observations.x_query_runtime === 'not_run' && (xTopicIdsRun.length || (observations.scout_ids_scanned || []).length)) packProblems.push('x_query_runtime=not_run cannot record X scouts or X topic queries as scanned');
+  if (observations.material_lead_count < candidatePack.candidates.length) packProblems.push('material_lead_count cannot be lower than Candidate count');
+  if (observations.full_text_review_count < candidatePack.candidates.length) packProblems.push('full_text_review_count cannot be lower than Candidate count');
+  for (const row of originRows) {
+    validateOriginId(row, packProblems, 'origin_yield');
+    const key = `${row.type}:${row.id}`;
+    if (originRowByKey.has(key)) packProblems.push(`duplicate origin_yield row ${key}`);
+    originRowByKey.set(key, row);
+    if (row.full_text_review_count > row.lead_count) packProblems.push(`origin_yield ${key} full_text_review_count exceeds lead_count`);
+    if (row.candidate_count > row.full_text_review_count) packProblems.push(`origin_yield ${key} candidate_count exceeds full_text_review_count`);
+    if (observations.x_query_runtime === 'not_run' && (row.type === 'x_scout' || row.type === 'x_topic') && (row.lead_count || row.full_text_review_count || row.candidate_count)) packProblems.push(`origin_yield ${key} records X activity while x_query_runtime=not_run`);
+  }
+  if (originRows.length) {
+    for (const candidate of candidatePack.candidates) {
+      if (!candidate.discovery_origin) {
+        packProblems.push(`Candidate ${candidate.id} must declare discovery_origin when origin_yield telemetry is supplied`);
+        continue;
+      }
+      const key = `${candidate.discovery_origin.type}:${candidate.discovery_origin.id}`;
+      if (!originRowByKey.has(key)) packProblems.push(`Candidate ${candidate.id} discovery_origin ${key} is missing from origin_yield`);
+    }
+    for (const [key, count] of candidateOriginCounts) {
+      const row = originRowByKey.get(key);
+      if (row && row.candidate_count !== count) packProblems.push(`origin_yield ${key} candidate_count ${row.candidate_count} does not match Candidate pack count ${count}`);
+    }
+    for (const [key, row] of originRowByKey) {
+      const count = candidateOriginCounts.get(key) || 0;
+      if (row.candidate_count !== count) packProblems.push(`origin_yield ${key} candidate_count ${row.candidate_count} does not match Candidate pack count ${count}`);
+    }
+  }
+}
 if (packProblems.length) throw new Error(`Candidate pack failed:\n- ${packProblems.join('\n- ')}`);
 
 const existingIds = new Set(news.map((item) => item.id));
@@ -382,6 +448,7 @@ for (const candidate of candidatePack.candidates) {
     id: candidate.id || null,
     status,
     source_id: registeredSource?.id || null,
+    discovery_origin: candidate.discovery_origin || null,
     reasons: [...rejected, ...review],
     scores: Object.fromEntries(dimensionIds.map((dimension) => [dimension, Number(scores?.[dimension]) || null])),
     score_mean: scoreMean === null ? null : Math.round(scoreMean * 10) / 10,
