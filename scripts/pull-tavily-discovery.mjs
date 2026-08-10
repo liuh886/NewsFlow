@@ -13,6 +13,10 @@ const clampInteger = (value, fallback, min, max) => {
   const parsed = Number.parseInt(String(value ?? ''), 10);
   return Number.isInteger(parsed) ? Math.min(max, Math.max(min, parsed)) : fallback;
 };
+const numberOrZero = (value) => {
+  const parsed = Number(value);
+  return Number.isFinite(parsed) ? parsed : 0;
+};
 const maxResults = clampInteger(args.get('max-results') || process.env.TAVILY_MAX_RESULTS, 5, 1, 5);
 const reserveCredits = clampInteger(args.get('reserve-credits') || process.env.TAVILY_RESERVE_CREDITS, 100, 0, 1000000);
 const days = clampInteger(args.get('days') || process.env.TAVILY_DAYS, purpose === 'verify' ? 14 : 7, 1, 31);
@@ -51,16 +55,24 @@ try {
   process.exit(0);
 }
 
-const keyUsage = Number(usagePayload?.key?.usage ?? 0);
-const keyLimit = Number(usagePayload?.key?.limit ?? 0);
-const remaining = Number.isFinite(keyLimit - keyUsage) ? keyLimit - keyUsage : 0;
-if (keyLimit > 0 && remaining <= reserveCredits) {
+const keyUsage = numberOrZero(usagePayload?.key?.usage);
+const keyLimit = numberOrZero(usagePayload?.key?.limit);
+const accountPlanUsage = numberOrZero(usagePayload?.account?.plan_usage);
+const accountPlanLimit = numberOrZero(usagePayload?.account?.plan_limit);
+const budget = keyLimit > 0
+  ? { source: 'key', usage: keyUsage, limit: keyLimit }
+  : accountPlanLimit > 0
+    ? { source: 'account_plan', usage: accountPlanUsage, limit: accountPlanLimit }
+    : { source: 'unavailable', usage: 0, limit: 0 };
+const remaining = budget.limit > 0 ? Math.max(0, budget.limit - budget.usage) : null;
+if (remaining !== null && remaining <= reserveCredits) {
   console.log(JSON.stringify({
     ...base,
     runtime: 'not_run',
     reason: 'tavily_credit_reserve_reached',
-    key_usage: keyUsage,
-    key_limit: keyLimit,
+    budget_limit_source: budget.source,
+    budget_usage: budget.usage,
+    budget_limit: budget.limit,
     remaining_credits: remaining,
     reserve_credits: reserveCredits
   }, null, 2));
@@ -116,16 +128,18 @@ const results = (payload.results || []).slice(0, maxResults).map((item) => ({
   score: Number.isFinite(Number(item.score)) ? Number(item.score) : null,
   content: item.content || ''
 }));
-const credits = Number(payload?.usage?.credits || 0);
+const credits = numberOrZero(payload?.usage?.credits);
 
 console.log(JSON.stringify({
   ...base,
   runtime: 'tavily_search',
-  credits_used: Number.isFinite(credits) ? credits : 0,
-  key_usage_before: keyUsage,
-  key_limit: keyLimit,
+  credits_used: credits,
+  budget_limit_source: budget.source,
+  budget_usage_before: budget.usage,
+  budget_limit: budget.limit,
   remaining_credits_before: remaining,
   reserve_credits: reserveCredits,
+  budget_guard: budget.limit > 0 ? 'provider_limit_and_per_request' : 'per_request_only',
   date_range: { start, end },
   results
 }, null, 2));
