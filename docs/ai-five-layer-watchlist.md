@@ -1,24 +1,89 @@
 # AI five-layer research framework
 
-Updated: 2026-08-04 (Asia/Shanghai)
+Updated: 2026-08-10 (Asia/Shanghai)
 
-NewsFlow uses NVIDIA's five-layer model as an editorial taxonomy:
+NewsFlow uses the five-layer model as its vertical editorial taxonomy:
 
 ```text
 Energy → Chips → Infrastructure → Models → Applications
 ```
 
-The model is useful because it connects upstream physical supply to downstream economic value. It is not a source-quality shortcut and it does not make NVIDIA's forecasts or product claims independently verified evidence.
+The five layers answer **where** a change occurs. They are not sufficient on their own to answer whether the whole system is becoming more valuable or more constrained. Every serious research pass therefore also applies the horizontal lenses defined in `public/data/edition.json`:
+
+```text
+Capacity realism | Economics & capital | Bottleneck migration
+Demand & utilisation | Regional & policy divergence | Substitution & falsification
+```
+
+The model is a taxonomy, not a source-quality shortcut. No vendor forecast or product claim becomes independent evidence merely because it fits a layer.
 
 ## Layer contract
 
-| Layer | In scope | Primary evidence units | Reject or demote |
+| Layer | Long-horizon question | Primary evidence units | Reject or demote |
 | --- | --- | --- | --- |
-| Energy | Generation, grid connection, storage, power equipment, power quality and energy cost | MW/GW available by date, interconnection decision, contracted supply, delivered equipment, energy cost per useful output | Generic electricity news with no AI load connection; announced generation without delivery status |
-| Chips | Accelerators, CPUs, HBM, networking silicon, foundry nodes, advanced packaging and custom ASICs | Shipped units or revenue, wafer/packaging capacity, production ramp, yield, supply contract, system-level cost/performance | Product launch without production or deployment consequences; design wins described as shipments |
-| Infrastructure | AI factories, data centers, racks, servers, networks, storage, cooling, cloud capacity and orchestration | Commissioned capacity, utilization, uptime, financing close, rack/network delivery, cost per token or workload | Capital expenditure described as commissioned capacity; component peak performance described as fleet output |
-| Models | Architecture, capability, efficiency, openness, training and inference methods | Training resources, inference cost, throughput/quality trade-off, deployment requirement, reproducible evaluation with resource data | Benchmark rank without resource or deployment implications; unverified capability demos |
-| Applications | Enterprise software, agents, robotics, industrial and scientific AI | Production users, paid workload, revenue, task completion, defect rate, productivity, deployment scale, failure or rollback | Pilot announcements, user counts without activity, demos without production evidence, vague productivity claims |
+| Energy | Can generation, grid, equipment, siting and power economics keep pace with real AI load? | MW/GW by stage, energized load, interconnection decision, contracted supply, delivered equipment, queue attrition, energy cost per useful output | Generic electricity news; announced generation without delivery status; queue MW treated as live load |
+| Chips | Can logic, memory, packaging, networking and semiconductor equipment deliver the required system capacity at acceptable cost? | Shipped units/revenue, wafer and packaging output, HBM qualification/production, yield, equipment orders, supply contract, system-level cost/performance | Product launch without production consequences; samples or design wins described as shipments |
+| Infrastructure | Do chips become commissioned, reliable, utilized and financeable AI factories? | Commissioned capacity, server installation, utilization, uptime, financing close, lease/precommit, rack/network delivery, cloud price and TCO | Capex described as commissioned capacity; building shell described as usable compute; component peak performance described as fleet output |
+| Models | Does capability improve faster than training, inference, deployment and governance cost? | Training resources, inference cost, price/performance, task horizon, reliability, deployment controls, reproducible evaluation with resource data | Benchmark rank without deployment/resource implications; demos; capability claims with no cost or reliability denominator |
+| Applications | Does AI become paid, retained and productive work rather than pilots and demos? | Paid workload, revenue, retention, task completion, productivity, defect/error rate, human-review cost, production scale, rollback | Pilot announcements, logo lists, user counts without activity, vague productivity claims |
+
+## Cross-cutting lenses
+
+### 1. Capacity realism
+
+For any capacity claim, identify the stage explicitly:
+
+```text
+announced → contracted/ordered → financed → under construction → commissioned → utilized
+```
+
+Never collapse these states. The gap between them is itself evidence.
+
+### 2. Economics and capital
+
+Track not only the asset but who funds it, on what terms and with what return logic:
+
+- capex and depreciation;
+- debt, leases and project finance;
+- cloud/API pricing and customer commitments;
+- unit economics such as cost per token, task or useful output;
+- risk allocation between hyperscaler, utility, landlord, vendor and customer.
+
+### 3. Bottleneck migration
+
+A solved constraint often moves elsewhere. Look deliberately for sequences such as:
+
+```text
+GPU shortage → HBM/packaging → networking → power → grid connection → utilization → application demand
+```
+
+A Signal is especially valuable when it proves that the limiting factor has moved.
+
+### 4. Demand and utilisation
+
+Upstream supply is not end demand. Seek contracted load, paid usage, retained workloads, utilization, productivity and customer economics. Ask whether demand is broad or concentrated in a few hyperscalers or flagship customers.
+
+### 5. Regional and policy divergence
+
+Track why the same technology scales differently by region: power price, interconnection, industrial policy, export controls, permitting, water/land constraints, supply-chain location and sovereign requirements.
+
+### 6. Substitution and falsification
+
+Search for evidence that makes the bullish or constrained thesis wrong: efficiency gains, lower-cost architectures, small models, custom silicon, delayed demand, overcapacity, policy reversals, project cancellations and poor production reliability.
+
+## Evidence-surface rotation
+
+A normal run does not need every URL. It does need more than one **kind** of evidence. Rotate across:
+
+- regulators, system operators and official planning records;
+- filings, earnings and company technical disclosures;
+- datasets and reproducible benchmarks;
+- engineering/procurement signals such as equipment orders, lead times and delivery milestones;
+- specialist blogs and X problem discovery;
+- field experiments, postmortems and failure reports;
+- independent reporting.
+
+The weekly deep review should revisit all six horizontal lenses and deliberately inspect a surface that produced no headline during routine runs.
 
 ## Cross-layer rule
 
@@ -35,37 +100,35 @@ Do not collapse the five layers into one total-capacity number. Announced energy
 
 ### Energy
 
-Use energy agencies, grid and regulatory records first, then named hyperscaler agreements and independent reporting. Track available capacity and delivery dates rather than broad electricity-demand narratives.
+Use energy agencies, grid and regulatory records, utility/system-operator plans, named hyperscaler agreements, equipment suppliers, specialist power-system analysis and independent reporting. Track queue attrition, energized load, equipment lead times, land/water permitting and cost allocation—not just broad electricity-demand narratives.
 
 ### Chips
 
-Core corporate-primary entry points:
-
-- [NVIDIA Investor Relations](https://investor.nvidia.com/) and [NVIDIA Newsroom](https://nvidianews.nvidia.com/);
-- [TSMC Investor Relations](https://investor.tsmc.com/english) for foundry process, capacity and packaging disclosures;
-- [AMD Investor Relations](https://ir.amd.com/) for accelerators, CPUs and rack-scale systems;
-- [Broadcom Investor Relations](https://investors.broadcom.com/) for custom silicon and AI networking.
+Core corporate-primary entry points include NVIDIA, TSMC, AMD, Broadcom, Micron, SK hynix and Samsung semiconductor disclosures. Pair these with technical analysis and evidence from semiconductor equipment, packaging, memory qualification and customer deployment.
 
 Company roadmaps and demand forecasts remain attributed self-reporting. Cross-check production, shipment and customer deployment claims wherever material.
 
 ### Infrastructure
 
-Track NVIDIA and AMD systems, Microsoft/Azure, Google, Meta, data-center operators and power/cooling suppliers. The core test is whether components become commissioned, reliable, utilized capacity—not how much capital was announced.
+Track hyperscalers, systems vendors, data-center projects, power/cooling suppliers, financing structures and operational evidence. The core test is whether components become commissioned, reliable, utilized capacity—not how much capital was announced.
 
 ### Models
 
-Track frontier and efficient models only when the evidence changes training resources, inference economics, deployment constraints or the demand placed on lower layers. Model announcements should retain evaluation method, hardware, precision, batch size, context and quality assumptions when those affect comparisons.
+Track frontier and efficient models only when evidence changes training resources, inference economics, task reliability, deployment constraints or the demand placed on lower layers. Preserve hardware, precision, context, quality, task duration and cost assumptions when they affect comparisons.
 
 ### Applications
 
-Track production adoption across enterprise agents, coding, industrial systems, science and robotics. Prefer customer or audited operating evidence over vendor case studies. Record both the value metric and the full cost of model inference, integration, human review and failures.
+Track production adoption across enterprise agents, coding, industrial systems, science and robotics. Prefer measured workload, retention, revenue, field experiments and operating evidence over vendor case studies. Record both the value metric and the full cost of inference, integration, human review and failures.
 
-## Five questions for every AI candidate
+## Questions for every AI candidate
 
 1. Which layer changed, and what is the concrete new evidence?
-2. Is the claim a target, contract, production ramp, commissioned asset, measured workload or realized outcome?
-3. Does it create a verified constraint or demand signal for another layer?
-4. Are the denominator, time window, geography, hardware and operating state comparable with existing evidence?
-5. Does the evidence show end-to-end value, or only movement inside one layer?
+2. Which horizontal lens makes the change material?
+3. Is the claim a target, queue entry, contract, production ramp, commissioned asset, measured workload or realized outcome?
+4. Does it create, remove or move a verified constraint into another layer?
+5. Are denominator, time window, geography, hardware and operating state comparable with existing evidence?
+6. What demand or utilization evidence exists downstream?
+7. What evidence would falsify the interpretation?
+8. Does the evidence show end-to-end value, or only movement inside one layer?
 
 It is valid to publish a strong single-layer Signal. It is not valid to imply that progress in one layer proves the full AI system is scaling successfully.
