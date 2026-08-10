@@ -12,55 +12,64 @@
   "rotation_policy": {
     "fixed_scouts": "bounded_subset_each_run",
     "topic_search": "at_least_one_query_per_active_channel",
+    "runtime_query_selection": "native_x_search_when_available_else_web_query",
     "deep_review": "rotate_undercovered_layers_before_repeating_high-yield_accounts"
   },
   "topic_queries": [
     {
       "id": "ai-energy-problems",
       "layers": ["energy"],
-      "query": "(AI OR data center) (grid OR interconnection OR transformer OR turbine OR power) has:links -is:retweet",
+      "native_query": "(AI OR data center) (grid OR interconnection OR transformer OR turbine OR power) has:links -is:retweet",
+      "web_query": "site:x.com \"data center\" grid interconnection transformer turbine power",
       "purpose": "surface emerging power, equipment, siting and queue constraints beyond the fixed scout list"
     },
     {
       "id": "ai-chip-bottlenecks",
       "layers": ["chips"],
-      "query": "(AI chip OR accelerator OR HBM OR CoWoS OR packaging) (yield OR supply OR capacity OR cost OR bottleneck) has:links -is:retweet",
+      "native_query": "(AI chip OR accelerator OR HBM OR CoWoS OR packaging) (yield OR supply OR capacity OR cost OR bottleneck) has:links -is:retweet",
+      "web_query": "site:x.com AI chip accelerator HBM CoWoS packaging yield supply bottleneck",
       "purpose": "surface semiconductor bottleneck migration, qualification and supply-chain arguments"
     },
     {
       "id": "ai-infrastructure-operations",
       "layers": ["infrastructure"],
-      "query": "(AI data center OR AI cluster) (utilization OR cooling OR network OR outage OR financing OR TCO) has:links -is:retweet",
+      "native_query": "(AI data center OR AI cluster) (utilization OR cooling OR network OR outage OR financing OR TCO) has:links -is:retweet",
+      "web_query": "site:x.com \"AI data center\" utilization cooling network outage financing TCO",
       "purpose": "surface operational and economic evidence that project announcements miss"
     },
     {
       "id": "ai-model-economics",
       "layers": ["models"],
-      "query": "(model OR agent) (inference cost OR system card OR task horizon OR open weights OR reliability) has:links -is:retweet",
+      "native_query": "(model OR agent) (inference cost OR system card OR task horizon OR open weights OR reliability) has:links -is:retweet",
+      "web_query": "site:x.com AI model agent inference cost system card task horizon open weights reliability",
       "purpose": "surface capability-cost, openness and deployment-control questions"
     },
     {
       "id": "ai-application-reality",
       "layers": ["applications"],
-      "query": "(AI agent OR enterprise AI OR robotics) (productivity OR paid usage OR deployment OR failure OR workflow) has:links -is:retweet",
+      "native_query": "(AI agent OR enterprise AI OR robotics) (productivity OR paid usage OR deployment OR failure OR workflow) has:links -is:retweet",
+      "web_query": "site:x.com AI agent enterprise AI robotics productivity paid usage deployment failure workflow",
       "purpose": "surface adoption, workflow redesign and failure evidence"
     },
     {
       "id": "ccus-project-reality",
       "layers": ["ccus-projects"],
-      "query": "(CCS OR CCUS OR carbon capture) (FID OR EPC OR commissioning OR capture rate OR cancellation OR delay) has:links -is:retweet",
+      "native_query": "(CCS OR CCUS OR carbon capture) (FID OR EPC OR commissioning OR capture rate OR cancellation OR delay) has:links -is:retweet",
+      "web_query": "site:x.com CCS CCUS carbon capture FID EPC commissioning capture rate cancellation delay",
       "purpose": "surface project-conversion, delivery and operational evidence"
     },
     {
       "id": "ccus-market-formation",
       "layers": ["ccus-markets"],
-      "query": "(CCS OR CCUS OR CO2 storage) (financing OR tariff OR capacity contract OR cost OR utilization OR supply chain) has:links -is:retweet",
+      "native_query": "(CCS OR CCUS OR CO2 storage) (financing OR tariff OR capacity contract OR cost OR utilization OR supply chain) has:links -is:retweet",
+      "web_query": "site:x.com CCS CCUS CO2 storage financing tariff capacity contract cost utilization supply chain",
       "purpose": "surface capital, network utilization, cost and industry-formation arguments"
     },
     {
       "id": "ccus-policy-friction",
       "layers": ["ccus-policy"],
-      "query": "(CCS OR CCUS OR carbon storage) (Class VI OR MRV OR liability OR permit OR cross-border OR policy) has:links -is:retweet",
+      "native_query": "(CCS OR CCUS OR carbon storage) (Class VI OR MRV OR liability OR permit OR cross-border OR policy) has:links -is:retweet",
+      "web_query": "site:x.com CCS CCUS carbon storage Class VI MRV liability permit cross-border policy",
       "purpose": "surface regulatory friction, policy durability and responsibility questions"
     }
   ],
@@ -77,6 +86,19 @@
       "allowed_uses": ["lead_discovery", "expert_context", "counter_evidence_discovery"],
       "promotion_policy": "discovery_only",
       "limitations": ["energy-system interpretation is not a project or regulatory record; follow to the underlying paper, model or docket"]
+    },
+    {
+      "id": "tyler-norris",
+      "name": "Tyler Norris",
+      "handle": "tylerhnorris",
+      "x_url": "https://x.com/tylerhnorris",
+      "layers": ["energy", "infrastructure"],
+      "topics": ["large-load interconnection", "data-center utilization", "power-system planning", "grid flexibility", "electricity affordability"],
+      "canonical_sources": ["https://www.powerpolicy.net/"],
+      "evidence_family": "tyler-norris-power-policy",
+      "allowed_uses": ["lead_discovery", "energy_system_context", "counter_evidence_discovery"],
+      "promotion_policy": "discovery_only",
+      "limitations": ["modeling and policy interpretation require the underlying utility data, docket, study or full long-form methodology before factual promotion"]
     },
     {
       "id": "dylan-patel",
@@ -103,6 +125,32 @@
       "allowed_uses": ["lead_discovery", "technical_context"],
       "promotion_policy": "discovery_only",
       "limitations": ["the organization account and Dylan Patel are one evidence family, not independent corroboration"]
+    },
+    {
+      "id": "ian-cutress",
+      "name": "Ian Cutress",
+      "handle": "IanCutress",
+      "x_url": "https://x.com/IanCutress",
+      "layers": ["chips", "infrastructure"],
+      "topics": ["HBM and DRAM", "semiconductor manufacturing", "CPU and accelerator architecture", "system components", "industry interviews"],
+      "canonical_sources": ["https://morethanmoore.substack.com/"],
+      "evidence_family": "ian-cutress-more-than-moore",
+      "allowed_uses": ["lead_discovery", "technical_context", "counter_evidence_discovery"],
+      "promotion_policy": "discovery_only",
+      "limitations": ["interviews and technical interpretation remain attributed analysis; supply, yield and production claims should be traced to company disclosures or independent evidence when material"]
+    },
+    {
+      "id": "asianometry",
+      "name": "Asianometry",
+      "handle": "asianometry",
+      "x_url": "https://x.com/asianometry",
+      "layers": ["chips", "infrastructure"],
+      "topics": ["semiconductor manufacturing", "Asian supply chains", "foundry history", "industrial policy", "microelectronics"],
+      "canonical_sources": ["https://www.asianometry.com/"],
+      "evidence_family": "asianometry",
+      "allowed_uses": ["lead_discovery", "industry_context", "historical_context"],
+      "promotion_policy": "discovery_only",
+      "limitations": ["historical and industry synthesis is valuable framing but does not substitute for current shipment, capacity, yield or financial records"]
     },
     {
       "id": "chip-huyen",
@@ -183,6 +231,32 @@
       "limitations": ["consulting and course activity can shape topic selection; factual claims require linked measurements, code or full methodology"]
     },
     {
+      "id": "shreya-shankar",
+      "name": "Shreya Shankar",
+      "handle": "sh_reya",
+      "x_url": "https://x.com/sh_reya",
+      "layers": ["models", "applications"],
+      "topics": ["LLM evaluation", "AI data systems", "agent evaluation", "cost-quality trade-offs", "human-AI workflows"],
+      "canonical_sources": ["https://www.sh-reya.com/"],
+      "evidence_family": "shreya-shankar",
+      "allowed_uses": ["lead_discovery", "research_context", "methodology_discovery"],
+      "promotion_policy": "discovery_only",
+      "limitations": ["follow research claims to the paper, dataset or artifact; talks and course material are context rather than standalone production evidence"]
+    },
+    {
+      "id": "jason-liu",
+      "name": "Jason Liu",
+      "handle": "jxnlco",
+      "x_url": "https://x.com/jxnlco",
+      "layers": ["models", "applications"],
+      "topics": ["applied AI engineering", "RAG", "agents", "evals", "production workflows"],
+      "canonical_sources": ["https://jxnl.github.io/blog/"],
+      "evidence_family": "jason-liu",
+      "allowed_uses": ["lead_discovery", "engineering_context", "counter_evidence_discovery"],
+      "promotion_policy": "discovery_only",
+      "limitations": ["current OpenAI employment and disclosed startup investments can shape topic selection; factual claims require linked measurements, artifacts or independently checkable evidence"]
+    },
+    {
       "id": "eugene-yan",
       "name": "Eugene Yan",
       "handle": "eugeneyan",
@@ -246,6 +320,45 @@
       "allowed_uses": ["lead_discovery", "technical_report_discovery", "research_context", "counter_evidence_discovery"],
       "promotion_policy": "discovery_only",
       "limitations": ["conference and social posts are discovery leads; use the full report, paper, proceedings or methodology before factual promotion"]
+    },
+    {
+      "id": "clean-air-task-force",
+      "name": "Clean Air Task Force",
+      "handle": "cleanaircatf",
+      "x_url": "https://x.com/cleanaircatf",
+      "layers": ["ccus-projects", "ccus-markets", "ccus-policy"],
+      "topics": ["carbon capture policy", "CO2 storage", "industrial decarbonization", "project track record", "market barriers"],
+      "canonical_sources": ["https://www.catf.us/carbon-capture/"],
+      "evidence_family": "clean-air-task-force",
+      "allowed_uses": ["lead_discovery", "policy_context", "industry_context", "counter_evidence_discovery"],
+      "promotion_policy": "discovery_only",
+      "limitations": ["CATF advocates for carbon-capture deployment; preserve advocacy attribution and trace project status or regulatory claims to primary records"]
+    },
+    {
+      "id": "wood-mackenzie",
+      "name": "Wood Mackenzie",
+      "handle": "WoodMackenzie",
+      "x_url": "https://x.com/WoodMackenzie",
+      "layers": ["ccus-projects", "ccus-markets", "ccus-policy"],
+      "topics": ["CCUS investment", "carbon markets", "project economics", "CO2 shipping", "regional market formation"],
+      "canonical_sources": ["https://www.woodmac.com/news/opinion/carbon-management-2026-outlook/"],
+      "evidence_family": "wood-mackenzie",
+      "allowed_uses": ["lead_discovery", "market_context", "counter_evidence_discovery"],
+      "promotion_policy": "discovery_only",
+      "limitations": ["commercial research may rely on proprietary models or paywalled data; only inspectable methodology and claims may be used as evidence"]
+    },
+    {
+      "id": "carbon-brief",
+      "name": "Carbon Brief",
+      "handle": "CarbonBrief",
+      "x_url": "https://x.com/CarbonBrief",
+      "layers": ["ccus-projects", "ccus-markets", "ccus-policy"],
+      "topics": ["climate policy", "carbon capture", "carbon removal", "energy-system evidence", "counter-evidence"],
+      "canonical_sources": ["https://www.carbonbrief.org/"],
+      "evidence_family": "carbon-brief",
+      "allowed_uses": ["lead_discovery", "independent_context", "counter_evidence_discovery"],
+      "promotion_policy": "discovery_only",
+      "limitations": ["use the full reported analysis and follow material scientific or policy claims to the cited study or official record where available"]
     }
   ]
 }
