@@ -39,6 +39,22 @@
             "storyline_ids_scanned": {"type": "array", "uniqueItems": true, "items": {"type": "string", "minLength": 1}},
             "surface_types_scanned": {"type": "array", "uniqueItems": true, "items": {"type": "string", "minLength": 1}},
             "x_topic_query_ids_run": {"type": "array", "uniqueItems": true, "items": {"type": "string", "minLength": 1}},
+            "x_query_runtime": {"enum": ["native_x", "web_search", "mixed", "not_run"]},
+            "origin_yield": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "additionalProperties": false,
+                "required": ["type", "id", "lead_count", "full_text_review_count", "candidate_count"],
+                "properties": {
+                  "type": {"enum": ["green_lane", "x_scout", "x_topic", "specialist", "primary", "institutional", "mainstream", "dataset", "paper", "conference", "filing", "engineering_procurement", "other"]},
+                  "id": {"type": "string", "minLength": 1},
+                  "lead_count": {"type": "integer", "minimum": 0},
+                  "full_text_review_count": {"type": "integer", "minimum": 0},
+                  "candidate_count": {"type": "integer", "minimum": 0}
+                }
+              }
+            },
             "material_lead_count": {"type": "integer", "minimum": 0},
             "full_text_review_count": {"type": "integer", "minimum": 0}
           }
