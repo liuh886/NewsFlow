@@ -15,7 +15,8 @@
     './review-archive.css',
     './review-stamp.css',
     './editorial-desk.css',
-    './editorial-governance.css'
+    './editorial-governance.css',
+    './editor-referral.css'
   ];
   const scripts = [
     './review-game.js',
@@ -67,7 +68,7 @@
     link.href = versioned(path);
     link.onload = () => resolve();
     link.onerror = () => reject(new Error(`Failed to load ${path}`));
-    document.head.append(link);
+    document.head.appendChild(link);
   });
 
   const loadScript = (path) => new Promise((resolve, reject) => {
@@ -134,7 +135,7 @@
   syncEditorialEntry();
   window.NewsFlowEditorialLoader = Object.freeze({ ensure: ensureEditorialRuntime });
 
-  if (new URLSearchParams(window.location.search).has('editor-invite')) {
+  if (new URLSearchParams(window.location.search).has('editor-ref')) {
     void ensureEditorialRuntime();
   }
 })();
