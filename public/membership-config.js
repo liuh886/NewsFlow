@@ -1,6 +1,14 @@
 (() => {
   'use strict';
 
+  const canonicalRedirectUrl = 'https://liuh886.github.io/NewsFlow/';
+  const inviteRedirectUrl = (() => {
+    const current = new URL(window.location.href);
+    if (!current.searchParams.has('editor-invite')) return canonicalRedirectUrl;
+    current.hash = '';
+    return current.toString();
+  })();
+
   window.HaoAccountConfig = Object.freeze({
     enabled: true,
     billingEnabled: true,
@@ -11,7 +19,7 @@
     supabasePublishableKey: 'sb_publishable_n1Va-c_alpkQ0zNuJYUaxA_J0u68RVW',
     checkoutFunctionUrl: 'https://blgwlycfcwvsupmqyqwn.supabase.co/functions/v1/create-checkout-session',
     portalFunctionUrl: 'https://blgwlycfcwvsupmqyqwn.supabase.co/functions/v1/create-portal-session',
-    redirectUrl: 'https://liuh886.github.io/NewsFlow/',
+    redirectUrl: inviteRedirectUrl,
     mountSelectors: ['.top-actions'],
     compactTrigger: true,
     title: {
