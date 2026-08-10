@@ -17,6 +17,7 @@ const editionState = {
   activeIssueId: '',
   activeChannelId: '',
   channelSort: 'newest',
+  storylineIndexOpen: false,
   archiveOpen: false
 };
 
@@ -264,6 +265,33 @@ const renderStorylineDrawer = () => {
   </aside>`;
 };
 
+const renderStorylineIndexDrawer = () => {
+  if (!editionState.storylineIndexOpen) return '';
+  const groups = (editionState.edition?.channels || [])
+    .map((channel) => ({ channel, storylines: channelStorylines(channel.id) }))
+    .filter(({ storylines }) => storylines.length);
+  const total = groups.reduce((sum, group) => sum + group.storylines.length, 0);
+  return `<div class="edition-overlay" data-edition-action="close-panel"></div><aside class="edition-panel" role="dialog" aria-modal="true" aria-labelledby="storylines-panel-title">
+    <div class="edition-panel-head"><span>${escapeEditionHtml(editionState.edition?.short_name || 'Frontier Systems')} · 长期议题</span><button type="button" data-edition-action="close-panel" aria-label="关闭长期议题目录">×</button></div>
+    <div class="edition-panel-body">
+      <span class="section-label">Research Agenda · ${escapeEditionHtml(total)} 个议题</span>
+      <h2 id="storylines-panel-title">长期议题</h2>
+      <p class="panel-question">按栏目查看仍在持续检验的判断。进入任一议题，可以查看当前判断、下一步观察以及可能改变判断的证据。</p>
+      ${groups.map(({ channel, storylines }) => `<section>
+        <span class="section-label">${escapeEditionHtml(channel.name)}</span>
+        <div class="storyline-list">
+          ${storylines.map((storyline) => `<button class="storyline-item" type="button" data-edition-action="open-storyline" data-storyline-id="${escapeEditionHtml(storyline.id)}">
+            <div class="storyline-meta"><span class="movement ${escapeEditionHtml(storyline.movement)}">${escapeEditionHtml(movementLabel(storyline.movement))}</span><span>${escapeEditionHtml(storyline.evidence_count || 0)} 条证据</span></div>
+            <h3>${escapeEditionHtml(storyline.title)}</h3>
+            <p>${escapeEditionHtml(storyline.question || storyline.current_view)}</p>
+            <span class="storyline-open">查看判断与证据 →</span>
+          </button>`).join('')}
+        </div>
+      </section>`).join('') || '<p>长期议题正在整理。</p>'}
+    </div>
+  </aside>`;
+};
+
 const renderIssueDrawer = () => {
   const issue = publishedIssueById(editionState.activeIssueId);
   if (!issue) return '';
@@ -310,7 +338,9 @@ const syncEditionPanels = () => {
     ? renderIssueDrawer()
     : editionState.activeStorylineId
       ? renderStorylineDrawer()
-      : renderArchiveDrawer();
+      : editionState.storylineIndexOpen
+        ? renderStorylineIndexDrawer()
+        : renderArchiveDrawer();
   if (!panelMarkup) {
     emitEditionRendered();
     return;
@@ -327,6 +357,7 @@ const syncEditionPanels = () => {
 const closeEditionPanels = () => {
   editionState.activeStorylineId = '';
   editionState.activeIssueId = '';
+  editionState.storylineIndexOpen = false;
   editionState.archiveOpen = false;
   appRoot?.querySelector('[data-edition-layer="panel"]')?.remove();
   document.body.classList.remove('overlay-active');
@@ -512,21 +543,25 @@ appRoot?.addEventListener('click', (event) => {
   } else if (action === 'open-storyline') {
     editionState.activeStorylineId = target.dataset.storylineId || editionState.storylines[0]?.id || '';
     editionState.activeIssueId = '';
+    editionState.storylineIndexOpen = false;
     editionState.archiveOpen = false;
     syncEditionPanels();
   } else if (action === 'open-storylines') {
-    editionState.activeStorylineId = editionState.storylines[0]?.id || '';
+    editionState.activeStorylineId = '';
     editionState.activeIssueId = '';
+    editionState.storylineIndexOpen = true;
     editionState.archiveOpen = false;
     syncEditionPanels();
   } else if (action === 'open-archive') {
     editionState.archiveOpen = true;
     editionState.activeStorylineId = '';
     editionState.activeIssueId = '';
+    editionState.storylineIndexOpen = false;
     syncEditionPanels();
   } else if (action === 'open-issue') {
     editionState.activeIssueId = target.dataset.issueId || '';
     editionState.activeStorylineId = '';
+    editionState.storylineIndexOpen = false;
     editionState.archiveOpen = false;
     syncEditionPanels();
   } else if (action === 'close-panel') {
@@ -540,7 +575,7 @@ window.addEventListener('popstate', () => {
 });
 
 window.addEventListener('keydown', (event) => {
-  if (event.key === 'Escape' && (editionState.activeStorylineId || editionState.activeIssueId || editionState.archiveOpen)) closeEditionPanels();
+  if (event.key === 'Escape' && (editionState.activeStorylineId || editionState.activeIssueId || editionState.storylineIndexOpen || editionState.archiveOpen)) closeEditionPanels();
   else if (event.key === 'Escape' && editionState.activeChannelId) setActiveChannel('', true);
 });
 
