@@ -1,0 +1,114 @@
+{
+  "schema_version": "1.0",
+  "edition_id": "frontier-systems-review",
+  "workflow": {
+    "id": "newsflow-content-update",
+    "version": "1.0.0",
+    "actor": {
+      "agent_id": "chatgpt",
+      "runtime": "ChatGPT",
+      "workflow_id": "newsflow-content-update",
+      "workflow_version": "1.0.0",
+      "model": "GPT-5.6 Sol"
+    }
+  },
+  "run": {
+    "as_of": "2026-08-10T07:09:00Z",
+    "coverage_start": "2026-07-14T16:00:00Z",
+    "coverage_end": "2026-08-10T07:09:00Z",
+    "timezone": "Asia/Shanghai",
+    "collection_observations": {
+      "source_ids_scanned": [
+        "power-policy",
+        "more-than-moore",
+        "asianometry",
+        "simon-willison-blog",
+        "interconnects-ai",
+        "hamel-blog",
+        "shreya-shankar",
+        "jason-liu",
+        "clean-air-task-force",
+        "wood-mackenzie",
+        "carbon-brief"
+      ],
+      "scout_ids_scanned": [
+        "tyler-norris",
+        "ian-cutress",
+        "simon-willison",
+        "clean-air-task-force"
+      ],
+      "storyline_ids_scanned": [
+        "ai-energy-foundation",
+        "ai-chip-layer",
+        "ai-infrastructure-layer",
+        "ai-model-layer",
+        "ai-application-layer",
+        "ccus-project-delivery",
+        "ccus-network-economics",
+        "evidence-governance"
+      ],
+      "surface_types_scanned": [
+        "specialist-and-x",
+        "primary-records",
+        "industry-analysis"
+      ],
+      "x_topic_query_ids_run": [
+        "ai-energy-problems",
+        "ai-chip-bottlenecks",
+        "ai-infrastructure-operations",
+        "ai-model-economics",
+        "ai-application-reality",
+        "ccus-project-reality",
+        "ccus-market-formation",
+        "ccus-policy-friction"
+      ],
+      "x_query_runtime": "web_search",
+      "origin_yield": [
+        {"type": "x_scout", "id": "tyler-norris", "lead_count": 0, "full_text_review_count": 0, "candidate_count": 0},
+        {"type": "x_scout", "id": "ian-cutress", "lead_count": 0, "full_text_review_count": 0, "candidate_count": 0},
+        {"type": "x_scout", "id": "simon-willison", "lead_count": 0, "full_text_review_count": 0, "candidate_count": 0},
+        {"type": "x_scout", "id": "clean-air-task-force", "lead_count": 0, "full_text_review_count": 0, "candidate_count": 0},
+        {"type": "x_topic", "id": "ai-energy-problems", "lead_count": 0, "full_text_review_count": 0, "candidate_count": 0},
+        {"type": "x_topic", "id": "ai-chip-bottlenecks", "lead_count": 0, "full_text_review_count": 0, "candidate_count": 0},
+        {"type": "x_topic", "id": "ai-infrastructure-operations", "lead_count": 0, "full_text_review_count": 0, "candidate_count": 0},
+        {"type": "x_topic", "id": "ai-model-economics", "lead_count": 0, "full_text_review_count": 0, "candidate_count": 0},
+        {"type": "x_topic", "id": "ai-application-reality", "lead_count": 0, "full_text_review_count": 0, "candidate_count": 0},
+        {"type": "x_topic", "id": "ccus-project-reality", "lead_count": 0, "full_text_review_count": 0, "candidate_count": 0},
+        {"type": "x_topic", "id": "ccus-market-formation", "lead_count": 0, "full_text_review_count": 0, "candidate_count": 0},
+        {"type": "x_topic", "id": "ccus-policy-friction", "lead_count": 0, "full_text_review_count": 0, "candidate_count": 0},
+        {"type": "specialist", "id": "more-than-moore", "lead_count": 1, "full_text_review_count": 1, "candidate_count": 1},
+        {"type": "specialist", "id": "simon-willison-blog", "lead_count": 1, "full_text_review_count": 1, "candidate_count": 1},
+        {"type": "specialist", "id": "clean-air-task-force", "lead_count": 2, "full_text_review_count": 2, "candidate_count": 1},
+        {"type": "specialist", "id": "wood-mackenzie", "lead_count": 1, "full_text_review_count": 0, "candidate_count": 0},
+        {"type": "specialist", "id": "power-policy", "lead_count": 0, "full_text_review_count": 0, "candidate_count": 0},
+        {"type": "specialist", "id": "asianometry", "lead_count": 0, "full_text_review_count": 0, "candidate_count": 0},
+        {"type": "specialist", "id": "interconnects-ai", "lead_count": 0, "full_text_review_count": 0, "candidate_count": 0},
+        {"type": "specialist", "id": "hamel-blog", "lead_count": 0, "full_text_review_count": 0, "candidate_count": 0},
+        {"type": "specialist", "id": "shreya-shankar", "lead_count": 0, "full_text_review_count": 0, "candidate_count": 0},
+        {"type": "specialist", "id": "jason-liu", "lead_count": 0, "full_text_review_count": 0, "candidate_count": 0},
+        {"type": "specialist", "id": "carbon-brief", "lead_count": 0, "full_text_review_count": 0, "candidate_count": 0}
+      ],
+      "material_lead_count": 5,
+      "full_text_review_count": 8
+    },
+    "preflight": {
+      "mode": "connector_contract_check",
+      "note": "Candidates were checked against the merged source, Storyline, event-type, evidence and score contracts and written through the connected Supabase service; the repository-local apply-content CLI was not executed in this connector runtime."
+    }
+  },
+  "applied": true,
+  "summary": {
+    "candidate_count": 3,
+    "reviewable_count": 3,
+    "contract_validated_count": 3,
+    "accepted_by_machine_gate_count": 0,
+    "needs_review_count": 0,
+    "rejected_count": 0
+  },
+  "publication_effect": "none",
+  "editorial_effect": "supabase_private_candidates_only",
+  "trial": {
+    "system": "x-blog-discovery-v2",
+    "finding": "registered long-form specialist scans produced all three Candidates; web-indexed X fallback produced no material lead in this run and should remain supplementary rather than be treated as complete or real-time X coverage"
+  }
+}
