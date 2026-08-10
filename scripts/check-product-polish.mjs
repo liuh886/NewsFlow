@@ -89,7 +89,7 @@ for (const contract of [
   '@media (prefers-reduced-motion: reduce)', '@media print', '@keyframes nf-reading-sheet-in'
 ]) if (!readingCss.includes(contract)) throw new Error(`Reading side-sheet CSS is missing ${contract}`);
 
-for (const contract of ['Publication Settings', '刊物判断', '长期议题', '信源', '编辑部', '发布到 GitHub', '主编当前判断', '任命编辑']) {
+for (const contract of ['Publication Settings', '刊物判断', '长期议题', '信源', '编辑部', '发布到 GitHub', '主编当前判断', '传播链']) {
   if (!governanceJs.includes(contract)) throw new Error(`Chief governance polish is missing ${contract}`);
 }
 for (const selector of ['.nf-governance-shell', '.nf-gov-tabs', '.nf-gov-editor', '.nf-gov-index', '.nf-gov-board-stats', '@media (max-width: 720px)']) {
