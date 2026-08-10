@@ -1,0 +1,43 @@
+name: Paid discovery smoke (temporary)
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - '.github/workflows/paid-discovery-smoke-temp.yml'
+
+permissions:
+  contents: read
+
+concurrency:
+  group: newsflow-paid-discovery-smoke
+  cancel-in-progress: false
+
+jobs:
+  xai-smoke:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    steps:
+      - name: Checkout smoke branch
+        uses: actions/checkout@v6
+
+      - name: Set up Node
+        uses: actions/setup-node@v6
+        with:
+          node-version: 22
+
+      - name: Run one bounded xAI X-search request
+        env:
+          XAI_API_KEY: ${{ secrets.XAI_API_KEY }}
+          XAI_DISCOVERY_MODE: topics
+          XAI_DISCOVERY_DAYS: '3'
+          XAI_DISCOVERY_MAX_LEADS: '6'
+        run: node scripts/pull-xai-discovery.mjs > discovery-output.json
+
+      - name: Publish result
+        run: |
+          echo '## xAI paid discovery smoke' >> "$GITHUB_STEP_SUMMARY"
+          echo '```json' >> "$GITHUB_STEP_SUMMARY"
+          cat discovery-output.json >> "$GITHUB_STEP_SUMMARY"
+          echo '```' >> "$GITHUB_STEP_SUMMARY"
+          cat discovery-output.json
