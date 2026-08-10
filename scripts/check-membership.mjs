@@ -26,7 +26,7 @@ for (const reference of [
   'https://liuh886.github.io/admin/shared/account-upgrade.css?v=1',
   './account-integration.css',
   './membership-config.js',
-  'https://liuh886.github.io/admin/shared/account-shell.js?v=6',
+  'https://liuh886.github.io/admin/shared/account-shell.js?v=7',
   'https://liuh886.github.io/admin/shared/account-upgrade.js?v=5',
   './account-integration.js',
 ]) {
@@ -49,6 +49,8 @@ for (const contract of [
   'US$1/月开通 Newsflow Pro',
   '受邀编辑可以获得限时 Newsflow Pro 免费体验',
   'sb_publishable_',
+  "current.searchParams.has('editor-invite')",
+  'redirectUrl: inviteRedirectUrl',
 ]) {
   if (!config.includes(contract)) throw new Error(`NewsFlow account config is missing ${contract}`);
 }
@@ -78,4 +80,4 @@ if (combined.includes('membership-widget.js') || combined.includes('membership-w
   throw new Error('NewsFlow must not load the retired local membership widget');
 }
 
-console.log('NewsFlow account uses the native topbar mount, current shared Pro UI and benefit-led editorial access copy.');
+console.log('NewsFlow account uses the native topbar mount, invite-aware auth redirects, the current shared account shell and benefit-led editorial access copy.');
