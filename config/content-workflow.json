@@ -21,7 +21,8 @@
     "content/state/review-history.json"
   ],
   "dynamic_discovery_inputs": [
-    "supabase:public.newsflow_editorial_referrals(status=queued, oldest-first, limit=1)"
+    "supabase:public.newsflow_editorial_referrals(status=queued, oldest-first, limit=1)",
+    "x:GET /2/tweets/search/recent when X_BEARER_TOKEN is configured"
   ],
   "exchange_contract": {
     "candidate_pack_schema": "schemas/content-candidate-pack.schema.json",
@@ -56,6 +57,7 @@
   "commands": {
     "contract_check": "npm run content:check",
     "green_lane": "SUPABASE_URL=... SUPABASE_SERVICE_ROLE_KEY=... npm run editorial:referrals -- --limit=1",
+    "x_discovery": "X_BEARER_TOKEN=... npm run content:x",
     "dry_run": "node scripts/update-content.mjs --input=content/inbox/<candidate-pack.json>",
     "apply": "SUPABASE_URL=... SUPABASE_SERVICE_ROLE_KEY=... node scripts/apply-content.mjs --input=content/inbox/<candidate-pack.json> --apply",
     "verify": [
