@@ -8,11 +8,12 @@ const assert = (condition, message) => {
   if (!condition) throw new Error(message);
 };
 
-const [index, buildSource, readingSurface, polish, serviceWorker, loader, pwaInstall, manifest, packageManifest] = await Promise.all([
+const [index, buildSource, readingSurface, polish, editionLayer, serviceWorker, loader, pwaInstall, manifest, packageManifest] = await Promise.all([
   read('index.html'),
   read('scripts/build.mjs'),
   read('public/reading-surface.js'),
   read('src/polish.js'),
+  read('src/edition-layer.js'),
   read('public/sw.js'),
   read('public/editorial-loader.js'),
   read('public/pwa-install.js'),
@@ -67,6 +68,11 @@ for (const contract of [
   assert(polish.includes(contract), `Reader polish missing interaction contract: ${contract}`);
 }
 
+for (const contract of ['storylineIndexOpen', 'renderStorylineIndexDrawer', 'Research Agenda', "action === 'open-storylines'"]) {
+  assert(editionLayer.includes(contract), `Edition layer missing long-term topic index contract: ${contract}`);
+}
+assert(!editionLayer.includes("editionState.activeStorylineId = editionState.storylines[0]?.id || '';\n    editionState.activeIssueId = '';\n    editionState.archiveOpen = false;\n    syncEditionPanels();\n  } else if (action === 'open-archive')"), 'Long-term topic index must not collapse to the first storyline.');
+
 for (const contract of [
   './review-game.css', './review-archive.css', './review-stamp.css', './editorial-governance.css',
   './review-game.js', './editorial-desk.js', './editorial-governance.js', './editorial-office.js'
@@ -110,4 +116,4 @@ assert(manifest.icons.some((icon) => icon.sizes === '192x192'), 'PWA manifest mu
 assert(manifest.icons.some((icon) => icon.sizes === '512x512'), 'PWA manifest must declare a 512x512 install icon.');
 assert(/^\d+\.\d+\.\d+$/.test(String(packageManifest.version || '')), 'package.json must remain the single semantic version source.');
 
-console.log(`NewsFlow web standards contract passed for v${packageManifest.version}: canonical publication pages, feed/sitemap, lazy permission-routed editor runtime, persistent PWA install entry, mobile search, accessible edition dialogs, reader and nested panel interaction continuity, and unified build versioning.`);
+console.log(`NewsFlow web standards contract passed for v${packageManifest.version}: canonical publication pages, feed/sitemap, lazy permission-routed editor runtime, persistent PWA install entry, mobile search, accessible edition dialogs, long-term topic index routing, reader and nested panel interaction continuity, and unified build versioning.`);
