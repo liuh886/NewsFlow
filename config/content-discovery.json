@@ -9,7 +9,7 @@
       "surface_rotation": ["specialist-and-x", "primary-records", "filings-and-earnings", "datasets-and-benchmarks", "engineering-and-procurement", "independent-reporting"],
       "storylines": {
         "ai-energy-foundation": {
-          "source_ids": ["iea", "us-doe", "ferc", "ercot", "pjm", "microsoft-investor", "alphabet-ir", "meta-ir", "meta-news", "schneider-electric", "sean-goedecke", "reuters", "financial-times"],
+          "source_ids": ["iea", "us-doe", "ferc", "ercot", "pjm", "microsoft-investor", "alphabet-ir", "meta-ir", "meta-news", "schneider-electric", "power-policy", "sean-goedecke", "reuters", "financial-times"],
           "lens_priority": ["capacity-realism", "bottleneck-migration", "economics-capital", "regional-policy-divergence", "substitution-falsification"],
           "evidence_surfaces": ["large-load interconnection queues and energized-load records", "utility and system-operator planning filings", "generation, storage and PPA disclosures", "transformer, switchgear and turbine lead-time evidence", "land, water and environmental permitting", "power-price, deposit and cost-allocation rules", "expert grid and data-center analysis"],
           "event_types": ["load_forecast", "grid_interconnection", "power_agreement", "generation_or_storage", "equipment_constraint", "energy_cost", "regulatory_decision", "expert_analysis"],
@@ -17,7 +17,7 @@
           "counter_queries": ["AI energy demand forecast revised down", "AI efficiency offsets electricity demand", "data center grid project delayed or cancelled", "power no longer limiting AI data center", "large load queue attrition data center", "data center power overbuild low utilization"]
         },
         "ai-chip-layer": {
-          "source_ids": ["tsmc-ir", "micron-ir", "sk-hynix-news", "samsung-semiconductor-news", "nvidia-ir", "nvidia-news", "amd-ir", "broadcom-ir", "alphabet-ir", "jeff-geerling", "reuters", "financial-times"],
+          "source_ids": ["tsmc-ir", "micron-ir", "sk-hynix-news", "samsung-semiconductor-news", "nvidia-ir", "nvidia-news", "amd-ir", "broadcom-ir", "alphabet-ir", "more-than-moore", "asianometry", "jeff-geerling", "reuters", "financial-times"],
           "lens_priority": ["bottleneck-migration", "capacity-realism", "economics-capital", "regional-policy-divergence", "substitution-falsification"],
           "evidence_surfaces": ["foundry and memory earnings and capacity disclosures", "semiconductor equipment orders and lead times", "HBM and advanced-packaging qualification and shipment milestones", "accelerator and custom-silicon roadmaps", "networking-silicon deployment evidence", "export-control and industrial-policy records", "independent technical teardown and benchmark analysis"],
           "event_types": ["chip_architecture", "process_node_ramp", "foundry_capacity", "advanced_packaging", "memory_supply", "networking_silicon", "custom_accelerator", "chip_supply_agreement", "export_control", "unit_cost_or_performance", "technical_diagnosis"],
@@ -25,7 +25,7 @@
           "counter_queries": ["AI accelerator demand revised down", "advanced packaging constraint easing", "HBM oversupply", "AI memory supply constraint easing", "AI chip roadmap delay", "custom AI chip deployment underperforms", "semiconductor equipment order slowdown AI", "accelerator inventory buildup"]
         },
         "ai-infrastructure-layer": {
-          "source_ids": ["iea", "us-doe", "ercot", "pjm", "nvidia-ir", "nvidia-news", "amd-ir", "broadcom-ir", "micron-ir", "sk-hynix-news", "samsung-semiconductor-news", "microsoft-investor", "alphabet-ir", "meta-ir", "meta-news", "schneider-electric", "openai-deployment-safety", "anthropic-system-cards", "krebs-on-security", "jeff-geerling", "sean-goedecke", "reuters", "financial-times"],
+          "source_ids": ["iea", "us-doe", "ercot", "pjm", "nvidia-ir", "nvidia-news", "amd-ir", "broadcom-ir", "micron-ir", "sk-hynix-news", "samsung-semiconductor-news", "microsoft-investor", "alphabet-ir", "meta-ir", "meta-news", "schneider-electric", "openai-deployment-safety", "anthropic-system-cards", "power-policy", "more-than-moore", "asianometry", "chip-huyen-blog", "krebs-on-security", "jeff-geerling", "sean-goedecke", "reuters", "financial-times"],
           "lens_priority": ["capacity-realism", "demand-utilisation", "economics-capital", "bottleneck-migration", "substitution-falsification"],
           "evidence_surfaces": ["data-center permits and construction milestones", "cloud and hyperscaler capex disclosures", "project financing, debt and lease commitments", "server, rack, networking and cooling deliveries", "cluster utilization and reliability measurements", "cloud pricing and system-level TCO analysis", "outage, rollback and operational postmortems"],
           "event_types": ["capex_revision", "capacity_commissioned", "capacity_delayed", "supply_agreement", "financing", "project_cancellation", "rack_scale_system", "network_or_storage", "cooling_design", "utilization_metric", "reliability_event", "technical_reference_design", "deployment_requirement", "technical_diagnosis", "expert_analysis"],
@@ -33,7 +33,7 @@
           "counter_queries": ["AI infrastructure capex cut", "data center overcapacity", "AI cluster low utilization", "rack scale system delay", "liquid cooling failure", "AI data center project cancellation", "data center lease cancellation AI", "AI cloud price decline capex return"]
         },
         "ai-model-layer": {
-          "source_ids": ["openai-deployment-safety", "anthropic-system-cards", "microsoft-investor", "alphabet-ir", "meta-ir", "meta-news", "nvidia-ir", "nvidia-news", "sean-goedecke", "reuters", "associated-press", "financial-times"],
+          "source_ids": ["openai-deployment-safety", "anthropic-system-cards", "microsoft-investor", "alphabet-ir", "meta-ir", "meta-news", "nvidia-ir", "nvidia-news", "chip-huyen-blog", "simon-willison-blog", "interconnects-ai", "hamel-blog", "shreya-shankar", "jason-liu", "eugene-yan-blog", "ai-snake-oil", "sean-goedecke", "reuters", "associated-press", "financial-times"],
           "lens_priority": ["economics-capital", "demand-utilisation", "substitution-falsification", "bottleneck-migration", "regional-policy-divergence"],
           "evidence_surfaces": ["system cards and deployment-safety reports", "model release documentation and API pricing", "training and inference compute disclosures", "agent task-horizon and reliability evaluations", "open-model datasets and capability comparisons", "technical papers and reproducible benchmark artifacts", "deployment security, governance and regulatory requirements"],
           "event_types": ["training_compute", "inference_efficiency", "model_architecture", "reasoning_cost", "model_opening", "context_scaling", "benchmark_with_resource_data", "deployment_requirement", "expert_analysis"],
@@ -41,7 +41,7 @@
           "counter_queries": ["model capability gains without higher compute", "small model replaces large model workload", "reasoning cost decline", "model benchmark fails production evaluation", "AI agent reliability plateau", "open models commoditize frontier model pricing"]
         },
         "ai-application-layer": {
-          "source_ids": ["microsoft-investor", "alphabet-ir", "meta-ir", "meta-news", "palantir-ir", "sean-goedecke", "ibrahim-diallo", "reuters", "associated-press", "financial-times"],
+          "source_ids": ["microsoft-investor", "alphabet-ir", "meta-ir", "meta-news", "palantir-ir", "chip-huyen-blog", "simon-willison-blog", "hamel-blog", "shreya-shankar", "jason-liu", "eugene-yan-blog", "one-useful-thing", "ai-snake-oil", "sean-goedecke", "ibrahim-diallo", "reuters", "associated-press", "financial-times"],
           "lens_priority": ["demand-utilisation", "economics-capital", "substitution-falsification", "regional-policy-divergence", "capacity-realism"],
           "evidence_surfaces": ["enterprise earnings and AI-attributed revenue disclosures", "paid usage, retention and workload measurements", "field experiments and productivity studies", "agent and robotics task-completion evidence", "procurement and enterprise-budget signals", "job and workflow redesign evidence", "failure reports, rollbacks and human-supervision costs", "expert practitioner analysis"],
           "event_types": ["production_deployment", "paid_usage", "application_revenue", "agent_workflow", "robotics_deployment", "productivity_measurement", "workload_growth", "failure_or_rollback", "expert_analysis", "technical_diagnosis"],
@@ -57,7 +57,7 @@
       "surface_rotation": ["specialist-and-x", "project-and-permit-records", "financing-and-procurement", "technical-and-cost-studies", "industry-reports", "independent-reporting"],
       "storylines": {
         "ccus-project-delivery": {
-          "source_ids": ["us-epa-class-vi", "nsta-carbon-storage", "us-doe", "europa", "uk-government", "iea", "global-ccs-institute", "ieaghg", "clean-energy-ministerial-ccus", "dnv-ccs", "northern-lights", "heidelberg-materials", "exxonmobil-ccs", "slb-capturi", "reuters", "financial-times", "ccsa", "ogci-ccus-hub"],
+          "source_ids": ["us-epa-class-vi", "nsta-carbon-storage", "us-doe", "europa", "uk-government", "iea", "global-ccs-institute", "ieaghg", "clean-energy-ministerial-ccus", "dnv-ccs", "clean-air-task-force", "wood-mackenzie", "carbon-brief", "northern-lights", "heidelberg-materials", "exxonmobil-ccs", "slb-capturi", "reuters", "financial-times", "ccsa", "ogci-ccus-hub"],
           "lens_priority": ["capacity-realism", "economics-capital", "bottleneck-migration", "regional-policy-divergence", "substitution-falsification"],
           "evidence_surfaces": ["project databases and stage changes", "FID and financial-close records", "EPC and FEED awards", "permit and storage-license records", "equipment orders and vendor backlogs", "construction and commissioning milestones", "operating capture-rate, energy and availability data", "project debt, insurance and risk allocation", "industry cost and pipeline-conversion studies"],
           "event_types": ["final_investment_decision", "financial_close", "permit", "construction_start", "commissioning", "operations_start", "operational_data", "delay", "cancellation", "technical_report", "industry_status_report", "project_pipeline_revision", "cost_benchmark", "industry_outlook", "capital_allocation", "pipeline_conversion", "supply_chain_capacity", "industry_analysis"],
@@ -65,7 +65,7 @@
           "counter_queries": ["CCUS project cancellation", "carbon capture delay cost overrun", "capture rate below target", "CCS project underutilization", "CCUS pipeline methodology announced capacity", "carbon capture cost sensitivity revision", "CCUS investment slowdown", "CCS FID conversion deteriorates", "carbon capture equipment cost inflation", "CCS project finance withdrawal insurance"]
         },
         "ccus-network-economics": {
-          "source_ids": ["nsta-carbon-storage", "iea", "europa", "uk-government", "global-ccs-institute", "ieaghg", "clean-energy-ministerial-ccus", "iso-tc265", "dnv-ccs", "northern-lights", "exxonmobil-ccs", "reuters", "ccsa", "zep", "ogci-ccus-hub"],
+          "source_ids": ["nsta-carbon-storage", "iea", "europa", "uk-government", "global-ccs-institute", "ieaghg", "clean-energy-ministerial-ccus", "iso-tc265", "dnv-ccs", "clean-air-task-force", "wood-mackenzie", "carbon-brief", "northern-lights", "exxonmobil-ccs", "reuters", "ccsa", "zep", "ogci-ccus-hub"],
           "lens_priority": ["demand-utilisation", "economics-capital", "capacity-realism", "regional-policy-divergence", "bottleneck-migration"],
           "evidence_surfaces": ["storage appraisal and injection-well development", "transport and storage capacity reservations", "anchor-customer and take-or-pay contracts", "tariffs and regulated business-model decisions", "pipeline, terminal and CO2 shipping milestones", "contracted versus announced capacity", "actual injection and network-utilization data", "cross-border specifications and market-access rules"],
           "event_types": ["transport_storage_agreement", "capacity_expansion", "injection_start", "shipping_or_pipeline", "tariff_or_business_model", "anchor_customer", "technical_report", "market_model_revision", "cost_benchmark", "standard_published", "industry_outlook", "network_utilization", "market_structure", "industry_analysis"],
@@ -73,7 +73,7 @@
           "counter_queries": ["CO2 storage capacity underutilized", "CCS transport contract terminated", "CO2 pipeline delay", "storage liability dispute", "CCS network forecast sensitivity", "CO2 hub modeled potential versus contracted capacity", "CCS network demand below announced capacity", "CO2 storage appraisal downgrade"]
         },
         "evidence-governance": {
-          "source_ids": ["us-epa-class-vi", "nsta-carbon-storage", "europa", "uk-government", "us-doe", "global-ccs-institute", "ieaghg", "clean-energy-ministerial-ccus", "iso-tc265", "dnv-ccs", "reuters", "financial-times", "ccsa", "zep", "ogci-ccus-hub", "exxonmobil-ccs"],
+          "source_ids": ["us-epa-class-vi", "nsta-carbon-storage", "europa", "uk-government", "us-doe", "global-ccs-institute", "ieaghg", "clean-energy-ministerial-ccus", "iso-tc265", "dnv-ccs", "clean-air-task-force", "wood-mackenzie", "carbon-brief", "reuters", "financial-times", "ccsa", "zep", "ogci-ccus-hub", "exxonmobil-ccs"],
           "lens_priority": ["regional-policy-divergence", "economics-capital", "substitution-falsification", "capacity-realism", "demand-utilisation"],
           "evidence_surfaces": ["carbon-price, tax-credit and contract-for-difference rules", "permit queues and review durations", "MRV and storage-monitoring methodologies", "long-term liability and financial-security requirements", "cross-border CO2 accounting and quality rules", "public consultation, litigation and community acceptance", "policy budget durability and implementation guidance", "industry and institutional assessments of policy effectiveness"],
           "event_types": ["carbon_price", "subsidy_or_contract", "mrv_rule", "storage_permit", "cross_border_rule", "long_term_liability", "regulatory_revision", "policy_report", "industry_position", "technical_report", "standard_published", "industry_outlook", "policy_durability", "industry_analysis", "market_sentiment"],
