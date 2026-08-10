@@ -5,6 +5,7 @@ import { fileURLToPath } from 'node:url';
 const root = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 const runsDir = resolve(root, 'content', 'runs');
 const rows = new Map();
+let telemetryRunCount = 0;
 
 for (const name of (await readdir(runsDir)).filter((entry) => entry.endsWith('.json')).sort()) {
   let audit;
@@ -15,9 +16,11 @@ for (const name of (await readdir(runsDir)).filter((entry) => entry.endsWith('.j
   }
   if (audit?.applied !== true) continue;
   const observations = audit?.run?.collection_observations;
+  if (!Array.isArray(observations?.origin_yield)) continue;
+  telemetryRunCount += 1;
   const scannedAt = audit?.run?.as_of || null;
   const xRuntime = observations?.x_query_runtime || null;
-  for (const origin of observations?.origin_yield || []) {
+  for (const origin of observations.origin_yield) {
     const key = `${origin.type}:${origin.id}`;
     const current = rows.get(key) || {
       type: origin.type,
@@ -58,7 +61,7 @@ const report = [...rows.values()]
 console.log(JSON.stringify({
   schema_version: '1.0',
   source: 'content/runs/*.json',
-  generated_from_run_count: new Set(report.flatMap(() => [])).size,
+  telemetry_run_count: telemetryRunCount,
   note: 'Observation only. This report must not auto-rank, promote, demote or remove discovery sources.',
   origins: report
 }, null, 2));
