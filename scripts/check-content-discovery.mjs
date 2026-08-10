@@ -5,6 +5,7 @@ import { spawnSync } from 'node:child_process';
 const root = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 const evaluator = resolve(root, 'scripts', 'update-content.mjs');
 const yieldReporter = resolve(root, 'scripts', 'report-discovery-yield.mjs');
+const xDiscovery = resolve(root, 'scripts', 'pull-x-discovery.mjs');
 const now = new Date();
 const coverageStart = new Date(now.getTime() - 24 * 60 * 60 * 1000);
 const actor = {
@@ -30,6 +31,7 @@ const basePack = {
       surface_types_scanned: ['independent-reporting'],
       x_topic_query_ids_run: [],
       x_query_runtime: 'not_run',
+      x_post_read_count: 0,
       origin_yield: [
         { type: 'mainstream', id: 'reuters', lead_count: 0, full_text_review_count: 0, candidate_count: 0 }
       ],
@@ -59,6 +61,10 @@ const expectFail = (pack, pattern, label) => {
 
 expectPass(basePack, 'valid not_run telemetry');
 
+const missingReadCount = clone(basePack);
+delete missingReadCount.run.collection_observations.x_post_read_count;
+expectFail(missingReadCount, /x_post_read_count/i, 'telemetry without X read count');
+
 const fakeXRun = clone(basePack);
 fakeXRun.run.collection_observations.x_topic_query_ids_run = ['ai-energy-problems'];
 expectFail(fakeXRun, /native_x|not_run/i, 'not_run with X topic activity');
@@ -68,6 +74,21 @@ impossibleYield.run.collection_observations.origin_yield = [
   { type: 'mainstream', id: 'reuters', lead_count: 0, full_text_review_count: 1, candidate_count: 0 }
 ];
 expectFail(impossibleYield, /full_text_review_count exceeds lead_count/i, 'impossible origin yield');
+
+const xResult = spawnSync(process.execPath, [xDiscovery], {
+  cwd: root,
+  encoding: 'utf8',
+  env: { ...process.env, X_BEARER_TOKEN: '' }
+});
+if (xResult.status !== 0) throw new Error(`X discovery without credentials should not fail the content run:\n${xResult.stderr || xResult.stdout}`);
+let xReport;
+try {
+  xReport = JSON.parse(xResult.stdout);
+} catch {
+  throw new Error(`X discovery must emit JSON:\n${xResult.stdout}`);
+}
+if (xReport.runtime !== 'not_run' || xReport.reason !== 'missing_x_bearer_token') throw new Error('X discovery without credentials must report not_run/missing_x_bearer_token');
+if (xReport.post_read_count !== 0 || !Array.isArray(xReport.leads) || xReport.leads.length !== 0) throw new Error('X discovery without credentials must not fabricate reads or leads');
 
 const yieldResult = spawnSync(process.execPath, [yieldReporter], { cwd: root, encoding: 'utf8' });
 if (yieldResult.status !== 0) throw new Error(`discovery yield report should run:\n${yieldResult.stderr || yieldResult.stdout}`);
@@ -80,4 +101,4 @@ try {
 if (!Number.isInteger(yieldReport.telemetry_run_count) || yieldReport.telemetry_run_count < 1) throw new Error('discovery yield report must include at least one telemetry run');
 if (!Array.isArray(yieldReport.origins) || !yieldReport.origins.length) throw new Error('discovery yield report must expose aggregated origins');
 
-console.log('NewsFlow discovery telemetry contract passed: native-only X runtime, origin-yield invariants and derived yield reporting are enforced.');
+console.log('NewsFlow discovery telemetry contract passed: native X Recent Search degrades to not_run without credentials, X read counts are explicit, and origin-yield invariants remain enforced.');
