@@ -4,6 +4,7 @@
   const INSTALL_ENTRY_MODE = 'persistent';
   let deferredPrompt = null;
   let prompting = false;
+  let lastPromptOutcome = '';
 
   const isInstalled = () => window.matchMedia('(display-mode: standalone)').matches
     || window.navigator.standalone === true;
@@ -25,15 +26,21 @@
         steps: ['使用 Safari 打开 Newsflow', '点“分享”', '选择“添加到主屏幕”，然后确认“添加”']
       };
     }
+    if (lastPromptOutcome === 'dismissed') {
+      return {
+        lead: '你刚刚关闭了浏览器的安装窗口。这个原生安装提示一次只能调用一次。',
+        steps: ['重新载入 Newsflow 后再次选择“安装应用”', '或者直接打开浏览器主菜单', '选择“安装应用”“安装 Newsflow”或“添加到主屏幕”']
+      };
+    }
     if (isAndroid()) {
       return {
-        lead: '浏览器暂时还没有开放原生安装提示，但 Newsflow 仍可安装。',
-        steps: ['继续使用当前页面；Chrome 通常会在首次交互并停留一段时间后开放安装', '或者打开浏览器菜单', '选择“安装应用”或“添加到主屏幕”']
+        lead: 'Newsflow 已具备 PWA 安装条件，但当前页面没有可直接调用的安装窗口。',
+        steps: ['先查看浏览器地址栏或菜单是否已有“安装应用”入口', '如果 Newsflow 已经安装，浏览器不会再次发送网页安装提示', '否则重新载入页面后再试，或从浏览器菜单选择“安装应用”或“添加到主屏幕”']
       };
     }
     return {
-      lead: '浏览器暂时还没有开放原生安装提示。',
-      steps: ['打开浏览器主菜单', '选择“安装 Newsflow”“安装应用”或“创建快捷方式”', '如果当前浏览器不支持 PWA 安装，可在 Chrome、Edge 或 Safari 中打开本页']
+      lead: 'Newsflow 已具备 PWA 安装条件，但当前页面没有可直接调用的安装窗口。',
+      steps: ['先查看地址栏是否有“安装应用”图标', '或者打开浏览器主菜单，选择“应用”或“安装 Newsflow”（不同浏览器措辞略有差异）', '如果 Newsflow 已经安装，浏览器不会再次发送网页安装提示；请从系统应用列表或浏览器的应用管理中打开']
     };
   };
 
@@ -99,7 +106,8 @@
     deferredPrompt = null;
     try {
       await promptEvent.prompt();
-      await promptEvent.userChoice;
+      const choice = await promptEvent.userChoice;
+      lastPromptOutcome = String(choice?.outcome || '');
     } finally {
       prompting = false;
       syncInstallAction();
@@ -109,11 +117,13 @@
   window.addEventListener('beforeinstallprompt', (event) => {
     event.preventDefault();
     deferredPrompt = event;
+    lastPromptOutcome = '';
     syncInstallAction();
   });
 
   window.addEventListener('appinstalled', () => {
     deferredPrompt = null;
+    lastPromptOutcome = 'accepted';
     closeInstallHelp();
     syncInstallAction();
   });
