@@ -21,6 +21,7 @@ on:
 
 permissions:
   contents: write
+  actions: write
 
 concurrency:
   group: newsflow-publication-writer
@@ -84,3 +85,9 @@ jobs:
           git commit -m "editorial: sync live issue"
           git pull --rebase origin main
           git push origin HEAD:main
+
+      - name: Deploy updated publication
+        if: steps.sync.outputs.changed == 'true'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh workflow run pages.yml --ref main
