@@ -24,6 +24,7 @@
       "palantir-enterprise-ai-revenue-scale-2026",
       "alibaba-qwen-openweight-revenue-sharing-2026",
       "us-openweight-ai-safety-test-exemption-2026",
+      "apple-cxmt-memory-supply-ai-shortage-2026",
       "nvidia-lancium-stargate-power-investment-2026"
     ],
     "storyline_updates": [],
@@ -43,15 +44,15 @@
       ]
     },
     "methodology": {
-      "candidate_count": 9,
-      "selected_count": 9,
-      "editorial_adoption_count": 9,
-      "evaluation_pool_count": 9,
+      "candidate_count": 10,
+      "selected_count": 10,
+      "editorial_adoption_count": 10,
+      "evaluation_pool_count": 10,
       "cover_story_count": 0,
       "editor_review_count": 0,
       "qualified_reader_feedback_count": 0,
       "selected_by_channel": {
-        "ai-infrastructure": 9
+        "ai-infrastructure": 10
       },
       "final_issue_max_signals": 24,
       "final_channel_max_signals": 8,
@@ -59,7 +60,7 @@
       "fixed_length": false,
       "editorial_view_changed": false
     },
-    "updated_at": "2026-08-09T09:51:17.833Z"
+    "updated_at": "2026-08-10T06:03:24.808Z"
   },
   {
     "id": "frontier-systems-review-2026-15",

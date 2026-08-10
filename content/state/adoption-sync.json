@@ -3,6 +3,7 @@
   "managed_signal_ids": [
     "alibaba-qwen-openweight-revenue-sharing-2026",
     "amd-ai-data-center-revenue-rackscale-2026",
+    "apple-cxmt-memory-supply-ai-shortage-2026",
     "apple-mac-qwen-china-production-integration-2026",
     "nvidia-lancium-stargate-power-investment-2026",
     "openai-astra-critical-cyber-deployment-controls-2026",
@@ -11,7 +12,7 @@
     "texas-data-center-grid-deposit-risk-2026",
     "us-openweight-ai-safety-test-exemption-2026"
   ],
-  "current_adoption_count": 9,
+  "current_adoption_count": 10,
   "formal_issue_signal_count": 12,
-  "last_synced_at": "2026-08-09T08:56:39.092Z"
+  "last_synced_at": "2026-08-10T06:03:24.603Z"
 }

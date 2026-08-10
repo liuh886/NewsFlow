@@ -1,5 +1,43 @@
 [
   {
+    "id": "apple-cxmt-memory-supply-ai-shortage-2026",
+    "channel_id": "ai-infrastructure",
+    "storyline_ids": [
+      "ai-chip-layer"
+    ],
+    "event_type": "memory_supply",
+    "event_date": "2026-08-09",
+    "title": "Apple 据报测试 CXMT 内存以缓解 AI 驱动的元件短缺，AI 需求开始外溢至通用内存供应链",
+    "url": "https://www.reuters.com/business/retail-consumer/apple-tests-chinas-cxmt-memory-chips-iphones-macbooks-wsj-reports-2026-08-09/",
+    "source": "Reuters",
+    "published_at": "2026-08-09T12:07:00Z",
+    "quality_index": 8.7,
+    "source_tier": "Tier A",
+    "short_summary": "Reuters 转述《华尔街日报》称，Apple 正在 iPhone 和 MacBook 等产品线上测试长鑫存储（CXMT）内存，以缓解 AI 热潮推动的元件短缺，并已就中国市场部分设备的潜在供货展开早期讨论；Reuters 尚未独立核实该报道。",
+    "long_summary": "这条更新的重要性不在 Apple 是否最终采用 CXMT，而在 AI 基础设施扩张对通用内存供应链的外溢效应已经开始影响大型终端厂商的采购选择。若测试与后续供货推进，说明 AI 需求造成的内存紧张正在迫使消费电子厂商扩大供应来源，并可能提升中国内存厂商进入大型全球客户供应链的机会。但当前仍只是媒体报道中的测试和早期讨论，Reuters 未独立核实，也没有正式采购量、价格或量产时间表，因此不应把它描述成已落地的供应合同。",
+    "key_quote": "",
+    "supporting_quotes": [],
+    "tags": [
+      "AI & Tech",
+      "Memory",
+      "Apple",
+      "CXMT",
+      "Supply Chain",
+      "China"
+    ],
+    "editorial_status": "adopted",
+    "editorial_decision": "accept",
+    "adopted_at": "2026-08-10T05:05:11.928+00:00",
+    "ranking": {
+      "version": "ranking-v2",
+      "reader_boost": 0,
+      "reader_minimum": 3,
+      "editorial_boost": 0,
+      "editor_review_count": 0,
+      "reader_feedback_count": 0
+    }
+  },
+  {
     "id": "apple-mac-qwen-china-production-integration-2026",
     "channel_id": "ai-infrastructure",
     "storyline_ids": [
