@@ -75,7 +75,7 @@
     "auto_generated": false,
     "selection_mode": "owner_editorial_decisions",
     "edition_version": "1.1",
-    "editorially_revised_at": "2026-08-09T11:13:00+08:00",
+    "editorially_revised_at": "2026-08-10T07:36:41.769Z",
     "revision_note": "主编授权一次性补编 2026-07-16 至 2026-07-31 的历史刊期，新增此前遗漏的高重要性证据以建立完整内容基线；常规内容更新仍只作用于当前 live Issue。",
     "title": "AI 基础设施的约束从芯片扩散到电力、资本与社会许可",
     "standfirst": "从台积电先进制程、Google 与 Microsoft 的云需求，到 Meta 的基础设施融资、Nvidia 潜在信用担保、联邦 AI 能源园区与纽约州数据中心暂停，7 月下半月显示 AI 扩张已同时受制于制造、电力、资本和地方监管；英国 CCUS 则继续把封存许可、网络接入和跨链责任制度化。",
@@ -93,7 +93,11 @@
       "tsmc-q2-ai-capacity-2026",
       "uk-ccus-transition-access-agreement-2026",
       "uk-offshore-co2-storage-licensing-round-2026",
-      "uk-ggr-ccus-network-policy-2026"
+      "uk-ggr-ccus-network-policy-2026",
+      "uk-second-carbon-storage-round-application-conversion-2026",
+      "uk-data-center-grid-commitment-fee-2026",
+      "nsta-carbon-storage-operational-guidance-2026",
+      "intel-high-na-euv-production-economics-2026"
     ],
     "storyline_updates": [
       {
@@ -141,11 +145,20 @@
       "英国 CO₂ 封存许可与网络接入安排能否进一步转化为获得融资、签订合同并进入建设的项目"
     ],
     "methodology": {
-      "candidate_count": 14,
-      "selected_count": 12,
+      "candidate_count": 5,
+      "selected_count": 16,
       "primary_source_count": 8,
       "fixed_length": false,
-      "editorial_view_changed": true
+      "editorial_view_changed": true,
+      "editorial_adoption_count": 5,
+      "cover_story_count": 0,
+      "editor_review_count": 0,
+      "qualified_reader_feedback_count": 0,
+      "selected_by_channel": {
+        "ai-infrastructure": 11,
+        "ccus-energy-transition": 5
+      },
+      "post_freeze_amendment_count": 4
     }
   }
 ]
