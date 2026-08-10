@@ -53,9 +53,11 @@ if (!selected.length) throw new Error(`No ${mode} selected`);
 const now = new Date();
 const from = new Date(now.getTime() - days * 24 * 60 * 60 * 1000);
 const dateOnly = (value) => value.toISOString().slice(0, 10);
+const model = 'grok-4.3';
 const base = {
   schema_version: '1.0',
   provider: 'xai',
+  model,
   surface: 'X',
   runtime: apiKey ? 'native_x' : 'not_run',
   mode,
@@ -100,13 +102,13 @@ try {
       'Content-Type': 'application/json'
     },
     body: JSON.stringify({
-      model: 'grok-4.5',
+      model,
       input: [{ role: 'user', content: prompt }],
       tools: [tool],
       tool_choice: 'required',
       parallel_tool_calls: false,
       reasoning_effort: 'low',
-      max_output_tokens: 900,
+      max_output_tokens: 700,
       store: false
     }),
     signal: AbortSignal.timeout(30_000)
