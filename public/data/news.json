@@ -1,5 +1,43 @@
 [
   {
+    "id": "us-data-center-community-credit-risk-2026",
+    "channel_id": "ai-infrastructure",
+    "storyline_ids": [
+      "ai-infrastructure-layer",
+      "ai-energy-foundation"
+    ],
+    "event_type": "financing",
+    "event_date": "2026-08-10",
+    "title": "美国数据中心融资开始把社区反对纳入信用审查：AI 基建的瓶颈从资本规模进一步迁移到许可与地方接受度",
+    "url": "https://www.reuters.com/legal/transactional/lenders-scrutinize-us-data-center-financing-community-opposition-builds-2026-08-10/",
+    "source": "Reuters",
+    "published_at": "2026-08-10T10:08:00Z",
+    "quality_index": 9.4,
+    "source_tier": "Tier A",
+    "short_summary": "美国银行和资产管理机构开始把社区支持、许可完整性和项目延误风险纳入数据中心融资尽调，说明“有资本”并不等于“能交付”。",
+    "long_summary": "Reuters 对多家银行和资本机构的采访显示，数据中心项目的社区反对、地方许可和政治风险已从外围公共关系问题进入贷款和项目融资的核心尽调。至少 75 个、约 1300 亿美元的数据中心项目在 2026 年一季度面临地方反对；部分贷款安排要求建设提款前已取得许可和租约。该证据强化 NewsFlow 对 AI 基建“产能真实性”的判断：资本供应仍然充足，但融资可得性开始取决于项目是否真正具备许可、社区支持和可执行的建设路径，瓶颈正在从单纯资金规模迁移到可交付性与地方接受度。",
+    "key_quote": "",
+    "supporting_quotes": [],
+    "tags": [
+      "AI Infrastructure",
+      "Data Center",
+      "Financing",
+      "Permitting",
+      "Community Risk"
+    ],
+    "editorial_status": "adopted",
+    "editorial_decision": "accept",
+    "adopted_at": "2026-08-11T03:26:13.139+00:00",
+    "ranking": {
+      "version": "ranking-v2",
+      "reader_boost": 0,
+      "reader_minimum": 3,
+      "editorial_boost": 0,
+      "editor_review_count": 0,
+      "reader_feedback_count": 0
+    }
+  },
+  {
     "id": "apple-cxmt-memory-supply-ai-shortage-2026",
     "channel_id": "ai-infrastructure",
     "storyline_ids": [
