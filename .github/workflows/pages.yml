@@ -92,9 +92,6 @@ jobs:
             grep -q "$CLOUDFLARE_WEB_ANALYTICS_TOKEN" dist/index.html
           fi
 
-      - name: Install browser-smoke runner
-        run: npm install --no-save --package-lock=false --ignore-scripts --no-audit --no-fund @playwright/test@1.61.1
-
       - name: Start validated preview
         run: |
           python3 -m http.server 4173 --directory dist > /tmp/newsflow-preview.log 2>&1 &
