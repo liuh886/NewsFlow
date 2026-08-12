@@ -48,12 +48,6 @@ if (!apply) {
   process.exit(0);
 }
 
-const supabaseUrl = process.env.SUPABASE_URL?.trim();
-const serviceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY?.trim();
-if (!supabaseUrl || !serviceRoleKey) {
-  throw new Error('Applying Candidates requires SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY. Candidate manuscripts must never be committed to the public repository.');
-}
-
 let report;
 try {
   report = JSON.parse(dryRun.stdout);
@@ -134,16 +128,66 @@ const rows = reviewableDecisions.map((decision) => {
   };
 });
 
-const client = createClient(supabaseUrl, serviceRoleKey, {
-  auth: { persistSession: false, autoRefreshToken: false }
-});
-if (rows.length) {
-  const { error } = await client.from('newsflow_candidates').upsert(rows, {
-    onConflict: 'candidate_id',
-    ignoreDuplicates: false
+const requestActionsOidcToken = async () => {
+  const requestUrl = process.env.ACTIONS_ID_TOKEN_REQUEST_URL?.trim();
+  const requestToken = process.env.ACTIONS_ID_TOKEN_REQUEST_TOKEN?.trim();
+  const audience = process.env.NEWSFLOW_CANDIDATE_WRITER_AUDIENCE?.trim() || 'newsflow-supabase-candidate-writer';
+  if (!requestUrl || !requestToken) throw new Error('GitHub Actions OIDC runtime is unavailable.');
+  const url = new URL(requestUrl);
+  url.searchParams.set('audience', audience);
+  const response = await fetch(url, {
+    headers: { Authorization: `Bearer ${requestToken}`, Accept: 'application/json' },
+    signal: AbortSignal.timeout(15000)
   });
-  if (error) throw error;
-}
+  if (!response.ok) throw new Error(`GitHub Actions OIDC token request failed with ${response.status}.`);
+  const body = await response.json();
+  if (typeof body?.value !== 'string' || !body.value) throw new Error('GitHub Actions OIDC token response is invalid.');
+  return body.value;
+};
+
+const persistRows = async (candidateRows) => {
+  const supabaseUrl = process.env.SUPABASE_URL?.trim();
+  const serviceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY?.trim();
+  if (supabaseUrl && serviceRoleKey) {
+    if (candidateRows.length) {
+      const client = createClient(supabaseUrl, serviceRoleKey, {
+        auth: { persistSession: false, autoRefreshToken: false }
+      });
+      const { error } = await client.from('newsflow_candidates').upsert(candidateRows, {
+        onConflict: 'candidate_id',
+        ignoreDuplicates: false
+      });
+      if (error) throw error;
+    }
+    return;
+  }
+
+  const writerUrl = process.env.NEWSFLOW_CANDIDATE_WRITER_URL?.trim();
+  if (writerUrl && process.env.ACTIONS_ID_TOKEN_REQUEST_URL && process.env.ACTIONS_ID_TOKEN_REQUEST_TOKEN) {
+    const oidcToken = await requestActionsOidcToken();
+    const response = await fetch(writerUrl, {
+      method: 'POST',
+      headers: {
+        Authorization: `Bearer ${oidcToken}`,
+        'Content-Type': 'application/json',
+        Accept: 'application/json'
+      },
+      body: JSON.stringify({ rows: candidateRows }),
+      signal: AbortSignal.timeout(20000)
+    });
+    if (!response.ok) throw new Error(`OIDC Candidate writer failed with ${response.status}.`);
+    const result = await response.json();
+    if (result?.ok !== true || Number(result?.row_count) !== candidateRows.length) {
+      throw new Error('OIDC Candidate writer returned an invalid acknowledgement.');
+    }
+    return;
+  }
+
+  if (!candidateRows.length) return;
+  throw new Error('Applying reviewable Candidates requires either a trusted Supabase service-role runtime or the GitHub OIDC Candidate writer.');
+};
+
+await persistRows(rows);
 
 const acceptedCount = (report.decisions || []).filter((decision) => decision.status === 'accepted').length;
 const needsReviewCount = (report.decisions || []).filter((decision) => decision.status === 'needs_review').length;

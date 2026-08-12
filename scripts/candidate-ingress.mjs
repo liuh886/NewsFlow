@@ -14,8 +14,6 @@ const token = process.env.GITHUB_TOKEN?.trim();
 const repository = process.env.GITHUB_REPOSITORY?.trim();
 const repositoryOwner = process.env.GITHUB_REPOSITORY_OWNER?.trim();
 const eventPath = process.env.GITHUB_EVENT_PATH?.trim();
-const supabaseUrl = process.env.SUPABASE_URL?.trim();
-const serviceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY?.trim();
 
 const REQUEST_MARKER = 'NEWSFLOW_APPLY_REQUEST_V1';
 const CHALLENGE_MARKER = 'NEWSFLOW_APPLY_CHALLENGE_V1';
@@ -55,9 +53,6 @@ let payloadCommentId = null;
 try {
   if (!token || !repository || !repositoryOwner || !eventPath) {
     throw Object.assign(new Error('GitHub runtime metadata is missing.'), { code: 'missing_github_runtime' });
-  }
-  if (!supabaseUrl || !serviceRoleKey) {
-    throw Object.assign(new Error('Canonical apply credentials are unavailable.'), { code: 'missing_runtime_secret' });
   }
 
   const event = JSON.parse(await readFile(eventPath, 'utf8'));

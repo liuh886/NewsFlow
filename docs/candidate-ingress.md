@@ -1,138 +1,67 @@
 # Secure Candidate ingress
 
-Issue #110 exposed a tooling gap: scheduled/interactive agents could inspect GitHub and write Supabase through connectors, but could not execute the repository's canonical Candidate apply command. The supported fix is an encrypted GitHub Actions handshake that transports a transient Candidate pack without committing manuscript text or creating a second database queue.
+Issue #110 exists because scheduled/interactive agents can research and use connected GitHub/Supabase tools but do not have a trusted shell in the NewsFlow repository. The supported bridge is an encrypted GitHub Actions handshake that still ends at the canonical `node scripts/apply-content.mjs --stdin --apply` command.
 
-## Invariants
+## Security and architecture invariants
 
-- The only Candidate persistence command remains `node scripts/apply-content.mjs --stdin --apply`.
-- The Action owns `SUPABASE_SERVICE_ROLE_KEY`; the agent never receives it.
-- Candidate plaintext is never committed to Git, added to an Issue, stored as an artifact, or written to a staging table.
-- Public GitHub only sees an authenticated encrypted envelope plus sanitized counts/audit metadata.
+- Candidate plaintext is transient and never committed to Git, placed in workflow inputs, uploaded as an artifact, or stored in a staging table.
+- Request/challenge/ciphertext transport uses Issue #110; only the repository owner's request can start the Action.
+- GitHub does **not** store a long-lived Supabase service-role secret for this path.
+- The Action requests a short-lived GitHub Actions OIDC token (`id-token: write`) with audience `newsflow-supabase-candidate-writer`.
+- The Supabase Edge Function validates the GitHub OIDC signature and pins repository, repository ID, owner actor ID, `issue_comment`, `refs/heads/main`, and the exact `candidate-ingress.yml` workflow ref.
+- The Edge Function is a thin private writer only. It does not perform discovery, preflight, row shaping, editorial review, adoption, or publication.
+- `apply-content.mjs` remains the single owner of deterministic preflight → registered-source row shaping → Candidate persistence → sanitized run audit.
+- Local/trusted server execution may still use `SUPABASE_SERVICE_ROLE_KEY`; GitHub Actions uses OIDC instead.
 - Direct connector SQL into `newsflow_candidates` is not a supported fallback.
-- Reader publication remains downstream of Editor-in-Chief adoption and `publication-sync.yml`.
+- Reader publication remains exclusively downstream of Editor-in-Chief adoption and `publication-sync.yml`.
 
-## Transport endpoint
+## Encrypted transport
 
-The transport address is Issue **#110**. It may be closed after the defect is resolved, but it must remain unlocked so the repository owner can post machine requests.
-
-Only a comment created by the repository owner with this exact shape starts the workflow:
+A request is posted to Issue #110:
 
 ```text
 NEWSFLOW_APPLY_REQUEST_V1 <request_id>
 ```
 
-`request_id` must contain 16–80 characters from `A-Z a-z 0-9 _ -`.
-
-The Action answers with a one-time RSA public key:
+The Action posts a one-time RSA public key:
 
 ```text
 NEWSFLOW_APPLY_CHALLENGE_V1 <request_id>
 <base64-encoded PEM SubjectPublicKeyInfo>
 ```
 
-The RSA private key exists only in that Action process and is discarded when the run exits.
-
-## Payload encryption
-
-The agent:
-
-1. validates that the challenge was posted by `github-actions[bot]` for the same request id;
-2. generates a random 32-byte AES key and 12-byte IV;
-3. encrypts the UTF-8 Candidate-pack JSON with AES-256-GCM;
-4. authenticates the exact AAD `newsflow-candidate-ingress-v1:<request_id>`;
-5. wraps the AES key with the challenge RSA key using RSA-OAEP + SHA-256;
-6. posts the base64-encoded compact JSON envelope.
-
-Envelope before outer base64 encoding:
-
-```json
-{
-  "v": 1,
-  "request_id": "<request_id>",
-  "wrapped_key": "<base64>",
-  "iv": "<base64>",
-  "tag": "<base64 16-byte GCM tag>",
-  "ciphertext": "<base64>"
-}
-```
-
-Payload comment:
+The agent encrypts the compact UTF-8 Candidate pack with AES-256-GCM, authenticating AAD `newsflow-candidate-ingress-v1:<request_id>`. The random AES key is wrapped with RSA-OAEP/SHA-256 and sent as:
 
 ```text
 NEWSFLOW_APPLY_PAYLOAD_V1 <request_id>
 <base64-encoded envelope JSON>
 ```
 
-Candidate plaintext is capped at 32 KiB so the encrypted envelope remains below GitHub's comment size limit.
+The envelope fields are `v`, `request_id`, `wrapped_key`, `iv`, `tag`, and `ciphertext`. Candidate plaintext is capped at 32 KiB. The RSA private key exists only inside the active Action process. Request, challenge, and encrypted-payload comments are deleted after processing.
 
-### Python reference
+## Canonical apply and OIDC writer
 
-This reference uses `cryptography` and deliberately prints only the encrypted payload comment body.
-
-```python
-import base64
-import json
-import os
-
-from cryptography.hazmat.primitives import hashes, serialization
-from cryptography.hazmat.primitives.asymmetric import padding
-from cryptography.hazmat.primitives.ciphers.aead import AESGCM
-
-def encrypt_candidate_pack(request_id: str, challenge_b64: str, candidate_pack: dict) -> str:
-    public_pem = base64.b64decode(challenge_b64)
-    public_key = serialization.load_pem_public_key(public_pem)
-
-    plaintext = json.dumps(candidate_pack, ensure_ascii=False, separators=(",", ":")).encode("utf-8")
-    if len(plaintext) > 32768:
-        raise ValueError("Candidate pack exceeds the 32 KiB ingress limit")
-
-    aes_key = os.urandom(32)
-    iv = os.urandom(12)
-    aad = f"newsflow-candidate-ingress-v1:{request_id}".encode("utf-8")
-    encrypted = AESGCM(aes_key).encrypt(iv, plaintext, aad)
-    ciphertext, tag = encrypted[:-16], encrypted[-16:]
-
-    wrapped_key = public_key.encrypt(
-        aes_key,
-        padding.OAEP(
-            mgf=padding.MGF1(algorithm=hashes.SHA256()),
-            algorithm=hashes.SHA256(),
-            label=None,
-        ),
-    )
-
-    envelope = {
-        "v": 1,
-        "request_id": request_id,
-        "wrapped_key": base64.b64encode(wrapped_key).decode(),
-        "iv": base64.b64encode(iv).decode(),
-        "tag": base64.b64encode(tag).decode(),
-        "ciphertext": base64.b64encode(ciphertext).decode(),
-    }
-    outer = base64.b64encode(
-        json.dumps(envelope, separators=(",", ":")).encode("utf-8")
-    ).decode()
-    return f"NEWSFLOW_APPLY_PAYLOAD_V1 {request_id}\n{outer}"
-```
-
-## Server-side execution
-
-`.github/workflows/candidate-ingress.yml` accepts only owner requests on Issue #110. The Action decrypts and authenticates the envelope in memory, checks the exchange-envelope shape, and pipes the plaintext directly to:
+After in-memory decryption, the Action pipes plaintext directly to:
 
 ```bash
 node scripts/apply-content.mjs --stdin --apply
 ```
 
-The existing apply script re-runs deterministic preflight, writes only reviewable Candidates to private Supabase, and creates the normal sanitized `content/runs/*.json` audit.
+`apply-content.mjs` re-runs deterministic preflight and creates the exact `newsflow_candidates` rows. In GitHub Actions it then:
 
-The workflow commits only that sanitized audit, then runs:
+1. requests a GitHub Actions OIDC token using the runtime `ACTIONS_ID_TOKEN_REQUEST_URL` / `ACTIONS_ID_TOKEN_REQUEST_TOKEN`;
+2. sets audience `newsflow-supabase-candidate-writer`;
+3. POSTs only the already-shaped Candidate rows to `newsflow-candidate-writer`;
+4. requires a matching `{ "ok": true, "row_count": n }` acknowledgement;
+5. writes the normal sanitized `content/runs/*.json` audit.
 
-```bash
-npm run check
-npm run build
-```
+The writer is deployed from `supabase/functions/newsflow-candidate-writer/index.ts`. It accepts a maximum of eight rows, rejects unknown row fields, and uses Supabase's server-side service-role credential only after validating the GitHub OIDC identity. An empty row array is a legitimate authenticated probe and writes nothing.
 
-It posts one sanitized result:
+The Action then runs `npm run content:status`, commits the sanitized audit plus `public/data/data-status.json` atomically, and validates with `npm run check` and `npm run build`.
+
+## Result contract
+
+Success leaves only a sanitized result comment:
 
 ```text
 NEWSFLOW_APPLY_RESULT_V1 <request_id>
@@ -142,16 +71,13 @@ reviewable_count: <n>
 audit: content/runs/<file>.json
 ```
 
-or a failure containing only a stage and safe error code. Request, challenge, and encrypted payload comments are deleted after processing.
+A failure reports only a safe stage/error code. There is no direct-SQL fallback.
 
 ## Scheduled-agent procedure
 
-When an agent has a reviewable Candidate pack but no repository command-execution surface:
-
-1. post a `NEWSFLOW_APPLY_REQUEST_V1` comment on #110;
-2. poll #110 for the matching `NEWSFLOW_APPLY_CHALLENGE_V1`;
-3. encrypt the pack exactly as above and post `NEWSFLOW_APPLY_PAYLOAD_V1`;
-4. poll for the matching `NEWSFLOW_APPLY_RESULT_V1`;
-5. verify the resulting Candidate/Review/Adoption state in Supabase and the sanitized audit on GitHub.
-
-Do not fall back to direct SQL if the handshake fails. Treat a failed handshake as a workflow defect, preserve the Candidate pack only in the agent's transient workspace, and report/update the relevant Issue.
+1. Read the current NewsFlow workflow and build a transient Candidate pack normally.
+2. Post `NEWSFLOW_APPLY_REQUEST_V1` on #110 and wait for the matching challenge.
+3. Encrypt and post the Candidate pack under `NEWSFLOW_APPLY_PAYLOAD_V1`.
+4. Wait for `NEWSFLOW_APPLY_RESULT_V1`.
+5. Verify Candidate/Review/Adoption state in Supabase and the sanitized GitHub audit.
+6. If the handshake fails, update the relevant Issue and stop; never bypass preflight with connector SQL.

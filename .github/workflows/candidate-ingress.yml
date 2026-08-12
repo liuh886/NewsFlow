@@ -7,6 +7,7 @@ on:
 permissions:
   contents: write
   issues: write
+  id-token: write
 
 concurrency:
   group: newsflow-candidate-ingress
@@ -24,8 +25,8 @@ jobs:
     env:
       GITHUB_TOKEN: ${{ github.token }}
       GH_TOKEN: ${{ github.token }}
-      SUPABASE_URL: ${{ vars.SUPABASE_URL || vars.NEWSFLOW_SUPABASE_URL }}
-      SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+      NEWSFLOW_CANDIDATE_WRITER_URL: https://blgwlycfcwvsupmqyqwn.supabase.co/functions/v1/newsflow-candidate-writer
+      NEWSFLOW_CANDIDATE_WRITER_AUDIENCE: newsflow-supabase-candidate-writer
       NEWSFLOW_INGRESS_ISSUE: '110'
       NEWSFLOW_INGRESS_TIMEOUT_MS: '240000'
       NEWSFLOW_INGRESS_RESULT_PATH: artifacts/candidate-ingress-result.json

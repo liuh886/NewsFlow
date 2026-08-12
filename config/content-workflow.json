@@ -27,12 +27,7 @@
   "exchange_contract": {
     "candidate_pack_schema": "schemas/content-candidate-pack.schema.json",
     "candidate_pack_version": "1.0",
-    "required_actor_fields": [
-      "agent_id",
-      "runtime",
-      "workflow_id",
-      "workflow_version"
-    ]
+    "required_actor_fields": ["agent_id", "runtime", "workflow_id", "workflow_version"]
   },
   "candidate_draft": {
     "path": "content/inbox/*.json",
@@ -49,6 +44,11 @@
     "payload_marker": "NEWSFLOW_APPLY_PAYLOAD_V1",
     "result_marker": "NEWSFLOW_APPLY_RESULT_V1",
     "canonical_command": "node scripts/apply-content.mjs --stdin --apply",
+    "writer_auth": "github_actions_oidc",
+    "writer_audience": "newsflow-supabase-candidate-writer",
+    "writer_url": "https://blgwlycfcwvsupmqyqwn.supabase.co/functions/v1/newsflow-candidate-writer",
+    "writer_source": "supabase/functions/newsflow-candidate-writer/index.ts",
+    "github_long_lived_database_secret": false,
     "plaintext_git_tracked": false,
     "direct_sql_fallback_allowed": false,
     "max_plaintext_bytes": 32768
@@ -74,11 +74,8 @@
     "x_discovery": "X_BEARER_TOKEN=... npm run content:x",
     "dry_run": "node scripts/update-content.mjs --input=content/inbox/<candidate-pack.json>",
     "apply": "SUPABASE_URL=... SUPABASE_SERVICE_ROLE_KEY=... node scripts/apply-content.mjs --input=content/inbox/<candidate-pack.json> --apply",
-    "agent_apply": "encrypted issue-comment handshake documented in docs/candidate-ingress.md; server executes node scripts/apply-content.mjs --stdin --apply",
-    "verify": [
-      "npm run check",
-      "npm run build"
-    ]
+    "agent_apply": "encrypted Issue #110 handshake; GitHub Actions OIDC authenticates the canonical apply to the Supabase Candidate writer",
+    "verify": ["npm run check", "npm run build"]
   },
   "terminal_outcomes": [
     "completed_no_material_change",
