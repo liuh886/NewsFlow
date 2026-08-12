@@ -1,0 +1,50 @@
+{
+  "schema_version": "1.0",
+  "edition_id": "frontier-systems-review",
+  "workflow": {
+    "id": "newsflow-content-update",
+    "version": "1.0.0",
+    "actor": {
+      "agent_id": "issue-110-oidc-smoke",
+      "runtime": "GitHub OIDC ingress smoke",
+      "workflow_id": "newsflow-content-update",
+      "workflow_version": "1.0.0",
+      "model": "GPT-5.6 Sol"
+    }
+  },
+  "run": {
+    "as_of": "2026-08-12T01:57:00Z",
+    "coverage_start": "2026-08-12T01:56:00Z",
+    "coverage_end": "2026-08-12T01:57:00Z",
+    "timezone": "Asia/Shanghai",
+    "actor": {
+      "agent_id": "issue-110-oidc-smoke",
+      "runtime": "GitHub OIDC ingress smoke",
+      "workflow_id": "newsflow-content-update",
+      "workflow_version": "1.0.0",
+      "model": "GPT-5.6 Sol"
+    },
+    "collection_observations": {
+      "source_ids_scanned": [],
+      "scout_ids_scanned": [],
+      "storyline_ids_scanned": [],
+      "surface_types_scanned": [],
+      "x_topic_query_ids_run": [],
+      "x_query_runtime": "not_run",
+      "x_post_read_count": 0,
+      "origin_yield": [],
+      "material_lead_count": 0,
+      "full_text_review_count": 0
+    }
+  },
+  "applied": true,
+  "summary": {
+    "candidate_count": 0,
+    "reviewable_count": 0,
+    "accepted_by_machine_gate_count": 0,
+    "needs_review_count": 0,
+    "rejected_count": 0
+  },
+  "publication_effect": "none",
+  "editorial_effect": "supabase_private_candidates_only"
+}
