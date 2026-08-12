@@ -86,9 +86,15 @@ jobs:
         env:
           REQUEST_COMMENT_ID: ${{ github.event.comment.id }}
 
-      - name: Commit sanitized run audit
-        id: audit
+      - name: Refresh public data-status metadata
+        id: status
         if: steps.result.outputs.status == 'applied'
+        continue-on-error: true
+        run: npm run content:status
+
+      - name: Commit sanitized run audit and data-status
+        id: audit
+        if: steps.result.outputs.status == 'applied' && steps.status.outcome == 'success'
         continue-on-error: true
         shell: bash
         run: |
@@ -100,7 +106,7 @@ jobs:
           esac
           git config user.name "newsflow-content-bot"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add -- "$audit_path"
+          git add -- "$audit_path" public/data/data-status.json
           git commit -m "content: record encrypted Candidate ingress"
           for attempt in 1 2 3; do
             git pull --rebase origin main
@@ -128,6 +134,7 @@ jobs:
           if [[ -z "$request_id" ]]; then request_id="unknown"; fi
           if [[ "${{ steps.ingress.outcome }}" == "success" \
              && "${{ steps.result.outputs.status }}" == "applied" \
+             && "${{ steps.status.outcome }}" == "success" \
              && "${{ steps.audit.outcome }}" == "success" \
              && "${{ steps.validate.outcome }}" == "success" ]]; then
             body=$(printf '%s\n%s\n%s\n%s\n%s' \
@@ -138,8 +145,9 @@ jobs:
               "audit: ${{ steps.result.outputs.audit_path }}")
           else
             stage="ingress"
-            if [[ "${{ steps.result.outputs.status }}" == "applied" && "${{ steps.audit.outcome }}" != "success" ]]; then stage="audit_commit"; fi
-            if [[ "${{ steps.result.outputs.status }}" == "applied" && "${{ steps.audit.outcome }}" == "success" && "${{ steps.validate.outcome }}" != "success" ]]; then stage="validation"; fi
+            if [[ "${{ steps.result.outputs.status }}" == "applied" && "${{ steps.status.outcome }}" != "success" ]]; then stage="data_status"; fi
+            if [[ "${{ steps.result.outputs.status }}" == "applied" && "${{ steps.status.outcome }}" == "success" && "${{ steps.audit.outcome }}" != "success" ]]; then stage="audit_commit"; fi
+            if [[ "${{ steps.result.outputs.status }}" == "applied" && "${{ steps.status.outcome }}" == "success" && "${{ steps.audit.outcome }}" == "success" && "${{ steps.validate.outcome }}" != "success" ]]; then stage="validation"; fi
             code="${{ steps.result.outputs.error_code }}"
             if [[ -z "$code" ]]; then code="workflow_stage_failed"; fi
             body=$(printf '%s\n%s\n%s\n%s' \
@@ -170,6 +178,7 @@ jobs:
         run: |
           if [[ "${{ steps.ingress.outcome }}" != "success" \
              || "${{ steps.result.outputs.status }}" != "applied" \
+             || "${{ steps.status.outcome }}" != "success" \
              || "${{ steps.audit.outcome }}" != "success" \
              || "${{ steps.validate.outcome }}" != "success" ]]; then
             exit 1

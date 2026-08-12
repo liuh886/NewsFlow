@@ -50,6 +50,8 @@ for (const required of [
   'secrets.SUPABASE_SERVICE_ROLE_KEY',
   'node scripts/candidate-ingress.mjs',
   'content/runs/*.json',
+  'npm run content:status',
+  'public/data/data-status.json',
   'npm run check',
   'npm run build'
 ]) {
