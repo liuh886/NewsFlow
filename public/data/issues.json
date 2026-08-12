@@ -20,6 +20,7 @@
       "texas-data-center-grid-deposit-risk-2026",
       "amd-ai-data-center-revenue-rackscale-2026",
       "openai-huggingface-agent-infrastructure-escape-timeline-2026",
+      "nvidia-wall-street-ai-financing-platform-2026",
       "us-data-center-community-credit-risk-2026",
       "apple-mac-qwen-china-production-integration-2026",
       "openai-astra-critical-cyber-deployment-controls-2026",
@@ -46,15 +47,15 @@
       ]
     },
     "methodology": {
-      "candidate_count": 12,
-      "selected_count": 12,
-      "editorial_adoption_count": 12,
-      "evaluation_pool_count": 12,
+      "candidate_count": 13,
+      "selected_count": 13,
+      "editorial_adoption_count": 13,
+      "evaluation_pool_count": 13,
       "cover_story_count": 0,
       "editor_review_count": 0,
       "qualified_reader_feedback_count": 0,
       "selected_by_channel": {
-        "ai-infrastructure": 12
+        "ai-infrastructure": 13
       },
       "final_issue_max_signals": 24,
       "final_channel_max_signals": 8,
@@ -62,7 +63,7 @@
       "fixed_length": false,
       "editorial_view_changed": false
     },
-    "updated_at": "2026-08-11T04:43:14.868Z"
+    "updated_at": "2026-08-12T05:08:49.689Z"
   },
   {
     "id": "frontier-systems-review-2026-15",

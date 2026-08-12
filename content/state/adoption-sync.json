@@ -9,6 +9,7 @@
     "intel-high-na-euv-production-economics-2026",
     "nsta-carbon-storage-operational-guidance-2026",
     "nvidia-lancium-stargate-power-investment-2026",
+    "nvidia-wall-street-ai-financing-platform-2026",
     "openai-astra-critical-cyber-deployment-controls-2026",
     "openai-huggingface-agent-infrastructure-escape-timeline-2026",
     "palantir-enterprise-ai-revenue-scale-2026",
@@ -20,7 +21,7 @@
     "us-data-center-community-credit-risk-2026",
     "us-openweight-ai-safety-test-exemption-2026"
   ],
-  "current_adoption_count": 18,
+  "current_adoption_count": 19,
   "formal_issue_signal_count": 16,
-  "last_synced_at": "2026-08-11T04:43:14.669Z"
+  "last_synced_at": "2026-08-12T05:08:49.561Z"
 }

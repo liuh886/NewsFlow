@@ -1,5 +1,42 @@
 [
   {
+    "id": "nvidia-wall-street-ai-financing-platform-2026",
+    "channel_id": "ai-infrastructure",
+    "storyline_ids": [
+      "ai-infrastructure-layer"
+    ],
+    "event_type": "financing",
+    "event_date": "2026-08-10",
+    "title": "Nvidia 联合华尔街筹组 5000 亿美元 AI 基建融资平台，算力竞争开始进入资本组织层",
+    "url": "https://www.reuters.com/technology/wall-street-giants-partner-with-nvidia-500-billion-ai-financing-deal-ft-reports-2026-08-10/",
+    "source": "Reuters",
+    "published_at": "2026-08-10T16:34:00Z",
+    "quality_index": 9.4,
+    "source_tier": "Tier A",
+    "short_summary": "Reuters 报道称，Apollo、Blackstone、BlackRock GIP、Brookfield、Goldman Sachs、KKR 等机构正与 Nvidia 筹组约 5000 亿美元 AI 基础设施融资方案；目前仍处于合作与融资安排阶段，尚未披露具体项目承诺、最终条款或部署时间表。",
+    "long_summary": "这条信息的关键不在于把 5000 亿美元误写成已经落地的资本开支，而在于 AI 基础设施的资本形成机制正在发生变化。Nvidia 正与大型另类资产管理机构和投行讨论面向 AI 基础设施的超大规模融资安排，覆盖芯片、电力与数据中心等资产。若这一结构后续形成具体资本承诺，它将把 Nvidia 的角色从加速器供应商进一步推向 AI 基础设施融资与生态组织者，并可能缓解部分客户在资本成本和项目融资上的约束。当前应把它视为 capital-formation / financing-architecture 的前置信号，而不是 capacity commissioned 或 financial close；后续重点跟踪具体资金承诺、项目池、融资条款、Nvidia 风险承担以及实际部署时间表。",
+    "key_quote": "",
+    "supporting_quotes": [],
+    "tags": [
+      "AI & Tech",
+      "AI Infrastructure",
+      "Financing",
+      "Private Capital",
+      "Nvidia"
+    ],
+    "editorial_status": "adopted",
+    "editorial_decision": "accept",
+    "adopted_at": "2026-08-12T04:59:55.42+00:00",
+    "ranking": {
+      "version": "ranking-v2",
+      "reader_boost": 0,
+      "reader_minimum": 3,
+      "editorial_boost": 0,
+      "editor_review_count": 0,
+      "reader_feedback_count": 0
+    }
+  },
+  {
     "id": "us-data-center-community-credit-risk-2026",
     "channel_id": "ai-infrastructure",
     "storyline_ids": [
