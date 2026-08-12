@@ -4,6 +4,7 @@
   "default_branch": "main",
   "package_manager": "npm",
   "governed_workflows": [
+    ".github/workflows/candidate-ingress.yml",
     ".github/workflows/ci-governance.yml",
     ".github/workflows/ci.yml",
     ".github/workflows/pages.yml",
