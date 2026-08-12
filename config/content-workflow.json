@@ -39,6 +39,20 @@
     "git_tracked": false,
     "lifetime": "transient"
   },
+  "agent_apply_ingress": {
+    "transport": "encrypted_issue_comment_handshake",
+    "issue_number": 110,
+    "workflow": ".github/workflows/candidate-ingress.yml",
+    "documentation": "docs/candidate-ingress.md",
+    "request_marker": "NEWSFLOW_APPLY_REQUEST_V1",
+    "challenge_marker": "NEWSFLOW_APPLY_CHALLENGE_V1",
+    "payload_marker": "NEWSFLOW_APPLY_PAYLOAD_V1",
+    "result_marker": "NEWSFLOW_APPLY_RESULT_V1",
+    "canonical_command": "node scripts/apply-content.mjs --stdin --apply",
+    "plaintext_git_tracked": false,
+    "direct_sql_fallback_allowed": false,
+    "max_plaintext_bytes": 32768
+  },
   "private_candidate_store": "supabase:public.newsflow_candidates",
   "private_editorial_referral_store": "supabase:public.newsflow_editorial_referrals",
   "apply_writes": [
@@ -60,6 +74,7 @@
     "x_discovery": "X_BEARER_TOKEN=... npm run content:x",
     "dry_run": "node scripts/update-content.mjs --input=content/inbox/<candidate-pack.json>",
     "apply": "SUPABASE_URL=... SUPABASE_SERVICE_ROLE_KEY=... node scripts/apply-content.mjs --input=content/inbox/<candidate-pack.json> --apply",
+    "agent_apply": "encrypted issue-comment handshake documented in docs/candidate-ingress.md; server executes node scripts/apply-content.mjs --stdin --apply",
     "verify": [
       "npm run check",
       "npm run build"
