@@ -4,14 +4,14 @@ import { fileURLToPath } from 'node:url';
 
 const root = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 const read = (path) => readFile(resolve(root, path), 'utf8');
-const [index, loader, app, polish, edition, reading, shareCard, office, game, governance, startup, sw, build, pages, navigationCss, readingCss, design] = await Promise.all([
-  read('index.html'), read('public/editorial-loader.js'), read('src/editorial-app.js'), read('src/polish.js'), read('src/edition-layer.js'), read('public/reading-surface.js'), read('public/share-card.js'),
+const [index, loader, app, polish, edition, latest, reading, shareCard, office, game, governance, startup, sw, build, pages, navigationCss, readingCss, design] = await Promise.all([
+  read('index.html'), read('public/editorial-loader.js'), read('src/editorial-app.js'), read('src/polish.js'), read('src/edition-layer.js'), read('public/latest-surface.js'), read('public/reading-surface.js'), read('public/share-card.js'),
   read('public/editorial-office.js'), read('public/review-game.js'), read('public/editorial-governance.js'),
   read('public/startup-resilience.js'), read('public/sw.js'), read('scripts/build.mjs'), read('.github/workflows/pages.yml'),
   read('public/reader-navigation.css'), read('public/reading-surface.css'), read('DESIGN.md')
 ]);
 
-for (const [name, source] of Object.entries({ app, polish, edition, reading, shareCard, office, game, governance, startup })) {
+for (const [name, source] of Object.entries({ app, polish, edition, latest, reading, shareCard, office, game, governance, startup })) {
   if (source.includes('MutationObserver')) throw new Error(`${name} must use explicit lifecycle events.`);
 }
 
@@ -57,6 +57,12 @@ for (const retired of ['archivedIssues', 'data-target="latest-change"', 'renderP
   if (edition.includes(retired)) throw new Error(`Edition layer contains retired parallel publication path: ${retired}`);
 }
 for (const contract of [
+  'let latestOpen = false', "dataset.latestAction = 'open'", 'Latest adopted signals', "window.addEventListener('newsflow:edition-rendered'", "data-edition-layer=\"latest\""
+]) {
+  if (!latest.includes(contract)) throw new Error(`Latest Surface missing ${contract}`);
+}
+if (latest.includes('MutationObserver') || latest.includes('window.fetch =')) throw new Error('Latest Surface must remain a scoped presentation owner.');
+for (const contract of [
   "const ROOT_ID = 'newsflow-reading-surface-root'", '#read/', 'canonicalArticleUrl', "window.addEventListener('newsflow:rendered'", 'nf-reading-progress',
   "data-reading-action=\"open-share\"", 'NewsFlowShareCard', 'navigator.share', 'copy-link'
 ]) {
@@ -75,7 +81,7 @@ for (const contract of ['.mobile-menu-button::before', 'mask-image:', 'repeat(4,
 }
 if (startup.includes('window.fetch =')) throw new Error('Startup resilience must not patch fetch.');
 
-for (const asset of ['./startup-resilience.js?v=__NEWSFLOW_VERSION__', './editorial-app.js?v=__NEWSFLOW_VERSION__', './share-card.js?v=__NEWSFLOW_VERSION__', './reading-surface.js?v=__NEWSFLOW_VERSION__', './editorial-loader.js?v=__NEWSFLOW_VERSION__', './reader-navigation.css?v=__NEWSFLOW_VERSION__']) {
+for (const asset of ['./startup-resilience.js?v=__NEWSFLOW_VERSION__', './editorial-app.js?v=__NEWSFLOW_VERSION__', './latest-surface.js?v=__NEWSFLOW_VERSION__', './share-card.js?v=__NEWSFLOW_VERSION__', './reading-surface.js?v=__NEWSFLOW_VERSION__', './editorial-loader.js?v=__NEWSFLOW_VERSION__', './reader-navigation.css?v=__NEWSFLOW_VERSION__']) {
   if (!index.includes(asset)) throw new Error(`Index missing current Reader asset ${asset}`);
 }
 for (const editorAsset of ['./review-game.js', './editorial-office.js', './editorial-governance.js']) {
@@ -85,7 +91,7 @@ for (const editorAsset of ['./review-game.js', './editorial-office.js', './edito
 for (const retired of ['review-candidates.json', 'pipeline-reviews.json', 'guest-editor-invites.json', 'ai_digest.json', 'editorial-mode.css']) {
   if (index.includes(retired) || sw.includes(retired) || build.includes(retired) || loader.includes(retired)) throw new Error(`Reader artifact exposes retired data/state: ${retired}`);
 }
-for (const contract of ["const ASSET_VERSION = '__NEWSFLOW_VERSION__'", 'newsflow-reader-v${ASSET_VERSION}', './data/source-registry.json', './data/governance-status.json', './feed.xml', './rss.xml', 'reader-navigation.css', "versioned('./share-card.js')"]) {
+for (const contract of ["const ASSET_VERSION = '__NEWSFLOW_VERSION__'", 'newsflow-reader-v${ASSET_VERSION}', './data/source-registry.json', './data/governance-status.json', './feed.xml', './rss.xml', 'reader-navigation.css', "versioned('./latest-surface.js')", "versioned('./share-card.js')"]) {
   if (!sw.includes(contract)) throw new Error(`Service worker missing ${contract}`);
 }
 for (const editorAsset of ["versioned('./review-game.js')", "versioned('./editorial-office.js')", "versioned('./editorial-governance.js')"]) {
@@ -99,4 +105,4 @@ for (const contract of ['/articles/<signal-id>/', 'Share contract', 'the React `
 }
 if (!pages.includes("cancel-in-progress: ${{ github.event_name == 'pull_request' }}")) throw new Error('Pages main deployment cancellation policy regressed.');
 
-console.log('NewsFlow frontend architecture contract passed: canonical article reading, editorial sharing, four-task mobile navigation, permission-routed editorial dashboard and explicit lifecycle boundaries.');
+console.log('NewsFlow frontend architecture contract passed: issue-first publication, explicit Latest, canonical article reading, editorial sharing, four-task mobile navigation and explicit lifecycle boundaries.');
