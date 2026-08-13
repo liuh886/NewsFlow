@@ -3,6 +3,11 @@ import { chromium } from '@playwright/test';
 const chromePath = process.env.CHROME_BIN || undefined;
 const browser = await chromium.launch({ headless: true, executablePath: chromePath });
 const context = await browser.newContext();
+await context.route(/https:\/\/cloudflareinsights\.com\/cdn-cgi\/rum(?:\?.*)?$/, (route) => route.fulfill({
+  status: 204,
+  headers: { 'access-control-allow-origin': '*' },
+  body: ''
+}));
 const page = await context.newPage();
 const errors = [];
 page.on('pageerror', (error) => errors.push(error.message));
