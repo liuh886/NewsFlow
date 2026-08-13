@@ -27,9 +27,7 @@ try {
   }
 
   const readerContent = await page.locator('#app').innerText();
-  if (readerContent.includes('Candidate') || readerContent.includes('MINOR REVISION') || readerContent.includes('MAJOR REVISION')) {
-    throw new Error('Reader exposes private editorial workflow copy.');
-  }
+  if (readerContent.includes('Candidate') || readerContent.includes('MINOR REVISION') || readerContent.includes('MAJOR REVISION')) throw new Error('Reader exposes private editorial workflow copy.');
 
   const currentIssueArticle = page.locator('#app .latest-edition-panel [data-action="open"][data-id]').first();
   await currentIssueArticle.waitFor({ state: 'visible', timeout: 10_000 });
@@ -49,25 +47,21 @@ try {
     const style = getComputedStyle(element);
     return { left: rect.left, width: rect.width, viewportWidth: window.innerWidth, background: style.backgroundColor };
   });
-  if (readingSheet.left <= 0 || readingSheet.width >= readingSheet.viewportWidth * 0.75) {
-    throw new Error(`Desktop article reading is not a side sheet: ${JSON.stringify(readingSheet)}`);
-  }
+  if (readingSheet.left <= 0 || readingSheet.width >= readingSheet.viewportWidth * 0.75) throw new Error(`Desktop article reading is not a side sheet: ${JSON.stringify(readingSheet)}`);
   if (!readingSheet.background || readingSheet.background === 'rgba(0, 0, 0, 0)') throw new Error('Desktop article side sheet has no paper background.');
 
   await page.locator('[data-reading-action="open-share"]').click();
-  await page.locator('#newsflow-reading-surface-root .nf-share-dialog').waitFor({ state: 'visible', timeout: 10_000 });
-  await page.locator('#newsflow-reading-surface-root .nf-share-preview canvas').waitFor({ state: 'visible', timeout: 10_000 });
+  const shareDialog = page.locator('#newsflow-reading-surface-root .nf-share-dialog');
+  await shareDialog.waitFor({ state: 'visible', timeout: 10_000 });
+  await shareDialog.locator('.nf-share-preview canvas').waitFor({ state: 'visible', timeout: 10_000 });
   for (const action of ['share-image', 'copy-link', 'save-image']) {
-    if (await page.locator(`#newsflow-reading-surface-root [data-reading-action="${action}"]`).count() !== 1) throw new Error(`Share dialog is missing ${action}.`);
+    if (await shareDialog.locator(`[data-reading-action="${action}"]`).count() !== 1) throw new Error(`Share dialog is missing ${action}.`);
   }
-  await page.locator('[data-reading-action="close-share"]').first().click();
+  await shareDialog.locator('button[data-reading-action="close-share"]').click();
   await page.locator('[data-reading-action="close"]').click();
   await page.locator('#newsflow-reading-surface-root').waitFor({ state: 'hidden' });
 
-  // Reader cards are intentionally hidden on the issue-first homepage. Enter Latest before testing card actions.
-  await page.evaluate(() => {
-    document.querySelector('#app [data-action="mobile-home"]')?.click();
-  });
+  await page.evaluate(() => document.querySelector('#app [data-action="mobile-home"]')?.click());
   const cardActions = page.locator('#app .article-card .card-actions').first();
   await cardActions.waitFor({ state: 'visible', timeout: 10_000 });
   if (await cardActions.locator('.article-action').count() !== 2) throw new Error('Reader card actions are not reduced to bookmark + share.');
@@ -79,7 +73,6 @@ try {
   const latestHref = await latestHeadline.getAttribute('href');
   if (!latestHref?.includes('/articles/')) throw new Error(`Latest headline is not linked to a canonical article URL: ${latestHref || ''}`);
 
-  // Return to Issue-first publication before archive checks.
   await page.evaluate(() => document.querySelector('#app [data-edition-action="go-home"][data-target="current-issue"]')?.click());
   const currentTocRow = page.locator('#app .edition-archive [data-issue-current="true"]').first();
   await currentTocRow.waitFor({ state: 'visible', timeout: 10_000 });
@@ -105,9 +98,7 @@ try {
   const mobileNav = page.locator('#app .mobile-nav[data-edition-layer="magazine"]');
   const mobileNavText = await mobileNav.innerText();
   const mobileNavButtons = await mobileNav.locator('button').count();
-  if (mobileNavButtons !== 4 || !mobileNavText.includes('本期') || !mobileNavText.includes('最新') || !mobileNavText.includes('议题') || !mobileNavText.includes('目录') || mobileNavText.includes('AI 基建') || mobileNavText.includes('CCUS')) {
-    throw new Error(`Mobile publication nav is not aligned with four-task Reader IA: ${mobileNavText}`);
-  }
+  if (mobileNavButtons !== 4 || !mobileNavText.includes('本期') || !mobileNavText.includes('最新') || !mobileNavText.includes('议题') || !mobileNavText.includes('目录') || mobileNavText.includes('AI 基建') || mobileNavText.includes('CCUS')) throw new Error(`Mobile publication nav is not aligned with four-task Reader IA: ${mobileNavText}`);
 
   const mobileToolsButton = page.locator('#app [data-action="mobile-menu"]');
   await mobileToolsButton.waitFor({ state: 'visible', timeout: 10_000 });
@@ -116,15 +107,9 @@ try {
   const mobileToolsVisual = await mobileToolsButton.evaluate((button) => {
     const svg = button.querySelector('svg');
     const pseudo = getComputedStyle(button, '::before');
-    return {
-      sourceSvgDisplay: svg ? getComputedStyle(svg).display : '',
-      maskImage: pseudo.maskImage || pseudo.webkitMaskImage || '',
-      pseudoWidth: Number.parseFloat(pseudo.width),
-    };
+    return { sourceSvgDisplay: svg ? getComputedStyle(svg).display : '', maskImage: pseudo.maskImage || pseudo.webkitMaskImage || '', pseudoWidth: Number.parseFloat(pseudo.width) };
   });
-  if (mobileToolsVisual.sourceSvgDisplay !== 'none' || !mobileToolsVisual.maskImage || mobileToolsVisual.maskImage === 'none' || mobileToolsVisual.pseudoWidth < 18) {
-    throw new Error(`Ambiguous hamburger icon is still exposed instead of an explicit filter/tools icon: ${JSON.stringify(mobileToolsVisual)}`);
-  }
+  if (mobileToolsVisual.sourceSvgDisplay !== 'none' || !mobileToolsVisual.maskImage || mobileToolsVisual.maskImage === 'none' || mobileToolsVisual.pseudoWidth < 18) throw new Error(`Ambiguous hamburger icon is still exposed instead of an explicit filter/tools icon: ${JSON.stringify(mobileToolsVisual)}`);
 
   const editorialEntry = page.locator('#app .top-actions > [data-action="open-editorial-office"]');
   await editorialEntry.waitFor({ state: 'visible', timeout: 10_000 });
