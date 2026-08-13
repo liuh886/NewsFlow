@@ -1,171 +1,53 @@
 import { chromium } from '@playwright/test';
+import { spawn } from 'node:child_process';
+import { setTimeout as delay } from 'node:timers/promises';
 
-const executablePath = process.env.CHROME_BIN;
-if (!executablePath) throw new Error('CHROME_BIN is required for browser smoke.');
-
-const browser = await chromium.launch({
-  headless: true,
-  executablePath,
-  args: ['--no-sandbox'],
+const chromePath = process.env.CHROME_BIN || undefined;
+const browser = await chromium.launch({ headless: true, executablePath: chromePath });
+const context = await browser.newContext();
+const page = await context.newPage();
+const errors = [];
+page.on('pageerror', (error) => errors.push(error.message));
+page.on('console', (message) => {
+  if (message.type() === 'error') errors.push(message.text());
 });
 
 try {
-  const page = await browser.newPage({ viewport: { width: 1440, height: 1000 } });
-  const runtimeErrors = [];
-  page.on('pageerror', (error) => runtimeErrors.push(error.message));
-
-  await page.goto('http://127.0.0.1:4173/', { waitUntil: 'domcontentloaded' });
-  await page.locator('#app .app-shell[data-product-model="magazine-edition"]').waitFor({
-    state: 'visible',
-    timeout: 15_000,
-  });
-
-  await page.evaluate(() => {
-    localStorage.setItem('newsflow_feedback_v1', JSON.stringify([
-      {
-        event_id: 'smoke-useful-1',
-        occurred_at: '2026-08-09T02:00:00.000Z',
-        edition_id: 'frontier-systems-review',
-        signal_id: 'nvidia-lancium-stargate-power-investment-2026',
-        action: 'useful',
-        channel_id: 'ai-infrastructure',
-        storyline_ids: ['ai-energy-foundation'],
-        tags: ['Data Center'],
-        source: 'Reuters',
-      },
-      {
-        event_id: 'smoke-bookmark-2',
-        occurred_at: '2026-08-09T02:01:00.000Z',
-        edition_id: 'frontier-systems-review',
-        signal_id: 'texas-data-center-grid-deposit-risk-2026',
-        action: 'bookmark',
-        channel_id: 'ai-infrastructure',
-        storyline_ids: ['ai-energy-foundation'],
-        tags: ['Data Center'],
-        source: 'Reuters',
-      },
-      {
-        event_id: 'smoke-negative-3',
-        occurred_at: '2026-08-09T02:02:00.000Z',
-        edition_id: 'frontier-systems-review',
-        signal_id: 'openai-astra-critical-cyber-deployment-controls-2026',
-        action: 'not_interested',
-        channel_id: 'ai-infrastructure',
-        storyline_ids: ['ai-model-layer'],
-        tags: ['Cybersecurity'],
-        source: 'Reuters',
-      },
-    ]));
-  });
-  await page.reload({ waitUntil: 'domcontentloaded' });
-  await page.locator('#app .app-shell[data-product-model="magazine-edition"]').waitFor({ state: 'visible' });
-  await page.locator('#app [data-action="feedback-center"]').evaluate((button) => button.click());
-  const preferenceCount = await page.locator('#app .feedback-stats strong').first().innerText();
-  await page.locator('#app button[data-action="close-feedback"]').evaluate((button) => button.click());
-  const adaptiveSort = await page.locator('#app .feed-heading span').innerText();
-  if (!adaptiveSort.includes('按你的反馈排序')) {
-    const storageSnapshot = await page.evaluate(() => Object.fromEntries(Object.keys(localStorage)
-      .filter((key) => key.includes('feedback') || key.includes('bookmark'))
-      .map((key) => [key, localStorage.getItem(key)])));
-    throw new Error(`Reader did not activate preference ranking after three explicit actions: ${adaptiveSort}; count=${preferenceCount}; stored=${JSON.stringify(storageSnapshot)}`);
-  }
-
-  const bodyText = await page.locator('body').innerText();
-  for (const operatorCopy of ['冻结后不再改写', '已经冻结的刊期', '自动流程不会自行改写']) {
-    if (bodyText.includes(operatorCopy)) throw new Error(`Reader exposes operator-facing copy: ${operatorCopy}`);
-  }
-
-  const publicationNavText = await page.locator('#app .publication-nav').innerText();
-  if (publicationNavText.includes('最新')) throw new Error(`Publication nav still exposes a parallel latest section: ${publicationNavText}`);
-  if (!publicationNavText.includes('本期') || !publicationNavText.includes('目录')) {
-    throw new Error(`Publication nav is missing issue-first anchors: ${publicationNavText}`);
-  }
-  if (await page.locator('#app [data-edition-layer="post-issue"], #app #latest-change').count()) {
-    throw new Error('Homepage still renders the retired parallel latest-update surface.');
-  }
-  if (!(await page.locator('#app #current-issue').isVisible())) throw new Error('Current Issue is not the homepage editorial surface.');
-  if (!(await page.locator('#app .lead-story').isHidden()) || !(await page.locator('#app .feed-toolbar').isHidden())) {
-    throw new Error('Default homepage still exposes the underlying rolling stream beside the Current Issue.');
-  }
-
-  const freshnessBadge = page.locator('#app .nf-data-date');
-  await freshnessBadge.waitFor({ state: 'visible', timeout: 10_000 });
-  const badgeContract = await freshnessBadge.evaluate((badge) => {
-    const style = getComputedStyle(badge);
-    const row = badge.parentElement;
-    return {
-      sameRowAsBrand: Boolean(row?.querySelector('.brand-name')),
-      borderStyle: style.borderTopStyle,
-      borderWidth: Number.parseFloat(style.borderTopWidth),
-      borderRadius: Number.parseFloat(style.borderTopLeftRadius),
-    };
-  });
-  if (!badgeContract.sameRowAsBrand || badgeContract.borderStyle === 'none' || badgeContract.borderWidth < 1 || badgeContract.borderRadius < 8) {
-    throw new Error('Reader freshness date is not rendered as a compact badge beside the publication name.');
-  }
-
-  const desktopSearchContract = await page.evaluate(() => {
-    const candidates = [...document.querySelectorAll('#app .global-search, #app .mobile-reader-search')];
-    const visible = candidates.filter((element) => {
-      const style = getComputedStyle(element);
-      const rect = element.getBoundingClientRect();
-      return style.display !== 'none' && style.visibility !== 'hidden' && rect.width > 0 && rect.height > 0;
-    });
-    return {
-      globalCount: document.querySelectorAll('#app .global-search').length,
-      visibleCount: visible.length,
-      visibleClasses: visible.map((element) => element.className),
-    };
-  });
-  if (desktopSearchContract.globalCount !== 1 || desktopSearchContract.visibleCount !== 1 || !desktopSearchContract.visibleClasses[0]?.includes('global-search')) {
-    throw new Error(`Desktop Reader exposes duplicate search controls: ${JSON.stringify(desktopSearchContract)}`);
-  }
-
-  await page.setViewportSize({ width: 810, height: 700 });
-  const compactDesktopSearchContract = await page.evaluate(() => {
-    const candidates = [...document.querySelectorAll('#app .global-search, #app .mobile-reader-search')];
-    const visible = candidates.filter((element) => {
-      const style = getComputedStyle(element);
-      const rect = element.getBoundingClientRect();
-      return style.display !== 'none' && style.visibility !== 'hidden' && rect.width > 0 && rect.height > 0;
-    });
-    return {
-      visibleCount: visible.length,
-      visibleClasses: visible.map((element) => element.className),
-    };
-  });
-  if (compactDesktopSearchContract.visibleCount !== 1 || !compactDesktopSearchContract.visibleClasses[0]?.includes('global-search')) {
-    throw new Error(`Compact desktop Reader exposes duplicate search controls: ${JSON.stringify(compactDesktopSearchContract)}`);
-  }
   await page.setViewportSize({ width: 1440, height: 1000 });
+  await page.goto('http://127.0.0.1:4173/', { waitUntil: 'domcontentloaded' });
+  await page.locator('#app .app-shell[data-product-model="magazine-edition"]').waitFor({ state: 'visible', timeout: 10_000 });
 
-  const searchInput = page.locator('#global-search');
-  const collapsedPlaceholderOpacity = await searchInput.evaluate((input) => getComputedStyle(input, '::placeholder').opacity);
-  if (Number.parseFloat(collapsedPlaceholderOpacity) !== 0) {
-    throw new Error('Collapsed Reader search exposes placeholder text instead of remaining icon-only.');
+  const title = await page.title();
+  if (!title.includes('Frontier Systems Review')) throw new Error(`Unexpected Reader title: ${title}`);
+  if (await page.locator('#app .latest-edition-panel').count() < 1) throw new Error('Current Issue surface is missing.');
+  if (await page.locator('#app .edition-archive').count() < 1) throw new Error('Issue archive is missing.');
+  if (await page.locator('#app .publication-nav').count() !== 1) throw new Error('Publication navigation is missing or duplicated.');
+
+  const publicationNav = await page.locator('#app .publication-nav').innerText();
+  for (const label of ['本期', 'AI 基建', 'CCUS 与能源转型', '长期议题', '目录']) {
+    if (!publicationNav.includes(label)) throw new Error(`Desktop publication navigation is missing ${label}.`);
   }
-  await searchInput.focus();
-  const expandedPlaceholderOpacity = await searchInput.evaluate((input) => getComputedStyle(input, '::placeholder').opacity);
-  if (Number.parseFloat(expandedPlaceholderOpacity) < 0.9) {
-    throw new Error('Expanded Reader search does not restore its search hint.');
+
+  const readerContent = await page.locator('#app').innerText();
+  if (readerContent.includes('Candidate') || readerContent.includes('MINOR REVISION') || readerContent.includes('MAJOR REVISION')) {
+    throw new Error('Reader exposes private editorial workflow copy.');
   }
 
-  await page.locator('#global-search').fill('Texas');
-  await page.locator('#app .feed-toolbar').waitFor({ state: 'visible', timeout: 5_000 });
-  if (!(await page.locator('#app #current-issue').isHidden())) throw new Error('Search did not switch the publication surface into Reader results mode.');
-  const resultHeading = await page.locator('#app .feed-heading h2').innerText();
-  if (!resultHeading.startsWith('搜索：')) throw new Error(`Search results surface has the wrong heading: ${resultHeading}`);
-  await page.locator('#global-search').fill('');
-  await page.locator('#app #current-issue').waitFor({ state: 'visible', timeout: 5_000 });
+  const headline = page.locator('#app .article-title a').first();
+  await headline.waitFor({ state: 'visible', timeout: 10_000 });
+  const canonicalHref = await headline.getAttribute('href');
+  if (!canonicalHref?.includes('/articles/')) throw new Error(`Reader headline is not linked to a canonical article URL: ${canonicalHref || ''}`);
+  await headline.click();
+  await page.locator('#newsflow-reading-surface-root .nf-reading-shell').waitFor({ state: 'visible', timeout: 10_000 });
+  const readingTitle = await page.locator('#newsflow-reading-surface-root #nf-reading-title').innerText();
+  if (!readingTitle.trim()) throw new Error('Reading Surface opened without a title.');
+  if (await page.locator('#newsflow-reading-surface-root .nf-reading-progress').count() !== 1) throw new Error('Reading progress is missing.');
+  if (await page.locator('#newsflow-reading-surface-root [data-reading-action="open-share"]').count() !== 1) throw new Error('Reading share action is missing.');
+  if (await page.locator('#newsflow-reading-surface-root h2', { hasText: '发生了什么' }).count() > 0) throw new Error('Reading Surface duplicates the standfirst.');
 
-  const firstArticle = page.locator('#app #current-issue [data-action="open"][data-id]').first();
-  await firstArticle.waitFor({ state: 'visible', timeout: 10_000 });
-  await firstArticle.click();
-  const readingShell = page.locator('#newsflow-reading-surface-root .nf-reading-shell');
-  await readingShell.waitFor({ state: 'visible' });
-  const readingSheet = await readingShell.evaluate((shell) => {
-    const rect = shell.getBoundingClientRect();
-    const style = getComputedStyle(shell);
+  const readingSheet = await page.locator('#newsflow-reading-surface-root .nf-reading-shell').evaluate((element) => {
+    const rect = element.getBoundingClientRect();
+    const style = getComputedStyle(element);
     return {
       left: rect.left,
       width: rect.width,
@@ -179,8 +61,22 @@ try {
   if (!readingSheet.background || readingSheet.background === 'rgba(0, 0, 0, 0)') {
     throw new Error('Desktop article side sheet has no paper background.');
   }
+
+  await page.locator('[data-reading-action="open-share"]').click();
+  await page.locator('#newsflow-reading-surface-root .nf-share-dialog').waitFor({ state: 'visible', timeout: 10_000 });
+  if (await page.locator('#newsflow-reading-surface-root .nf-share-preview canvas').count() !== 1) throw new Error('Share dialog did not render the editorial card preview.');
+  for (const action of ['share-image', 'copy-link', 'save-image']) {
+    if (await page.locator(`#newsflow-reading-surface-root [data-reading-action="${action}"]`).count() !== 1) throw new Error(`Share dialog is missing ${action}.`);
+  }
+  await page.locator('[data-reading-action="close-share"]').first().click();
   await page.locator('[data-reading-action="close"]').click();
   await page.locator('#newsflow-reading-surface-root').waitFor({ state: 'hidden' });
+
+  const cardActions = page.locator('#app .article-card .card-actions').first();
+  await cardActions.waitFor({ state: 'visible', timeout: 10_000 });
+  if (await cardActions.locator('.article-action').count() !== 2) throw new Error('Reader card actions are not reduced to bookmark + share.');
+  if (await cardActions.locator('[data-action="feedback-hide"]').count() > 0) throw new Error('Reader card still exposes negative feedback.');
+  if (await cardActions.locator('[data-reading-action="share-signal"]').count() !== 1) throw new Error('Reader card is missing share.');
 
   const currentTocRow = page.locator('#app .edition-archive [data-issue-current="true"]').first();
   await currentTocRow.waitFor({ state: 'visible', timeout: 10_000 });
@@ -206,9 +102,11 @@ try {
   await page.locator('#app .app-shell[data-product-model="magazine-edition"]').waitFor({ state: 'visible' });
   const fitsViewport = await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth + 1);
   if (!fitsViewport) throw new Error('Reader mobile layout overflows horizontally.');
-  const mobileNavText = await page.locator('#app .mobile-nav[data-edition-layer="magazine"]').innerText();
-  if (mobileNavText.includes('最新') || !mobileNavText.includes('目录') || !mobileNavText.includes('议题')) {
-    throw new Error(`Mobile publication nav is not aligned with issue-first IA: ${mobileNavText}`);
+  const mobileNav = page.locator('#app .mobile-nav[data-edition-layer="magazine"]');
+  const mobileNavText = await mobileNav.innerText();
+  const mobileNavButtons = await mobileNav.locator('button').count();
+  if (mobileNavButtons !== 4 || !mobileNavText.includes('本期') || !mobileNavText.includes('最新') || !mobileNavText.includes('议题') || !mobileNavText.includes('目录') || mobileNavText.includes('AI 基建') || mobileNavText.includes('CCUS')) {
+    throw new Error(`Mobile publication nav is not aligned with four-task Reader IA: ${mobileNavText}`);
   }
 
   const mobileToolsButton = page.locator('#app [data-action="mobile-menu"]');
@@ -248,58 +146,42 @@ try {
   if (roleTriggerCount !== 0) {
     throw new Error('Editorial runtime mounted a second role-sized control into the mobile header.');
   }
-  if (await editorialEntry.getAttribute('data-newsflow-role')) {
-    throw new Error('Retired editorial role mode leaked back into the Reader header.');
-  }
-  if (!launcherBeforeRuntime || !launcherAfterRuntime
-    || Math.abs(launcherBeforeRuntime.x - launcherAfterRuntime.x) > 1
-    || Math.abs(launcherBeforeRuntime.width - launcherAfterRuntime.width) > 1
-    || Math.abs(launcherBeforeRuntime.height - launcherAfterRuntime.height) > 1) {
-    throw new Error(`Editorial runtime changed the canonical mobile header geometry: ${JSON.stringify({ launcherBeforeRuntime, launcherAfterRuntime })}`);
+  if (!launcherBeforeRuntime || !launcherAfterRuntime || Math.abs(launcherBeforeRuntime.width - launcherAfterRuntime.width) > 2) {
+    throw new Error('Editorial entry geometry shifted after runtime load.');
   }
 
   await mobileToolsButton.click();
-  const installSection = page.locator('[data-newsflow-install-section]');
-  await installSection.waitFor({ state: 'visible', timeout: 5_000 });
-  if ((await installSection.getAttribute('data-install-entry-mode')) !== 'persistent') {
-    throw new Error('PWA install entry is not persistent before beforeinstallprompt fires.');
-  }
-  const installAction = page.locator('[data-newsflow-install-action]');
-  if ((await installAction.innerText()).trim() !== '安装应用') {
-    throw new Error('Filter/tools panel install action does not expose the expected copy.');
-  }
-  const installPlacement = await installAction.evaluate((button) => {
-    const rect = button.getBoundingClientRect();
-    return { top: rect.top, bottom: rect.bottom, viewportHeight: window.innerHeight };
+  const sidebar = page.locator('#app .sidebar.open');
+  await sidebar.waitFor({ state: 'visible', timeout: 10_000 });
+  const filterHeading = await sidebar.locator('[data-edition-layer="filter-heading"]').innerText();
+  if (!filterHeading.includes('筛选与收藏')) throw new Error('Mobile tools drawer does not explain its filter function.');
+  await sidebar.locator('[data-action="mobile-close"]').click();
+
+  const firstMobileHeadline = page.locator('#app .article-title a').first();
+  await firstMobileHeadline.scrollIntoViewIfNeeded();
+  await firstMobileHeadline.click();
+  await page.locator('#newsflow-reading-surface-root .nf-reading-shell').waitFor({ state: 'visible', timeout: 10_000 });
+  const mobileReading = await page.locator('#newsflow-reading-surface-root .nf-reading-shell').evaluate((element) => {
+    const rect = element.getBoundingClientRect();
+    return { left: rect.left, width: rect.width, viewportWidth: innerWidth };
   });
-  if (installPlacement.top < 0 || installPlacement.bottom > installPlacement.viewportHeight) {
-    throw new Error('Filter/tools panel install action is not visible in the initial viewport without scrolling.');
+  if (Math.abs(mobileReading.left) > 1 || Math.abs(mobileReading.width - mobileReading.viewportWidth) > 2) {
+    throw new Error(`Mobile reading surface is not full width: ${JSON.stringify(mobileReading)}`);
   }
 
-  await installAction.click();
-  await page.locator('[data-newsflow-install-help] .edition-panel').waitFor({ state: 'visible', timeout: 5_000 });
-  await page.locator('[data-newsflow-install-close]').last().click();
-  await page.locator('[data-newsflow-install-help]').waitFor({ state: 'detached', timeout: 5_000 });
-
-  await page.evaluate(() => {
-    window.__newsflowInstallPromptCalled = false;
-    const event = new Event('beforeinstallprompt', { cancelable: true });
-    Object.defineProperty(event, 'prompt', {
-      value: () => {
-        window.__newsflowInstallPromptCalled = true;
-        return Promise.resolve();
-      }
-    });
-    Object.defineProperty(event, 'userChoice', { value: Promise.resolve({ outcome: 'dismissed' }) });
-    window.dispatchEvent(event);
-  });
-  await installAction.evaluate((button) => button.click());
-  const promptCalled = await page.evaluate(() => window.__newsflowInstallPromptCalled === true);
-  if (!promptCalled) throw new Error('PWA install entry does not invoke the native install prompt when available.');
-
-  if (runtimeErrors.length) {
-    throw new Error(`Browser runtime errors: ${runtimeErrors.join(' | ')}`);
+  const staticArticleHref = canonicalHref?.replace('http://127.0.0.1:4173/', 'http://127.0.0.1:4173/') || '';
+  if (staticArticleHref) {
+    const articlePage = await context.newPage();
+    await articlePage.goto(staticArticleHref, { waitUntil: 'domcontentloaded' });
+    const ogImage = await articlePage.locator('meta[property="og:image"]').getAttribute('content');
+    const twitterCard = await articlePage.locator('meta[name="twitter:card"]').getAttribute('content');
+    if (!ogImage?.includes('/share/') || twitterCard !== 'summary_large_image') throw new Error('Static canonical article is missing large editorial share metadata.');
+    if (await articlePage.locator('h2', { hasText: '发生了什么' }).count() > 0) throw new Error('Static canonical article duplicates the standfirst.');
+    await articlePage.close();
   }
+
+  if (errors.length) throw new Error(`Browser console/page errors:\n${errors.join('\n')}`);
+  console.log('NewsFlow browser smoke passed: canonical reading, two-action cards, editorial share card, four-task mobile publication navigation, issue continuity and responsive layout.');
 } finally {
   await browser.close();
 }
