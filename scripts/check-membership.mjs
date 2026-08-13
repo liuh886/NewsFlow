@@ -24,9 +24,11 @@ const [index, config, integration, styles] = await Promise.all([
 for (const reference of [
   'https://liuh886.github.io/admin/shared/account-shell.css?v=5',
   'https://liuh886.github.io/admin/shared/account-upgrade.css?v=1',
+  'https://liuh886.github.io/admin/shared/product-referral.css?v=3',
   './account-integration.css',
   './membership-config.js',
   'https://liuh886.github.io/admin/shared/account-shell.js?v=7',
+  'https://liuh886.github.io/admin/shared/product-referral.js?v=3',
   'https://liuh886.github.io/admin/shared/account-upgrade.js?v=5',
   './account-integration.js',
 ]) {
@@ -40,6 +42,7 @@ for (const contract of [
   "productCode: 'newsflow'",
   "entitlementCode: 'newsflow.pro'",
   'billingEnabled: true',
+  'referralEnabled: true',
   'feedbackEnabled: true',
   "mountSelectors: ['.top-actions']",
   'compactTrigger: true',
