@@ -61,7 +61,8 @@ try {
   await page.locator('[data-reading-action="close"]').click();
   await page.locator('#newsflow-reading-surface-root').waitFor({ state: 'hidden' });
 
-  await page.evaluate(() => document.querySelector('#app [data-action="mobile-home"]')?.click());
+  // Issue-first hides the utility feed until a real reader utility is active.
+  await page.locator('#app .filter-button[data-action="filter"][data-value="primary"]').click();
   const cardActions = page.locator('#app .article-card .card-actions').first();
   await cardActions.waitFor({ state: 'visible', timeout: 10_000 });
   if (await cardActions.locator('.article-action').count() !== 2) throw new Error('Reader card actions are not reduced to bookmark + share.');
@@ -73,7 +74,8 @@ try {
   const latestHref = await latestHeadline.getAttribute('href');
   if (!latestHref?.includes('/articles/')) throw new Error(`Latest headline is not linked to a canonical article URL: ${latestHref || ''}`);
 
-  await page.evaluate(() => document.querySelector('#app [data-edition-action="go-home"][data-target="current-issue"]')?.click());
+  // Reset utility state to restore the Issue-first publication surface.
+  await page.locator('#app .filter-button[data-action="filter"][data-value="all"]').click();
   const currentTocRow = page.locator('#app .edition-archive [data-issue-current="true"]').first();
   await currentTocRow.waitFor({ state: 'visible', timeout: 10_000 });
   const currentIsFirst = await currentTocRow.evaluate((row) => row.parentElement?.firstElementChild === row);
@@ -128,7 +130,10 @@ try {
   if (!(await sidebar.locator('[data-edition-layer="filter-heading"]').innerText()).includes('筛选与收藏')) throw new Error('Mobile tools drawer does not explain its filter function.');
   await sidebar.locator('[data-action="mobile-close"]').click();
 
+  // The explicit Latest mobile action resets filters; activate a reader filter to expose the utility feed for direct card reading.
   await mobileNav.locator('[data-action="mobile-home"]').click();
+  await mobileToolsButton.click();
+  await page.locator('#app .sidebar.open .filter-button[data-value="primary"]').click();
   const firstMobileHeadline = page.locator('#app .article-title a').first();
   await firstMobileHeadline.waitFor({ state: 'visible', timeout: 10_000 });
   await firstMobileHeadline.scrollIntoViewIfNeeded();
@@ -149,7 +154,7 @@ try {
   await articlePage.close();
 
   if (errors.length) throw new Error(`Browser console/page errors:\n${errors.join('\n')}`);
-  console.log('NewsFlow browser smoke passed: issue-first canonical reading, two-action Latest cards, editorial share card, four-task mobile navigation, issue continuity and responsive layout.');
+  console.log('NewsFlow browser smoke passed: issue-first canonical reading, two-action utility cards, editorial share card, four-task mobile navigation, issue continuity and responsive layout.');
 } finally {
   await browser.close();
 }
