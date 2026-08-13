@@ -8,24 +8,26 @@ const files = [
   'public/magazine-polish.js',
   'public/magazine-polish.css',
   'public/reader-navigation.css',
+  'public/latest-surface.js',
   'public/editorial-loader.js',
   'scripts/check-magazine-polish.mjs'
 ];
 for (const file of files) await access(resolve(root, file));
 
-const [index, loader, script, css, navigationCss, readingCss, serviceWorker, packageSource] = await Promise.all([
+const [index, loader, script, css, navigationCss, latestJs, readingCss, serviceWorker, packageSource] = await Promise.all([
   readFile(resolve(root, 'index.html'), 'utf8'),
   readFile(resolve(root, 'public/editorial-loader.js'), 'utf8'),
   readFile(resolve(root, 'public/magazine-polish.js'), 'utf8'),
   readFile(resolve(root, 'public/magazine-polish.css'), 'utf8'),
   readFile(resolve(root, 'public/reader-navigation.css'), 'utf8'),
+  readFile(resolve(root, 'public/latest-surface.js'), 'utf8'),
   readFile(resolve(root, 'public/reading-surface.css'), 'utf8'),
   readFile(resolve(root, 'public/sw.js'), 'utf8'),
   readFile(resolve(root, 'package.json'), 'utf8')
 ]);
 const packageManifest = JSON.parse(packageSource);
 
-for (const reference of ['./magazine-polish.css', './magazine-polish.js', './reader-navigation.css']) {
+for (const reference of ['./magazine-polish.css', './magazine-polish.js', './reader-navigation.css', './latest-surface.js']) {
   if (!index.includes(reference)) throw new Error(`index.html is missing ${reference}`);
   if (!serviceWorker.includes(reference)) throw new Error(`service worker is missing ${reference}`);
 }
@@ -43,7 +45,7 @@ if (index.includes('./editorial-mode.css') || loader.includes('./editorial-mode.
 if (index.indexOf('./magazine-polish.css') < index.indexOf('./edition-layer.css')) throw new Error('magazine-polish.css must load after edition-layer.css');
 if (index.indexOf('./magazine-polish.js') < index.indexOf('./edition-layer.js')) throw new Error('magazine-polish.js must load after edition-layer.js');
 
-for (const path of ['public/magazine-polish.js', 'public/editorial-loader.js']) {
+for (const path of ['public/magazine-polish.js', 'public/latest-surface.js', 'public/editorial-loader.js']) {
   const syntax = spawnSync(process.execPath, ['--check', resolve(root, path)], { encoding: 'utf8' });
   if (syntax.status !== 0) throw new Error(`${path} syntax check failed:\n${syntax.stderr}`);
 }
@@ -57,6 +59,9 @@ for (const contract of [
 ]) if (!script.includes(contract)) throw new Error(`magazine interaction layer is missing ${contract}`);
 if (script.includes('updateLatestChangeState') || script.includes('post-issue-intro')) throw new Error('Retired parallel latest-update polish must not return.');
 if (script.includes('MutationObserver') || script.includes('stopImmediatePropagation')) throw new Error('magazine polish must not observe or intercept the Edition rendering lifecycle.');
+for (const contract of ['let latestOpen = false', "dataset.latestAction = 'open'", 'Latest adopted signals', '主编已经采用、但不必等待下一正式刊期的最新公开信号。']) {
+  if (!latestJs.includes(contract)) throw new Error(`Latest Surface is missing ${contract}`);
+}
 
 for (const selector of [
   "[data-action='feedback-center']", "[data-action='open-editorial-office']",
@@ -83,7 +88,7 @@ for (const identity of [
 
 if (!/^\d+\.\d+\.\d+$/.test(String(packageManifest.version || ''))) throw new Error('package release contract must remain semantic and drive Reader asset versioning');
 if (!packageManifest.scripts?.check?.includes('check-magazine-polish.mjs')) throw new Error('npm check must include the magazine polish contract');
-for (const releaseContract of ["const ASSET_VERSION = '__NEWSFLOW_VERSION__'", 'newsflow-reader-v${ASSET_VERSION}', 'reader-navigation.css', 'reading-surface.css', 'share-card.js', 'editorial-loader.js']) {
+for (const releaseContract of ["const ASSET_VERSION = '__NEWSFLOW_VERSION__'", 'newsflow-reader-v${ASSET_VERSION}', 'reader-navigation.css', 'reading-surface.css', 'latest-surface.js', 'share-card.js', 'editorial-loader.js']) {
   if (!serviceWorker.includes(releaseContract)) throw new Error(`service worker is missing Reader release contract: ${releaseContract}`);
 }
 for (const eagerEditorAsset of [
@@ -93,4 +98,4 @@ for (const eagerEditorAsset of [
   if (serviceWorker.includes(eagerEditorAsset)) throw new Error(`service worker must not precache editor-only asset ${eagerEditorAsset}`);
 }
 
-console.log('NewsFlow magazine polish contract passed: Edition-first identity, explicit mobile tools trigger, four-task publication navigation, continuous reading, editorial sharing and lazy permission-routed editorial access.');
+console.log('NewsFlow magazine polish contract passed: Edition-first identity, explicit Latest, explicit mobile tools trigger, four-task publication navigation, continuous reading, editorial sharing and lazy permission-routed editorial access.');
