@@ -327,7 +327,7 @@ body.nf-reading-open { overflow: hidden; }
 
 @media (max-width: 720px) {
   #newsflow-reading-surface-root:not([hidden])::before { display: none; }
-  .nf-reading-shell { left: 0; right: auto; width: 100vw; max-width: none; min-width: 0; border-left: 0; box-shadow: none; }
+  .nf-reading-shell { left: 0; right: auto; width: 100vw; max-width: none; min-width: 0; border-left: 0; box-shadow: none; animation: none; }
   .nf-reading-header-inner { min-height: 58px; padding: 0 16px; gap: 9px; }
   .nf-reading-back,
   .nf-reading-share { font-size: 9px; }
