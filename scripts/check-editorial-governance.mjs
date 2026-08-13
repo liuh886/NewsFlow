@@ -6,27 +6,38 @@ import { fileURLToPath } from 'node:url';
 const root = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 const read = (path) => readFile(resolve(root, path), 'utf8');
 for (const file of [
-  'public/editorial-loader.js', 'public/editorial-governance.js', 'public/editorial-governance.css', 'public/editor-referral.css',
+  'public/editor-referral-consent.js', 'public/editorial-loader.js', 'public/editorial-governance.js', 'public/editorial-governance.css', 'public/editor-referral.css',
   'scripts/sync-editorial-governance.mjs', 'scripts/sync-adopted-signals.mjs',
   'content/state/governance-sync.json', 'content/state/adoption-sync.json',
   'public/data/governance-status.json', 'supabase/newsflow-publication-projection.sql'
 ]) await access(resolve(root, file));
 
-const [index, loader, governance, css, referralCss, game, mode, build, sw, governanceSync, adoptionSync, sql, projectionSql] = await Promise.all([
-  read('index.html'), read('public/editorial-loader.js'), read('public/editorial-governance.js'), read('public/editorial-governance.css'), read('public/editor-referral.css'),
+const [index, consent, loader, governance, css, referralCss, game, mode, build, sw, governanceSync, adoptionSync, sql, projectionSql] = await Promise.all([
+  read('index.html'), read('public/editor-referral-consent.js'), read('public/editorial-loader.js'), read('public/editorial-governance.js'), read('public/editorial-governance.css'), read('public/editor-referral.css'),
   read('public/review-game.js'), read('public/editorial-office.js'), read('scripts/build.mjs'), read('public/sw.js'),
   read('scripts/sync-editorial-governance.mjs'), read('scripts/sync-adopted-signals.mjs'), read('supabase/newsflow-editorial.sql'),
   read('supabase/newsflow-publication-projection.sql')
 ]);
-for (const file of ['public/editorial-loader.js', 'public/editorial-governance.js', 'scripts/sync-editorial-governance.mjs', 'scripts/sync-adopted-signals.mjs']) {
+for (const file of ['public/editor-referral-consent.js', 'public/editorial-loader.js', 'public/editorial-governance.js', 'scripts/sync-editorial-governance.mjs', 'scripts/sync-adopted-signals.mjs']) {
   const syntax = spawnSync(process.execPath, ['--check', resolve(root, file)], { encoding: 'utf8' });
   if (syntax.status !== 0) throw new Error(`${file} syntax failed:\n${syntax.stderr}`);
 }
 if (!index.includes('./editorial-loader.js?v=__NEWSFLOW_VERSION__')) throw new Error('index must load the lazy editorial runtime entrypoint.');
+if (!index.includes('./editor-referral-consent.js?v=__NEWSFLOW_VERSION__')) throw new Error('Reader must load the explicit editor-referral consent gate.');
+if (!(index.indexOf('./membership-config.js?v=__NEWSFLOW_VERSION__') < index.indexOf('./editor-referral-consent.js?v=__NEWSFLOW_VERSION__')
+  && index.indexOf('./editor-referral-consent.js?v=__NEWSFLOW_VERSION__') < index.indexOf('admin/shared/account-shell.js?v=7'))) {
+  throw new Error('Editor referral consent must capture the auth-aware referral after membership config and before account hydration.');
+}
+for (const contract of [
+  "const PARAM = 'editor-ref'", '登录不会自动加入编辑部', 'data-editor-referral-consent-action="accept"',
+  'sessionStorage.setItem(CONSENTED_KEY, rawCode)', 'clean.searchParams.delete(PARAM)', 'window.location.replace(target.toString())'
+]) if (!consent.includes(contract)) throw new Error(`editor referral consent gate missing contract: ${contract}`);
+if (!consent.includes('if (sessionStorage.getItem(CONSENTED_KEY) === rawCode)')) throw new Error('Explicit editor consent must be consumed exactly once before editorial acceptance.');
 for (const asset of ['./editorial-governance.css', './editorial-governance.js', './editor-referral.css']) {
   if (index.includes(asset)) throw new Error(`Reader must not eagerly load ${asset}`);
-  if (!loader.includes(asset)) throw new Error(`editorial-loader is missing ${asset}`);
+  if (!loader.includes(asset) && asset !== './editor-referral.css') throw new Error(`editorial-loader is missing ${asset}`);
 }
+if (!consent.includes("stylesheet.href = './editor-referral.css'")) throw new Error('Editor referral styling must load only on an actual referral landing.');
 
 for (const contract of [
   "{ id: 'edition', label: '刊物判断'", "{ id: 'storyline', label: '长期议题'", "{ id: 'source', label: '信源'", "{ id: 'editorial', label: '编辑部'",
@@ -85,4 +96,4 @@ for (const contract of [
 ]) if (!projectionSql.includes(contract)) throw new Error(`public projection schema missing ${contract}`);
 if (projectionSql.includes('grant select on table public.newsflow_candidates to anon')) throw new Error('Private Candidate manuscripts must remain inaccessible to anonymous Reader clients.');
 
-console.log('NewsFlow editorial governance contract passed: attributable editor network, lazy chief governance UI, private Candidate lifecycle, sanitized public publication projection and publishable-key GitHub synchronization.');
+console.log('NewsFlow editorial governance contract passed: explicit referral consent, attributable editor network, lazy chief governance UI, private Candidate lifecycle, sanitized public publication projection and publishable-key GitHub synchronization.');
