@@ -1,4 +1,4 @@
-/* Mobile Reader navigation: explicit filter/tools trigger + five-item publication rail. */
+/* Mobile Reader navigation: explicit filter/tools trigger + four-item publication rail. */
 @media (max-width: 920px) {
   .app-shell[data-product-model='magazine-edition'] .mobile-menu-button svg {
     display: none;
@@ -20,6 +20,6 @@
   }
 
   .app-shell[data-product-model='magazine-edition'] .mobile-nav {
-    grid-template-columns: repeat(5, minmax(0, 1fr));
+    grid-template-columns: repeat(4, minmax(0, 1fr));
   }
 }
