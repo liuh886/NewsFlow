@@ -12,6 +12,7 @@
   window.HaoAccountConfig = Object.freeze({
     enabled: true,
     billingEnabled: true,
+    referralEnabled: true,
     appName: 'Newsflow',
     productCode: 'newsflow',
     entitlementCode: 'newsflow.pro',
