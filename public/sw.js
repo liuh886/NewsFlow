@@ -18,6 +18,7 @@ const APP_SHELL = [
   versioned('./polish.js'),
   versioned('./edition-layer.js'),
   versioned('./magazine-polish.js'),
+  versioned('./share-card.js'),
   versioned('./reading-surface.js'),
   versioned('./supabase-feedback.js'),
   versioned('./membership-config.js'),
