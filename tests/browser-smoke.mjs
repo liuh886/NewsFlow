@@ -61,20 +61,30 @@ try {
   await page.locator('[data-reading-action="close"]').click();
   await page.locator('#newsflow-reading-surface-root').waitFor({ state: 'hidden' });
 
-  // Use a real reader filter to expose utility cards on desktop and validate the reduced action set.
-  await page.locator('#app .filter-button[data-action="filter"][data-value="primary"]').click();
+  // Enter the explicit Latest surface and validate utility card actions/canonical links there.
+  await page.evaluate(() => {
+    const latest = document.querySelector('#app .mobile-nav[data-edition-layer="magazine"] [data-latest-action="open"]');
+    latest?.dispatchEvent(new MouseEvent('click', { bubbles: true, cancelable: true }));
+  });
+  const desktopLatestHeadline = page.locator('#app .article-title a').first();
+  await desktopLatestHeadline.waitFor({ state: 'visible', timeout: 10_000 });
+  const desktopLatestMasthead = await page.locator('#app .masthead-title').innerText();
+  if (desktopLatestMasthead.trim() !== '最新') throw new Error(`Desktop Latest did not enter the Latest surface: ${desktopLatestMasthead}`);
+
   const cardActions = page.locator('#app .article-card .card-actions').first();
   await cardActions.waitFor({ state: 'visible', timeout: 10_000 });
   if (await cardActions.locator('.article-action').count() !== 2) throw new Error('Reader card actions are not reduced to bookmark + share.');
   if (await cardActions.locator('[data-action="feedback-hide"]').count() > 0) throw new Error('Reader card still exposes negative feedback.');
   if (await cardActions.locator('[data-reading-action="share-signal"]').count() !== 1) throw new Error('Reader card is missing share.');
 
-  const latestHeadline = page.locator('#app .article-title a').first();
-  await latestHeadline.waitFor({ state: 'visible', timeout: 10_000 });
-  const latestHref = await latestHeadline.getAttribute('href');
+  const latestHref = await desktopLatestHeadline.getAttribute('href');
   if (!latestHref?.includes('/articles/')) throw new Error(`Latest headline is not linked to a canonical article URL: ${latestHref || ''}`);
 
-  await page.locator('#app .filter-button[data-action="filter"][data-value="all"]').click();
+  // Return to the issue-first surface through the real publication action.
+  await page.evaluate(() => {
+    const issue = document.querySelector('#app .mobile-nav[data-edition-layer="magazine"] [data-edition-action="go-home"]');
+    issue?.dispatchEvent(new MouseEvent('click', { bubbles: true, cancelable: true }));
+  });
   const currentTocRow = page.locator('#app .edition-archive [data-issue-current="true"]').first();
   await currentTocRow.waitFor({ state: 'visible', timeout: 10_000 });
   const currentIsFirst = await currentTocRow.evaluate((row) => row.parentElement?.firstElementChild === row);
