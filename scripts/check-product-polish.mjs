@@ -64,7 +64,7 @@ for (const contract of [
   "firstEditorialAnchor.insertAdjacentHTML('beforebegin', renderCurrentIssue(edition, issue))", '#section/', "channelSort: 'newest'", "data-sort=\"selected\"",
   'readerUtilityState', 'publishedIssueById', 'const issues = publishedIssues();', '期刊目录', '全部刊期', 'data-issue-current', '<span>最新</span>'
 ]) if (!editionJs.includes(contract)) throw new Error(`Premium Reader IA/section contract is missing ${contract}`);
-for (const contract of ['data-edition-action="open-latest"', 'latest-open', 'latest-close', 'newsflow:edition-rendered']) {
+for (const contract of ['dataset.latestAction = \'open\'', 'let latestOpen = false', 'const openLatest = () =>', 'const closeLatest = () =>', 'newsflow:edition-rendered']) {
   if (!latestJs.includes(contract)) throw new Error(`Latest Reader surface is missing ${contract}`);
 }
 if (latestJs.includes('MutationObserver') || latestJs.includes('window.fetch =')) throw new Error('Latest surface must stay lifecycle-driven and must not own global data fetching.');
