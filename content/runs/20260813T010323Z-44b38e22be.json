@@ -1,0 +1,106 @@
+{
+  "schema_version": "1.0",
+  "edition_id": "frontier-systems-review",
+  "workflow": {
+    "id": "newsflow-content-update",
+    "version": "1.0.0",
+    "actor": {
+      "agent_id": "chatgpt-automation",
+      "runtime": "ChatGPT scheduled automation",
+      "workflow_id": "newsflow-content-update",
+      "workflow_version": "1.0.0",
+      "model": "GPT-5.6 Sol"
+    }
+  },
+  "run": {
+    "as_of": "2026-08-13T01:03:23Z",
+    "coverage_start": "2026-08-12T00:58:17Z",
+    "coverage_end": "2026-08-13T01:03:23Z",
+    "timezone": "Asia/Shanghai",
+    "actor": {
+      "agent_id": "chatgpt-automation",
+      "runtime": "ChatGPT scheduled automation",
+      "workflow_id": "newsflow-content-update",
+      "workflow_version": "1.0.0",
+      "model": "GPT-5.6 Sol"
+    },
+    "collection_observations": {
+      "source_ids_scanned": [
+        "reuters",
+        "iea",
+        "nsta-carbon-storage",
+        "global-ccs-institute",
+        "openai-deployment-safety"
+      ],
+      "scout_ids_scanned": [],
+      "storyline_ids_scanned": [
+        "ai-energy-foundation",
+        "ai-chip-layer",
+        "ai-infrastructure-layer",
+        "ai-model-layer",
+        "ai-application-layer",
+        "ccus-project-delivery",
+        "ccus-network-economics",
+        "evidence-governance"
+      ],
+      "surface_types_scanned": [
+        "primary-records",
+        "independent-reporting",
+        "industry-reports",
+        "counter-evidence"
+      ],
+      "x_topic_query_ids_run": [],
+      "x_query_runtime": "not_run",
+      "x_post_read_count": 0,
+      "origin_yield": [
+        {
+          "type": "mainstream",
+          "id": "reuters",
+          "lead_count": 1,
+          "full_text_review_count": 1,
+          "candidate_count": 0
+        },
+        {
+          "type": "institutional",
+          "id": "iea",
+          "lead_count": 0,
+          "full_text_review_count": 0,
+          "candidate_count": 0
+        },
+        {
+          "type": "primary",
+          "id": "nsta-carbon-storage",
+          "lead_count": 0,
+          "full_text_review_count": 0,
+          "candidate_count": 0
+        },
+        {
+          "type": "institutional",
+          "id": "global-ccs-institute",
+          "lead_count": 0,
+          "full_text_review_count": 0,
+          "candidate_count": 0
+        },
+        {
+          "type": "primary",
+          "id": "openai-deployment-safety",
+          "lead_count": 0,
+          "full_text_review_count": 0,
+          "candidate_count": 0
+        }
+      ],
+      "material_lead_count": 1,
+      "full_text_review_count": 1
+    }
+  },
+  "applied": true,
+  "summary": {
+    "candidate_count": 0,
+    "reviewable_count": 0,
+    "accepted_by_machine_gate_count": 0,
+    "needs_review_count": 0,
+    "rejected_count": 0
+  },
+  "publication_effect": "none",
+  "editorial_effect": "supabase_private_candidates_only"
+}
