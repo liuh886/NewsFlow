@@ -61,7 +61,7 @@ try {
   await page.locator('[data-reading-action="close"]').click();
   await page.locator('#newsflow-reading-surface-root').waitFor({ state: 'hidden' });
 
-  // Issue-first hides the utility feed until a real reader utility is active.
+  // Use a real reader filter to expose utility cards on desktop and validate the reduced action set.
   await page.locator('#app .filter-button[data-action="filter"][data-value="primary"]').click();
   const cardActions = page.locator('#app .article-card .card-actions').first();
   await cardActions.waitFor({ state: 'visible', timeout: 10_000 });
@@ -74,7 +74,6 @@ try {
   const latestHref = await latestHeadline.getAttribute('href');
   if (!latestHref?.includes('/articles/')) throw new Error(`Latest headline is not linked to a canonical article URL: ${latestHref || ''}`);
 
-  // Reset utility state to restore the Issue-first publication surface.
   await page.locator('#app .filter-button[data-action="filter"][data-value="all"]').click();
   const currentTocRow = page.locator('#app .edition-archive [data-issue-current="true"]').first();
   await currentTocRow.waitFor({ state: 'visible', timeout: 10_000 });
@@ -101,6 +100,14 @@ try {
   const mobileNavText = await mobileNav.innerText();
   const mobileNavButtons = await mobileNav.locator('button').count();
   if (mobileNavButtons !== 4 || !mobileNavText.includes('本期') || !mobileNavText.includes('最新') || !mobileNavText.includes('议题') || !mobileNavText.includes('目录') || mobileNavText.includes('AI 基建') || mobileNavText.includes('CCUS')) throw new Error(`Mobile publication nav is not aligned with four-task Reader IA: ${mobileNavText}`);
+
+  const mobileLatest = mobileNav.locator('[data-latest-action="open"]');
+  await mobileLatest.waitFor({ state: 'visible', timeout: 10_000 });
+  await mobileLatest.click();
+  const mobileLatestHeadline = page.locator('#app .article-title a').first();
+  await mobileLatestHeadline.waitFor({ state: 'visible', timeout: 10_000 });
+  const latestMasthead = await page.locator('#app .masthead-title').innerText();
+  if (latestMasthead.trim() !== '最新') throw new Error(`Mobile Latest did not enter the Latest surface: ${latestMasthead}`);
 
   const mobileToolsButton = page.locator('#app [data-action="mobile-menu"]');
   await mobileToolsButton.waitFor({ state: 'visible', timeout: 10_000 });
@@ -130,14 +137,8 @@ try {
   if (!(await sidebar.locator('[data-edition-layer="filter-heading"]').innerText()).includes('筛选与收藏')) throw new Error('Mobile tools drawer does not explain its filter function.');
   await sidebar.locator('[data-action="mobile-close"]').click();
 
-  // The explicit Latest mobile action resets filters; activate a reader filter to expose the utility feed for direct card reading.
-  await mobileNav.locator('[data-action="mobile-home"]').click();
-  await mobileToolsButton.click();
-  await page.locator('#app .sidebar.open .filter-button[data-value="primary"]').click();
-  const firstMobileHeadline = page.locator('#app .article-title a').first();
-  await firstMobileHeadline.waitFor({ state: 'visible', timeout: 10_000 });
-  await firstMobileHeadline.scrollIntoViewIfNeeded();
-  await firstMobileHeadline.click();
+  await mobileLatestHeadline.scrollIntoViewIfNeeded();
+  await mobileLatestHeadline.click();
   await page.locator('#newsflow-reading-surface-root .nf-reading-shell').waitFor({ state: 'visible', timeout: 10_000 });
   const mobileReading = await page.locator('#newsflow-reading-surface-root .nf-reading-shell').evaluate((element) => {
     const rect = element.getBoundingClientRect();
@@ -154,7 +155,7 @@ try {
   await articlePage.close();
 
   if (errors.length) throw new Error(`Browser console/page errors:\n${errors.join('\n')}`);
-  console.log('NewsFlow browser smoke passed: issue-first canonical reading, two-action utility cards, editorial share card, four-task mobile navigation, issue continuity and responsive layout.');
+  console.log('NewsFlow browser smoke passed: issue-first canonical reading, explicit Latest, two-action cards, editorial share card, four-task mobile navigation, issue continuity and responsive layout.');
 } finally {
   await browser.close();
 }
