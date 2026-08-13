@@ -268,14 +268,14 @@
       state.returnPanelScroll = captureEditionPanelScroll();
     }
     state.activeId = itemId(item);
-    state.shareOpen = false;
+    state.shareOpen = Boolean(options.share);
     if (!options.replace) state.openedBySurface = !options.fromRoute;
     if (!options.fromRoute) setRoute(state.activeId, Boolean(options.replace));
     render();
     globalThis.gtag?.('event', 'reader_article_open', {
       signal_id: state.activeId,
       channel_id: item.channel_id || '',
-      surface: 'reading_surface'
+      surface: options.share ? 'share_entry' : 'reading_surface'
     });
   };
 
@@ -302,6 +302,25 @@
     }
   };
 
+  const shareIcon = () => '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 16V4m-4 4 4-4 4 4M5 12v7h14v-7" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+
+  const ensureShareButton = (actions, id, label, text = false) => {
+    if (!actions || actions.querySelector('[data-reading-action="share-signal"]')) return;
+    const button = document.createElement('button');
+    button.type = 'button';
+    button.dataset.readingAction = 'share-signal';
+    button.dataset.id = id;
+    button.setAttribute('aria-label', `分享 ${label}`);
+    if (text) {
+      button.className = 'text-button';
+      button.innerHTML = `${shareIcon()} 分享`;
+    } else {
+      button.className = 'article-action';
+      button.innerHTML = shareIcon();
+    }
+    actions.append(button);
+  };
+
   const decorateReadingLinks = () => {
     const shell = document.querySelector('#app .app-shell[data-product-model="magazine-edition"]');
     if (!shell || !state.news.length) return;
@@ -316,14 +335,20 @@
     };
 
     const lead = shell.querySelector('.lead-story');
-    const leadId = lead?.querySelector('[data-action="open"][data-id]')?.dataset.id || '';
+    const leadOpen = lead?.querySelector('[data-action="open"][data-id]');
+    const leadId = leadOpen?.dataset.id || '';
     bindHeadline(lead?.querySelector('.lead-title a'), leadId);
+    lead?.querySelector('[data-action="feedback-hide"]')?.remove();
+    if (leadId) ensureShareButton(lead?.querySelector('.lead-actions'), leadId, lead?.querySelector('.lead-title')?.textContent || '报道', true);
 
     shell.querySelectorAll('.article-card').forEach((card) => {
       const quickEvidence = card.querySelector('.article-action[data-action="open"][data-id]');
       const id = quickEvidence?.dataset.id || '';
+      if (!id) return;
       bindHeadline(card.querySelector('.article-title a'), id);
-      if (quickEvidence) quickEvidence.setAttribute('aria-label', `快速证据 ${quickEvidence.getAttribute('aria-label')?.replace(/^深读\s*/, '') || ''}`.trim());
+      quickEvidence?.remove();
+      card.querySelector('.article-action[data-action="feedback-hide"]')?.remove();
+      ensureShareButton(card.querySelector('.card-actions'), id, card.querySelector('.article-title')?.textContent || '报道');
     });
   };
 
@@ -344,7 +369,8 @@
 
   document.addEventListener('click', async (event) => {
     const internal = event.target.closest?.('[data-reading-action]');
-    if (internal && document.getElementById(ROOT_ID)?.contains(internal)) {
+    const root = document.getElementById(ROOT_ID);
+    if (internal && root?.contains(internal)) {
       const action = internal.dataset.readingAction;
       const item = activeItem();
       if (action === 'close') close();
@@ -373,6 +399,15 @@
 
     const readerShell = event.target.closest?.('#app .app-shell[data-product-model="magazine-edition"]');
     if (!readerShell) return;
+    if (internal?.dataset.readingAction === 'share-signal') {
+      const id = internal.dataset.id || '';
+      if (!state.news.some((item) => itemId(item) === id)) return;
+      event.preventDefault();
+      event.stopPropagation();
+      open(id, { share: true });
+      return;
+    }
+
     const trigger = event.target.closest?.('[data-reading-link], [data-action="open"][data-id]');
     if (!trigger || trigger.classList.contains('article-action')) return;
     const id = trigger.dataset.id || '';
