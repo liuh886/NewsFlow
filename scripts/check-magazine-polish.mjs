@@ -67,12 +67,13 @@ for (const selector of [
   'grid-template-columns: 28px minmax(0, 1fr)', '.article-body', '.article-meta', 'grid-column: 2'
 ]) if (!css.includes(selector)) throw new Error(`magazine polish CSS is missing ${selector}`);
 
-for (const contract of ['.mobile-menu-button::before', 'mask-image:', 'grid-template-columns: repeat(5, minmax(0, 1fr))']) {
+for (const contract of ['.mobile-menu-button::before', 'mask-image:', 'grid-template-columns: repeat(4, minmax(0, 1fr))']) {
   if (!navigationCss.includes(contract)) throw new Error(`mobile reader navigation is missing ${contract}`);
 }
 for (const selector of [
   '#newsflow-reading-surface-root:not([hidden])::before', 'width: min(760px, 54vw)', 'background: var(--surface-raised)',
-  '.nf-reading-article h1', '.nf-reading-section > p', '@media (max-width: 720px)', '@keyframes nf-reading-sheet-in'
+  '.nf-reading-article h1', '.nf-reading-section > p', '@media (max-width: 720px)', '@keyframes nf-reading-sheet-in',
+  '.nf-reading-progress', '.nf-share-dialog'
 ]) if (!readingCss.includes(selector)) throw new Error(`side-sheet reading contract is missing ${selector}`);
 
 for (const identity of [
@@ -82,7 +83,7 @@ for (const identity of [
 
 if (!/^\d+\.\d+\.\d+$/.test(String(packageManifest.version || ''))) throw new Error('package release contract must remain semantic and drive Reader asset versioning');
 if (!packageManifest.scripts?.check?.includes('check-magazine-polish.mjs')) throw new Error('npm check must include the magazine polish contract');
-for (const releaseContract of ["const ASSET_VERSION = '__NEWSFLOW_VERSION__'", 'newsflow-reader-v${ASSET_VERSION}', 'reader-navigation.css', 'reading-surface.css', 'editorial-loader.js']) {
+for (const releaseContract of ["const ASSET_VERSION = '__NEWSFLOW_VERSION__'", 'newsflow-reader-v${ASSET_VERSION}', 'reader-navigation.css', 'reading-surface.css', 'share-card.js', 'editorial-loader.js']) {
   if (!serviceWorker.includes(releaseContract)) throw new Error(`service worker is missing Reader release contract: ${releaseContract}`);
 }
 for (const eagerEditorAsset of [
@@ -92,4 +93,4 @@ for (const eagerEditorAsset of [
   if (serviceWorker.includes(eagerEditorAsset)) throw new Error(`service worker must not precache editor-only asset ${eagerEditorAsset}`);
 }
 
-console.log('NewsFlow magazine polish contract passed: Edition-first identity, explicit mobile tools trigger, five-item navigation, side-sheet continuous reading and lazy permission-routed editorial access.');
+console.log('NewsFlow magazine polish contract passed: Edition-first identity, explicit mobile tools trigger, four-task publication navigation, continuous reading, editorial sharing and lazy permission-routed editorial access.');
