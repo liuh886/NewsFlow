@@ -71,7 +71,6 @@ const issueSignals = (issue) => {
 };
 
 const selectedSignalIds = () => new Set(publishedIssues().flatMap((issue) => issue.signal_ids || []).map(String));
-
 const channelDefinition = (channelId) => (editionState.edition?.channels || []).find((channel) => channel.id === channelId) || null;
 const channelStorylines = (channelId) => editionState.storylines.filter((storyline) => storyline.channel_id === channelId);
 const channelSignals = (channelId) => editionState.news.filter((item) => item.channel_id === channelId);
@@ -145,7 +144,7 @@ const renderCurrentIssue = (edition, issue) => {
   const coverSignal = signals.find((signal) => signal.id === coverSignalId) || null;
   const secondarySignals = coverSignalId ? signals.filter((signal) => signal.id !== coverSignalId) : signals;
   const signalButtons = secondarySignals.map((signal, index) => `
-    <button class="issue-signal-link" data-action="open" data-id="${escapeEditionHtml(signal.id)}" data-channel-id="${escapeEditionHtml(signal.channel_id || '')}">
+    <button class="issue-signal-link" data-action="open" data-id="${escapeEditionHtml(signal.id)}">
       <span>${String(index + 1).padStart(2, '0')}</span>
       <span>${escapeEditionHtml(signal.title || `打开本期文章 ${index + 1}`)}</span>
     </button>`).join('');
@@ -239,57 +238,23 @@ const renderArchive = () => {
   return `<section class="edition-archive" data-edition-layer="archive" aria-labelledby="archive-title">
     <div class="archive-heading"><div><span class="section-label">Contents</span><h2 id="archive-title">期刊目录</h2></div><button type="button" data-edition-action="open-archive">查看全部刊期 →</button></div>
     <div class="archive-list">
-      ${issues.slice(0, 4).map((issue) => `<article class="archive-row" data-issue-current="${issue.lifecycle === 'live'}"><span class="archive-number">${String(issue.issue_number).padStart(2, '0')}</span><div><h3>${escapeEditionHtml(issue.title)}</h3><p>${escapeEditionHtml(issue.standfirst)}</p><button class="issue-cover-action" type="button" data-edition-action="open-issue" data-issue-id="${escapeEditionHtml(issue.id)}">${issue.lifecycle === 'live' ? '查看本期' : '阅读本期'} →</button></div><div class="archive-date">${escapeEditionHtml(archiveIssueMeta(issue))}</div></article>`).join('') || '<p class="archive-empty">刊期正在整理。</p>'}
+      ${issues.slice(0, 4).map((issue) => `<article class="archive-row" data-issue-current="${issue.lifecycle === 'live'}"><span class="archive-number">${String(issue.issue_number).padStart(2, '0')}</span><div><h3>${escapeEditionHtml(issue.title)}</h3><p>${escapeEditionHtml(issue.standfirst)}</p><button class="issue-cover-action" type="button" data-edition-action="open-issue" data-issue-id="${escapeEditionHtml(issue.id)}">${issue.lifecycle === 'live' ? '查看本期' : '阅读本期'} →</button></div><span class="archive-date">${escapeEditionHtml(archiveIssueMeta(issue))}</span></article>`).join('') || '<p>刊期正在整理。</p>'}
     </div>
   </section>`;
+};
+
+const renderStorylineIndexDrawer = () => {
+  if (!editionState.storylineIndexOpen) return '';
+  return `<div class="edition-overlay" data-edition-action="close-panel"></div><aside class="edition-panel" role="dialog" aria-modal="true" aria-labelledby="storyline-index-title"><div class="edition-panel-head"><span>${escapeEditionHtml(editionState.edition?.short_name || 'Frontier Systems')} · 长期议题</span><button type="button" data-edition-action="close-panel" aria-label="关闭长期议题">×</button></div><div class="edition-panel-body"><span class="section-label">Research Agenda</span><h2 id="storyline-index-title">正在演化的判断</h2><p class="panel-question">长期议题不是标签页，而是持续接受新证据检验的编辑判断。</p>${editionState.storylines.map((storyline) => `<section><button class="storyline-item" type="button" data-edition-action="open-storyline" data-storyline-id="${escapeEditionHtml(storyline.id)}"><div class="storyline-meta"><span class="movement ${escapeEditionHtml(storyline.movement)}">${escapeEditionHtml(movementLabel(storyline.movement))}</span><span>${escapeEditionHtml(storyline.evidence_count || 0)} 条证据</span></div><h3>${escapeEditionHtml(storyline.title)}</h3><p>${escapeEditionHtml(storyline.current_view)}</p><span class="storyline-open">展开证据历史 →</span></button></section>`).join('')}</div></aside>`;
 };
 
 const renderStorylineDrawer = () => {
   const storyline = editionState.storylines.find((item) => item.id === editionState.activeStorylineId);
   if (!storyline) return '';
-  const watchItems = Array.isArray(storyline.watch_for)
-    ? storyline.watch_for
-    : (Array.isArray(storyline.watch_next) ? storyline.watch_next : []);
-  const falsifiers = Array.isArray(storyline.falsifiers) ? storyline.falsifiers : [];
-  return `<div class="edition-overlay" data-edition-action="close-panel"></div><aside class="edition-panel" role="dialog" aria-modal="true" aria-labelledby="storyline-panel-title">
-    <div class="edition-panel-head"><span>${escapeEditionHtml(editionState.edition?.short_name || 'Frontier Systems')} · 长期议题</span><button type="button" data-edition-action="close-panel" aria-label="关闭长期议题">×</button></div>
-    <div class="edition-panel-body">
-      <div class="storyline-meta"><span class="movement ${escapeEditionHtml(storyline.movement)}">${escapeEditionHtml(movementLabel(storyline.movement))}</span><span>${escapeEditionHtml(storyline.evidence_count || 0)} 条证据</span></div>
-      <h2 id="storyline-panel-title">${escapeEditionHtml(storyline.title)}</h2>
-      <p class="panel-question">${escapeEditionHtml(storyline.question || '')}</p>
-      <section><span class="section-label">当前判断</span><p>${escapeEditionHtml(storyline.current_view)}</p></section>
-      <section><span class="section-label">下一步观察</span>${watchItems.length ? `<ul>${watchItems.map((item) => `<li>${escapeEditionHtml(item)}</li>`).join('')}</ul>` : '<p>等待新的关键证据。</p>'}</section>
-      <section><span class="section-label">可能改变判断的证据</span>${falsifiers.length ? `<ul>${falsifiers.map((item) => `<li>${escapeEditionHtml(item)}</li>`).join('')}</ul>` : '<p>当前没有明确的反向证据条件。</p>'}</section>
-      <section><span class="section-label">观察框架</span><p>这里记录证据如何强化、削弱或复杂化当前观点，让长期判断可以沿时间持续检验。</p></section>
-    </div>
-  </aside>`;
-};
-
-const renderStorylineIndexDrawer = () => {
-  if (!editionState.storylineIndexOpen) return '';
-  const groups = (editionState.edition?.channels || [])
-    .map((channel) => ({ channel, storylines: channelStorylines(channel.id) }))
-    .filter(({ storylines }) => storylines.length);
-  const total = groups.reduce((sum, group) => sum + group.storylines.length, 0);
-  return `<div class="edition-overlay" data-edition-action="close-panel"></div><aside class="edition-panel" role="dialog" aria-modal="true" aria-labelledby="storylines-panel-title">
-    <div class="edition-panel-head"><span>${escapeEditionHtml(editionState.edition?.short_name || 'Frontier Systems')} · 长期议题</span><button type="button" data-edition-action="close-panel" aria-label="关闭长期议题目录">×</button></div>
-    <div class="edition-panel-body">
-      <span class="section-label">Research Agenda · ${escapeEditionHtml(total)} 个议题</span>
-      <h2 id="storylines-panel-title">长期议题</h2>
-      <p class="panel-question">按栏目查看仍在持续检验的判断。进入任一议题，可以查看当前判断、下一步观察以及可能改变判断的证据。</p>
-      ${groups.map(({ channel, storylines }) => `<section>
-        <span class="section-label">${escapeEditionHtml(channel.name)}</span>
-        <div class="storyline-list">
-          ${storylines.map((storyline) => `<button class="storyline-item" type="button" data-edition-action="open-storyline" data-storyline-id="${escapeEditionHtml(storyline.id)}">
-            <div class="storyline-meta"><span class="movement ${escapeEditionHtml(storyline.movement)}">${escapeEditionHtml(movementLabel(storyline.movement))}</span><span>${escapeEditionHtml(storyline.evidence_count || 0)} 条证据</span></div>
-            <h3>${escapeEditionHtml(storyline.title)}</h3>
-            <p>${escapeEditionHtml(storyline.question || storyline.current_view)}</p>
-            <span class="storyline-open">查看判断与证据 →</span>
-          </button>`).join('')}
-        </div>
-      </section>`).join('') || '<p>长期议题正在整理。</p>'}
-    </div>
-  </aside>`;
+  const evidence = editionState.news
+    .filter((item) => (item.storyline_ids || []).includes(storyline.id))
+    .sort((a, b) => new Date(b.published_at || 0).getTime() - new Date(a.published_at || 0).getTime());
+  return `<div class="edition-overlay" data-edition-action="close-panel"></div><aside class="edition-panel" role="dialog" aria-modal="true" aria-labelledby="storyline-panel-title"><div class="edition-panel-head"><span>${escapeEditionHtml(editionState.edition?.short_name || 'Frontier Systems')} · 长期议题</span><button type="button" data-edition-action="close-panel" aria-label="关闭长期议题">×</button></div><div class="edition-panel-body"><span class="section-label">${escapeEditionHtml(movementLabel(storyline.movement))} · ${escapeEditionHtml(storyline.evidence_count || evidence.length)} 条证据</span><h2 id="storyline-panel-title">${escapeEditionHtml(storyline.title)}</h2><p class="panel-question">${escapeEditionHtml(storyline.question || '')}</p><section><span class="section-label">当前判断</span><p>${escapeEditionHtml(storyline.current_view || '')}</p></section>${Array.isArray(storyline.watch_items) && storyline.watch_items.length ? `<section><span class="section-label">接下来关注</span><ul>${storyline.watch_items.map((item) => `<li>${escapeEditionHtml(item)}</li>`).join('')}</ul></section>` : ''}${Array.isArray(storyline.falsifiers) && storyline.falsifiers.length ? `<section><span class="section-label">可能推翻当前判断的证据</span><ul>${storyline.falsifiers.map((item) => `<li>${escapeEditionHtml(item)}</li>`).join('')}</ul></section>` : ''}${evidence.length ? `<section><span class="section-label">证据历史</span>${evidence.map((item) => `<button class="issue-signal-link" data-action="open" data-id="${escapeEditionHtml(item.id)}"><span>${escapeEditionHtml(formatEditionDate(item.published_at, { month: 'numeric', day: 'numeric' }))}</span><span>${escapeEditionHtml(item.title)}</span></button>`).join('')}</section>` : ''}</div></aside>`;
 };
 
 const renderIssueDrawer = () => {
@@ -301,31 +266,13 @@ const renderIssueDrawer = () => {
   const otherSignals = coverSignalId ? signals.filter((signal) => signal.id !== coverSignalId) : signals;
   const watchItems = Array.isArray(issue.what_to_watch) ? issue.what_to_watch.filter(Boolean) : [];
 
-  return `<div class="edition-overlay" data-edition-action="close-panel"></div><aside class="edition-panel archive-panel" role="dialog" aria-modal="true" aria-labelledby="issue-panel-title">
-    <div class="edition-panel-head"><span>${escapeEditionHtml(editionState.edition?.short_name || 'Frontier Systems')} · Issue ${escapeEditionHtml(issue.issue_number)}${issue.lifecycle === 'live' ? ' · Current' : ''}</span><button type="button" data-edition-action="close-panel" aria-label="关闭刊期">×</button></div>
-    <div class="edition-panel-body">
-      <span class="section-label">${escapeEditionHtml(archiveIssueMeta(issue))}</span>
-      <h2 id="issue-panel-title">${escapeEditionHtml(issue.title)}</h2>
-      <p class="panel-question">${escapeEditionHtml(issue.standfirst)}</p>
-      <section><span class="section-label">${issue.lifecycle === 'live' ? '当前判断' : '本期判断'}</span><p>${escapeEditionHtml(issue.judgment)}</p></section>
-      ${coverSignal ? `<section><span class="section-label">封面文章</span><button class="issue-signal-link" data-action="open" data-id="${escapeEditionHtml(coverSignal.id)}"><span>封面</span><span>${escapeEditionHtml(coverSignal.title || '阅读封面文章')}</span></button></section>` : ''}
-      ${otherSignals.length ? `<section><span class="section-label">本期文章</span>${otherSignals.map((signal, index) => `<button class="issue-signal-link" data-action="open" data-id="${escapeEditionHtml(signal.id)}"><span>${String(index + 1).padStart(2, '0')}</span><span>${escapeEditionHtml(signal.title || `本期文章 ${index + 1}`)}</span></button>`).join('')}</section>` : ''}
-      ${watchItems.length ? `<section><span class="section-label">接下来关注</span><ul>${watchItems.map((item) => `<li>${escapeEditionHtml(item)}</li>`).join('')}</ul></section>` : ''}
-    </div>
-  </aside>`;
+  return `<div class="edition-overlay" data-edition-action="close-panel"></div><aside class="edition-panel archive-panel" role="dialog" aria-modal="true" aria-labelledby="issue-panel-title"><div class="edition-panel-head"><span>${escapeEditionHtml(editionState.edition?.short_name || 'Frontier Systems')} · Issue ${escapeEditionHtml(issue.issue_number)}${issue.lifecycle === 'live' ? ' · Current' : ''}</span><button type="button" data-edition-action="close-panel" aria-label="关闭刊期">×</button></div><div class="edition-panel-body"><span class="section-label">${escapeEditionHtml(archiveIssueMeta(issue))}</span><h2 id="issue-panel-title">${escapeEditionHtml(issue.title)}</h2><p class="panel-question">${escapeEditionHtml(issue.standfirst)}</p><section><span class="section-label">${issue.lifecycle === 'live' ? '当前判断' : '本期判断'}</span><p>${escapeEditionHtml(issue.judgment)}</p></section>${coverSignal ? `<section><span class="section-label">封面文章</span><button class="issue-signal-link" data-action="open" data-id="${escapeEditionHtml(coverSignal.id)}"><span>封面</span><span>${escapeEditionHtml(coverSignal.title || '阅读封面文章')}</span></button></section>` : ''}${otherSignals.length ? `<section><span class="section-label">本期文章</span>${otherSignals.map((signal, index) => `<button class="issue-signal-link" data-action="open" data-id="${escapeEditionHtml(signal.id)}"><span>${String(index + 1).padStart(2, '0')}</span><span>${escapeEditionHtml(signal.title || `本期文章 ${index + 1}`)}</span></button>`).join('')}</section>` : ''}${watchItems.length ? `<section><span class="section-label">接下来关注</span><ul>${watchItems.map((item) => `<li>${escapeEditionHtml(item)}</li>`).join('')}</ul></section>` : ''}</div></aside>`;
 };
 
 const renderArchiveDrawer = () => {
   if (!editionState.archiveOpen) return '';
   const issues = publishedIssues();
-  return `<div class="edition-overlay" data-edition-action="close-panel"></div><aside class="edition-panel archive-panel" role="dialog" aria-modal="true" aria-labelledby="archive-panel-title">
-    <div class="edition-panel-head"><span>${escapeEditionHtml(editionState.edition?.short_name || 'Frontier Systems')} · 期刊目录</span><button type="button" data-edition-action="close-panel" aria-label="关闭期刊目录">×</button></div>
-    <div class="edition-panel-body">
-      <span class="section-label">Table of Contents</span><h2 id="archive-panel-title">全部刊期</h2>
-      <p class="panel-question">从正在更新的本期开始，按时间回看每一期的核心判断、封面文章与入选内容。</p>
-      <div class="archive-panel-list">${issues.map((issue) => `<article data-issue-current="${issue.lifecycle === 'live'}"><span>${String(issue.issue_number).padStart(2, '0')}</span><div><h3>${escapeEditionHtml(issue.title)}</h3><p>${escapeEditionHtml(issue.standfirst)}</p><small>${escapeEditionHtml(archiveIssueMeta(issue))}</small><button class="issue-cover-action" type="button" data-edition-action="open-issue" data-issue-id="${escapeEditionHtml(issue.id)}">${issue.lifecycle === 'live' ? '查看本期' : '阅读本期'} →</button></div></article>`).join('') || '<p>刊期正在整理。</p>'}</div>
-    </div>
-  </aside>`;
+  return `<div class="edition-overlay" data-edition-action="close-panel"></div><aside class="edition-panel archive-panel" role="dialog" aria-modal="true" aria-labelledby="archive-panel-title"><div class="edition-panel-head"><span>${escapeEditionHtml(editionState.edition?.short_name || 'Frontier Systems')} · 期刊目录</span><button type="button" data-edition-action="close-panel" aria-label="关闭期刊目录">×</button></div><div class="edition-panel-body"><span class="section-label">Table of Contents</span><h2 id="archive-panel-title">全部刊期</h2><p class="panel-question">从正在更新的本期开始，按时间回看每一期的核心判断、封面文章与入选内容。</p><div class="archive-panel-list">${issues.map((issue) => `<article data-issue-current="${issue.lifecycle === 'live'}"><span>${String(issue.issue_number).padStart(2, '0')}</span><div><h3>${escapeEditionHtml(issue.title)}</h3><p>${escapeEditionHtml(issue.standfirst)}</p><small>${escapeEditionHtml(archiveIssueMeta(issue))}</small><button class="issue-cover-action" type="button" data-edition-action="open-issue" data-issue-id="${escapeEditionHtml(issue.id)}">${issue.lifecycle === 'live' ? '查看本期' : '阅读本期'} →</button></div></article>`).join('') || '<p>刊期正在整理。</p>'}</div></div></aside>`;
 };
 
 const emitEditionRendered = () => window.dispatchEvent(new CustomEvent('newsflow:edition-rendered'));
@@ -484,7 +431,7 @@ const applyEditionLayer = () => {
   const mobileNav = appRoot.querySelector('.mobile-nav');
   if (mobileNav && !mobileNav.dataset.editionLayer) {
     mobileNav.dataset.editionLayer = 'magazine';
-    mobileNav.innerHTML = '<button data-edition-action="go-home" data-target="current-issue"><span>本期</span></button><button data-edition-action="open-section" data-channel-id="ai-infrastructure"><span>AI 基建</span></button><button data-edition-action="open-section" data-channel-id="ccus-energy-transition"><span>CCUS</span></button><button data-edition-action="open-storylines"><span>议题</span></button><button data-edition-action="open-archive"><span>目录</span></button>';
+    mobileNav.innerHTML = '<button data-edition-action="go-home" data-target="current-issue"><span>本期</span></button><button data-action="mobile-home"><span>最新</span></button><button data-edition-action="open-storylines"><span>议题</span></button><button data-edition-action="open-archive"><span>目录</span></button>';
   }
 
   syncSectionView(main, masthead, issue, utility);

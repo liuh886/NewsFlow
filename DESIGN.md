@@ -288,19 +288,46 @@ Hierarchy:
 8. Archive;
 9. full-page Reading Surface and original evidence.
 
-Global navigation:
+Desktop publication navigation remains:
 
-`本期 | 最新 | AI 基建 | CCUS 与能源转型 | 长期议题 | 归档`
+`本期 | AI 基建 | CCUS 与能源转型 | 长期议题 | 目录`
+
+Mobile publication navigation is intentionally reduced to four reader tasks:
+
+`本期 | 最新 | 议题 | 目录`
 
 Reader visual language stays restrained: warm paper, near-black ink, editorial blue, Newsreader hierarchy, strong whitespace, minimal pills/badges and no review/game chrome.
 
 ### Reading Surface
 
-Formal deep reading uses `#read/<signal-id>` with approximately 740px desktop measure:
+The canonical public URL for a Signal is `/articles/<signal-id>/`. The in-app `#read/<signal-id>` surface is a fast interactive presentation of the same public article identity and must update the document canonical URL accordingly.
 
-channel/date/source → headline → standfirst → Editorial Desk → 发生了什么 → 为什么重要 → 证据与来源 → 长期议题 → related reading.
+Headline and story-body navigation opens Newsflow reading first. The original publisher is always an explicit secondary action labeled as the original source.
 
-The side drawer remains quick evidence, not primary reading.
+The reading hierarchy is:
+
+channel/date/source → headline → standfirst → Editorial Desk → why it matters → evidence & source → Storylines → related reading.
+
+Do not repeat `short_summary` as both standfirst and a second "发生了什么" paragraph. The standfirst already carries that function.
+
+The reading header contains only return-to-publication, publication identity and Share. A thin progress line reflects scroll depth. Quick evidence remains secondary to the canonical reading surface.
+
+### Share contract
+
+Every public Signal can generate one Newsflow-native 3:4 editorial share card in the browser. The card uses typography and editorial judgment rather than third-party article imagery.
+
+The one standard card contains:
+
+- Frontier Systems Review identity;
+- channel and date;
+- headline;
+- `WHY IT MATTERS`, or `KEY QUOTE` when a verified key quote exists;
+- source and source tier;
+- Newsflow attribution and a read-through cue.
+
+The share action prefers the platform Web Share sheet with a generated PNG file and canonical article URL. When file sharing is unavailable, the same implementation supports PNG download and canonical-link copy. There is no platform-specific share-button matrix and no separate sharing backend.
+
+Static `/articles/<signal-id>/` pages expose large-image social metadata that points to a deterministic share-card route generated at build time, so pasted canonical links retain the same Newsflow editorial identity outside the PWA.
 
 ## Formal publication contract
 
@@ -347,22 +374,24 @@ All private Supabase tables use RLS. Service-role credentials stay in an explici
 
 1. `src/editorial-app.js` owns public Signal rendering and local-first adaptive Latest.
 2. `src/edition-layer.js` owns Edition/Issue/Section/Storyline/Archive presentation.
-3. `public/reading-surface.js` owns full-page reading.
-4. `public/editorial-office.js` owns mode selection, authenticated editorial membership and appointment entry.
-5. `public/review-game.js` owns all five-state review interaction.
-6. `public/editorial-governance.js` owns chief Publication Settings only.
-7. Supabase RLS + triggers own private role/review/adoption authority and Candidate lifecycle.
-8. `scripts/apply-content.mjs` owns direct Candidate persistence to private Supabase.
-9. `scripts/sync-adopted-signals.mjs` owns chief adoption → public Latest promotion/withdrawal before Issue freeze.
-10. `scripts/sync-editorial-governance.mjs` owns published chief governance → canonical GitHub files.
-11. `scripts/update-data-status.mjs` owns deterministic Reader freshness metadata.
-12. `scripts/sync-live-issue.mjs` owns live half-month ranking and formal Issue freezing.
-13. Runtime coordination remains event-based; no MutationObserver/fetch monkey patches.
+3. `public/reading-surface.js` owns in-app canonical reading and the share workflow.
+4. `public/share-card.js` owns the single browser-native editorial card renderer.
+5. `public/editorial-office.js` owns mode selection, authenticated editorial membership and appointment entry.
+6. `public/review-game.js` owns all five-state review interaction.
+7. `public/editorial-governance.js` owns chief Publication Settings only.
+8. Supabase RLS + triggers own private role/review/adoption authority and Candidate lifecycle.
+9. `scripts/apply-content.mjs` owns direct Candidate persistence to private Supabase.
+10. `scripts/sync-adopted-signals.mjs` owns chief adoption → public Latest promotion/withdrawal before Issue freeze.
+11. `scripts/sync-editorial-governance.mjs` owns published chief governance → canonical GitHub files.
+12. `scripts/update-data-status.mjs` owns deterministic Reader freshness metadata.
+13. `scripts/sync-live-issue.mjs` owns live half-month ranking and formal Issue freezing.
+14. Runtime coordination remains event-based; no MutationObserver/fetch monkey patches.
 
 ## Explicitly retired
 
 Do not reintroduce:
 
+- the React `App.tsx` / `src/components/*.tsx` Reader prototype;
 - self-selected Editor authority;
 - anonymous Guest Editor real-Candidate packets;
 - public `review-candidates.json`;
@@ -401,7 +430,8 @@ The stable baseline is valid only when:
 16. GitHub remains canonical and browser assets contain no GitHub/service-role secret;
 17. Storyline current view cannot be silently changed by automation;
 18. Editor appointments are authenticated, one-time and time-limited;
-19. README, DESIGN, WORKFLOW, TASKS, workflows and runtime describe the same implemented product.
+19. Reader headline → in-app article → canonical article URL → editorial share card → system share/download/copy forms one coherent public distribution loop;
+20. README, DESIGN, WORKFLOW, TASKS, workflows and runtime describe the same implemented product.
 
 ## Change policy
 

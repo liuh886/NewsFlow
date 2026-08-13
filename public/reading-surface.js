@@ -11,7 +11,8 @@
     activeId: '',
     returnFocus: null,
     returnPanelScroll: null,
-    openedBySurface: false
+    openedBySurface: false,
+    shareOpen: false
   };
 
   const escapeHtml = (value = '') => String(value)
@@ -106,6 +107,20 @@
       .map((entry) => entry.candidate);
   };
 
+  const renderShareDialog = (item) => state.shareOpen ? `
+    <div class="nf-share-backdrop" data-reading-action="close-share"></div>
+    <section class="nf-share-dialog" role="dialog" aria-modal="true" aria-labelledby="nf-share-title">
+      <div class="nf-share-head"><div><span>SHARE STORY</span><h2 id="nf-share-title">分享这条报道</h2></div><button type="button" data-reading-action="close-share" aria-label="关闭分享">×</button></div>
+      <p>生成一张 3:4 Newsflow 编辑卡片。支持时可直接调用系统分享；否则保存图片或复制文章链接。</p>
+      <div class="nf-share-preview" data-share-preview aria-label="分享卡片预览"></div>
+      <div class="nf-share-actions">
+        <button type="button" class="nf-share-primary" data-reading-action="share-image">分享图片</button>
+        <button type="button" data-reading-action="copy-link">复制链接</button>
+        <button type="button" data-reading-action="save-image">保存图片</button>
+      </div>
+      <small>${escapeHtml(canonicalArticleUrl(itemId(item)))}</small>
+    </section>` : '';
+
   const renderReadingSurface = (item) => {
     const currentChannel = channel(item);
     const storylines = matchedStorylines(item);
@@ -117,6 +132,7 @@
     const whyItMatters = longSummary && longSummary !== shortSummary ? longSummary : '';
 
     return `<div class="nf-reading-shell" role="dialog" aria-modal="true" aria-labelledby="nf-reading-title">
+      <div class="nf-reading-progress" aria-hidden="true"><span></span></div>
       <header class="nf-reading-header">
         <div class="nf-reading-header-inner">
           <button type="button" class="nf-reading-back" data-reading-action="close">← 返回刊物</button>
@@ -124,7 +140,7 @@
             <strong>${escapeHtml(state.edition?.name || 'Frontier Systems Review')}</strong>
             <span>${escapeHtml(currentChannel?.name || 'Editorial Signal')}</span>
           </div>
-          <a class="nf-reading-source-link" href="${safeUrl(item.url)}" target="_blank" rel="noopener noreferrer">原始来源 ↗</a>
+          <button type="button" class="nf-reading-share" data-reading-action="open-share">分享</button>
         </div>
       </header>
       <main class="nf-reading-layout">
@@ -138,10 +154,6 @@
           <p class="nf-reading-standfirst">${escapeHtml(shortSummary)}</p>
           <div class="nf-reading-byline">Newsflow Editorial Desk</div>
 
-          <section class="nf-reading-section">
-            <h2>发生了什么</h2>
-            <p>${escapeHtml(shortSummary)}</p>
-          </section>
           ${whyItMatters ? `<section class="nf-reading-section"><h2>为什么重要</h2><p>${escapeHtml(whyItMatters)}</p></section>` : ''}
           <section class="nf-reading-section nf-reading-evidence">
             <h2>证据与来源</h2>
@@ -158,6 +170,7 @@
           </nav>
         </article>
       </main>
+      ${renderShareDialog(item)}
     </div>`;
   };
 
@@ -190,6 +203,33 @@
     return root;
   };
 
+  const syncReadingProgress = () => {
+    const shell = document.querySelector(`#${ROOT_ID} .nf-reading-shell`);
+    const progress = shell?.querySelector('.nf-reading-progress span');
+    if (!shell || !progress) return;
+    const max = Math.max(1, shell.scrollHeight - shell.clientHeight);
+    progress.style.transform = `scaleX(${Math.max(0, Math.min(1, shell.scrollTop / max))})`;
+  };
+
+  const sharePayload = (item) => ({
+    title: item.title,
+    summary: item.long_summary || item.short_summary || item.summary || '',
+    source: item.source || 'Editorial source',
+    sourceTier: item.source_tier || '',
+    channel: channel(item)?.name || 'Editorial Signal',
+    date: formatDate(item.published_at),
+    url: canonicalArticleUrl(itemId(item)),
+    quote: item.key_quote || ''
+  });
+
+  const renderSharePreview = async () => {
+    const item = activeItem();
+    const host = document.querySelector(`#${ROOT_ID} [data-share-preview]`);
+    if (!item || !host || !window.NewsFlowShareCard) return;
+    const canvas = await window.NewsFlowShareCard.render(sharePayload(item));
+    host.replaceChildren(canvas);
+  };
+
   const render = () => {
     const root = ensureRoot();
     const item = activeItem();
@@ -206,7 +246,11 @@
     document.body.classList.add('nf-reading-open');
     setBackgroundInert(true);
     setDocumentIdentity(item);
-    requestAnimationFrame(() => root.querySelector('[data-reading-action="close"]')?.focus());
+    const shell = root.querySelector('.nf-reading-shell');
+    shell?.addEventListener('scroll', syncReadingProgress, { passive: true });
+    syncReadingProgress();
+    if (state.shareOpen) requestAnimationFrame(renderSharePreview);
+    requestAnimationFrame(() => root.querySelector(state.shareOpen ? '[data-reading-action="close-share"]' : '[data-reading-action="close"]')?.focus());
   };
 
   const setRoute = (id, replace = false) => {
@@ -224,13 +268,14 @@
       state.returnPanelScroll = captureEditionPanelScroll();
     }
     state.activeId = itemId(item);
+    state.shareOpen = Boolean(options.share);
     if (!options.replace) state.openedBySurface = !options.fromRoute;
     if (!options.fromRoute) setRoute(state.activeId, Boolean(options.replace));
     render();
     globalThis.gtag?.('event', 'reader_article_open', {
       signal_id: state.activeId,
       channel_id: item.channel_id || '',
-      surface: 'reading_surface'
+      surface: options.share ? 'share_entry' : 'reading_surface'
     });
   };
 
@@ -238,6 +283,7 @@
     const focus = state.returnFocus;
     const openedBySurface = state.openedBySurface;
     state.activeId = '';
+    state.shareOpen = false;
     state.openedBySurface = false;
     render();
     if (openedBySurface && window.history.state?.newsflowReading) window.history.back();
@@ -250,9 +296,29 @@
     if (id && state.news.some((item) => itemId(item) === id)) open(id, { fromRoute: true });
     else if (state.activeId) {
       state.activeId = '';
+      state.shareOpen = false;
       state.openedBySurface = false;
       render();
     }
+  };
+
+  const shareIcon = () => '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 16V4m-4 4 4-4 4 4M5 12v7h14v-7" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+
+  const ensureShareButton = (actions, id, label, text = false) => {
+    if (!actions || actions.querySelector('[data-reading-action="share-signal"]')) return;
+    const button = document.createElement('button');
+    button.type = 'button';
+    button.dataset.readingAction = 'share-signal';
+    button.dataset.id = id;
+    button.setAttribute('aria-label', `分享 ${label}`);
+    if (text) {
+      button.className = 'text-button';
+      button.innerHTML = `${shareIcon()} 分享`;
+    } else {
+      button.className = 'article-action';
+      button.innerHTML = shareIcon();
+    }
+    actions.append(button);
   };
 
   const decorateReadingLinks = () => {
@@ -269,21 +335,44 @@
     };
 
     const lead = shell.querySelector('.lead-story');
-    const leadId = lead?.querySelector('[data-action="open"][data-id]')?.dataset.id || '';
+    const leadOpen = lead?.querySelector('[data-action="open"][data-id]');
+    const leadId = leadOpen?.dataset.id || '';
     bindHeadline(lead?.querySelector('.lead-title a'), leadId);
+    lead?.querySelector('[data-action="feedback-hide"]')?.remove();
+    if (leadId) ensureShareButton(lead?.querySelector('.lead-actions'), leadId, lead?.querySelector('.lead-title')?.textContent || '报道', true);
 
     shell.querySelectorAll('.article-card').forEach((card) => {
       const quickEvidence = card.querySelector('.article-action[data-action="open"][data-id]');
       const id = quickEvidence?.dataset.id || '';
+      if (!id) return;
       bindHeadline(card.querySelector('.article-title a'), id);
-      if (quickEvidence) quickEvidence.setAttribute('aria-label', `快速证据 ${quickEvidence.getAttribute('aria-label')?.replace(/^深读\s*/, '') || ''}`.trim());
+      quickEvidence?.remove();
+      card.querySelector('.article-action[data-action="feedback-hide"]')?.remove();
+      ensureShareButton(card.querySelector('.card-actions'), id, card.querySelector('.article-title')?.textContent || '报道');
     });
   };
 
-  document.addEventListener('click', (event) => {
+  const shareImage = async (item) => {
+    if (!window.NewsFlowShareCard) return;
+    const canvas = await window.NewsFlowShareCard.render(sharePayload(item));
+    const blob = await window.NewsFlowShareCard.toBlob(canvas);
+    const file = new File([blob], `newsflow-${itemId(item)}.png`, { type: 'image/png' });
+    const data = { title: item.title, text: item.short_summary || item.summary || '', url: canonicalArticleUrl(itemId(item)), files: [file] };
+    if (navigator.share && (!navigator.canShare || navigator.canShare({ files: [file] }))) {
+      await navigator.share(data);
+    } else {
+      await window.NewsFlowShareCard.download(canvas, file.name);
+      await navigator.clipboard?.writeText?.(data.url);
+    }
+    globalThis.gtag?.('event', 'reader_article_share', { signal_id: itemId(item), surface: 'share_card' });
+  };
+
+  document.addEventListener('click', async (event) => {
     const internal = event.target.closest?.('[data-reading-action]');
-    if (internal && document.getElementById(ROOT_ID)?.contains(internal)) {
+    const root = document.getElementById(ROOT_ID);
+    if (internal && root?.contains(internal)) {
       const action = internal.dataset.readingAction;
+      const item = activeItem();
       if (action === 'close') close();
       else if (action === 'read') open(internal.dataset.id || '', { replace: true });
       else if (action === 'storyline') {
@@ -291,12 +380,34 @@
         state.returnPanelScroll = null;
         close();
         requestAnimationFrame(() => document.querySelector(`[data-edition-action="open-storyline"][data-storyline-id="${CSS.escape(storylineId)}"]`)?.click());
+      } else if (action === 'open-share') {
+        state.shareOpen = true;
+        render();
+      } else if (action === 'close-share') {
+        state.shareOpen = false;
+        render();
+      } else if (action === 'share-image' && item) {
+        await shareImage(item).catch((error) => console.warn('NewsFlow share failed:', error));
+      } else if (action === 'save-image' && item && window.NewsFlowShareCard) {
+        const canvas = await window.NewsFlowShareCard.render(sharePayload(item));
+        await window.NewsFlowShareCard.download(canvas, `newsflow-${itemId(item)}.png`);
+      } else if (action === 'copy-link' && item) {
+        await navigator.clipboard?.writeText?.(canonicalArticleUrl(itemId(item)));
       }
       return;
     }
 
     const readerShell = event.target.closest?.('#app .app-shell[data-product-model="magazine-edition"]');
     if (!readerShell) return;
+    if (internal?.dataset.readingAction === 'share-signal') {
+      const id = internal.dataset.id || '';
+      if (!state.news.some((item) => itemId(item) === id)) return;
+      event.preventDefault();
+      event.stopPropagation();
+      open(id, { share: true });
+      return;
+    }
+
     const trigger = event.target.closest?.('[data-reading-link], [data-action="open"][data-id]');
     if (!trigger || trigger.classList.contains('article-action')) return;
     const id = trigger.dataset.id || '';
@@ -318,9 +429,13 @@
     if (event.key === 'Escape') {
       event.preventDefault();
       event.stopPropagation();
-      close();
+      if (state.shareOpen) {
+        state.shareOpen = false;
+        render();
+      } else close();
       return;
     }
+    if (state.shareOpen) return;
     if (event.key === 'ArrowUp' || event.key === 'ArrowDown') {
       const shell = document.querySelector(`#${ROOT_ID} .nf-reading-shell`);
       if (!shell) return;
