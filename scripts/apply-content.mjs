@@ -95,6 +95,14 @@ const sourceForUrl = (value) => {
     return null;
   }
 };
+const sourceLabelForUrl = (value) => {
+  try {
+    const hostname = new URL(String(value || '')).hostname.toLowerCase().replace(/^www\./, '');
+    return hostname ? `Unregistered · ${hostname}` : 'Unregistered source';
+  } catch {
+    return 'Unregistered source';
+  }
+};
 
 const reviewableDecisions = (report.decisions || []).filter((decision) => decision.status !== 'rejected');
 const syncedAt = new Date().toISOString();
@@ -103,14 +111,15 @@ const rows = reviewableDecisions.map((decision) => {
   const candidate = candidateById.get(id);
   if (!candidate) throw new Error(`Missing candidate snapshot for reviewable item ${id}.`);
   const registeredSource = sourceForUrl(candidate.url);
-  if (!registeredSource) throw new Error(`Candidate ${id} uses an unregistered source: ${candidate.url}`);
   const rawDate = candidate.published_at || candidate.event_date || null;
   const parsedDate = rawDate ? new Date(rawDate) : null;
   const payload = {
     ...candidate,
-    source: String(candidate.source || registeredSource.name || ''),
-    source_tier: String(candidate.source_tier || registeredSource.tier || ''),
-    source_id: String(registeredSource.id || '')
+    source: String(registeredSource?.name || sourceLabelForUrl(candidate.url)),
+    source_tier: String(registeredSource?.tier || 'Unregistered'),
+    source_id: registeredSource?.id || null,
+    preflight_status: String(decision.status || 'needs_review'),
+    preflight_reasons: Array.isArray(decision.reasons) ? decision.reasons.map(String) : []
   };
   return {
     candidate_id: id,

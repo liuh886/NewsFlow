@@ -45,6 +45,26 @@ const github = async (path, options = {}) => {
   return response.json();
 };
 
+const classifyApplyFailure = (result) => {
+  const output = `${String(result?.stderr || '')}\n${String(result?.stdout || '')}`;
+  const signatures = [
+    ['Candidate pack failed JSON Schema validation:', 'candidate_schema_invalid'],
+    ['Candidate pack failed:', 'candidate_pack_invalid'],
+    ['Content source configuration failed:', 'source_registry_invalid'],
+    ['Content evaluator did not return a valid JSON report.', 'evaluator_result_invalid'],
+    ['GitHub Actions OIDC runtime is unavailable.', 'oidc_runtime_unavailable'],
+    ['GitHub Actions OIDC token request failed with', 'oidc_token_failed'],
+    ['GitHub Actions OIDC token response is invalid.', 'oidc_token_invalid'],
+    ['OIDC Candidate writer failed with', 'oidc_writer_failed'],
+    ['OIDC Candidate writer returned an invalid acknowledgement.', 'oidc_writer_ack_invalid'],
+    ['Applying reviewable Candidates requires either', 'candidate_writer_unavailable'],
+    ['Missing candidate snapshot for reviewable item', 'candidate_snapshot_missing'],
+    ['This scan audit was already applied:', 'duplicate_scan_audit'],
+    ['Content report has invalid run.as_of.', 'invalid_run_timestamp']
+  ];
+  return signatures.find(([signature]) => output.includes(signature))?.[1] || 'canonical_apply_failed';
+};
+
 let requestId = null;
 let requestCommentId = null;
 let challengeCommentId = null;
@@ -175,7 +195,8 @@ try {
   });
   plaintext.fill(0);
   if (apply.status !== 0) {
-    throw Object.assign(new Error('Canonical Candidate apply rejected or failed.'), { code: 'canonical_apply_failed' });
+    const code = classifyApplyFailure(apply);
+    throw Object.assign(new Error('Canonical Candidate apply rejected or failed.'), { code });
   }
 
   const summaryMatch = String(apply.stdout || '').match(/Content scan applied: (\d+)\/(\d+) item\(s\) submitted to the private Supabase editorial queue; no Reader publication changed\. Public audit: (.+)\s*$/m);

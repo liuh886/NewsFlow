@@ -23,7 +23,9 @@ const [script, apply, writer, workflow, config, publication] = await Promise.all
 for (const required of [
   'NEWSFLOW_APPLY_REQUEST_V1', 'NEWSFLOW_APPLY_CHALLENGE_V1', 'NEWSFLOW_APPLY_PAYLOAD_V1',
   'RSA_PKCS1_OAEP_PADDING', "oaepHash: 'sha256'", "createDecipheriv('aes-256-gcm'",
-  "'scripts/apply-content.mjs'", "'--stdin', '--apply'", 'maxPlaintextBytes'
+  "'scripts/apply-content.mjs'", "'--stdin', '--apply'", 'maxPlaintextBytes',
+  'classifyApplyFailure', 'candidate_schema_invalid', 'candidate_pack_invalid',
+  'source_registry_invalid', 'oidc_writer_failed', 'duplicate_scan_audit'
 ]) if (!script.includes(required)) throw new Error(`Candidate ingress script missing contract: ${required}`);
 for (const forbidden of ["from('newsflow_candidates')", 'public/data/news.json', 'SUPABASE_SERVICE_ROLE_KEY']) {
   if (script.includes(forbidden)) throw new Error(`Candidate ingress must not persist or own database secrets: ${forbidden}`);
@@ -32,8 +34,12 @@ for (const forbidden of ["from('newsflow_candidates')", 'public/data/news.json',
 for (const required of [
   'ACTIONS_ID_TOKEN_REQUEST_URL', 'ACTIONS_ID_TOKEN_REQUEST_TOKEN',
   'NEWSFLOW_CANDIDATE_WRITER_URL', 'newsflow-supabase-candidate-writer',
-  "from('newsflow_candidates')", 'SUPABASE_SERVICE_ROLE_KEY'
-]) if (!apply.includes(required)) throw new Error(`Canonical apply missing writer contract: ${required}`);
+  "from('newsflow_candidates')", 'SUPABASE_SERVICE_ROLE_KEY',
+  "source_tier: String(registeredSource?.tier || 'Unregistered')",
+  'source_id: registeredSource?.id || null',
+  'preflight_status:', 'preflight_reasons:'
+]) if (!apply.includes(required)) throw new Error(`Canonical apply missing writer/review contract: ${required}`);
+if (apply.includes('uses an unregistered source:')) throw new Error('Canonical apply must not contradict evaluator needs_review semantics for unregistered sources.');
 if (!apply.includes('if (!candidateRows.length) return;')) throw new Error('Canonical apply must preserve credential-free zero-Candidate local runs.');
 
 for (const required of [
@@ -70,4 +76,4 @@ if (ingress.writer_auth !== 'github_actions_oidc' || ingress.direct_sql_fallback
 }
 if (publication.includes('SUPABASE_SERVICE_ROLE_KEY')) throw new Error('Publication sync must remain isolated from Candidate credentials.');
 
-console.log('Candidate ingress contract: OK (encrypted transport + GitHub OIDC writer).');
+console.log('Candidate ingress contract: OK (encrypted transport + reviewable unregistered sources + bounded failure codes + GitHub OIDC writer).');
