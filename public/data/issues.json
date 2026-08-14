@@ -1,15 +1,65 @@
 [
   {
+    "id": "frontier-systems-review-2026-17",
+    "issue_number": 17,
+    "published_at": "2026-08-15T00:00:00+08:00",
+    "coverage_start": "2026-08-15",
+    "coverage_end": "2026-08-31",
+    "status": "published",
+    "lifecycle": "live",
+    "frozen_at": null,
+    "auto_generated": true,
+    "selection_mode": "live_editorial_evaluation",
+    "edition_version": "1.2",
+    "title": "Issue 17 · 本期编选中",
+    "standfirst": "本期已进入出版周期。重要进展将在完成编辑审阅后陆续进入本期。",
+    "judgment": "本期尚无已录用文章，编辑部持续追踪关键进展。",
+    "cover_signal_id": "",
+    "signal_ids": [],
+    "storyline_updates": [],
+    "what_to_watch": [
+      "大型负荷并网",
+      "发电与储能",
+      "长期购电协议"
+    ],
+    "ranking": {
+      "version": "live-v3",
+      "policy": "all_adopted_visible_until_freeze_then_chief_cover_then_evidence_quality_then_editor_consensus_then_reader_signal_then_recency",
+      "authority_order": [
+        "evidence_gate",
+        "editor_in_chief",
+        "editor_consensus",
+        "reader_consensus"
+      ]
+    },
+    "methodology": {
+      "candidate_count": 0,
+      "selected_count": 0,
+      "editorial_adoption_count": 0,
+      "evaluation_pool_count": 0,
+      "cover_story_count": 0,
+      "editor_review_count": 0,
+      "qualified_reader_feedback_count": 0,
+      "selected_by_channel": {},
+      "final_issue_max_signals": 24,
+      "final_channel_max_signals": 8,
+      "finalized": false,
+      "fixed_length": false,
+      "editorial_view_changed": false
+    },
+    "updated_at": "2026-08-14T16:08:08.125Z"
+  },
+  {
     "id": "frontier-systems-review-2026-16",
     "issue_number": 16,
     "published_at": "2026-08-01T00:00:00+08:00",
     "coverage_start": "2026-08-01",
     "coverage_end": "2026-08-14",
     "status": "published",
-    "lifecycle": "live",
-    "frozen_at": null,
+    "lifecycle": "frozen",
+    "frozen_at": "2026-08-15T00:00:00+08:00",
     "auto_generated": true,
-    "selection_mode": "live_editorial_evaluation",
+    "selection_mode": "final_editorial_ranking",
     "edition_version": "1.2",
     "title": "SpaceX 与 Tesla 启动 168 亿美元 Terafab，AI 芯片供给开始向制造、封装、测试一体化纵向整合",
     "standfirst": "SpaceX 与 Tesla 将初始投资 168 亿美元在得州 Grimes County 建设 Terafab；该设施计划在同一园区完成先进逻辑和存储芯片的制造、封装与测试，并服务 Tesla 机器人/自动驾驶与 SpaceX 数据中心需求。 本期持续追踪相关进展，封面与篇目将随重要性更新。",
@@ -55,15 +105,18 @@
       "editor_review_count": 0,
       "qualified_reader_feedback_count": 0,
       "selected_by_channel": {
-        "ai-infrastructure": 13
+        "ai-infrastructure": 8
       },
       "final_issue_max_signals": 24,
       "final_channel_max_signals": 8,
-      "finalized": false,
+      "finalized": true,
       "fixed_length": false,
-      "editorial_view_changed": false
+      "editorial_view_changed": true,
+      "post_freeze_amendment_count": 5
     },
-    "updated_at": "2026-08-12T05:08:49.689Z"
+    "updated_at": "2026-08-12T05:08:49.689Z",
+    "editorially_revised_at": "2026-08-14T16:08:08.125Z",
+    "revision_note": "主编在下一刊期内补录属于本刊期覆盖窗口的迟到录用稿件；原封面与既有篇目顺序保持不变。"
   },
   {
     "id": "frontier-systems-review-2026-15",
