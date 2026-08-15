@@ -1,0 +1,38 @@
+{
+  "schema_version": "1.0",
+  "edition_id": "frontier-systems-review",
+  "workflow": {
+    "id": "newsflow-content-update",
+    "version": "1.0.0",
+    "actor": {
+      "agent_id": "chatgpt-ingress-regression",
+      "runtime": "ChatGPT GitHub connector",
+      "workflow_id": "newsflow-content-update",
+      "workflow_version": "1.0.0",
+      "model": "GPT-5.6 Sol"
+    }
+  },
+  "run": {
+    "as_of": "2026-08-15T07:31:00Z",
+    "coverage_start": "2026-08-15T05:00:00Z",
+    "coverage_end": "2026-08-15T07:31:00Z",
+    "timezone": "Asia/Shanghai",
+    "actor": {
+      "agent_id": "chatgpt-ingress-regression",
+      "runtime": "ChatGPT GitHub connector",
+      "workflow_id": "newsflow-content-update",
+      "workflow_version": "1.0.0",
+      "model": "GPT-5.6 Sol"
+    }
+  },
+  "applied": true,
+  "summary": {
+    "candidate_count": 1,
+    "reviewable_count": 1,
+    "accepted_by_machine_gate_count": 0,
+    "needs_review_count": 1,
+    "rejected_count": 0
+  },
+  "publication_effect": "none",
+  "editorial_effect": "supabase_private_candidates_only"
+}
