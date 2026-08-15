@@ -372,8 +372,8 @@ All private Supabase tables use RLS. Service-role credentials stay in an explici
 
 ## Architecture ownership
 
-1. `src/editorial-app.js` owns public Signal rendering and local-first adaptive Latest.
-2. `src/edition-layer.js` owns Edition/Issue/Section/Storyline/Archive presentation.
+1. `src/reader/core.js` owns public Signal rendering and local-first adaptive Latest.
+2. `src/reader/edition.js` owns Edition/Issue/Section/Storyline/Archive presentation.
 3. `public/reading-surface.js` owns in-app canonical reading and the share workflow.
 4. `public/share-card.js` owns the single browser-native editorial card renderer.
 5. `public/editorial-office.js` owns mode selection, authenticated editorial membership and appointment entry.

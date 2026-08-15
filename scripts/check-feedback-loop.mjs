@@ -9,8 +9,8 @@ const migration = await read('supabase/migrations/20260809040109_close_feedback_
 const rankingMigration = await read('supabase/migrations/20260809045304_editorial_ranking_loop.sql');
 const distinctAudienceMigration = await read('supabase/migrations/20260809052408_reader_consensus_distinct_audience.sql');
 const client = await read('src/supabase-feedback.js');
-const app = await read('src/editorial-app.js');
-const editionLayer = await read('src/edition-layer.js');
+const app = await read('src/reader/core.js');
+const editionLayer = await read('src/reader/edition.js');
 const policy = JSON.parse(await read('config/recommendation-policy.json'));
 const publicConfig = JSON.parse(await read('public/data/supabase-config.json'));
 
