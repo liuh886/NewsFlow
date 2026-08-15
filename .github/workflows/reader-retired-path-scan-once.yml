@@ -1,0 +1,22 @@
+name: Reader retired path scan once
+
+on:
+  push:
+    branches:
+      - refactor/reader-ui-canonical
+    paths:
+      - .github/workflows/reader-retired-path-scan-once.yml
+
+jobs:
+  scan:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          ref: refactor/reader-ui-canonical
+      - name: Find stale Reader topology references
+        shell: bash
+        run: |
+          grep -RInE --exclude-dir=.git --exclude='reader-retired-path-scan-once.yml' \
+            'src/(editorial-app|polish|edition-layer)\.(js|css)|public/(magazine-polish|reader-navigation|reading-surface)\.css|public/magazine-polish\.js|\./(editorial-app|polish|edition-layer|magazine-polish|styles|reader-navigation|reading-surface)\.(js|css)' \
+            scripts tests .github README.md DESIGN.md WORKFLOW.md package.json || true
