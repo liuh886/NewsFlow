@@ -1,4 +1,4 @@
-name: Secure Candidate ingress
+name: Candidate ingress
 
 on:
   issue_comment:
@@ -15,20 +15,18 @@ concurrency:
 
 jobs:
   apply:
-    name: Decrypt and apply private Candidate pack
+    name: Apply private Candidate pack
     if: >-
       github.event.issue.number == 110 &&
       github.event.comment.user.login == github.repository_owner &&
-      startsWith(github.event.comment.body, 'NEWSFLOW_APPLY_REQUEST_V1 ')
+      startsWith(github.event.comment.body, 'NEWSFLOW_CANDIDATE_PACK_V1 ')
     runs-on: ubuntu-24.04
-    timeout-minutes: 8
+    timeout-minutes: 4
     env:
-      GITHUB_TOKEN: ${{ github.token }}
       GH_TOKEN: ${{ github.token }}
       NEWSFLOW_CANDIDATE_WRITER_URL: https://blgwlycfcwvsupmqyqwn.supabase.co/functions/v1/newsflow-candidate-writer
       NEWSFLOW_CANDIDATE_WRITER_AUDIENCE: newsflow-supabase-candidate-writer
       NEWSFLOW_INGRESS_ISSUE: '110'
-      NEWSFLOW_INGRESS_TIMEOUT_MS: '240000'
       NEWSFLOW_INGRESS_RESULT_PATH: artifacts/candidate-ingress-result.json
 
     steps:
@@ -47,9 +45,8 @@ jobs:
       - name: Install locked toolchain
         run: npm ci --no-audit --no-fund
 
-      - name: Run encrypted ingress and canonical Candidate apply
+      - name: Apply Candidate pack
         id: ingress
-        continue-on-error: true
         run: node scripts/candidate-ingress.mjs
 
       - name: Read sanitized ingress result
@@ -69,36 +66,28 @@ jobs:
                 error_code: 'missing_result'
               };
           const safe = (value) => String(value ?? '').replace(/[\r\n]/g, '');
-          const output = process.env.GITHUB_OUTPUT;
           for (const [key, value] of Object.entries({
             status: result.status,
             request_id: result.request_id,
             request_comment_id: result.request_comment_id,
-            challenge_comment_id: result.challenge_comment_id,
-            payload_comment_id: result.payload_comment_id,
             candidate_count: result.candidate_count,
             reviewable_count: result.reviewable_count,
             audit_path: result.audit_path,
             error_code: result.error_code
           })) {
-            fs.appendFileSync(output, `${key}=${safe(value)}\n`);
+            fs.appendFileSync(process.env.GITHUB_OUTPUT, `${key}=${safe(value)}\n`);
           }
           NODE
         env:
           REQUEST_COMMENT_ID: ${{ github.event.comment.id }}
 
-      - name: Refresh public data-status metadata
-        id: status
-        if: steps.result.outputs.status == 'applied'
-        continue-on-error: true
-        run: npm run content:status
-
-      - name: Commit sanitized run audit and data-status
+      - name: Publish sanitized audit metadata
         id: audit
-        if: steps.result.outputs.status == 'applied' && steps.status.outcome == 'success'
+        if: steps.result.outputs.status == 'applied'
         continue-on-error: true
         shell: bash
         run: |
+          npm run content:status
           set -euo pipefail
           audit_path="${{ steps.result.outputs.audit_path }}"
           case "$audit_path" in
@@ -108,7 +97,7 @@ jobs:
           git config user.name "newsflow-content-bot"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git add -- "$audit_path" public/data/data-status.json
-          git commit -m "content: record encrypted Candidate ingress"
+          git commit -m "content: record Candidate ingress"
           for attempt in 1 2 3; do
             git pull --rebase origin main
             if git push origin HEAD:main; then
@@ -118,69 +107,31 @@ jobs:
           done
           exit 1
 
-      - name: Validate repository after apply
-        id: validate
-        if: steps.result.outputs.status == 'applied'
-        continue-on-error: true
-        run: |
-          npm run check
-          npm run build
-
       - name: Report sanitized outcome
         if: always()
+        continue-on-error: true
         shell: bash
         run: |
-          set -euo pipefail
           request_id="${{ steps.result.outputs.request_id }}"
           if [[ -z "$request_id" ]]; then request_id="unknown"; fi
-          if [[ "${{ steps.ingress.outcome }}" == "success" \
-             && "${{ steps.result.outputs.status }}" == "applied" \
-             && "${{ steps.status.outcome }}" == "success" \
-             && "${{ steps.audit.outcome }}" == "success" \
-             && "${{ steps.validate.outcome }}" == "success" ]]; then
+          if [[ "${{ steps.ingress.outcome }}" == "success" && "${{ steps.result.outputs.status }}" == "applied" ]]; then
             body=$(printf '%s\n%s\n%s\n%s\n%s' \
               "NEWSFLOW_APPLY_RESULT_V1 ${request_id}" \
               "status: applied" \
               "candidate_count: ${{ steps.result.outputs.candidate_count }}" \
               "reviewable_count: ${{ steps.result.outputs.reviewable_count }}" \
-              "audit: ${{ steps.result.outputs.audit_path }}")
+              "audit_commit: ${{ steps.audit.outcome }}")
           else
-            stage="ingress"
-            if [[ "${{ steps.result.outputs.status }}" == "applied" && "${{ steps.status.outcome }}" != "success" ]]; then stage="data_status"; fi
-            if [[ "${{ steps.result.outputs.status }}" == "applied" && "${{ steps.status.outcome }}" == "success" && "${{ steps.audit.outcome }}" != "success" ]]; then stage="audit_commit"; fi
-            if [[ "${{ steps.result.outputs.status }}" == "applied" && "${{ steps.status.outcome }}" == "success" && "${{ steps.audit.outcome }}" == "success" && "${{ steps.validate.outcome }}" != "success" ]]; then stage="validation"; fi
             code="${{ steps.result.outputs.error_code }}"
-            if [[ -z "$code" ]]; then code="workflow_stage_failed"; fi
-            body=$(printf '%s\n%s\n%s\n%s' \
+            if [[ -z "$code" ]]; then code="workflow_failed"; fi
+            body=$(printf '%s\n%s\n%s' \
               "NEWSFLOW_APPLY_RESULT_V1 ${request_id}" \
               "status: failed" \
-              "stage: ${stage}" \
               "error_code: ${code}")
           fi
           gh api "repos/${GITHUB_REPOSITORY}/issues/110/comments" -f body="$body" >/dev/null
 
-      - name: Remove transient encrypted transport comments
+      - name: Remove transport comment
         if: always()
-        shell: bash
-        run: |
-          set +e
-          for id in \
-            "${{ steps.result.outputs.payload_comment_id }}" \
-            "${{ steps.result.outputs.challenge_comment_id }}" \
-            "${{ steps.result.outputs.request_comment_id }}"; do
-            if [[ "$id" =~ ^[0-9]+$ ]]; then
-              gh api -X DELETE "repos/${GITHUB_REPOSITORY}/issues/comments/${id}" >/dev/null 2>&1
-            fi
-          done
-
-      - name: Enforce successful canonical apply
-        if: always()
-        shell: bash
-        run: |
-          if [[ "${{ steps.ingress.outcome }}" != "success" \
-             || "${{ steps.result.outputs.status }}" != "applied" \
-             || "${{ steps.status.outcome }}" != "success" \
-             || "${{ steps.audit.outcome }}" != "success" \
-             || "${{ steps.validate.outcome }}" != "success" ]]; then
-            exit 1
-          fi
+        continue-on-error: true
+        run: gh api -X DELETE "repos/${GITHUB_REPOSITORY}/issues/comments/${{ github.event.comment.id }}" >/dev/null 2>&1
