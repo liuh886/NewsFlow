@@ -9,7 +9,7 @@ const requiredFiles = [
   'package.json',
   'index.html',
   'src/reader/core.js',
-  'src/styles.css',
+  'src/reader.css',
   'scripts/check.mjs',
   'scripts/build.mjs',
 ];
