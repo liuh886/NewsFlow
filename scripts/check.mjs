@@ -8,8 +8,8 @@ const read = (path) => readFile(resolve(root, path), 'utf8');
 const readJson = async (path) => JSON.parse(await read(path));
 
 const requiredFiles = [
-  'index.html', 'src/editorial-app.js', 'src/edition-layer.js', 'src/supabase-feedback.js',
-  'public/startup-resilience.js', 'public/magazine-polish.js', 'public/reading-surface.js',
+  'index.html', 'src/reader/core.js', 'src/reader/edition.js', 'src/supabase-feedback.js',
+  'public/startup-resilience.js', 'src/reader/magazine.js', 'public/reading-surface.js',
   'public/editorial-office.js', 'public/review-game.js', 'public/editorial-governance.js', 'public/sw.js',
   'public/manifest.webmanifest', 'public/data/news.json', 'public/data/topics.json', 'public/data/edition.json',
   'public/data/issues.json', 'public/data/storylines.json', 'public/data/data-status.json',
@@ -54,8 +54,8 @@ if (trackedInbox.status !== 0) throw new Error(trackedInbox.stderr || 'Unable to
 if (trackedInbox.stdout.trim()) throw new Error(`Private Candidate packs must not be Git-tracked:\n${trackedInbox.stdout}`);
 
 const syntaxFiles = [
-  'src/editorial-app.js', 'src/edition-layer.js', 'src/supabase-feedback.js', 'public/startup-resilience.js',
-  'public/magazine-polish.js', 'public/reading-surface.js', 'public/editorial-office.js', 'public/review-game.js',
+  'src/reader/core.js', 'src/reader/edition.js', 'src/supabase-feedback.js', 'public/startup-resilience.js',
+  'src/reader/magazine.js', 'public/reading-surface.js', 'public/editorial-office.js', 'public/review-game.js',
   'public/editorial-governance.js', 'public/sw.js', 'scripts/build.mjs', 'scripts/update-content.mjs',
   'scripts/apply-content.mjs', 'scripts/sync-live-issue.mjs', 'scripts/sync-adopted-signals.mjs',
   'scripts/sync-editorial-governance.mjs', 'scripts/update-data-status.mjs', 'scripts/pull-feedback.mjs',
@@ -91,7 +91,7 @@ if (!packageManifest.scripts?.['editorial:sync'] || !packageManifest.scripts?.['
 if (packageManifest.scripts?.['publish:edition'] || packageManifest.scripts?.['publish:edition:dry-run']) throw new Error('Retired frozen-edition publisher scripts must not return.');
 if (packageManifest.scripts?.['supabase:sync']) throw new Error('Repository-to-Supabase Candidate synchronization must not return.');
 
-const appSource = await read('src/editorial-app.js');
+const appSource = await read('src/reader/core.js');
 for (const required of ["loadJson('./data/news.json')", "new CustomEvent('newsflow:rendered')", 'AbortSignal.timeout(5000)', '按时间排序']) {
   if (!appSource.includes(required)) throw new Error(`Reader app missing publication contract: ${required}`);
 }
@@ -154,7 +154,7 @@ for (const contract of [
 ]) if (!liveCompiler.includes(contract)) throw new Error(`Live Issue compiler missing contract: ${contract}`);
 if (liveCompiler.includes("from('newsflow_editorial_adoptions')") || liveCompiler.includes('SUPABASE_SERVICE_ROLE_KEY')) throw new Error('Live Issue compiler must consume authoritative public Signals, not create a second Supabase read path.');
 
-const editionLayer = await read('src/edition-layer.js');
+const editionLayer = await read('src/reader/edition.js');
 for (const contract of [
   'renderIssueDrawer', 'publishedIssueById', 'const issues = publishedIssues();', 'readerUtilityState',
   "data-edition-action=\"open-issue\"", 'data-issue-current', '期刊目录', '全部刊期', '查看本期'
