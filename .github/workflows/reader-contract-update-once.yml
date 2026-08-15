@@ -1,0 +1,70 @@
+name: Reader contract update once
+
+on:
+  push:
+    branches:
+      - refactor/reader-ui-canonical
+    paths:
+      - .github/workflows/reader-contract-update-once.yml
+
+permissions:
+  contents: write
+
+jobs:
+  update:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          ref: refactor/reader-ui-canonical
+          fetch-depth: 0
+      - name: Rebind Reader contracts to semantic owners
+        shell: bash
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+
+          replacements_by_file = {
+              'scripts/check-feedback-loop.mjs': {
+                  'src/editorial-app.js': 'src/reader/core.js',
+                  'src/edition-layer.js': 'src/reader/edition.js',
+              },
+              'scripts/check-repository-contract.mjs': {
+                  'src/editorial-app.js': 'src/reader/core.js',
+              },
+              'scripts/check-web-standards.mjs': {
+                  'src/polish.js': 'src/reader/interactions.js',
+                  'src/edition-layer.js': 'src/reader/edition.js',
+              },
+              'scripts/check-language.mjs': {
+                  'src/editorial-app.js': 'src/reader/core.js',
+                  'src/edition-layer.js': 'src/reader/edition.js',
+              },
+              'README.md': {
+                  '`src/editorial-app.js` — public Signals, local-first adaptive Latest and quick evidence;':
+                  '`src/reader/core.js` — public Signals, local-first adaptive Latest and quick evidence;',
+                  '`src/edition-layer.js` — Edition, Current Issue, Sections, Storylines and Archive;':
+                  '`src/reader/edition.js` — Edition, Current Issue, Sections, Storylines and Archive;',
+              },
+              'DESIGN.md': {
+                  '`src/editorial-app.js` owns public Signal rendering and local-first adaptive Latest.':
+                  '`src/reader/core.js` owns public Signal rendering and local-first adaptive Latest.',
+                  '`src/edition-layer.js` owns Edition/Issue/Section/Storyline/Archive presentation.':
+                  '`src/reader/edition.js` owns Edition/Issue/Section/Storyline/Archive presentation.',
+              },
+          }
+          for filename, replacements in replacements_by_file.items():
+              path = Path(filename)
+              text = path.read_text(encoding='utf-8')
+              for old, new in replacements.items():
+                  text = text.replace(old, new)
+              path.write_text(text, encoding='utf-8')
+          PY
+      - name: Commit contract cleanup
+        shell: bash
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add scripts/check-feedback-loop.mjs scripts/check-repository-contract.mjs scripts/check-web-standards.mjs scripts/check-language.mjs README.md DESIGN.md
+          git commit -m "test(reader): bind remaining contracts to semantic owners"
+          git push origin HEAD:refactor/reader-ui-canonical
