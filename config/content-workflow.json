@@ -34,6 +34,17 @@
     "git_tracked": false,
     "lifetime": "transient"
   },
+  "scheduled_runtime": {
+    "repository_shell_required": false,
+    "github_contents_access": "read",
+    "github_issue_access": "read_write",
+    "public_web_discovery_required": true,
+    "base64_encoding_required": true,
+    "supabase_green_lane_access": "read_only",
+    "supabase_candidate_verification_access": "read_only",
+    "supabase_candidate_write_allowed": false,
+    "submit_via": "agent_apply_ingress"
+  },
   "agent_apply_ingress": {
     "transport": "owner_issue_comment_base64",
     "issue_number": 110,

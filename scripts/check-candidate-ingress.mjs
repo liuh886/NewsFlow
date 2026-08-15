@@ -68,6 +68,18 @@ for (const forbidden of [
 ]) if (workflow.includes(forbidden)) throw new Error(`Candidate ingress workflow contains retired complexity: ${forbidden}`);
 
 const workflowConfig = JSON.parse(config);
+const scheduled = workflowConfig.scheduled_runtime;
+if (!scheduled || scheduled.repository_shell_required !== false || scheduled.github_contents_access !== 'read' || scheduled.github_issue_access !== 'read_write') {
+  throw new Error('Scheduled runtime must use GitHub read + Issue read/write without repository shell execution.');
+}
+if (scheduled.public_web_discovery_required !== true || scheduled.base64_encoding_required !== true) {
+  throw new Error('Scheduled runtime must provide public-web discovery and deterministic Base64 encoding.');
+}
+if (scheduled.supabase_green_lane_access !== 'read_only' || scheduled.supabase_candidate_verification_access !== 'read_only' || scheduled.supabase_candidate_write_allowed !== false) {
+  throw new Error('Scheduled runtime must keep Supabase access read-only and never write Candidates directly.');
+}
+if (scheduled.submit_via !== 'agent_apply_ingress') throw new Error('Scheduled runtime must submit through the canonical agent apply ingress.');
+
 const ingress = workflowConfig.agent_apply_ingress;
 if (!ingress || ingress.transport !== 'owner_issue_comment_base64' || ingress.issue_number !== 110) {
   throw new Error('Content workflow must declare the simple owner-only Candidate ingress.');
@@ -78,4 +90,4 @@ if (ingress.writer_auth !== 'github_actions_oidc' || ingress.direct_sql_fallback
 }
 if (publication.includes('SUPABASE_SERVICE_ROLE_KEY')) throw new Error('Publication sync must remain isolated from Candidate credentials.');
 
-console.log('Candidate ingress contract: OK (one-shot transport + payload-shape diagnostics + canonical apply + GitHub OIDC writer).');
+console.log('Candidate ingress contract: OK (scheduled runtime read/discovery boundary + one-shot transport + canonical apply + GitHub OIDC writer).');
