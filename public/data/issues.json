@@ -11,11 +11,14 @@
     "auto_generated": true,
     "selection_mode": "live_editorial_evaluation",
     "edition_version": "1.2",
-    "title": "Issue 17 · 本期编选中",
-    "standfirst": "本期已进入出版周期。重要进展将在完成编辑审阅后陆续进入本期。",
-    "judgment": "本期尚无已录用文章，编辑部持续追踪关键进展。",
-    "cover_signal_id": "",
-    "signal_ids": [],
+    "title": "Anthropic IPO 估值开始押注 2028 年 1900–2000 亿美元收入，资本市场把 AI 成本回收前置到远期增长",
+    "standfirst": "Reuters 报道称，Anthropic 预计 2028 年收入约 1900–2000 亿美元，而其 2026 年 5 月披露的收入 run rate 约为 470 亿美元；投资者正用远期收入倍数评估其 IPO。 本期持续追踪相关进展，封面与篇目将随重要性更新。",
+    "judgment": "本期刊期仍在开放评估中；所有已录用进展均向读者与编辑开放，封面与最终篇目将在刊期结束时按重要性收敛。",
+    "cover_signal_id": "anthropic-2028-revenue-ipo-economics-2026",
+    "signal_ids": [
+      "anthropic-2028-revenue-ipo-economics-2026",
+      "nvidia-ohio-openai-guarantee-cut-2026"
+    ],
     "storyline_updates": [],
     "what_to_watch": [
       "大型负荷并网",
@@ -33,21 +36,23 @@
       ]
     },
     "methodology": {
-      "candidate_count": 0,
-      "selected_count": 0,
-      "editorial_adoption_count": 0,
-      "evaluation_pool_count": 0,
+      "candidate_count": 2,
+      "selected_count": 2,
+      "editorial_adoption_count": 2,
+      "evaluation_pool_count": 2,
       "cover_story_count": 0,
       "editor_review_count": 0,
       "qualified_reader_feedback_count": 0,
-      "selected_by_channel": {},
+      "selected_by_channel": {
+        "ai-infrastructure": 2
+      },
       "final_issue_max_signals": 24,
       "final_channel_max_signals": 8,
       "finalized": false,
       "fixed_length": false,
       "editorial_view_changed": false
     },
-    "updated_at": "2026-08-14T16:08:08.125Z"
+    "updated_at": "2026-08-15T11:38:08.325Z"
   },
   {
     "id": "frontier-systems-review-2026-16",
@@ -78,7 +83,9 @@
       "alibaba-qwen-openweight-revenue-sharing-2026",
       "us-openweight-ai-safety-test-exemption-2026",
       "apple-cxmt-memory-supply-ai-shortage-2026",
-      "nvidia-lancium-stargate-power-investment-2026"
+      "nvidia-lancium-stargate-power-investment-2026",
+      "smic-ai-demand-price-utilization-2026",
+      "pjm-data-center-emergency-curtailment-framework-2026"
     ],
     "storyline_updates": [],
     "what_to_watch": [
@@ -98,7 +105,7 @@
     },
     "methodology": {
       "candidate_count": 13,
-      "selected_count": 13,
+      "selected_count": 15,
       "editorial_adoption_count": 13,
       "evaluation_pool_count": 13,
       "cover_story_count": 0,
@@ -112,10 +119,10 @@
       "finalized": true,
       "fixed_length": false,
       "editorial_view_changed": true,
-      "post_freeze_amendment_count": 5
+      "post_freeze_amendment_count": 7
     },
     "updated_at": "2026-08-12T05:08:49.689Z",
-    "editorially_revised_at": "2026-08-14T16:08:08.125Z",
+    "editorially_revised_at": "2026-08-15T11:38:08.325Z",
     "revision_note": "主编在下一刊期内补录属于本刊期覆盖窗口的迟到录用稿件；原封面与既有篇目顺序保持不变。"
   },
   {

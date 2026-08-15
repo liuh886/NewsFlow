@@ -1,5 +1,153 @@
 [
   {
+    "id": "anthropic-2028-revenue-ipo-economics-2026",
+    "channel_id": "ai-infrastructure",
+    "storyline_ids": [
+      "ai-application-layer"
+    ],
+    "event_type": "application_revenue",
+    "event_date": "2026-08-15",
+    "title": "Anthropic IPO 估值开始押注 2028 年 1900–2000 亿美元收入，资本市场把 AI 成本回收前置到远期增长",
+    "url": "https://www.reuters.com/business/anthropic-ipo-valuation-hinges-190-200-billion-2028-revenue-forecast-sources-say-2026-08-15/",
+    "source": "Reuters",
+    "published_at": "2026-08-15T00:12:16Z",
+    "quality_index": 9.2,
+    "source_tier": "Tier A",
+    "short_summary": "Reuters 报道称，Anthropic 预计 2028 年收入约 1900–2000 亿美元，而其 2026 年 5 月披露的收入 run rate 约为 470 亿美元；投资者正用远期收入倍数评估其 IPO。",
+    "long_summary": "这条信息把模型公司的基础设施支出与应用收入放到同一经济性框架中：当前 GPU、训练、推理和招聘成本仍压低利润率，而 IPO 估值依赖朝���收入增速最终快于这些成本。它因此提供了检验 AI 上游资本开支能否被下游商业收入覆盖的关键远期基准。",
+    "key_quote": "",
+    "supporting_quotes": [],
+    "tags": [
+      "Anthropic",
+      "IPO",
+      "AI Revenue",
+      "Unit Economics",
+      "Inference"
+    ],
+    "editorial_status": "adopted",
+    "editorial_decision": "accept",
+    "adopted_at": "2026-08-15T11:14:37.187+00:00",
+    "ranking": {
+      "version": "ranking-v2",
+      "reader_boost": 0,
+      "reader_minimum": 3,
+      "editorial_boost": 0,
+      "editor_review_count": 0,
+      "reader_feedback_count": 0
+    }
+  },
+  {
+    "id": "nvidia-ohio-openai-guarantee-cut-2026",
+    "channel_id": "ai-infrastructure",
+    "storyline_ids": [
+      "ai-infrastructure-layer"
+    ],
+    "event_type": "financing",
+    "event_date": "2026-08-14",
+    "title": "Nvidia 将 OpenAI 俄亥俄数据中心初始担保从约 2500 亿美元下调至不足 1200 亿美元",
+    "url": "https://www.reuters.com/business/nvidia-scales-back-250-billion-openai-data-center-guarantee-wsj-reports-2026-08-14/",
+    "source": "Reuters",
+    "published_at": "2026-08-14T23:44:05Z",
+    "quality_index": 9,
+    "source_tier": "Tier A",
+    "short_summary": "Reuters 转述《华尔街日报》称，Nvidia 对 OpenAI 俄亥俄数据中心项目的初始担保计划已从此前讨论的约 2500 亿美元降至不足 1200 亿美元。",
+    "long_summary": "这项调整是对既有 AI 基建融资扩张叙事的重要约束信号：Nvidia 仍在支持项目融资，但初始风险承担规模明显收缩，说明资本提供方开始更明确地限制单一超大型项目的资产负债表暴露。",
+    "key_quote": "",
+    "supporting_quotes": [],
+    "tags": [
+      "AI Infrastructure",
+      "Financing",
+      "Nvidia",
+      "OpenAI",
+      "Risk Allocation"
+    ],
+    "editorial_status": "adopted",
+    "editorial_decision": "accept",
+    "adopted_at": "2026-08-15T11:14:46.087+00:00",
+    "ranking": {
+      "version": "ranking-v2",
+      "reader_boost": 0,
+      "reader_minimum": 3,
+      "editorial_boost": 0,
+      "editor_review_count": 0,
+      "reader_feedback_count": 0
+    }
+  },
+  {
+    "id": "smic-ai-demand-price-utilization-2026",
+    "channel_id": "ai-infrastructure",
+    "storyline_ids": [
+      "ai-chip-layer"
+    ],
+    "event_type": "foundry_capacity",
+    "event_date": "2026-08-14",
+    "title": "SMIC 在 AI 需求推动下提价，二季度晶圆出货增 14%、利用率升至 93.7%",
+    "url": "https://www.reuters.com/world/china/chinese-chipmaker-smic-increases-prices-strong-ai-demand-2026-08-14/",
+    "source": "Reuters",
+    "published_at": "2026-08-14T03:09:46Z",
+    "quality_index": 9.2,
+    "source_tier": "Tier A",
+    "short_summary": "SMIC 二季度晶圆出货环比增长 14%，平均售价上涨 5.7%，产能利用率达到 93.7%，并对第三季度部分紧俏产能提价。",
+    "long_summary": "这些制造端数据把“AI 需求强劲”转化为可观测的价格、出货和利用率信号。SMIC 同时表示将调整现有产能并加快新产线爬坡，说明中国本土 AI 相关芯片需求正在形成真实的晶圆厂约束，而非仅停留在订单预期。",
+    "key_quote": "",
+    "supporting_quotes": [],
+    "tags": [
+      "Semiconductors",
+      "Foundry",
+      "SMIC",
+      "AI Demand",
+      "Utilization"
+    ],
+    "editorial_status": "adopted",
+    "editorial_decision": "accept",
+    "adopted_at": "2026-08-15T11:14:53.082+00:00",
+    "ranking": {
+      "version": "ranking-v2",
+      "reader_boost": 0,
+      "reader_minimum": 3,
+      "editorial_boost": 0,
+      "editor_review_count": 0,
+      "reader_feedback_count": 0
+    }
+  },
+  {
+    "id": "pjm-data-center-emergency-curtailment-framework-2026",
+    "channel_id": "ai-infrastructure",
+    "storyline_ids": [
+      "ai-energy-foundation"
+    ],
+    "event_type": "regulatory_decision",
+    "event_date": "2026-08-13",
+    "title": "PJM 提议在电网紧急时优先削减数据中心负荷，AI 电力瓶颈从接入排队进入运行约束",
+    "url": "https://www.reuters.com/business/energy/pjm-proposes-plan-buy-more-power-data-centers-2026-08-13/",
+    "source": "Reuters",
+    "published_at": "2026-08-13T21:58:34Z",
+    "quality_index": 9,
+    "source_tier": "Tier A",
+    "short_summary": "PJM 提议在供电接近危险低位时，要求数据中心等大型负荷转移或削减用电，并建立大型用户位置和用电量登记机制；PJM 同时表示当前仍需州政府合作才能执行。",
+    "long_summary": "这项提议显示 AI 数据中心的电力约束正从长期并网和新增发电问题延伸到实时系统运行。PJM 最近容量拍卖仍较可靠性要求短缺约 6.8GW，即使价格达到上限也未形成足够新增供给，因此大型负荷未来可能需要承担更明确的可中断责任。",
+    "key_quote": "",
+    "supporting_quotes": [],
+    "tags": [
+      "PJM",
+      "Data Center",
+      "Grid Reliability",
+      "Curtailment",
+      "Power"
+    ],
+    "editorial_status": "adopted",
+    "editorial_decision": "accept",
+    "adopted_at": "2026-08-15T11:14:56.166+00:00",
+    "ranking": {
+      "version": "ranking-v2",
+      "reader_boost": 0,
+      "reader_minimum": 3,
+      "editorial_boost": 0,
+      "editor_review_count": 0,
+      "reader_feedback_count": 0
+    }
+  },
+  {
     "id": "nvidia-wall-street-ai-financing-platform-2026",
     "channel_id": "ai-infrastructure",
     "storyline_ids": [
