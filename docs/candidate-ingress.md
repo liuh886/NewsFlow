@@ -15,6 +15,35 @@ The ingress does not discover news, duplicate schema logic, write `newsflow_cand
 
 `apply-content.mjs` remains the single owner of Candidate evaluation, row shaping and persistence. Reader publication remains downstream of Editor-in-Chief adoption and `publication-sync.yml`.
 
+## Scheduled runtime contract
+
+A scheduled agent does **not** need repository shell execution and must not receive Candidate write credentials. Its minimum runtime surface is:
+
+- GitHub repository contents: read current contracts/configuration;
+- GitHub Issue #110: create the owner-authored transport comment and read the sanitized result;
+- public web discovery: search/open/read current public sources and verify evidence;
+- Base64 utility: encode the exact compact UTF-8 Candidate-pack JSON bytes;
+- Supabase read-only access: read the oldest queued Green Lane referral before discovery and verify Candidate state after apply.
+
+The scheduled runtime must never write `newsflow_candidates` directly. Candidate persistence belongs only to GitHub Actions → `apply-content.mjs` → GitHub OIDC → `newsflow-candidate-writer`.
+
+The normal scheduled flow is:
+
+```text
+Read main contracts
+→ Green Lane read
+→ Storyline discovery
+→ Evidence verification
+→ complete Candidate pack
+→ compact JSON + Base64
+→ Issue #110
+→ NEWSFLOW_APPLY_RESULT_V1
+→ Supabase read verification
+→ Git audit verification
+```
+
+Native X is optional. If native X access is unavailable, record that fact and continue the normal public-web discovery surfaces; do not block the daily run solely because X is unavailable.
+
 ## Candidate-pack generation
 
 `apply-content.mjs` can parse a full Candidate pack, a single Candidate object, or Candidate NDJSON. The Issue #110 agent bridge uses **one full Candidate pack** so the run metadata and coverage window are never lost in transport.
