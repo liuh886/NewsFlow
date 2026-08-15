@@ -1,0 +1,97 @@
+name: Reader UI consolidate once
+
+on:
+  push:
+    branches:
+      - refactor/reader-ui-canonical
+    paths:
+      - .github/workflows/reader-ui-consolidate-once.yml
+
+permissions:
+  contents: write
+
+jobs:
+  consolidate:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          ref: refactor/reader-ui-canonical
+          fetch-depth: 0
+
+      - name: Make Reader build canonical
+        shell: bash
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+
+          build_path = Path('scripts/build.mjs')
+          build = build_path.read_text(encoding='utf-8')
+          old = """await cp(resolve(root, 'src/editorial-app.js'), resolve(dist, 'editorial-app.js'));
+          await cp(resolve(root, 'src/polish.js'), resolve(dist, 'polish.js'));
+          await cp(resolve(root, 'src/edition-layer.js'), resolve(dist, 'edition-layer.js'));
+          await cp(resolve(root, 'src/styles.css'), resolve(dist, 'styles.css'));
+          await cp(resolve(root, 'src/polish.css'), resolve(dist, 'polish.css'));
+          await cp(resolve(root, 'src/edition-layer.css'), resolve(dist, 'edition-layer.css'));
+          await cp(resolve(root, 'public'), dist, { recursive: true });
+          """
+          new = """const readerStylePaths = [
+            'src/reader/base.css',
+            'src/reader/interactions.css',
+            'src/reader/edition.css',
+            'src/reader/magazine.css',
+            'src/reader/navigation.css',
+            'src/reader/reading.css'
+          ];
+          const readerStyles = await Promise.all(readerStylePaths.map((path) => readFile(resolve(root, path), 'utf8')));
+          await writeFile(resolve(dist, 'reader.css'), `${readerStyles.join('\\n\\n')}\\n`, 'utf8');
+          await build({
+            entryPoints: [resolve(root, 'src/reader-runtime.js')],
+            bundle: true,
+            format: 'esm',
+            minify: false,
+            sourcemap: false,
+            target: ['es2022'],
+            outfile: resolve(dist, 'reader-runtime.js')
+          });
+          await cp(resolve(root, 'public'), dist, { recursive: true });
+          """
+          if old not in build:
+              raise SystemExit('canonical build replacement target not found')
+          build_path.write_text(build.replace(old, new), encoding='utf-8')
+
+          sw_path = Path('public/sw.js')
+          sw = sw_path.read_text(encoding='utf-8')
+          old_assets = """  versioned('./styles.css'),
+            versioned('./polish.css'),
+            versioned('./edition-layer.css'),
+            versioned('./magazine-polish.css'),
+            versioned('./reader-navigation.css'),
+            versioned('./reading-surface.css'),
+            versioned('./account-integration.css'),
+            versioned('./startup-resilience.js'),
+            versioned('./pwa-install.js'),
+            versioned('./editorial-app.js'),
+            versioned('./polish.js'),
+            versioned('./edition-layer.js'),
+            versioned('./magazine-polish.js'),
+          """
+          new_assets = """  versioned('./reader.css'),
+            versioned('./account-integration.css'),
+            versioned('./startup-resilience.js'),
+            versioned('./pwa-install.js'),
+            versioned('./reader-runtime.js'),
+          """
+          if old_assets not in sw:
+              raise SystemExit('service worker replacement target not found')
+          sw_path.write_text(sw.replace(old_assets, new_assets), encoding='utf-8')
+          PY
+
+      - name: Commit canonical Reader build
+        shell: bash
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add scripts/build.mjs public/sw.js
+          git commit -m "refactor(reader): emit canonical Reader assets"
+          git push origin HEAD:refactor/reader-ui-canonical
