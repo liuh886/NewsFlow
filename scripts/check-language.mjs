@@ -9,8 +9,8 @@ const [index, manifestSource, editionSource, appSource, layerSource, serviceWork
   read('index.html'),
   read('public/manifest.webmanifest'),
   read('public/data/edition.json'),
-  read('src/editorial-app.js'),
-  read('src/edition-layer.js'),
+  read('src/reader/core.js'),
+  read('src/reader/edition.js'),
   read('public/sw.js')
 ]);
 

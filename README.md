@@ -141,9 +141,9 @@ Every build emits both Atom (`feed.xml`) and RSS 2.0 (`rss.xml`) from chief-adop
 
 ## Runtime ownership
 
-- `src/editorial-app.js` — public Signals, local-first adaptive Latest and quick evidence;
+- `src/reader/core.js` — public Signals, local-first adaptive Latest and quick evidence;
 - `src/supabase-feedback.js` — bounded authenticated current-state synchronization;
-- `src/edition-layer.js` — Edition, Current Issue, Sections, Storylines and Archive;
+- `src/reader/edition.js` — Edition, Current Issue, Sections, Storylines and Archive;
 - `public/reading-surface.js/.css` — premium article reading;
 - `public/editorial-office.js` — mode selection, editorial identity and appointment entry;
 - `public/review-game.js` — the single five-state review engine;

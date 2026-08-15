@@ -8,8 +8,8 @@ const requiredFiles = [
   '.github/workflows/pages.yml',
   'package.json',
   'index.html',
-  'src/editorial-app.js',
-  'src/styles.css',
+  'src/reader/core.js',
+  'src/reader.css',
   'scripts/check.mjs',
   'scripts/build.mjs',
 ];
