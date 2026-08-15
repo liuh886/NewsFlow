@@ -1,17 +1,22 @@
 .top-actions {
   padding-right: 0;
+  gap: 2px;
 }
 
-.top-actions .hao-account-mount {
+.top-actions .hao-account-mount,
+.top-actions .hao-referral-mount {
   position: static;
   z-index: auto;
   display: inline-flex;
   flex: 0 0 auto;
+  align-items: center;
 }
 
-.top-actions .hao-account-trigger {
+.top-actions .hao-account-trigger,
+.top-actions .hao-referral-trigger {
   width: 38px;
   height: 38px;
+  min-width: 38px;
   min-height: 38px;
   padding: 0;
   justify-content: center;
@@ -21,14 +26,23 @@
   color: var(--ink-soft);
   box-shadow: none;
   backdrop-filter: none;
+  font-family: inherit;
+  line-height: 1;
 }
 
-.top-actions .hao-account-trigger:hover {
-  transform: translateY(-1px);
+.top-actions .hao-account-trigger:hover,
+.top-actions .hao-referral-trigger:hover {
+  transform: none;
   border-color: transparent;
   background: var(--paper-deep);
   color: var(--ink);
   box-shadow: none;
+}
+
+.top-actions .hao-account-trigger:focus-visible,
+.top-actions .hao-referral-trigger:focus-visible {
+  outline: 2px solid color-mix(in srgb, var(--signal) 55%, transparent);
+  outline-offset: 2px;
 }
 
 .top-actions .hao-account-trigger-visual {
@@ -42,6 +56,33 @@
 .top-actions .hao-account-trigger svg {
   width: 18px;
   height: 18px;
+}
+
+.top-actions .hao-referral-trigger > span:last-child {
+  display: none;
+}
+
+.top-actions .hao-referral-trigger > span:first-child {
+  display: grid;
+  width: 18px;
+  height: 18px;
+  place-items: center;
+  overflow: hidden;
+  color: transparent;
+  font-size: 0;
+}
+
+.top-actions .hao-referral-trigger > span:first-child::before {
+  content: '';
+  width: 18px;
+  height: 18px;
+  background: var(--ink-soft);
+  -webkit-mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M15 19a6 6 0 0 0-12 0M9 11a4 4 0 1 0 0-8 4 4 0 0 0 0 8m10-3v6m3-3h-6' fill='none' stroke='black' stroke-width='1.7' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E") center / contain no-repeat;
+  mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M15 19a6 6 0 0 0-12 0M9 11a4 4 0 1 0 0-8 4 4 0 0 0 0 8m10-3v6m3-3h-6' fill='none' stroke='black' stroke-width='1.7' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E") center / contain no-repeat;
+}
+
+.top-actions .hao-referral-trigger:hover > span:first-child::before {
+  background: var(--ink);
 }
 
 .top-actions .hao-account-trigger.is-pro {
@@ -71,7 +112,8 @@
 }
 
 @media (max-width: 760px) {
-  .top-actions .hao-account-mount {
+  .top-actions .hao-account-mount,
+  .top-actions .hao-referral-mount {
     order: 4;
   }
 
