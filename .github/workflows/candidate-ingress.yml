@@ -70,6 +70,7 @@ jobs:
             status: result.status,
             request_id: result.request_id,
             request_comment_id: result.request_comment_id,
+            payload_type: result.payload_type,
             candidate_count: result.candidate_count,
             reviewable_count: result.reviewable_count,
             audit_path: result.audit_path,
@@ -114,19 +115,23 @@ jobs:
         run: |
           request_id="${{ steps.result.outputs.request_id }}"
           if [[ -z "$request_id" ]]; then request_id="unknown"; fi
+          payload_type="${{ steps.result.outputs.payload_type }}"
+          if [[ -z "$payload_type" ]]; then payload_type="unknown"; fi
           if [[ "${{ steps.ingress.outcome }}" == "success" && "${{ steps.result.outputs.status }}" == "applied" ]]; then
-            body=$(printf '%s\n%s\n%s\n%s\n%s' \
+            body=$(printf '%s\n%s\n%s\n%s\n%s\n%s' \
               "NEWSFLOW_APPLY_RESULT_V1 ${request_id}" \
               "status: applied" \
+              "payload_type: ${payload_type}" \
               "candidate_count: ${{ steps.result.outputs.candidate_count }}" \
               "reviewable_count: ${{ steps.result.outputs.reviewable_count }}" \
               "audit_commit: ${{ steps.audit.outcome }}")
           else
             code="${{ steps.result.outputs.error_code }}"
             if [[ -z "$code" ]]; then code="workflow_failed"; fi
-            body=$(printf '%s\n%s\n%s' \
+            body=$(printf '%s\n%s\n%s\n%s' \
               "NEWSFLOW_APPLY_RESULT_V1 ${request_id}" \
               "status: failed" \
+              "payload_type: ${payload_type}" \
               "error_code: ${code}")
           fi
           gh api "repos/${GITHUB_REPOSITORY}/issues/110/comments" -f body="$body" >/dev/null
