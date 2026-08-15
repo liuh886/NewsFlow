@@ -24,8 +24,9 @@ const [script, apply, writer, workflow, config, publication] = await Promise.all
 for (const required of [
   'NEWSFLOW_CANDIDATE_PACK_V1',
   "'scripts/apply-content.mjs'", "'--stdin', '--apply'",
-  'maxPlaintextBytes', 'classifyApplyFailure',
-  'candidate_schema_invalid', 'candidate_pack_invalid', 'candidate_input_invalid',
+  'maxPlaintextBytes', 'inspectPayload', 'candidate_payload_malformed',
+  "return 'candidate_pack'", "return 'single_candidate'", "return 'ndjson'",
+  'classifyApplyFailure', 'candidate_schema_invalid', 'candidate_pack_invalid', 'candidate_input_invalid',
   'source_registry_invalid', 'evaluator_result_invalid', 'candidate_snapshot_missing',
   'oidc_runtime_unavailable', 'oidc_token_failed', 'oidc_writer_failed',
   'candidate_writer_unavailable', 'duplicate_scan_audit', 'apply_process_failed'
@@ -58,6 +59,7 @@ for (const required of [
   "startsWith(github.event.comment.body, 'NEWSFLOW_CANDIDATE_PACK_V1 ')",
   'contents: write', 'issues: write', 'id-token: write',
   'NEWSFLOW_CANDIDATE_WRITER_URL', 'node scripts/candidate-ingress.mjs',
+  'payload_type: result.payload_type', 'payload_type: ${payload_type}',
   'content/runs/*.json', 'npm run content:status'
 ]) if (!workflow.includes(required)) throw new Error(`Candidate ingress workflow missing contract: ${required}`);
 for (const forbidden of [
@@ -76,4 +78,4 @@ if (ingress.writer_auth !== 'github_actions_oidc' || ingress.direct_sql_fallback
 }
 if (publication.includes('SUPABASE_SERVICE_ROLE_KEY')) throw new Error('Publication sync must remain isolated from Candidate credentials.');
 
-console.log('Candidate ingress contract: OK (owner-only one-shot transport + bounded apply diagnostics + canonical apply + GitHub OIDC writer).');
+console.log('Candidate ingress contract: OK (one-shot transport + payload-shape diagnostics + canonical apply + GitHub OIDC writer).');
