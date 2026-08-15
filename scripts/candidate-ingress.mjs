@@ -19,11 +19,27 @@ const writeResult = async (payload) => {
 };
 
 const classifyApplyFailure = (result) => {
+  if (result?.error) return 'apply_process_failed';
   const output = `${String(result?.stderr || '')}\n${String(result?.stdout || '')}`;
-  if (output.includes('Candidate pack failed JSON Schema validation:')) return 'candidate_schema_invalid';
-  if (output.includes('Candidate pack failed:')) return 'candidate_pack_invalid';
-  if (output.includes('OIDC Candidate writer') || output.includes('GitHub Actions OIDC')) return 'candidate_writer_failed';
-  return 'canonical_apply_failed';
+  const signatures = [
+    ['Candidate pack failed JSON Schema validation:', 'candidate_schema_invalid'],
+    ['Candidate pack failed:', 'candidate_pack_invalid'],
+    ['Content source configuration failed:', 'source_registry_invalid'],
+    ['Input must be a candidate pack, single candidate or NDJSON candidates.', 'candidate_input_invalid'],
+    ['Apply requires a candidate pack, a single JSON candidate or NDJSON candidates.', 'candidate_input_invalid'],
+    ['NDJSON line ', 'candidate_input_invalid'],
+    ['Content evaluator did not return a valid JSON report.', 'evaluator_result_invalid'],
+    ['Missing candidate snapshot for reviewable item', 'candidate_snapshot_missing'],
+    ['GitHub Actions OIDC runtime is unavailable.', 'oidc_runtime_unavailable'],
+    ['GitHub Actions OIDC token request failed with', 'oidc_token_failed'],
+    ['GitHub Actions OIDC token response is invalid.', 'oidc_token_invalid'],
+    ['OIDC Candidate writer failed with', 'oidc_writer_failed'],
+    ['OIDC Candidate writer returned an invalid acknowledgement.', 'oidc_writer_ack_invalid'],
+    ['Applying reviewable Candidates requires either', 'candidate_writer_unavailable'],
+    ['This scan audit was already applied:', 'duplicate_scan_audit'],
+    ['Content report has invalid run.as_of.', 'invalid_run_timestamp']
+  ];
+  return signatures.find(([signature]) => output.includes(signature))?.[1] || 'canonical_apply_failed';
 };
 
 let requestId = null;
