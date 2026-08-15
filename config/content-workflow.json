@@ -35,13 +35,11 @@
     "lifetime": "transient"
   },
   "agent_apply_ingress": {
-    "transport": "encrypted_issue_comment_handshake",
+    "transport": "owner_issue_comment_base64",
     "issue_number": 110,
     "workflow": ".github/workflows/candidate-ingress.yml",
     "documentation": "docs/candidate-ingress.md",
-    "request_marker": "NEWSFLOW_APPLY_REQUEST_V1",
-    "challenge_marker": "NEWSFLOW_APPLY_CHALLENGE_V1",
-    "payload_marker": "NEWSFLOW_APPLY_PAYLOAD_V1",
+    "request_marker": "NEWSFLOW_CANDIDATE_PACK_V1",
     "result_marker": "NEWSFLOW_APPLY_RESULT_V1",
     "canonical_command": "node scripts/apply-content.mjs --stdin --apply",
     "writer_auth": "github_actions_oidc",
@@ -51,6 +49,7 @@
     "github_long_lived_database_secret": false,
     "plaintext_git_tracked": false,
     "direct_sql_fallback_allowed": false,
+    "transport_comment_deleted_after_processing": true,
     "max_plaintext_bytes": 32768
   },
   "private_candidate_store": "supabase:public.newsflow_candidates",
@@ -74,8 +73,8 @@
     "x_discovery": "X_BEARER_TOKEN=... npm run content:x",
     "dry_run": "node scripts/update-content.mjs --input=content/inbox/<candidate-pack.json>",
     "apply": "SUPABASE_URL=... SUPABASE_SERVICE_ROLE_KEY=... node scripts/apply-content.mjs --input=content/inbox/<candidate-pack.json> --apply",
-    "agent_apply": "encrypted Issue #110 handshake; GitHub Actions OIDC authenticates the canonical apply to the Supabase Candidate writer",
-    "verify": ["npm run check", "npm run build"]
+    "agent_apply": "owner-only Issue #110 Candidate pack comment; GitHub Actions OIDC authenticates canonical apply to the Supabase Candidate writer",
+    "verify": ["node scripts/check-candidate-ingress.mjs"]
   },
   "terminal_outcomes": [
     "completed_no_material_change",
