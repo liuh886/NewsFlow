@@ -5,27 +5,30 @@ import { spawnSync } from 'node:child_process';
 
 const root = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 const read = (path) => readFile(resolve(root, path), 'utf8');
-const [index, loader, appJs, polishJs, editionJs, latestJs, editionCss, navigationCss, readingJs, readingCss, shareCardJs, startupJs, gameJs, gameCss, governanceJs, governanceCss, serviceWorker, statusText, reactionsText] = await Promise.all([
-  read('index.html'), read('public/editorial-loader.js'), read('src/editorial-app.js'), read('src/polish.js'), read('src/edition-layer.js'), read('public/latest-surface.js'), read('src/edition-layer.css'),
-  read('public/reader-navigation.css'), read('public/reading-surface.js'), read('public/reading-surface.css'), read('public/share-card.js'), read('public/startup-resilience.js'),
+const [index, loader, appJs, interactionsJs, editionJs, latestJs, editionCss, navigationCss, readingJs, readingCss, shareCardJs, startupJs, gameJs, gameCss, governanceJs, governanceCss, serviceWorker, statusText, reactionsText] = await Promise.all([
+  read('index.html'), read('public/editorial-loader.js'), read('src/reader/core.js'), read('src/reader/interactions.js'), read('src/reader/edition.js'), read('public/latest-surface.js'), read('src/reader/edition.css'),
+  read('src/reader/navigation.css'), read('public/reading-surface.js'), read('src/reader/reading.css'), read('public/share-card.js'), read('public/startup-resilience.js'),
   read('public/review-game.js'), read('public/review-game.css'), read('public/editorial-governance.js'), read('public/editorial-governance.css'),
   read('public/sw.js'), read('public/data/data-status.json'), read('public/data/editorial-reactions.json')
 ]);
 
-for (const reference of ['./startup-resilience.js', './reader-navigation.css', './reading-surface.css', './share-card.js', './latest-surface.js', './reading-surface.js', './editorial-loader.js']) {
+for (const reference of ['./startup-resilience.js', './reader.css', './reader-runtime.js', './share-card.js', './latest-surface.js', './reading-surface.js', './editorial-loader.js']) {
   if (!index.includes(reference)) throw new Error(`index.html is missing Reader reference ${reference}`);
   if (!serviceWorker.includes(reference)) throw new Error(`service worker is missing Reader reference ${reference}`);
+}
+for (const retired of ['./styles.css', './polish.css', './edition-layer.css', './magazine-polish.css', './reader-navigation.css', './reading-surface.css', './editorial-app.js', './polish.js', './edition-layer.js', './magazine-polish.js']) {
+  if (index.includes(retired) || serviceWorker.includes(retired)) throw new Error(`Retired Reader layer returned: ${retired}`);
 }
 for (const editorAsset of ['./review-game.css', './review-game.js', './editorial-governance.css', './editorial-governance.js']) {
   if (index.includes(editorAsset)) throw new Error(`Reader must not eagerly load ${editorAsset}`);
   if (!loader.includes(editorAsset)) throw new Error(`editorial-loader is missing ${editorAsset}`);
 }
 if (index.includes('./editorial-mode.css') || loader.includes('./editorial-mode.css')) throw new Error('Retired role-choice UI must stay deleted.');
-if (index.indexOf('./startup-resilience.js') > index.indexOf('./editorial-app.js')) throw new Error('startup-resilience.js must run before editorial-app.js');
-if (index.indexOf('./latest-surface.js') < index.indexOf('./edition-layer.js')) throw new Error('latest-surface.js must load after edition-layer.js.');
+if (index.indexOf('./startup-resilience.js') > index.indexOf('./reader-runtime.js')) throw new Error('startup-resilience.js must run before reader-runtime.js');
+if (index.indexOf('./latest-surface.js') < index.indexOf('./reader-runtime.js')) throw new Error('latest-surface.js must load after the canonical Reader runtime.');
 if (!serviceWorker.includes('./data/data-status.json')) throw new Error('Service worker is missing data-status.json.');
 
-for (const path of ['src/editorial-app.js', 'src/polish.js', 'src/edition-layer.js', 'public/latest-surface.js', 'public/share-card.js', 'public/reading-surface.js', 'public/startup-resilience.js', 'public/editorial-loader.js', 'public/review-game.js', 'public/editorial-governance.js', 'public/sw.js']) {
+for (const path of ['src/reader/core.js', 'src/reader/interactions.js', 'src/reader/edition.js', 'src/reader/magazine.js', 'src/reader-runtime.js', 'public/latest-surface.js', 'public/share-card.js', 'public/reading-surface.js', 'public/startup-resilience.js', 'public/editorial-loader.js', 'public/review-game.js', 'public/editorial-governance.js', 'public/sw.js']) {
   const syntax = spawnSync(process.execPath, ['--check', resolve(root, path)], { encoding: 'utf8' });
   if (syntax.status !== 0) throw new Error(`${path} syntax failed:\n${syntax.stderr}`);
 }
@@ -42,11 +45,11 @@ if (!appJs.includes('data-channel-id="${escapeHtml(item.channel_id || \'\')}"'))
 for (const forbidden of ['verifiedFallbackItems', './data/ai_digest.json', '信号评分', '高置信度', '评分 ${getQuality']) {
   if (appJs.includes(forbidden)) throw new Error(`Reader must not expose or synthesize internal editorial content: ${forbidden}`);
 }
-for (const contract of ['NETWORK_TIMEOUT_MS = 5000', 'fetchWithTimeout', 'warmAppShell', "const ASSET_VERSION = '__NEWSFLOW_VERSION__'", 'newsflow-reader-v${ASSET_VERSION}', "versioned('./share-card.js')", "versioned('./latest-surface.js')"]) {
+for (const contract of ['NETWORK_TIMEOUT_MS = 5000', 'fetchWithTimeout', 'warmAppShell', "const ASSET_VERSION = '__NEWSFLOW_VERSION__'", 'newsflow-reader-v${ASSET_VERSION}', "versioned('./reader.css')", "versioned('./reader-runtime.js')", "versioned('./share-card.js')", "versioned('./latest-surface.js')"]) {
   if (!serviceWorker.includes(contract)) throw new Error(`Service worker startup contract is missing ${contract}`);
 }
 for (const contract of ['ensureMobileReaderSearch', 'syncEditionDialogAccessibility', 'trapEditionFocus']) {
-  if (!polishJs.includes(contract)) throw new Error(`Reader interaction polish is missing ${contract}`);
+  if (!interactionsJs.includes(contract)) throw new Error(`Reader interaction owner is missing ${contract}`);
 }
 for (const contract of ['.mobile-menu-button::before', 'mask-image:', 'grid-template-columns: repeat(4, minmax(0, 1fr))']) {
   if (!navigationCss.includes(contract)) throw new Error(`Reader mobile navigation contract is missing ${contract}`);
@@ -120,4 +123,4 @@ if (!Number.isInteger(status.signal_count) || status.signal_count < 1) throw new
 const statusCheck = spawnSync(process.execPath, [resolve(root, 'scripts/update-data-status.mjs'), '--check'], { encoding: 'utf8' });
 if (statusCheck.status !== 0) throw new Error(statusCheck.stderr || statusCheck.stdout);
 
-console.log('NewsFlow product polish passed: issue-first Reader, dedicated Latest surface, canonical continuous reading, two-action cards, four-task mobile navigation, editorial sharing, permission-routed editorial dashboard and live freshness.');
+console.log('NewsFlow product polish passed: one canonical Reader runtime and visual owner, issue-first Reader, dedicated Latest surface, canonical continuous reading, two-action cards, four-task mobile navigation, editorial sharing, permission-routed editorial dashboard and live freshness.');
