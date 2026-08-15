@@ -18,6 +18,32 @@ const writeResult = async (payload) => {
   await writeFile(resultPath, `${JSON.stringify(payload, null, 2)}\n`, 'utf8');
 };
 
+const inspectPayload = (plaintext) => {
+  const text = plaintext.toString('utf8').trim();
+  if (!text) throw Object.assign(new Error('Decoded Candidate payload is empty.'), { code: 'candidate_payload_malformed' });
+
+  try {
+    const parsed = JSON.parse(text);
+    if (parsed && typeof parsed === 'object' && !Array.isArray(parsed)) {
+      if (Array.isArray(parsed.candidates)) return 'candidate_pack';
+      if (typeof parsed.id === 'string' && parsed.id.trim()) return 'single_candidate';
+      return 'json_object';
+    }
+    return Array.isArray(parsed) ? 'json_array' : 'json_scalar';
+  } catch {
+    const lines = text.split(/\r?\n/).filter((line) => line.trim());
+    try {
+      const rows = lines.map((line) => JSON.parse(line));
+      if (rows.length && rows.every((row) => row && typeof row === 'object' && !Array.isArray(row) && typeof row.id === 'string' && row.id.trim())) {
+        return 'ndjson';
+      }
+    } catch {
+      // Fall through to the bounded transport error below.
+    }
+    throw Object.assign(new Error('Decoded Candidate payload is neither JSON nor Candidate NDJSON.'), { code: 'candidate_payload_malformed' });
+  }
+};
+
 const classifyApplyFailure = (result) => {
   if (result?.error) return 'apply_process_failed';
   const output = `${String(result?.stderr || '')}\n${String(result?.stdout || '')}`;
@@ -44,6 +70,7 @@ const classifyApplyFailure = (result) => {
 
 let requestId = null;
 let requestCommentId = null;
+let payloadType = null;
 
 try {
   if (!repositoryOwner || !eventPath) {
@@ -80,6 +107,9 @@ try {
     throw Object.assign(new Error('Candidate payload is outside the accepted size range.'), { code: 'payload_size_invalid' });
   }
 
+  payloadType = inspectPayload(plaintext);
+  console.log(`Candidate ingress payload type: ${payloadType}`);
+
   const apply = spawnSync(process.execPath, [resolve(root, 'scripts/apply-content.mjs'), '--stdin', '--apply'], {
     cwd: root,
     env: process.env,
@@ -111,6 +141,7 @@ try {
     status: 'applied',
     request_id: requestId,
     request_comment_id: requestCommentId,
+    payload_type: payloadType,
     candidate_count: candidateCount,
     reviewable_count: reviewableCount,
     audit_path: auditPath
@@ -123,6 +154,7 @@ try {
     status: 'failed',
     request_id: requestId,
     request_comment_id: requestCommentId,
+    payload_type: payloadType,
     error_code: errorCode
   }).catch(() => {});
   console.error(`Candidate ingress failed: ${errorCode}`);
