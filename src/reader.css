@@ -1,0 +1,7 @@
+/* Canonical Reader visual entry. Import order preserves the former cascade exactly. */
+@import './reader/base.css';
+@import './reader/interactions.css';
+@import './reader/edition.css';
+@import './reader/magazine.css';
+@import './reader/navigation.css';
+@import './reader/reading.css';
