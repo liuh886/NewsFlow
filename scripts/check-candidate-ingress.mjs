@@ -24,7 +24,11 @@ const [script, apply, writer, workflow, config, publication] = await Promise.all
 for (const required of [
   'NEWSFLOW_CANDIDATE_PACK_V1',
   "'scripts/apply-content.mjs'", "'--stdin', '--apply'",
-  'maxPlaintextBytes', 'candidate_schema_invalid', 'candidate_writer_failed'
+  'maxPlaintextBytes', 'classifyApplyFailure',
+  'candidate_schema_invalid', 'candidate_pack_invalid', 'candidate_input_invalid',
+  'source_registry_invalid', 'evaluator_result_invalid', 'candidate_snapshot_missing',
+  'oidc_runtime_unavailable', 'oidc_token_failed', 'oidc_writer_failed',
+  'candidate_writer_unavailable', 'duplicate_scan_audit', 'apply_process_failed'
 ]) if (!script.includes(required)) throw new Error(`Candidate ingress script missing contract: ${required}`);
 for (const forbidden of [
   'generateKeyPairSync', 'privateDecrypt', 'createDecipheriv',
@@ -72,4 +76,4 @@ if (ingress.writer_auth !== 'github_actions_oidc' || ingress.direct_sql_fallback
 }
 if (publication.includes('SUPABASE_SERVICE_ROLE_KEY')) throw new Error('Publication sync must remain isolated from Candidate credentials.');
 
-console.log('Candidate ingress contract: OK (owner-only one-shot transport + canonical apply + GitHub OIDC writer).');
+console.log('Candidate ingress contract: OK (owner-only one-shot transport + bounded apply diagnostics + canonical apply + GitHub OIDC writer).');
