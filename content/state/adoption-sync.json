@@ -11,6 +11,7 @@
     "nsta-carbon-storage-operational-guidance-2026",
     "nvidia-lancium-stargate-power-investment-2026",
     "nvidia-ohio-openai-guarantee-cut-2026",
+    "nvidia-sb-energy-equity-openai-ohio-2026",
     "nvidia-wall-street-ai-financing-platform-2026",
     "openai-astra-critical-cyber-deployment-controls-2026",
     "openai-huggingface-agent-infrastructure-escape-timeline-2026",
@@ -25,7 +26,7 @@
     "us-data-center-community-credit-risk-2026",
     "us-openweight-ai-safety-test-exemption-2026"
   ],
-  "current_adoption_count": 23,
+  "current_adoption_count": 24,
   "formal_issue_signal_count": 31,
-  "last_synced_at": "2026-08-15T11:59:29.660Z"
+  "last_synced_at": "2026-08-16T10:08:42.725Z"
 }

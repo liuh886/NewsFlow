@@ -1,5 +1,43 @@
 [
   {
+    "id": "nvidia-sb-energy-equity-openai-ohio-2026",
+    "channel_id": "ai-infrastructure",
+    "storyline_ids": [
+      "ai-infrastructure-layer"
+    ],
+    "event_type": "financing",
+    "event_date": "2026-08-15",
+    "title": "Nvidia 拟向 SB Energy 投资最多 30 亿美元，俄亥俄 OpenAI 数据中心融资从担保延伸到开发商股权",
+    "url": "https://www.reuters.com/business/nvidia-talks-invest-3-billion-sb-energy-part-openai-data-center-deal-information-2026-08-15/",
+    "source": "Reuters",
+    "published_at": "2026-08-15T19:38:44Z",
+    "quality_index": 8.4,
+    "source_tier": "Tier A",
+    "short_summary": "Reuters 转述 The Information 称，Nvidia 正讨论向 SB Energy 投资最多 30 亿美元；SB Energy 正开发拟供 OpenAI 使用的俄亥俄大型数据中心，并计划最快下月 IPO、融资至少 50 亿美元。",
+    "long_summary": "这条信息是在前一轮“俄亥俄项目初始融资担保规模下调”之后出现的新资本结构信号：Nvidia 对该项目的支持可能不只体现为信用担保，还可能通过对开发商 SB Energy 的直接股权投资和其 IPO 参与实现。它强化了 AI 基础设施融资正在向芯片供应商、开发商、资本市场共同分担风险的结构演化，但目前仍是洽谈状态，Reuters 也明确表示无法独立核实，因此不能视为已完成投资、已融资或已投运产能。",
+    "key_quote": "",
+    "supporting_quotes": [],
+    "tags": [
+      "AI Infrastructure",
+      "Financing",
+      "Nvidia",
+      "SB Energy",
+      "OpenAI",
+      "Risk Allocation"
+    ],
+    "editorial_status": "adopted",
+    "editorial_decision": "accept",
+    "adopted_at": "2026-08-16T09:53:59.919+00:00",
+    "ranking": {
+      "version": "ranking-v2",
+      "reader_boost": 0,
+      "reader_minimum": 3,
+      "editorial_boost": 0,
+      "editor_review_count": 0,
+      "reader_feedback_count": 0
+    }
+  },
+  {
     "id": "anthropic-2028-revenue-ipo-economics-2026",
     "channel_id": "ai-infrastructure",
     "storyline_ids": [

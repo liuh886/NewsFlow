@@ -17,7 +17,8 @@
     "cover_signal_id": "anthropic-2028-revenue-ipo-economics-2026",
     "signal_ids": [
       "anthropic-2028-revenue-ipo-economics-2026",
-      "nvidia-ohio-openai-guarantee-cut-2026"
+      "nvidia-ohio-openai-guarantee-cut-2026",
+      "nvidia-sb-energy-equity-openai-ohio-2026"
     ],
     "storyline_updates": [],
     "what_to_watch": [
@@ -36,15 +37,15 @@
       ]
     },
     "methodology": {
-      "candidate_count": 2,
-      "selected_count": 2,
-      "editorial_adoption_count": 2,
-      "evaluation_pool_count": 2,
+      "candidate_count": 3,
+      "selected_count": 3,
+      "editorial_adoption_count": 3,
+      "evaluation_pool_count": 3,
       "cover_story_count": 0,
       "editor_review_count": 0,
       "qualified_reader_feedback_count": 0,
       "selected_by_channel": {
-        "ai-infrastructure": 2
+        "ai-infrastructure": 3
       },
       "final_issue_max_signals": 24,
       "final_channel_max_signals": 8,
@@ -52,7 +53,7 @@
       "fixed_length": false,
       "editorial_view_changed": false
     },
-    "updated_at": "2026-08-15T11:38:08.325Z"
+    "updated_at": "2026-08-16T10:08:42.925Z"
   },
   {
     "id": "frontier-systems-review-2026-16",
