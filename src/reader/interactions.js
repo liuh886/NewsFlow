@@ -9,6 +9,22 @@ const polishIcon = (name) => {
 const appRoot = document.querySelector('#app');
 const statusRegion = document.querySelector('#app-status');
 const focusableSelector = 'a[href], button:not([disabled]), input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])';
+const trapFocusWithin = (event, container) => {
+  if (!container || event.key !== 'Tab') return;
+  const focusable = [...container.querySelectorAll(focusableSelector)]
+    .filter((element) => !element.hidden && element.getClientRects().length);
+  if (!focusable.length) return;
+  const first = focusable[0];
+  const last = focusable.at(-1);
+  if (event.shiftKey && document.activeElement === first) {
+    event.preventDefault();
+    last.focus();
+  } else if (!event.shiftKey && document.activeElement === last) {
+    event.preventDefault();
+    first.focus();
+  }
+};
+globalThis.NewsFlowA11y = Object.freeze({ trapFocusWithin });
 const isMagazineMode = () => appRoot?.querySelector('.app-shell')?.dataset.productModel === 'magazine-edition';
 const EDITION_ROUTES = {
   archive: /^#archive$/,
@@ -276,19 +292,7 @@ const syncEditionRouteFromLocation = () => {
 };
 
 const trapEditionFocus = (event) => {
-  const panel = activeEditionPanel();
-  if (!panel || event.key !== 'Tab') return;
-  const focusable = [...panel.querySelectorAll(focusableSelector)].filter((element) => !element.hidden && element.getClientRects().length);
-  if (!focusable.length) return;
-  const first = focusable[0];
-  const last = focusable.at(-1);
-  if (event.shiftKey && document.activeElement === first) {
-    event.preventDefault();
-    last.focus();
-  } else if (!event.shiftKey && document.activeElement === last) {
-    event.preventDefault();
-    first.focus();
-  }
+  trapFocusWithin(event, activeEditionPanel());
 };
 
 const decorateControls = () => {
@@ -410,19 +414,8 @@ const closeMobileSearch = () => {
 };
 
 const trapSearchFocus = (event) => {
-  if (!searchWasOpen || event.key !== 'Tab') return;
-  const focusable = [...searchSheet.querySelectorAll(focusableSelector)].filter((element) => !element.hidden);
-  if (!focusable.length) return;
-  const first = focusable[0];
-  const last = focusable.at(-1);
-
-  if (event.shiftKey && document.activeElement === first) {
-    event.preventDefault();
-    last.focus();
-  } else if (!event.shiftKey && document.activeElement === last) {
-    event.preventDefault();
-    first.focus();
-  }
+  if (!searchWasOpen) return;
+  trapFocusWithin(event, searchSheet);
 };
 
 mobileSearchInput.addEventListener('input', () => {

@@ -14,6 +14,7 @@
     openedBySurface: false,
     shareOpen: false
   };
+  let renderController = null;
 
   const escapeHtml = (value = '') => String(value)
     .replaceAll('&', '&amp;')
@@ -182,6 +183,15 @@
     else app.removeAttribute('aria-hidden');
   };
 
+  const syncShareDialogAccessibility = (shell) => {
+    if (!shell || !state.shareOpen) return;
+    [...shell.children].forEach((child) => {
+      if (child.matches('.nf-share-backdrop, .nf-share-dialog')) return;
+      child.inert = true;
+      child.setAttribute('aria-hidden', 'true');
+    });
+  };
+
   const setDocumentIdentity = (item = null) => {
     const canonical = document.querySelector('link[rel="canonical"]');
     if (item) {
@@ -231,6 +241,8 @@
   };
 
   const render = () => {
+    renderController?.abort();
+    renderController = null;
     const root = ensureRoot();
     const item = activeItem();
     if (!item) {
@@ -247,7 +259,9 @@
     setBackgroundInert(true);
     setDocumentIdentity(item);
     const shell = root.querySelector('.nf-reading-shell');
-    shell?.addEventListener('scroll', syncReadingProgress, { passive: true });
+    renderController = new AbortController();
+    shell?.addEventListener('scroll', syncReadingProgress, { passive: true, signal: renderController.signal });
+    syncShareDialogAccessibility(shell);
     syncReadingProgress();
     if (state.shareOpen) requestAnimationFrame(renderSharePreview);
     requestAnimationFrame(() => root.querySelector(state.shareOpen ? '[data-reading-action="close-share"]' : '[data-reading-action="close"]')?.focus());
@@ -426,6 +440,10 @@
   window.addEventListener('hashchange', syncFromRoute);
   window.addEventListener('keydown', (event) => {
     if (!state.activeId) return;
+    if (state.shareOpen && event.key === 'Tab') {
+      const dialog = document.querySelector(`#${ROOT_ID} .nf-share-dialog`);
+      globalThis.NewsFlowA11y?.trapFocusWithin?.(event, dialog);
+    }
     if (event.key === 'Escape') {
       event.preventDefault();
       event.stopPropagation();

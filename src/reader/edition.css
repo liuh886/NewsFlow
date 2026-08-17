@@ -1030,3 +1030,7 @@
   .app-shell[data-product-model='magazine-edition'] .sidebar,
   .app-shell[data-product-model='magazine-edition'] .global-search { transition: none; }
 }
+
+.is-latest-hidden {
+  display: none;
+}

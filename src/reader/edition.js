@@ -527,4 +527,5 @@ window.addEventListener('keydown', (event) => {
 });
 
 window.addEventListener('newsflow:rendered', applyEditionLayer);
+window.addEventListener('newsflow:latest-closed', applyEditionLayer);
 initializeEditionLayer();

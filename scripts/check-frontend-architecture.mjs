@@ -25,7 +25,7 @@ for (const contract of ["loadJson('./data/news.json')", "new CustomEvent('newsfl
 for (const forbidden of ['verifiedFallbackItems', './data/ai_digest.json', '信号评分', '高置信度']) {
   if (app.includes(forbidden)) throw new Error(`Reader contains retired editorial state: ${forbidden}`);
 }
-for (const contract of ['ensureMobileReaderSearch', 'syncEditionDialogAccessibility', 'syncEditionRouteFromLocation']) {
+for (const contract of ['ensureMobileReaderSearch', 'syncEditionDialogAccessibility', 'syncEditionRouteFromLocation', 'trapFocusWithin', 'NewsFlowA11y']) {
   if (!interactions.includes(contract)) throw new Error(`Reader interactions missing ${contract}`);
 }
 
@@ -60,14 +60,17 @@ for (const retired of ['archivedIssues', 'data-target="latest-change"', 'renderP
   if (edition.includes(retired)) throw new Error(`Reader edition owner contains retired parallel publication path: ${retired}`);
 }
 for (const contract of [
-  'let latestOpen = false', "dataset.latestAction = 'open'", 'Latest adopted signals', "window.addEventListener('newsflow:edition-rendered'", "data-edition-layer=\"latest\""
+  'let latestOpen = false', "dataset.latestAction = 'open'", 'Latest adopted signals', "window.addEventListener('newsflow:edition-rendered'",
+  "new CustomEvent('newsflow:latest-closed')", "classList.toggle('is-latest-hidden'", "data-edition-layer=\"latest\""
 ]) {
   if (!latest.includes(contract)) throw new Error(`Latest Surface missing ${contract}`);
 }
-if (latest.includes('MutationObserver') || latest.includes('window.fetch =')) throw new Error('Latest Surface must remain a scoped presentation owner.');
+if (latest.includes('MutationObserver') || latest.includes('window.fetch =') || latest.includes("new CustomEvent('newsflow:rendered')")) throw new Error('Latest Surface must remain a scoped presentation owner.');
+if (!edition.includes("window.addEventListener('newsflow:latest-closed', applyEditionLayer)")) throw new Error('Edition owner must restore itself after Latest closes.');
 for (const contract of [
   "const ROOT_ID = 'newsflow-reading-surface-root'", '#read/', 'canonicalArticleUrl', "window.addEventListener('newsflow:rendered'", 'nf-reading-progress',
-  "data-reading-action=\"open-share\"", 'NewsFlowShareCard', 'navigator.share', 'copy-link'
+  "data-reading-action=\"open-share\"", 'NewsFlowShareCard', 'navigator.share', 'copy-link', 'renderController', 'AbortController',
+  'syncShareDialogAccessibility', 'NewsFlowA11y?.trapFocusWithin'
 ]) {
   if (!reading.includes(contract)) throw new Error(`Reading Surface missing ${contract}`);
 }
@@ -122,9 +125,11 @@ for (const contract of ["const ASSET_VERSION = '__NEWSFLOW_VERSION__'", 'newsflo
 for (const editorAsset of ["versioned('./review-game.js')", "versioned('./editorial-office.js')", "versioned('./editorial-governance.js')"]) {
   if (sw.includes(editorAsset)) throw new Error(`Reader app shell must not precache editor-only asset ${editorAsset}`);
 }
-for (const contract of ['generatePublicationPages', "resolve(dist, 'feed.xml')", "resolve(dist, 'rss.xml')", "resolve(dist, 'sitemap.xml')", "resolve(dist, 'reader.css')", "resolve(dist, 'reader-runtime.js')"]) {
+for (const contract of ['generatePublicationPages', "resolve(dist, 'feed.xml')", "resolve(dist, 'rss.xml')", "resolve(dist, 'sitemap.xml')", "entryPoints: [resolve(root, 'src/reader.css')]", "resolve(dist, 'reader-runtime.js')", 'READER_RUNTIME_GZIP_BUDGET', 'svgTextLines(body, 28, 5)']) {
   if (!build.includes(contract)) throw new Error(`Build missing static publication/Reader contract ${contract}`);
 }
+if (build.includes('readerStylePaths')) throw new Error('Build must consume src/reader.css instead of owning a second cascade list.');
+if (!build.includes('minify: true')) throw new Error('Production Reader runtime must be minified.');
 for (const contract of ['/articles/<signal-id>/', 'Share contract', 'the React `App.tsx` / `src/components/*.tsx` Reader prototype']) {
   if (!design.includes(contract)) throw new Error(`DESIGN missing current Reader contract ${contract}`);
 }

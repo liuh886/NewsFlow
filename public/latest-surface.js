@@ -5,10 +5,7 @@
   const setHidden = (node, hidden) => {
     if (!node) return;
     node.hidden = hidden;
-    // Inline display toggling is enough: a non-important inline style already
-    // outranks every non-important stylesheet rule, and keeps the cascade
-    // overridable by the canonical visual owner.
-    node.style.display = hidden ? 'none' : '';
+    node.classList.toggle('is-latest-hidden', hidden);
   };
 
   const apply = () => {
@@ -59,7 +56,7 @@
   const closeLatest = () => {
     if (!latestOpen) return;
     latestOpen = false;
-    window.dispatchEvent(new CustomEvent('newsflow:rendered'));
+    window.dispatchEvent(new CustomEvent('newsflow:latest-closed'));
   };
 
   // Bubble-phase delegation keeps the Runtime coordination contract: the Latest

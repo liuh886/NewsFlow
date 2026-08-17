@@ -2,6 +2,7 @@ import { cp, mkdir, readFile, rm, writeFile } from 'node:fs/promises';
 import { dirname, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { build } from 'esbuild';
+import { gzipSync } from 'node:zlib';
 
 const root = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 const dist = resolve(root, 'dist');
@@ -66,7 +67,7 @@ const svgTextLines = (value, maxChars = 20, maxLines = 6) => {
 const renderShareSvg = (item, channel) => {
   const titleLines = svgTextLines(item.title, 18, 6);
   const body = item.key_quote || item.long_summary || item.short_summary || item.summary || '';
-  const bodyLines = svgTextLines(body, 28, 7);
+  const bodyLines = svgTextLines(body, 28, 5);
   const title = titleLines.map((line, index) => `<tspan x="72" dy="${index ? 88 : 0}">${escapeXml(line)}</tspan>`).join('');
   const summary = bodyLines.map((line, index) => `<tspan x="72" dy="${index ? 52 : 0}">${escapeXml(line)}</tspan>`).join('');
   return `<svg xmlns="http://www.w3.org/2000/svg" width="1080" height="1440" viewBox="0 0 1080 1440">
@@ -302,25 +303,27 @@ if (cloudflareAnalyticsToken) {
   index = index.replace('  </head>', `${beacon}\n  </head>`);
 }
 await writeFile(resolve(dist, 'index.html'), index, 'utf8');
-const readerStylePaths = [
-  'src/reader/base.css',
-  'src/reader/interactions.css',
-  'src/reader/edition.css',
-  'src/reader/magazine.css',
-  'src/reader/navigation.css',
-  'src/reader/reading.css'
-];
-const readerStyles = await Promise.all(readerStylePaths.map((path) => readFile(resolve(root, path), 'utf8')));
-await writeFile(resolve(dist, 'reader.css'), `${readerStyles.join('\n\n')}\n`, 'utf8');
+await build({
+  entryPoints: [resolve(root, 'src/reader.css')],
+  bundle: true,
+  minify: false,
+  sourcemap: false,
+  outfile: resolve(dist, 'reader.css')
+});
 await build({
   entryPoints: [resolve(root, 'src/reader-runtime.js')],
   bundle: true,
   format: 'esm',
-  minify: false,
+  minify: true,
   sourcemap: false,
   target: ['es2022'],
   outfile: resolve(dist, 'reader-runtime.js')
 });
+const READER_RUNTIME_GZIP_BUDGET = 40 * 1024;
+const readerRuntimeGzipBytes = gzipSync(await readFile(resolve(dist, 'reader-runtime.js'))).byteLength;
+if (readerRuntimeGzipBytes > READER_RUNTIME_GZIP_BUDGET) {
+  throw new Error(`reader-runtime.js gzip budget exceeded: ${readerRuntimeGzipBytes} > ${READER_RUNTIME_GZIP_BUDGET}`);
+}
 await cp(resolve(root, 'public'), dist, { recursive: true });
 
 const swPath = resolve(dist, 'sw.js');
