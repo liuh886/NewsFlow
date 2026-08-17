@@ -108,8 +108,7 @@ const readerUtilityState = () => {
 const setEditionSurfaceHidden = (node, hidden) => {
   if (!node) return;
   node.hidden = hidden;
-  if (hidden) node.style.setProperty('display', 'none', 'important');
-  else node.style.removeProperty('display');
+  node.classList.toggle('is-latest-hidden', hidden);
 };
 
 const renderPublicationNav = () => `
@@ -527,4 +526,5 @@ window.addEventListener('keydown', (event) => {
 });
 
 window.addEventListener('newsflow:rendered', applyEditionLayer);
+window.addEventListener('newsflow:latest-closed', applyEditionLayer);
 initializeEditionLayer();
