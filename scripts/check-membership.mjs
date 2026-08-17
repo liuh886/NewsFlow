@@ -22,17 +22,18 @@ const [index, config, integration, styles] = await Promise.all([
 ]);
 
 for (const reference of [
-  'https://liuh886.github.io/admin/shared/account-shell.css?v=5',
-  'https://liuh886.github.io/admin/shared/account-upgrade.css?v=1',
+  'https://liuh886.github.io/admin/shared/account-shell.css?v=6',
   'https://liuh886.github.io/admin/shared/product-referral.css?v=3',
   './account-integration.css',
   './membership-config.js',
   'https://liuh886.github.io/admin/shared/account-shell.js?v=7',
-  'https://liuh886.github.io/admin/shared/product-referral.js?v=3',
-  'https://liuh886.github.io/admin/shared/account-upgrade.js?v=5',
+  'https://liuh886.github.io/admin/shared/product-referral.js?v=4',
   './account-integration.js',
 ]) {
   if (!index.includes(reference)) throw new Error(`index.html is missing ${reference}`);
+}
+for (const retired of ['account-upgrade.css', 'account-upgrade.js', 'account-shell.css?v=5', 'product-referral.js?v=3']) {
+  if (index.includes(retired)) throw new Error(`NewsFlow must not load retired shared asset ${retired}`);
 }
 if (index.includes('<div class="header-account-mount"')) {
   throw new Error('NewsFlow must not own a fixed account mount outside the rendered topbar.');
@@ -88,4 +89,4 @@ if (combined.includes('membership-widget.js') || combined.includes('membership-w
   throw new Error('NewsFlow must not load the retired local membership widget');
 }
 
-console.log('NewsFlow account uses the native topbar mount, referral-aware auth redirects, the current shared account shell and benefit-led editorial access copy.');
+console.log('NewsFlow account uses the native topbar mount, canonical shared account shell, bounded referral runtime, and benefit-led editorial access copy.');
