@@ -1,5 +1,44 @@
 [
   {
+    "id": "ft-us-data-center-gas-coal-lockin-2026",
+    "channel_id": "ai-infrastructure",
+    "storyline_ids": [
+      "ai-energy-foundation"
+    ],
+    "event_type": "generation_or_storage",
+    "event_date": "2026-08-16",
+    "title": "AI 数据中心开始重塑美国发电资产：FT 追踪 60 个大型项目，天然气扩建与煤电延寿成为供电响应",
+    "url": "https://www.ft.com/content/8158cb5a-4bbd-43fd-b329-15a54e8422c8",
+    "source": "Financial Times",
+    "published_at": "2026-08-16T10:00:02Z",
+    "quality_index": 9.8,
+    "source_tier": "Tier A",
+    "short_summary": "FT 对 Amazon、Microsoft、Google、Meta 在美国规划的 60 个大型数据中心及其供电 utility 做逐项映射后发现：约四分之三相关 utility 正规划或建设新增燃气电源，仍运营煤电的 utility 中约三分之一延后退役；17% 的 utility 已在监管文件中明确将特定新燃气项目与 hyperscale 数据中心需求相连。",
+    "long_summary": "这篇 FT 分析的重要性，不在于再次证明“AI 数据中心耗电很多”，而在于把 AI 基础设施扩张与美国电力系统的资产决策连接了起来。FT 选取 Amazon、Microsoft、Google 和 Meta 在美国规划的 60 个大型数据中心项目，逐一映射其所在地的供电 utility，并结合 utility filings、S&P 数据和 DC Byte 项目数据观察新增负荷正在怎样改变发电侧。基于当前美国电力结构的静态估算，这 60 个项目在全部投运后对应的年 CO₂ 排放可达约 1.015 亿吨，约相当于 2025 年美国电力行业排放的 7%。这个数字应被理解为数量级估算，而不是未来实际边际排放的精确预测，因为项目建设节奏、利用率、所在地未来电源结构和新增清洁能源都会改变结果。\n\n真正具有结构性信息增量的是发电资产响应。FT 发现，为这些项目供电的 utility 中约四分之三正在规划或建设新增燃气发电能力；在仍运营煤电机组的 utility 中，约三分之一正在推迟原定退役。更关键的是，约 17% 的相关 utility 已经在提交监管机构的文件中明确表示，新建燃气机组是为了满足某一个特定 hyperscale 数据中心的新增负荷。这意味着 AI 电力瓶颈已经不只是“并网排队多久”或“数据中心能否拿到电”，而开始进入更长期的 generation-mix 决策：为了尽快提供全天候、可调度的大功率电源，utility 正把天然气当作最容易执行的 firm-capacity 响应，一部分既有煤电则被要求运行更久。\n\nFT 给出的个案进一步说明这种变化不是抽象模型。Georgia Power 为包括 Amazon 和 Microsoft 数据中心在内的大型新客户申请近 9.9GW 新发电能力，在增加可再生能源的同时，州内仍有约 5.2GW 新燃气容量处于规划或建设阶段，并延后部分煤电退役。Entergy Louisiana 则围绕 Meta 位于 Richland Parish 的超大型数据中心推进接近 10GW 的新增燃气能力，其中包含面向该项目的一系列燃气机组。部分 Meta 项目还计划在正式并网前使用不与大电网连接的临时燃气电源。随着 behind-the-meter 自备电源成为抢时间的工程方案，数据中心“拿电”的问题正在从电网连接扩展到园区侧独立发电资产。\n\nFT 援引 Global Energy Monitor 的统计进一步说明这种资产偏移并非个别案例：美国 2025 年处于 announced、pre-construction 或 construction 阶段的燃气发电项目总规模接近 252GW，其中超过三分之一计划直接在现场为数据中心供电。这个 252GW 不能被当作已经建成的新增容量，但它显示资本计划和项目储备正在显著向 gas generation 倾斜。FT 同时援引 Grid Strategies 的规划汇总：美国 2030 年 peak demand 相比 2025 年可能增加约 166GW，数据中心约贡献其中 55%。AI 负荷因此已经从单个园区工程问题，变成足以改变全系统资源规划假设的新增需求来源。\n\nFT 还援引 Rhodium Group 的系统模型解释为什么这一阶段首先表现为煤气发电增加，而不是清洁能源立即等比例扩张。其分析认为，到 2030 年，受并网队列、许可、供应链和设备交期等现实约束影响，系统短期能够新增的发电容量有限；在更高的数据中心负荷情景下，相比基准增长多出的电力需求中约 55%–85% 可能由既有煤电和燃气机组提高利用率来满足。换句话说，在需求增长速度快于新清洁能源和输电建设速度的阶段，边际响应会更多来自“让现有化石机组跑得更久、更满”，随后才是新建资产结构的重新平衡。\n\n这也暴露出企业层面 renewable matching 与物理电力系统之间的重要区别。大型科技公司可以通过年度 PPA、可再生能源釃购或环境属性证书在企业碳核算口径下匹配其全球用电，但某个具体数据中心在某个具体地区增加数百兆瓦到数吉瓦连续负荷时，真正负责维持每小时供需平衡的仍是当地电网和可调度电源。如果新增负荷促使 utility 新建燃气、提高煤气机组利用率或延后退煤，那么企业的年度“100% renewable matched”并不能自动回答这部分新增负荷在物理系统上造成了什么边际资产和排放变化。FT 的方法价值就在于把观察对象从企业承诺重新拉回 utility investment decisions。\n\n因此，对 NewsFlow 的 `ai-energy-foundation` 来说，这条 Signal 应当把当前判断向前推进一层：能源不再只是 AI 产能的外部约束，而正在被 AI 需求反向塑形。接下来真正需要跟踪的，不只是数据中心获批多少 GW、排队多久，而是每一批新增负荷最终绑定了什么电源——新燃气、延寿煤电、核电、储能、可再生能源加长时储能，还是可中断负荷安排；以及这些电源究竟处于 announced、permitted、under construction 还是 commissioned。只有把“数据中心负荷”与“真实新增发电资产”和“实际运行小时”连接起来，才能判断 AI 基建扩张究竟带来的是短期化石回摆、长期碳锁定，还是一次加速新型电力系统投资的过渡冲击。",
+    "key_quote": "",
+    "supporting_quotes": [],
+    "tags": [
+      "AI Infrastructure",
+      "Data Center",
+      "Power Generation",
+      "Natural Gas",
+      "Coal Retirement",
+      "Grid Planning",
+      "Carbon Emissions"
+    ],
+    "editorial_status": "adopted",
+    "editorial_decision": "accept",
+    "adopted_at": "2026-08-17T03:31:42.138365+00:00",
+    "ranking": {
+      "version": "ranking-v2",
+      "reader_boost": 0,
+      "reader_minimum": 3,
+      "editorial_boost": 0,
+      "editor_review_count": 0,
+      "reader_feedback_count": 0
+    }
+  },
+  {
     "id": "nvidia-sb-energy-equity-openai-ohio-2026",
     "channel_id": "ai-infrastructure",
     "storyline_ids": [

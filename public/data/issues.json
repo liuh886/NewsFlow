@@ -11,11 +11,12 @@
     "auto_generated": true,
     "selection_mode": "live_editorial_evaluation",
     "edition_version": "1.2",
-    "title": "Anthropic IPO 估值开始押注 2028 年 1900–2000 亿美元收入，资本市场把 AI 成本回收前置到远期增长",
-    "standfirst": "Reuters 报道称，Anthropic 预计 2028 年收入约 1900–2000 亿美元，而其 2026 年 5 月披露的收入 run rate 约为 470 亿美元；投资者正用远期收入倍数评估其 IPO。 本期持续追踪相关进展，封面与篇目将随重要性更新。",
+    "title": "AI 数据中心开始重塑美国发电资产：FT 追踪 60 个大型项目，天然气扩建与煤电延寿成为供电响应",
+    "standfirst": "FT 对 Amazon、Microsoft、Google、Meta 在美国规划的 60 个大型数据中心及其供电 utility 做逐项映射后发现：约四分之三相关 utility 正规划或建设新增燃气电源，仍运营煤电的 utility 中约三分之一延后退役；17% 的 utility 已在监管文件中明确将特定新燃气项目与 hyperscale 数据中心需求相连。 本期持续追踪相关进展，封面与篇目将随重要性更新。",
     "judgment": "本期刊期仍在开放评估中；所有已录用进展均向读者与编辑开放，封面与最终篇目将在刊期结束时按重要性收敛。",
-    "cover_signal_id": "anthropic-2028-revenue-ipo-economics-2026",
+    "cover_signal_id": "ft-us-data-center-gas-coal-lockin-2026",
     "signal_ids": [
+      "ft-us-data-center-gas-coal-lockin-2026",
       "anthropic-2028-revenue-ipo-economics-2026",
       "nvidia-ohio-openai-guarantee-cut-2026",
       "nvidia-sb-energy-equity-openai-ohio-2026"
@@ -37,15 +38,15 @@
       ]
     },
     "methodology": {
-      "candidate_count": 3,
-      "selected_count": 3,
-      "editorial_adoption_count": 3,
-      "evaluation_pool_count": 3,
+      "candidate_count": 4,
+      "selected_count": 4,
+      "editorial_adoption_count": 4,
+      "evaluation_pool_count": 4,
       "cover_story_count": 0,
       "editor_review_count": 0,
       "qualified_reader_feedback_count": 0,
       "selected_by_channel": {
-        "ai-infrastructure": 3
+        "ai-infrastructure": 4
       },
       "final_issue_max_signals": 24,
       "final_channel_max_signals": 8,
@@ -53,7 +54,7 @@
       "fixed_length": false,
       "editorial_view_changed": false
     },
-    "updated_at": "2026-08-16T10:08:42.925Z"
+    "updated_at": "2026-08-17T03:32:19.311Z"
   },
   {
     "id": "frontier-systems-review-2026-16",
