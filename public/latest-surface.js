@@ -5,8 +5,10 @@
   const setHidden = (node, hidden) => {
     if (!node) return;
     node.hidden = hidden;
-    if (hidden) node.style.setProperty('display', 'none', 'important');
-    else node.style.removeProperty('display');
+    // Inline display toggling is enough: a non-important inline style already
+    // outranks every non-important stylesheet rule, and keeps the cascade
+    // overridable by the canonical visual owner.
+    node.style.display = hidden ? 'none' : '';
   };
 
   const apply = () => {
@@ -25,7 +27,6 @@
     if (mobileIssue) mobileIssue.setAttribute('aria-current', latestOpen ? 'false' : 'page');
 
     if (!latestOpen) return;
-
     main.querySelectorAll('[data-edition-layer="latest"], [data-edition-layer="archive"], [data-edition-layer="section-view"]').forEach((node) => setHidden(node, true));
     [main.querySelector('.lead-story'), main.querySelector('.feed-toolbar'), main.querySelector('.feed-list'), main.querySelector('.empty-state')]
       .filter(Boolean)
@@ -61,17 +62,19 @@
     window.dispatchEvent(new CustomEvent('newsflow:rendered'));
   };
 
+  // Bubble-phase delegation keeps the Runtime coordination contract: the Latest
+  // surface reacts to explicit clicks without capturing or swallowing events
+  // that other owners (analytics, reading surface) may still need to observe.
   document.addEventListener('click', (event) => {
     const latest = event.target.closest?.('[data-latest-action="open"]');
     if (latest) {
       event.preventDefault();
-      event.stopPropagation();
       openLatest();
       return;
     }
     const publicationAction = event.target.closest?.('[data-edition-action]');
     if (publicationAction && publicationAction.dataset.editionAction !== 'close-panel') closeLatest();
-  }, true);
+  });
 
   window.addEventListener('newsflow:rendered', () => requestAnimationFrame(apply));
   window.addEventListener('newsflow:edition-rendered', () => requestAnimationFrame(apply));
