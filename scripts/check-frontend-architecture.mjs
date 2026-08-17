@@ -67,6 +67,7 @@ for (const contract of [
 }
 if (latest.includes('MutationObserver') || latest.includes('window.fetch =') || latest.includes("new CustomEvent('newsflow:rendered')")) throw new Error('Latest Surface must remain a scoped presentation owner.');
 if (!edition.includes("window.addEventListener('newsflow:latest-closed', applyEditionLayer)")) throw new Error('Edition owner must restore itself after Latest closes.');
+if (!edition.includes("classList.toggle('is-latest-hidden'") || edition.includes("style.setProperty('display', 'none', 'important')")) throw new Error('Edition visibility must use the shared semantic hidden contract.');
 for (const contract of [
   "const ROOT_ID = 'newsflow-reading-surface-root'", '#read/', 'canonicalArticleUrl', "window.addEventListener('newsflow:rendered'", 'nf-reading-progress',
   "data-reading-action=\"open-share\"", 'NewsFlowShareCard', 'navigator.share', 'copy-link', 'renderController', 'AbortController',
