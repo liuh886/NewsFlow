@@ -4,6 +4,7 @@
     "alibaba-qwen-openweight-revenue-sharing-2026",
     "amd-ai-data-center-revenue-rackscale-2026",
     "anthropic-2028-revenue-ipo-economics-2026",
+    "anthropic-revenue-run-rate-65b-july-2026",
     "apple-cxmt-memory-supply-ai-shortage-2026",
     "apple-mac-qwen-china-production-integration-2026",
     "baltic-co2-storage-helsinki-convention-legal-interface-2026",
@@ -27,7 +28,7 @@
     "us-data-center-community-credit-risk-2026",
     "us-openweight-ai-safety-test-exemption-2026"
   ],
-  "current_adoption_count": 25,
+  "current_adoption_count": 26,
   "formal_issue_signal_count": 31,
-  "last_synced_at": "2026-08-17T03:32:19.111Z"
+  "last_synced_at": "2026-08-18T03:11:38.047Z"
 }

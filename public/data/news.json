@@ -1,5 +1,44 @@
 [
   {
+    "id": "anthropic-revenue-run-rate-65b-july-2026",
+    "channel_id": "ai-infrastructure",
+    "storyline_ids": [
+      "ai-application-layer"
+    ],
+    "event_type": "application_revenue",
+    "event_date": "2026-08-17",
+    "title": "Anthropic 年化收入 run rate 两个月从 470 亿美元升至逾 650 亿美元，Claude 企业需求开始追上远期 IPO 叙事",
+    "url": "https://www.reuters.com/technology/anthropic-revenue-run-rate-tops-65-billion-source-says-2026-08-17/",
+    "source": "Reuters",
+    "published_at": "2026-08-17T21:36:09Z",
+    "quality_index": 9.2,
+    "source_tier": "Tier A",
+    "short_summary": "Reuters 报道，Anthropic 到 2026 年 7 月底的年化收入 run rate 已超过 650 亿美元，高于 5 月的 470 亿美元和 2025 年底约 90 亿美元；增长主要由 Claude、尤其 coding agent 的企业采用推动。",
+    "long_summary": "NewsFlow 两天前已记�y Anthropic 以 2028 年 1900–2000 亿美元收入预测支撑 IPO 估值的远期叙事；这次新增信息的价值在于给出了更近、更可观察的需求验证。Reuters 报道称，Anthropic 到 7 月底的年化收入 run rate 已超过 650 亿美元，相比 5 月公开的 470 亿美元又提高约 38%，而 2025 年底仅约 90 亿美元。run rate 不是已实现全年收入，也不能直接证明利润或现金流，但它显著缩短了今天业务规模和 2028 年远期估值假设之间的距离。Reuters 还指出 Claude coding agent 正在开发者中获得采用并带来稳定企业收入。对 ai-application-layer 来说，这是一条比用户数、试点数量或模型榜单更强的付费需求信号：应用层收入正在以足以影响上游算力采购和 IPO 定价的速度扩大。后续真正需要验证的是季度实际收入、毛利或营业利润、客户集中度、推理成本与留存，以及增长是否能在新增算力成本继续上升时保持。",
+    "key_quote": "",
+    "supporting_quotes": [],
+    "tags": [
+      "Anthropic",
+      "Claude",
+      "AI Revenue",
+      "Enterprise AI",
+      "Coding Agent",
+      "IPO",
+      "Demand"
+    ],
+    "editorial_status": "adopted",
+    "editorial_decision": "accept",
+    "adopted_at": "2026-08-18T02:38:19.506+00:00",
+    "ranking": {
+      "version": "ranking-v2",
+      "reader_boost": 0,
+      "reader_minimum": 3,
+      "editorial_boost": 0,
+      "editor_review_count": 0,
+      "reader_feedback_count": 0
+    }
+  },
+  {
     "id": "ft-us-data-center-gas-coal-lockin-2026",
     "channel_id": "ai-infrastructure",
     "storyline_ids": [
