@@ -17,9 +17,14 @@
     "cover_signal_id": "ft-us-data-center-gas-coal-lockin-2026",
     "signal_ids": [
       "ft-us-data-center-gas-coal-lockin-2026",
+      "pathways-ccs-2027-fid-6mtpa-reset-2026",
+      "openai-astra-training-pause-security-overhaul-2026",
+      "pennsylvania-data-center-grid-executive-order-2026",
+      "google-marvell-custom-ai-chip-warrant-2026",
       "anthropic-revenue-run-rate-65b-july-2026",
       "anthropic-2028-revenue-ipo-economics-2026",
       "nvidia-ohio-openai-guarantee-cut-2026",
+      "broadcom-anthropic-ai-chip-debt-spv-2026",
       "nvidia-sb-energy-equity-openai-ohio-2026"
     ],
     "storyline_updates": [],
@@ -39,15 +44,16 @@
       ]
     },
     "methodology": {
-      "candidate_count": 5,
-      "selected_count": 5,
-      "editorial_adoption_count": 5,
-      "evaluation_pool_count": 5,
+      "candidate_count": 10,
+      "selected_count": 10,
+      "editorial_adoption_count": 10,
+      "evaluation_pool_count": 10,
       "cover_story_count": 0,
       "editor_review_count": 0,
       "qualified_reader_feedback_count": 0,
       "selected_by_channel": {
-        "ai-infrastructure": 5
+        "ai-infrastructure": 9,
+        "ccus-energy-transition": 1
       },
       "final_issue_max_signals": 24,
       "final_channel_max_signals": 8,
@@ -55,7 +61,7 @@
       "fixed_length": false,
       "editorial_view_changed": false
     },
-    "updated_at": "2026-08-18T03:11:38.245Z"
+    "updated_at": "2026-08-21T14:20:34.080Z"
   },
   {
     "id": "frontier-systems-review-2026-16",

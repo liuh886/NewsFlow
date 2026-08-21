@@ -8,7 +8,9 @@
     "apple-cxmt-memory-supply-ai-shortage-2026",
     "apple-mac-qwen-china-production-integration-2026",
     "baltic-co2-storage-helsinki-convention-legal-interface-2026",
+    "broadcom-anthropic-ai-chip-debt-spv-2026",
     "ft-us-data-center-gas-coal-lockin-2026",
+    "google-marvell-custom-ai-chip-warrant-2026",
     "intel-high-na-euv-production-economics-2026",
     "nsta-carbon-storage-operational-guidance-2026",
     "nvidia-lancium-stargate-power-investment-2026",
@@ -16,8 +18,11 @@
     "nvidia-sb-energy-equity-openai-ohio-2026",
     "nvidia-wall-street-ai-financing-platform-2026",
     "openai-astra-critical-cyber-deployment-controls-2026",
+    "openai-astra-training-pause-security-overhaul-2026",
     "openai-huggingface-agent-infrastructure-escape-timeline-2026",
     "palantir-enterprise-ai-revenue-scale-2026",
+    "pathways-ccs-2027-fid-6mtpa-reset-2026",
+    "pennsylvania-data-center-grid-executive-order-2026",
     "pjm-data-center-emergency-curtailment-framework-2026",
     "smic-ai-demand-price-utilization-2026",
     "spacex-tesla-terafab-vertical-ai-chip-capacity-2026",
@@ -28,7 +33,7 @@
     "us-data-center-community-credit-risk-2026",
     "us-openweight-ai-safety-test-exemption-2026"
   ],
-  "current_adoption_count": 26,
+  "current_adoption_count": 31,
   "formal_issue_signal_count": 31,
-  "last_synced_at": "2026-08-18T03:11:38.047Z"
+  "last_synced_at": "2026-08-21T14:20:33.871Z"
 }
