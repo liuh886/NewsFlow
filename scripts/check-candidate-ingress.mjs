@@ -2,22 +2,24 @@ import { readFile } from 'node:fs/promises';
 import { spawnSync } from 'node:child_process';
 import { dirname, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { decodeCandidateIngressPayload, normalizeCandidateIngressBase64 } from './candidate-ingress-transport.mjs';
 
 const root = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 const read = (path) => readFile(resolve(root, path), 'utf8');
 
 const ingressScript = 'scripts/candidate-ingress.mjs';
+const transportScript = 'scripts/candidate-ingress-transport.mjs';
 const applyScript = 'scripts/apply-content.mjs';
 const writerScript = 'supabase/functions/newsflow-candidate-writer/index.ts';
 const ingressWorkflow = '.github/workflows/candidate-ingress.yml';
 
-for (const scriptPath of [ingressScript, applyScript]) {
+for (const scriptPath of [ingressScript, transportScript, applyScript]) {
   const syntax = spawnSync(process.execPath, ['--check', resolve(root, scriptPath)], { encoding: 'utf8' });
   if (syntax.status !== 0) throw new Error(`${scriptPath} syntax failed:\n${syntax.stderr}`);
 }
 
-const [script, apply, writer, workflow, config, publication] = await Promise.all([
-  read(ingressScript), read(applyScript), read(writerScript), read(ingressWorkflow),
+const [script, transport, apply, writer, workflow, config, publication] = await Promise.all([
+  read(ingressScript), read(transportScript), read(applyScript), read(writerScript), read(ingressWorkflow),
   read('config/content-workflow.json'), read('.github/workflows/publication-sync.yml')
 ]);
 
@@ -25,6 +27,7 @@ for (const required of [
   'NEWSFLOW_CANDIDATE_PACK_V1',
   "'scripts/apply-content.mjs'", "'--stdin', '--apply'",
   'maxPlaintextBytes', 'inspectPayload', 'candidate_payload_malformed',
+  'decodeCandidateIngressPayload',
   "return 'candidate_pack'", "return 'single_candidate'", "return 'ndjson'",
   'classifyApplyFailure', 'candidate_schema_invalid', 'candidate_pack_invalid', 'candidate_input_invalid',
   'source_registry_invalid', 'evaluator_result_invalid', 'candidate_snapshot_missing',
@@ -36,6 +39,43 @@ for (const forbidden of [
   'NEWSFLOW_APPLY_CHALLENGE_V1', 'NEWSFLOW_APPLY_PAYLOAD_V1',
   'setTimeout(', 'payload_timeout', "from('newsflow_candidates')", 'SUPABASE_SERVICE_ROLE_KEY'
 ]) if (script.includes(forbidden)) throw new Error(`Candidate ingress contains retired transport/persistence logic: ${forbidden}`);
+
+for (const required of [
+  'normalizeCandidateIngressBase64', 'decodeCandidateIngressPayload',
+  "replace(/\\s+/g, '')", 'candidate_payload_malformed',
+  "plaintext.toString('base64')", "plaintext.fill(0)",
+  'payload_too_large', 'payload_size_invalid'
+]) if (!transport.includes(required)) throw new Error(`Candidate ingress transport missing hardening contract: ${required}`);
+
+const transportFixture = JSON.stringify({ schema_version: '1.0', candidates: [] });
+const fixtureBase64 = Buffer.from(transportFixture, 'utf8').toString('base64');
+const wrappedBase64 = fixtureBase64.match(/.{1,9}/g).join('\n');
+const transportCases = [
+  fixtureBase64,
+  wrappedBase64,
+  `\n${wrappedBase64}\n`,
+  `\`\`\`base64\n${wrappedBase64}\n\`\`\``,
+  `\`\`\`\n${wrappedBase64}\n\`\`\``
+];
+for (const candidate of transportCases) {
+  const decoded = decodeCandidateIngressPayload(candidate, 1024);
+  if (decoded.toString('utf8') !== transportFixture) throw new Error('Candidate ingress transport changed decoded payload bytes.');
+  decoded.fill(0);
+}
+if (normalizeCandidateIngressBase64(wrappedBase64) !== fixtureBase64) {
+  throw new Error('Candidate ingress transport did not normalize Base64 whitespace deterministically.');
+}
+for (const malformed of [`${fixtureBase64.slice(0, -2)}!!`, 'abcde', '```json\ne30=\n```']) {
+  let errorCode = null;
+  try {
+    decodeCandidateIngressPayload(malformed, 1024);
+  } catch (error) {
+    errorCode = error?.code;
+  }
+  if (errorCode !== 'candidate_payload_malformed') {
+    throw new Error(`Malformed Candidate ingress transport must fail closed; got ${String(errorCode)}.`);
+  }
+}
 
 for (const required of [
   'ACTIONS_ID_TOKEN_REQUEST_URL', 'ACTIONS_ID_TOKEN_REQUEST_TOKEN',
@@ -90,4 +130,4 @@ if (ingress.writer_auth !== 'github_actions_oidc' || ingress.direct_sql_fallback
 }
 if (publication.includes('SUPABASE_SERVICE_ROLE_KEY')) throw new Error('Publication sync must remain isolated from Candidate credentials.');
 
-console.log('Candidate ingress contract: OK (scheduled runtime read/discovery boundary + one-shot transport + canonical apply + GitHub OIDC writer).');
+console.log('Candidate ingress contract: OK (normalized strict Base64 transport + scheduled runtime read/discovery boundary + one-shot transport + canonical apply + GitHub OIDC writer).');
