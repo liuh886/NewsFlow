@@ -1,5 +1,121 @@
 [
   {
+    "id": "nvidia-ai-server-memory-price-hike-2026",
+    "channel_id": "ai-infrastructure",
+    "storyline_ids": [
+      "ai-chip-layer",
+      "ai-infrastructure-layer"
+    ],
+    "event_type": "unit_cost_or_performance",
+    "event_date": "2026-08-22",
+    "title": "英伟达AI服务器报价据报上调逾15%，内存成本开始直接抬升2027年系统价格",
+    "url": "https://www.reuters.com/business/nvidia-customers-notified-about-ai-related-price-hikes-above-15-bloomberg-news-reports-2026-08-22/",
+    "source": "Reuters",
+    "published_at": "2026-08-22T19:21:09Z",
+    "quality_index": 8,
+    "source_tier": "Tier A",
+    "short_summary": "Reuters 转述 Bloomberg 称，部分英伟达大客户被告知，搭载其 AI 芯片的服务器价格在许多配置下将上涨逾 15%，主要原因是内存芯片成本飙升；涨价预计影响 2027 年初交付的 Vera Rubin 和 Grace Blackwell 系统。",
+    "long_summary": "这条信息把近期存储供需紧张从上游价格与厂商利润，推进到 AI 系统采购成本的直接传导。Reuters 转述 Bloomberg 称，部分英伟达大客户被告知，搭载其 AI 芯片的服务器价格在许多配置下将上涨逾 15%，涨幅取决于芯片代际和内存配置，并预计从 2027 年初交付的 Vera Rubin 与 Grace Blackwell 系统开始体现。Reuters 同时明确表示无法即时独立核实，因此这仍应视为有来源限制的客户报价信号，而不是英伟达公开统一提价。对 `ai-chip-layer` 与 `ai-infrastructure-layer` 的信息增量在于，内存瓶颈已不只是 HBM/DRAM 供应紧张，而是开始显性推高整机资本成本；这可能改变 hyperscaler 的单位算力投资、采购节奏与自研 ASIC 替代经济性。后续应验证英伟达或服务器 OEM 的正式报价、客户实际采购变化，以及云端算力价格是否同步上调。",
+    "key_quote": "",
+    "supporting_quotes": [],
+    "tags": [
+      "AI Chips",
+      "AI Infrastructure",
+      "NVIDIA",
+      "Memory",
+      "HBM",
+      "Server Pricing",
+      "Vera Rubin",
+      "Grace Blackwell"
+    ],
+    "editorial_status": "adopted",
+    "editorial_decision": "accept",
+    "adopted_at": "2026-08-24T14:41:36.073+00:00",
+    "ranking": {
+      "version": "ranking-v2",
+      "reader_boost": 0,
+      "reader_minimum": 3,
+      "editorial_boost": 0,
+      "editor_review_count": 0,
+      "reader_feedback_count": 0
+    }
+  },
+  {
+    "id": "openai-gpt56-sol-api-price-cut-2026",
+    "channel_id": "ai-infrastructure",
+    "storyline_ids": [
+      "ai-model-layer"
+    ],
+    "event_type": "inference_efficiency",
+    "event_date": "2026-08-21",
+    "title": "OpenAI 将 GPT-5.6 Sol API 输入价降至每百万 token 4 美元、输出价降至 20 美元，前沿模型价格竞争继续向推理经济性传导",
+    "url": "https://www.reuters.com/technology/openai-cuts-developer-pricing-frontier-gpt-56-sol-model-by-more-than-20-2026-08-21/",
+    "source": "Reuters",
+    "published_at": "2026-08-21T21:29:00Z",
+    "quality_index": 9.2,
+    "source_tier": "Tier A",
+    "short_summary": "OpenAI 将 GPT-5.6 Sol 面向开发者的标准短上下文 API 输入价格从每百万 token 5 美元降至 4 美元，输出价格从 30 美元降至 20 美元，并将降价实施三个月。这比单纯模型发布更直接改变模型层的单位推理成本，也把与 Anthropic 及中国模型的竞争进一步传导到开发者实际采购价格。",
+    "long_summary": "Reuters 8 月 21 日报道，OpenAI 将 GPT-5.6 Sol 开发者 API 的标准短上下文输入价格从每百万 token 5 美元降至 4 美元，输出价格从 30 美元降至 20 美元，降价期为三个月；Pro、Plus 和 Business 订阅价格不变。此前公司已在 7 月下调 Terra 与 Luna 等较小模型价格，因此这次变化把价格压力扩展到旗舰模型。对 `ai-model-layer` 来说，信息增量不是能力排行榜，而是前沿模型的单位调用价格出现可直接观测的下降：若价格竞争持续，应用层可以在相同预算下购买更多推理量，也可能压缩模型提供商的单位收入并改变上游算力扩张的回报逻辑。后续需要观察三个月优惠结束后的常态价格、实际 token 使用增长、质量/延迟是否变化，以及降价是否主要来自效率改善还是竞争性让利。",
+    "key_quote": "",
+    "supporting_quotes": [],
+    "tags": [
+      "AI Models",
+      "Inference Economics",
+      "API Pricing",
+      "OpenAI",
+      "GPT-5.6 Sol"
+    ],
+    "editorial_status": "adopted",
+    "editorial_decision": "accept",
+    "adopted_at": "2026-08-24T14:41:39.931+00:00",
+    "ranking": {
+      "version": "ranking-v2",
+      "reader_boost": 0,
+      "reader_minimum": 3,
+      "editorial_boost": 0,
+      "editor_review_count": 0,
+      "reader_feedback_count": 0
+    }
+  },
+  {
+    "id": "ymtc-ai-nand-profit-capacity-pricing-2026",
+    "channel_id": "ai-infrastructure",
+    "storyline_ids": [
+      "ai-chip-layer"
+    ],
+    "event_type": "memory_supply",
+    "event_date": "2026-08-21",
+    "title": "YMTC 一季度收入同比近五倍、NAND 均价较 2025 年均值高 173%，AI 数据中心需求把中国存储供给从亏损周期推向满产与高价",
+    "url": "https://www.reuters.com/world/asia-pacific/chinese-flash-memory-chipmaker-ymtc-plans-raise-49-billion-shanghai-ipo-2026-08-21/",
+    "source": "Reuters",
+    "published_at": "2026-08-21T12:22:00Z",
+    "quality_index": 8.8,
+    "source_tier": "Tier A",
+    "short_summary": "YMTC 母公司 CCSH 的招股书显示，2026 年一季度收入达到 470 亿元、同比接近五倍，YMTC 工厂接近满负荷运行，NAND 平均售价较 2025 年均值高 173%，毛利率升至 76.8%。这为 AI 芯片层补充了此前较少量化的存储侧证据：AI 数据中心扩张不仅拉动 HBM，也正在通过企业级 SSD/NAND 形成可观测的产能利用率和价格信号。",
+    "long_summary": "Reuters 8 月 21 日援引 CCSH 招股书称，其核心运营实体 YMTC 在 2026 年一季度收入达到 470 亿元人民币，接近上年同期的五倍；归母净利润为 333.8 亿元，高于 2025 全年 142.1 亿元。招股书把改善与云服务商建设 AI 数据中心带来的高速存储需求、全球 NAND 供应偏紧以及工厂接近满产联系起来；一季度 NAND 平均售价比 2025 年平均水平高 173%，毛利率从 35.3% 升至 76.8%。对 `ai-chip-layer` 来说，增量在于供给约束已经从加速器/HBM 延伸到更广泛的数据中心存储：这里出现的是实际收入、产能利用与售价，而不是未来需求预测。CCSH 拟通过 STAR Market IPO 募资 330 亿元，其中 208 亿元用于产线升级、122 亿元用于下一代 NAND 与更高速存储研发。后续应验证高价格和满产状态能否持续、扩产何时形成新增有效供给，以及中国设备替代是否能在出口限制下维持良率与成本竞争力。",
+    "key_quote": "",
+    "supporting_quotes": [],
+    "tags": [
+      "AI Chips",
+      "NAND",
+      "YMTC",
+      "Storage",
+      "Capacity Utilization",
+      "China Semiconductors"
+    ],
+    "editorial_status": "adopted",
+    "editorial_decision": "accept",
+    "adopted_at": "2026-08-24T14:41:45.966+00:00",
+    "ranking": {
+      "version": "ranking-v2",
+      "reader_boost": 0,
+      "reader_minimum": 3,
+      "editorial_boost": 0,
+      "editor_review_count": 0,
+      "reader_feedback_count": 0
+    }
+  },
+  {
     "id": "broadcom-anthropic-ai-chip-debt-spv-2026",
     "channel_id": "ai-infrastructure",
     "storyline_ids": [

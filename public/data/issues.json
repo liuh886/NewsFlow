@@ -20,12 +20,15 @@
       "pathways-ccs-2027-fid-6mtpa-reset-2026",
       "openai-astra-training-pause-security-overhaul-2026",
       "pennsylvania-data-center-grid-executive-order-2026",
+      "openai-gpt56-sol-api-price-cut-2026",
       "google-marvell-custom-ai-chip-warrant-2026",
       "anthropic-revenue-run-rate-65b-july-2026",
       "anthropic-2028-revenue-ipo-economics-2026",
       "nvidia-ohio-openai-guarantee-cut-2026",
+      "ymtc-ai-nand-profit-capacity-pricing-2026",
       "broadcom-anthropic-ai-chip-debt-spv-2026",
-      "nvidia-sb-energy-equity-openai-ohio-2026"
+      "nvidia-sb-energy-equity-openai-ohio-2026",
+      "nvidia-ai-server-memory-price-hike-2026"
     ],
     "storyline_updates": [],
     "what_to_watch": [
@@ -44,15 +47,15 @@
       ]
     },
     "methodology": {
-      "candidate_count": 10,
-      "selected_count": 10,
-      "editorial_adoption_count": 10,
-      "evaluation_pool_count": 10,
+      "candidate_count": 13,
+      "selected_count": 13,
+      "editorial_adoption_count": 13,
+      "evaluation_pool_count": 13,
       "cover_story_count": 0,
       "editor_review_count": 0,
       "qualified_reader_feedback_count": 0,
       "selected_by_channel": {
-        "ai-infrastructure": 9,
+        "ai-infrastructure": 12,
         "ccus-energy-transition": 1
       },
       "final_issue_max_signals": 24,
@@ -61,7 +64,7 @@
       "fixed_length": false,
       "editorial_view_changed": false
     },
-    "updated_at": "2026-08-21T14:20:34.080Z"
+    "updated_at": "2026-08-24T15:24:19.473Z"
   },
   {
     "id": "frontier-systems-review-2026-16",

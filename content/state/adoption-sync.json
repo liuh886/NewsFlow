@@ -13,12 +13,14 @@
     "google-marvell-custom-ai-chip-warrant-2026",
     "intel-high-na-euv-production-economics-2026",
     "nsta-carbon-storage-operational-guidance-2026",
+    "nvidia-ai-server-memory-price-hike-2026",
     "nvidia-lancium-stargate-power-investment-2026",
     "nvidia-ohio-openai-guarantee-cut-2026",
     "nvidia-sb-energy-equity-openai-ohio-2026",
     "nvidia-wall-street-ai-financing-platform-2026",
     "openai-astra-critical-cyber-deployment-controls-2026",
     "openai-astra-training-pause-security-overhaul-2026",
+    "openai-gpt56-sol-api-price-cut-2026",
     "openai-huggingface-agent-infrastructure-escape-timeline-2026",
     "palantir-enterprise-ai-revenue-scale-2026",
     "pathways-ccs-2027-fid-6mtpa-reset-2026",
@@ -31,9 +33,10 @@
     "uk-data-center-grid-commitment-fee-2026",
     "uk-second-carbon-storage-round-application-conversion-2026",
     "us-data-center-community-credit-risk-2026",
-    "us-openweight-ai-safety-test-exemption-2026"
+    "us-openweight-ai-safety-test-exemption-2026",
+    "ymtc-ai-nand-profit-capacity-pricing-2026"
   ],
-  "current_adoption_count": 31,
+  "current_adoption_count": 34,
   "formal_issue_signal_count": 31,
-  "last_synced_at": "2026-08-21T14:20:33.871Z"
+  "last_synced_at": "2026-08-24T15:24:19.268Z"
 }
