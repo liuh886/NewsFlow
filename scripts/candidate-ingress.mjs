@@ -2,6 +2,7 @@ import { mkdir, readFile, writeFile } from 'node:fs/promises';
 import { dirname, relative, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { spawnSync } from 'node:child_process';
+import { decodeCandidateIngressPayload } from './candidate-ingress-transport.mjs';
 
 const root = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 const resultPath = resolve(root, process.env.NEWSFLOW_INGRESS_RESULT_PATH || 'artifacts/candidate-ingress-result.json');
@@ -94,30 +95,22 @@ try {
     throw Object.assign(new Error('Request id is invalid.'), { code: 'invalid_request_id' });
   }
 
-  const encoded = payloadLines.join('').trim();
-  if (!encoded) {
-    throw Object.assign(new Error('Candidate payload is missing.'), { code: 'missing_payload' });
-  }
-  if (encoded.length > Math.ceil(maxPlaintextBytes * 4 / 3) + 8) {
-    throw Object.assign(new Error('Candidate payload exceeds the transport limit.'), { code: 'payload_too_large' });
-  }
+  const plaintext = decodeCandidateIngressPayload(payloadLines, maxPlaintextBytes);
+  let apply;
+  try {
+    payloadType = inspectPayload(plaintext);
+    console.log(`Candidate ingress payload type: ${payloadType}`);
 
-  const plaintext = Buffer.from(encoded, 'base64');
-  if (!plaintext.length || plaintext.length > maxPlaintextBytes) {
-    throw Object.assign(new Error('Candidate payload is outside the accepted size range.'), { code: 'payload_size_invalid' });
+    apply = spawnSync(process.execPath, [resolve(root, 'scripts/apply-content.mjs'), '--stdin', '--apply'], {
+      cwd: root,
+      env: process.env,
+      input: plaintext,
+      encoding: 'utf8',
+      maxBuffer: 4 * 1024 * 1024
+    });
+  } finally {
+    plaintext.fill(0);
   }
-
-  payloadType = inspectPayload(plaintext);
-  console.log(`Candidate ingress payload type: ${payloadType}`);
-
-  const apply = spawnSync(process.execPath, [resolve(root, 'scripts/apply-content.mjs'), '--stdin', '--apply'], {
-    cwd: root,
-    env: process.env,
-    input: plaintext,
-    encoding: 'utf8',
-    maxBuffer: 4 * 1024 * 1024
-  });
-  plaintext.fill(0);
 
   if (apply.status !== 0) {
     throw Object.assign(new Error('Canonical Candidate apply rejected or failed.'), { code: classifyApplyFailure(apply) });
