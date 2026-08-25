@@ -1,5 +1,42 @@
 [
   {
+    "id": "alibaba-80b-hkd-ai-equity-placement-2026",
+    "channel_id": "ai-infrastructure",
+    "storyline_ids": [
+      "ai-infrastructure-layer"
+    ],
+    "event_type": "financing",
+    "event_date": "2026-08-23",
+    "title": "阿里巴巴以800亿港元增发全额投入AI，算力扩张进一步转向大规模股权融资",
+    "url": "https://www.reuters.com/business/retail-consumer/alibaba-proposes-hong-kong-share-placement-worth-10-billion-2026-08-23/",
+    "source": "Reuters",
+    "published_at": "2026-08-23T04:47:38Z",
+    "quality_index": 8.8,
+    "source_tier": "Tier A",
+    "short_summary": "阿里巴巴启动800亿港元（约102亿美元）新股配售，并表示将把100%净募集资金投入全栈AI能力，包括芯片、基础设施及模型开发部署。相较单纯资本开支指引，这把AI算力扩张进一步推进到百亿美元级公开股权融资。",
+    "long_summary": "Reuters 8月23日报道，阿里巴巴启动800亿港元（约102亿美元）的香港新股配售，拟发行7.1亿股，并计划把100%净募集资金投入“full stack” AI能力，包括芯片、AI基础设施以及模型开发和部署。公司此前已投入接近三年AI资本开支计划的一半，并称在需求强劲推动下，AI投资预期回收期由3年缩短至约2.5年。对ai-infrastructure-layer而言，信息增量是AI基建融资不再只依赖经营现金流、债务或SPV，而进入百亿美元级公开股权融资；但配售完成与募集资金转化为实际通电、装机和利用率仍需后续验证。",
+    "key_quote": "",
+    "supporting_quotes": [],
+    "tags": [
+      "AI Infrastructure",
+      "Alibaba",
+      "Equity Financing",
+      "AI Capex",
+      "China"
+    ],
+    "editorial_status": "adopted",
+    "editorial_decision": "accept",
+    "adopted_at": "2026-08-25T03:55:25.075+00:00",
+    "ranking": {
+      "version": "ranking-v2",
+      "reader_boost": 0,
+      "reader_minimum": 3,
+      "editorial_boost": 0,
+      "editor_review_count": 0,
+      "reader_feedback_count": 0
+    }
+  },
+  {
     "id": "nvidia-ai-server-memory-price-hike-2026",
     "channel_id": "ai-infrastructure",
     "storyline_ids": [

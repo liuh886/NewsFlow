@@ -1,6 +1,7 @@
 {
   "schema_version": "1.0",
   "managed_signal_ids": [
+    "alibaba-80b-hkd-ai-equity-placement-2026",
     "alibaba-qwen-openweight-revenue-sharing-2026",
     "amd-ai-data-center-revenue-rackscale-2026",
     "anthropic-2028-revenue-ipo-economics-2026",
@@ -36,7 +37,7 @@
     "us-openweight-ai-safety-test-exemption-2026",
     "ymtc-ai-nand-profit-capacity-pricing-2026"
   ],
-  "current_adoption_count": 34,
+  "current_adoption_count": 35,
   "formal_issue_signal_count": 31,
-  "last_synced_at": "2026-08-24T15:24:19.268Z"
+  "last_synced_at": "2026-08-25T04:04:37.591Z"
 }
