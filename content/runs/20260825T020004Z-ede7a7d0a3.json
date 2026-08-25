@@ -1,0 +1,104 @@
+{
+  "schema_version": "1.0",
+  "edition_id": "frontier-systems-review",
+  "workflow": {
+    "id": "newsflow-content-update",
+    "version": "1.0.0",
+    "actor": {
+      "agent_id": "chatgpt-newsflow-daily",
+      "runtime": "scheduled_tool_runtime",
+      "workflow_id": "newsflow-content-update",
+      "workflow_version": "1.0.0",
+      "model": "GPT-5.6 Sol"
+    }
+  },
+  "run": {
+    "as_of": "2026-08-25T02:00:04Z",
+    "coverage_start": "2026-08-23T01:00:54Z",
+    "coverage_end": "2026-08-25T02:00:04Z",
+    "timezone": "Asia/Shanghai",
+    "actor": {
+      "agent_id": "chatgpt-newsflow-daily",
+      "runtime": "scheduled_tool_runtime",
+      "workflow_id": "newsflow-content-update",
+      "workflow_version": "1.0.0",
+      "model": "GPT-5.6 Sol"
+    },
+    "collection_observations": {
+      "source_ids_scanned": [
+        "reuters",
+        "financial-times",
+        "us-doe",
+        "us-epa-class-vi",
+        "uk-government",
+        "global-ccs-institute",
+        "nsta-carbon-storage",
+        "ercot"
+      ],
+      "scout_ids_scanned": [],
+      "storyline_ids_scanned": [
+        "ai-energy-foundation",
+        "ai-chip-layer",
+        "ai-infrastructure-layer",
+        "ai-model-layer",
+        "ai-application-layer",
+        "ccus-project-delivery",
+        "ccus-network-economics",
+        "evidence-governance"
+      ],
+      "surface_types_scanned": [
+        "independent-reporting",
+        "primary-records",
+        "filings-and-earnings",
+        "project-and-permit-records",
+        "industry-reports",
+        "counter-evidence"
+      ],
+      "x_topic_query_ids_run": [],
+      "x_query_runtime": "not_run",
+      "x_post_read_count": 0,
+      "origin_yield": [
+        {
+          "type": "mainstream",
+          "id": "reuters",
+          "lead_count": 4,
+          "full_text_review_count": 4,
+          "candidate_count": 2
+        },
+        {
+          "type": "primary",
+          "id": "ercot",
+          "lead_count": 1,
+          "full_text_review_count": 1,
+          "candidate_count": 0
+        },
+        {
+          "type": "primary",
+          "id": "uk-government",
+          "lead_count": 1,
+          "full_text_review_count": 1,
+          "candidate_count": 0
+        },
+        {
+          "type": "primary",
+          "id": "us-epa-class-vi",
+          "lead_count": 1,
+          "full_text_review_count": 1,
+          "candidate_count": 0
+        }
+      ],
+      "material_lead_count": 3,
+      "full_text_review_count": 7
+    }
+  },
+  "applied": true,
+  "summary": {
+    "candidate_count": 2,
+    "reviewable_count": 2,
+    "accepted_by_machine_gate_count": 2,
+    "needs_review_count": 0,
+    "rejected_count": 0
+  },
+  "publication_effect": "none",
+  "editorial_effect": "supabase_private_candidates_only"
+}
