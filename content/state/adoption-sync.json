@@ -5,6 +5,7 @@
     "alibaba-qwen-openweight-revenue-sharing-2026",
     "amd-ai-data-center-revenue-rackscale-2026",
     "anthropic-2028-revenue-ipo-economics-2026",
+    "anthropic-nscale-45b-460mw-compute-lease-2026",
     "anthropic-revenue-run-rate-65b-july-2026",
     "apple-cxmt-memory-supply-ai-shortage-2026",
     "apple-mac-qwen-china-production-integration-2026",
@@ -17,6 +18,7 @@
     "nvidia-ai-server-memory-price-hike-2026",
     "nvidia-lancium-stargate-power-investment-2026",
     "nvidia-ohio-openai-guarantee-cut-2026",
+    "nvidia-rubin-customer-shipments-revenue-mix-2026",
     "nvidia-sb-energy-equity-openai-ohio-2026",
     "nvidia-wall-street-ai-financing-platform-2026",
     "openai-astra-critical-cyber-deployment-controls-2026",
@@ -26,7 +28,9 @@
     "palantir-enterprise-ai-revenue-scale-2026",
     "pathways-ccs-2027-fid-6mtpa-reset-2026",
     "pennsylvania-data-center-grid-executive-order-2026",
+    "pjm-capacity-shortfall-bilateral-data-center-power-2026",
     "pjm-data-center-emergency-curtailment-framework-2026",
+    "sk-hynix-indiana-hbm4e-groundbreaking-2026",
     "smic-ai-demand-price-utilization-2026",
     "spacex-tesla-terafab-vertical-ai-chip-capacity-2026",
     "texas-data-center-grid-deposit-risk-2026",
@@ -37,7 +41,7 @@
     "us-openweight-ai-safety-test-exemption-2026",
     "ymtc-ai-nand-profit-capacity-pricing-2026"
   ],
-  "current_adoption_count": 35,
+  "current_adoption_count": 39,
   "formal_issue_signal_count": 31,
-  "last_synced_at": "2026-08-25T04:04:37.591Z"
+  "last_synced_at": "2026-08-28T12:57:21.605Z"
 }

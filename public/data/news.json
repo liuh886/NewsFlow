@@ -1,5 +1,157 @@
 [
   {
+    "id": "sk-hynix-indiana-hbm4e-groundbreaking-2026",
+    "channel_id": "ai-infrastructure",
+    "storyline_ids": [
+      "ai-chip-layer"
+    ],
+    "event_type": "advanced_packaging",
+    "event_date": "2026-08-27",
+    "title": "SK hynix美国HBM基地破土，HBM4E量产节点锁定2029年三季度",
+    "url": "https://www.reuters.com/world/asia-pacific/sk-hynix-holds-groundbreaking-ceremony-4-billion-indiana-ai-chip-packaging-2026-08-27/",
+    "source": "Reuters",
+    "published_at": "2026-08-27T14:02:00Z",
+    "quality_index": 8.8,
+    "source_tier": "Tier A",
+    "short_summary": "SK hynix在印第安纳州HBM先进尅装基地举行破土仪式，并把HBM4E规模量产目标明确到2029年三季度；CEO称洁净室预计2028年下半年开始运行。相较仅有投资计划，这一项目已进入建设阶段，但产能距离实际量产仍有约三年。",
+    "long_summary": "Reuters报道，SK hynix超过40亿美元的印第安纳项目已举行破土仪式，计划在2028年下半年启动洁净室，并于2029年三季度开始HBM4E规模量产，最终年产能目标为数十万片晶圆。公司CEO同时预计当前内存短缺可能持续到2030年底；这是管理层判断，不是已实现的供需结果。对ai-chip-layer而言，信息增量是美国本土HBM供应从宣布投资推进到实体建设，同时也显示新增先进尅装供给释放仍需较长交付周期，强化capacity-realism与bottleneck-migration判断。",
+    "key_quote": "",
+    "supporting_quotes": [],
+    "tags": [
+      "AI Chips",
+      "HBM",
+      "SK hynix",
+      "Advanced Packaging",
+      "Indiana",
+      "Capacity Realism"
+    ],
+    "editorial_status": "adopted",
+    "editorial_decision": "accept",
+    "adopted_at": "2026-08-28T05:55:40.673+00:00",
+    "ranking": {
+      "version": "ranking-v2",
+      "reader_boost": 0,
+      "reader_minimum": 3,
+      "editorial_boost": 0,
+      "editor_review_count": 0,
+      "reader_feedback_count": 0
+    }
+  },
+  {
+    "id": "nvidia-rubin-customer-shipments-revenue-mix-2026",
+    "channel_id": "ai-infrastructure",
+    "storyline_ids": [
+      "ai-chip-layer"
+    ],
+    "event_type": "chip_architecture",
+    "event_date": "2026-08-26",
+    "title": "Nvidia Rubin开始客户出货并预计贡献本季约20%数据中心收入，架构切换从量产宣告进入收入验证",
+    "url": "https://www.reuters.com/business/media-telecom/nvidia-forecasts-quarterly-revenue-above-estimates-2026-08-26/",
+    "source": "Reuters",
+    "published_at": "2026-08-26T20:24:00Z",
+    "quality_index": 9.3,
+    "source_tier": "Tier A",
+    "short_summary": "Nvidia在第二财季后披露Vera Rubin已开始向客户出货，并预计本季贡献约五分之一的数据中心收入；公司Q2数据中心收入达到890亿美元。相较5月的“进入量产”公告，这提供了从供应链量产向客户交付和收入贡献迁移的新阶段证据，同时内存短缺仍在限制扩张速度。",
+    "long_summary": "Reuters 8月26日报道，Nvidia的Vera Rubin平台已经开始向客户出货，并预计在截至10月的当前季度贡献约五分之一的数据中心收入；公司第二财季数据中心收入为890亿美元。Nvidia同期官方业绩材料称Rubin正在全面量产，并已有机架在CoreWeave、Google Cloud、Microsoft Azure、Oracle Cloud Infrastructure和Nebius等伙伴运行。对ai-chip-layer而言，这比5月的量产宣告更进一步：Rubin开始出现客户出货和近期收入占比这一可验证的商业化阶段信号；但公司同时表示内存与组件短缺仍限制扩张，并压低未来季度毛利率。",
+    "key_quote": "",
+    "supporting_quotes": [],
+    "tags": [
+      "AI Chips",
+      "NVIDIA",
+      "Vera Rubin",
+      "Production Ramp",
+      "Customer Shipments",
+      "Revenue Mix"
+    ],
+    "editorial_status": "adopted",
+    "editorial_decision": "accept",
+    "adopted_at": "2026-08-28T05:55:46.748+00:00",
+    "ranking": {
+      "version": "ranking-v2",
+      "reader_boost": 0,
+      "reader_minimum": 3,
+      "editorial_boost": 0,
+      "editor_review_count": 0,
+      "reader_feedback_count": 0
+    }
+  },
+  {
+    "id": "anthropic-nscale-45b-460mw-compute-lease-2026",
+    "channel_id": "ai-infrastructure",
+    "storyline_ids": [
+      "ai-infrastructure-layer"
+    ],
+    "event_type": "supply_agreement",
+    "event_date": "2026-08-26",
+    "title": "Anthropic签下450亿美元、460MW六年算力租约，AI实验室开始用长期云合同锁定Rubin时代产能",
+    "url": "https://www.reuters.com/technology/anthropic-pay-nscale-45-billion-rent-ai-computing-power-bloomberg-news-reports-2026-08-26/",
+    "source": "Reuters",
+    "published_at": "2026-08-26T17:21:00Z",
+    "quality_index": 8.8,
+    "source_tier": "Tier A",
+    "short_summary": "Reuters援引知情人士称，Anthropic将以450亿美元从Nscale西弗吉尼亚数据中心租用六年AI算力，对应约460MW电力容量，并由Nscale部署Nvidia Vera Rubin。相比单纯资本开支或未来需求预测，这把AI实验室的算力需求转化为具体的多年合同金额与功率规模，但Anthropic尚未公开确认，且460MW并不等于当前已投运容量。",
+    "long_summary": "Reuters 8月26日报道，Anthropic将向Nscale支付450亿美元，在六年期内租用其西弗吉尼亚园区的AI云算力，协议对应约460MW电力容量，Nscale将部署Nvidia Vera Rubin。对ai-infrastructure-layer而言，信息增量是前沿实验室的需求开始以明确期限、金额和功率规模形成长期云侧承诺，给上游Rubin系统和数据中心融资提供更可观察的需求锚。该报道来自匿名知情人士且Anthropic拒绝评论，因此应把它视为高质量独立报道的合同信号，而不是已经确认的公司披露；后续仍需验证合同正式确认、设施建设通电和实际利用率。",
+    "key_quote": "",
+    "supporting_quotes": [],
+    "tags": [
+      "AI Infrastructure",
+      "Anthropic",
+      "Nscale",
+      "Compute Lease",
+      "Vera Rubin",
+      "Capacity Contract"
+    ],
+    "editorial_status": "adopted",
+    "editorial_decision": "accept",
+    "adopted_at": "2026-08-28T05:55:51.406+00:00",
+    "ranking": {
+      "version": "ranking-v2",
+      "reader_boost": 0,
+      "reader_minimum": 3,
+      "editorial_boost": 0,
+      "editor_review_count": 0,
+      "reader_feedback_count": 0
+    }
+  },
+  {
+    "id": "pjm-capacity-shortfall-bilateral-data-center-power-2026",
+    "channel_id": "ai-infrastructure",
+    "storyline_ids": [
+      "ai-energy-foundation"
+    ],
+    "event_type": "energy_cost",
+    "event_date": "2026-08-26",
+    "title": "PJM连续第二次容量缺口推动数据中心转向双边购电，部分新建项目所需价格远高于回购上限",
+    "url": "https://www.reuters.com/business/energy/pjm-capacity-market-woes-spur-activity-bilateral-power-deals--reeii-2026-08-26/",
+    "source": "Reuters",
+    "published_at": "2026-08-26T14:44:00Z",
+    "quality_index": 8.7,
+    "source_tier": "Tier A",
+    "short_summary": "Reuters Events分析显示，PJM 2028/29容量拍卖短缺6.8GW，已连续第二次未达到最低备用裕度；PJM因此推进最高555美元/MW-day、最长15年的Reliability Backstop Procurement，并促进大型负荷与发电商签双边合同。部分开发商称新建项目需要的容量支付远高于该上限，表明数据中心电力瓶颈正在从并网与应急削减进一步进入发电融资和风险分配。",
+    "long_summary": "PJM 7月的2028/29容量拍卖在价格触顶情况下仍比目标少6.8GW，并连续第二次低于最低备用裕度。PJM官方的Reliability Backstop Procurement方案拟以最长15年合同、最高加权555美元/MW-day回补6,831MW缺口，同时把已签双边合同带来的新容量从采购目标中扣除。Reuters Events进一步报道，部分发电开发商正寻求与数据中心等大型负荷直接签长期合同，其中AlphaGen CEO估计其部分新建项目需要1,285至1,665美元/MW-day的容量支付。对ai-energy-foundation而言，信息增量是供电约束开始转化为明确的资本结构问题：常规容量市场与回购价格可能不足以支撑新建可调度电源，迫使大型AI负荷直接承担更多长期合同与项目融资风险。",
+    "key_quote": "",
+    "supporting_quotes": [],
+    "tags": [
+      "AI Energy",
+      "PJM",
+      "Data Centers",
+      "Capacity Market",
+      "Bilateral Power",
+      "Project Finance"
+    ],
+    "editorial_status": "adopted",
+    "editorial_decision": "accept",
+    "adopted_at": "2026-08-28T05:55:59.28+00:00",
+    "ranking": {
+      "version": "ranking-v2",
+      "reader_boost": 0,
+      "reader_minimum": 3,
+      "editorial_boost": 0,
+      "editor_review_count": 0,
+      "reader_feedback_count": 0
+    }
+  },
+  {
     "id": "alibaba-80b-hkd-ai-equity-placement-2026",
     "channel_id": "ai-infrastructure",
     "storyline_ids": [
