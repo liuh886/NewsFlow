@@ -1,15 +1,65 @@
 [
   {
+    "id": "frontier-systems-review-2026-18",
+    "issue_number": 18,
+    "published_at": "2026-09-01T00:00:00+08:00",
+    "coverage_start": "2026-09-01",
+    "coverage_end": "2026-09-14",
+    "status": "published",
+    "lifecycle": "live",
+    "frozen_at": null,
+    "auto_generated": true,
+    "selection_mode": "live_editorial_evaluation",
+    "edition_version": "1.2",
+    "title": "Issue 18 · 本期编选中",
+    "standfirst": "本期已进入出版周期。重要进展将在完成编辑审阅后陆续进入本期。",
+    "judgment": "本期尚无已录用文章，编辑部持续追踪关键进展。",
+    "cover_signal_id": "",
+    "signal_ids": [],
+    "storyline_updates": [],
+    "what_to_watch": [
+      "大型负荷并网",
+      "发电与储能",
+      "长期购电协议"
+    ],
+    "ranking": {
+      "version": "live-v3",
+      "policy": "all_adopted_visible_until_freeze_then_chief_cover_then_evidence_quality_then_editor_consensus_then_reader_signal_then_recency",
+      "authority_order": [
+        "evidence_gate",
+        "editor_in_chief",
+        "editor_consensus",
+        "reader_consensus"
+      ]
+    },
+    "methodology": {
+      "candidate_count": 0,
+      "selected_count": 0,
+      "editorial_adoption_count": 0,
+      "evaluation_pool_count": 0,
+      "cover_story_count": 0,
+      "editor_review_count": 0,
+      "qualified_reader_feedback_count": 0,
+      "selected_by_channel": {},
+      "final_issue_max_signals": 24,
+      "final_channel_max_signals": 8,
+      "finalized": false,
+      "fixed_length": false,
+      "editorial_view_changed": false
+    },
+    "updated_at": "2026-08-31T20:10:38.335Z"
+  },
+  {
     "id": "frontier-systems-review-2026-17",
     "issue_number": 17,
     "published_at": "2026-08-15T00:00:00+08:00",
     "coverage_start": "2026-08-15",
     "coverage_end": "2026-08-31",
     "status": "published",
-    "lifecycle": "live",
-    "frozen_at": null,
+    "lifecycle": "frozen",
+    "frozen_at": "2026-09-01T00:00:00+08:00",
     "auto_generated": true,
-    "selection_mode": "live_editorial_evaluation",
+    "selection_mode": "final_editorial_ranking",
     "edition_version": "1.2",
     "title": "AI 数据中心开始重塑美国发电资产：FT 追踪 60 个大型项目，天然气扩建与煤电延寿成为供电响应",
     "standfirst": "FT 对 Amazon、Microsoft、Google、Meta 在美国规划的 60 个大型数据中心及其供电 utility 做逐项映射后发现：约四分之三相关 utility 正规划或建设新增燃气电源，仍运营煤电的 utility 中约三分之一延后退役；17% 的 utility 已在监管文件中明确将特定新燃气项目与 hyperscale 数据中心需求相连。 本期持续追踪相关进展，封面与篇目将随重要性更新。",
@@ -60,16 +110,19 @@
       "editor_review_count": 0,
       "qualified_reader_feedback_count": 0,
       "selected_by_channel": {
-        "ai-infrastructure": 17,
+        "ai-infrastructure": 8,
         "ccus-energy-transition": 1
       },
       "final_issue_max_signals": 24,
       "final_channel_max_signals": 8,
-      "finalized": false,
+      "finalized": true,
       "fixed_length": false,
-      "editorial_view_changed": false
+      "editorial_view_changed": true,
+      "post_freeze_amendment_count": 9
     },
-    "updated_at": "2026-08-28T12:57:21.809Z"
+    "updated_at": "2026-08-28T12:57:21.809Z",
+    "editorially_revised_at": "2026-08-31T20:10:38.335Z",
+    "revision_note": "主编在下一刊期内补录属于本刊期覆盖窗口的迟到录用稿件；原封面与既有篇目顺序保持不变。"
   },
   {
     "id": "frontier-systems-review-2026-16",
