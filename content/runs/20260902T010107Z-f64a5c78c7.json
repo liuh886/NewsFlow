@@ -1,0 +1,74 @@
+{
+  "schema_version": "1.0",
+  "edition_id": "frontier-systems-review",
+  "workflow": {
+    "id": "newsflow-content-update",
+    "version": "1.0.0",
+    "actor": {
+      "agent_id": "openai-chatgpt-newsflow",
+      "runtime": "scheduled-agent",
+      "workflow_id": "newsflow-content-update",
+      "workflow_version": "1.0.0",
+      "model": "GPT-5.6 Sol"
+    }
+  },
+  "run": {
+    "as_of": "2026-09-02T01:01:07Z",
+    "coverage_start": "2026-09-01T00:57:07Z",
+    "coverage_end": "2026-09-02T01:01:07Z",
+    "timezone": "Asia/Shanghai",
+    "actor": {
+      "agent_id": "openai-chatgpt-newsflow",
+      "runtime": "scheduled-agent",
+      "workflow_id": "newsflow-content-update",
+      "workflow_version": "1.0.0",
+      "model": "GPT-5.6 Sol"
+    },
+    "collection_observations": {
+      "source_ids_scanned": [
+        "reuters",
+        "us-doe",
+        "pjm",
+        "nvidia-ir",
+        "sk-hynix-news",
+        "uk-government",
+        "us-epa-class-vi",
+        "global-ccs-institute"
+      ],
+      "scout_ids_scanned": [],
+      "storyline_ids_scanned": [
+        "ai-energy-foundation",
+        "ai-chip-layer",
+        "ai-infrastructure-layer",
+        "ai-model-layer",
+        "ai-application-layer",
+        "ccus-project-delivery",
+        "ccus-network-economics",
+        "evidence-governance"
+      ],
+      "surface_types_scanned": [
+        "primary-records",
+        "filings-and-earnings",
+        "engineering-and-procurement",
+        "project-and-permit-records",
+        "industry-reports",
+        "independent-reporting"
+      ],
+      "x_topic_query_ids_run": [],
+      "x_query_runtime": "not_run",
+      "x_post_read_count": 0,
+      "material_lead_count": 5,
+      "full_text_review_count": 9
+    }
+  },
+  "applied": true,
+  "summary": {
+    "candidate_count": 3,
+    "reviewable_count": 3,
+    "accepted_by_machine_gate_count": 3,
+    "needs_review_count": 0,
+    "rejected_count": 0
+  },
+  "publication_effect": "none",
+  "editorial_effect": "supabase_private_candidates_only"
+}
