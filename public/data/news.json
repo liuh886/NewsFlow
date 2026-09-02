@@ -1,5 +1,160 @@
 [
   {
+    "id": "openai-astra-critical-cyber-threshold-2026",
+    "channel_id": "ai-infrastructure",
+    "storyline_ids": [
+      "ai-model-layer"
+    ],
+    "event_type": "deployment_requirement",
+    "event_date": "2026-09-01",
+    "title": "OpenAI确认Astra达到Critical网络安全能力门槛，模型能力提升开始直接增加部署控制成本",
+    "url": "https://www.reuters.com/business/openai-says-upcoming-model-is-so-capable-it-requires-stronger-guardrails-2026-09-01/",
+    "source": "Reuters",
+    "published_at": "2026-09-01T20:07:00Z",
+    "quality_index": 9.4,
+    "source_tier": "Tier A",
+    "short_summary": "OpenAI确认即将发布的Astra成为其首个触发Preparedness Framework更严格网络安全防护要求的模型，并计划先向有限用户开放。公司称额外安全检查可能减慢、暂停或终止合法任务。对模型层而言，新信息是能力提升开始产生可观察的部署约束和运行摩擦，而不仅是更i��基准分数。",
+    "long_summary": "Reuters 9月1日报道，OpenAI判定Astra具备更强的漏洞发现和利用能力，并首次触发公司安全协议中的更严格防护门槛。Astra计划先有限开放，额外控制可能对合法工作造成减速、暂停或停止；公司还在8月28日恢复此前暂停的大型训练运行，同时继续限制部分较小实验。对ai-model-layer而言，这是一条deployment-requirement与bottleneck-migration证据：随着模型进入更高风险能力区间，安全隔离、监控、访问控制和人工确认开始成为实际部署成本与可用性的组成部分。它并不证明Astra已经大规模公开部署，能力和安全结论仍主要来自OpenAI自身评估，应继续保持归因。",
+    "key_quote": "",
+    "supporting_quotes": [],
+    "tags": [
+      "AI Models",
+      "OpenAI",
+      "Astra",
+      "Cybersecurity",
+      "Deployment Controls",
+      "Bottleneck Migration"
+    ],
+    "editorial_status": "adopted",
+    "editorial_decision": "accept",
+    "adopted_at": "2026-09-02T03:54:32.847+00:00",
+    "ranking": {
+      "version": "ranking-v2",
+      "reader_boost": 0,
+      "reader_minimum": 3,
+      "editorial_boost": 0,
+      "editor_review_count": 0,
+      "reader_feedback_count": 0
+    }
+  },
+  {
+    "id": "fervo-google-396mw-geothermal-ppa-2026",
+    "channel_id": "ai-infrastructure",
+    "storyline_ids": [
+      "ai-energy-foundation"
+    ],
+    "event_type": "power_agreement",
+    "event_date": "2026-09-01",
+    "title": "Google签下Fervo 396MW增强型地热PPA，并保留约600MW扩容选择权",
+    "url": "https://www.reuters.com/legal/litigation/fervo-signs-396-mw-geothermal-power-supply-deal-with-google-shares-jump-2026-09-01/",
+    "source": "Reuters",
+    "published_at": "2026-09-01T12:39:00Z",
+    "quality_index": 9.4,
+    "source_tier": "Tier A",
+    "short_summary": "Fervo与Google签署396MW增强型地热PPA，电力来自Utah的Cape Station；Google另有约600MW扩容选择权，使潜在规模到2030年6月接近1GW。合同把AI相关全天候电力需求推进到已签约阶段，但Cape Station预计2028年才投运，扩容部分也只是选择权，不能计作现有供电能力。",
+    "long_summary": "Reuters 9月1日报道Fervo已与Google签署396MW地热供电协议，来自Utah Cape Station项目，并给予Google再增加约600MW采购的选择权。项目预计2028年投运，潜在总规模可在2030年6月前接近1GW。对ai-energy-foundation而言，信息增量在于新的firm clean power从一般合作意向进入明确的PPA合同阶段，为未来数据中心电力需求提供长期供给锚；但capacity-realism要求严格区分396MW已签PPA、600MW可选增量以及2028年后的实际投运。该事件支持数据中心负荷推动新型稳定电源商业化，但尚不能证明对应数据中心或电源已经建成并带电。",
+    "key_quote": "",
+    "supporting_quotes": [],
+    "tags": [
+      "AI Energy",
+      "Google",
+      "Fervo Energy",
+      "Geothermal",
+      "PPA",
+      "Capacity Realism"
+    ],
+    "editorial_status": "adopted",
+    "editorial_decision": "accept",
+    "adopted_at": "2026-09-02T03:54:42.927+00:00",
+    "ranking": {
+      "version": "ranking-v2",
+      "reader_boost": 0,
+      "reader_minimum": 3,
+      "editorial_boost": 0,
+      "editor_review_count": 0,
+      "reader_feedback_count": 0
+    }
+  },
+  {
+    "id": "cxmt-lpddr6-mass-production-xiaomi-2026",
+    "channel_id": "ai-infrastructure",
+    "storyline_ids": [
+      "ai-chip-layer"
+    ],
+    "event_type": "memory_supply",
+    "event_date": "2026-08-29",
+    "title": "CXMT LPDDR6从送样进入量产并获小米18 Fold采用，中国DRAM下一代产品推进至商用节点",
+    "url": "https://www.reuters.com/world/asia-pacific/chinas-cxmt-supply-memory-chip-xiaomis-upcoming-folding-phone-2026-08-29/",
+    "source": "Reuters",
+    "published_at": "2026-08-29T03:29:00Z",
+    "quality_index": 9,
+    "source_tier": "Tier A",
+    "short_summary": "Reuters 8月29日报道，CXMT已开始量产LPDDR6，并将为小米9月发布的18 Fold供货，小米已确认采用。相比前一日仍披露为向客户送样的状态，这构成从样品验证到量产及具名终端采用的明确阶段变化，为中国DRAM下一代产品商业化提供了更强的产能真实性证据。",
+    "long_summary": "CXMT表示LPDDR6在距离上一代LPDDR5量产不到一年后已经进入量产，小米确认18 Fold将在9月发布并采用该芯片，其自研3纳米Xring O3处理器支持LPDDR6。Reuters前一日对CXMT业绩的报道仍将LPDDR6描述为已向移动设备、服务器和汽车客户送样，因此本次最重要的信息增量不是再次确认CXMT收入和盈利增长，而是产品状态从sample推进到mass production幵绑定首个具名终端客户。对ai-chip-layer而言，这强化capacity-realism与regional-policy-divergence观察；但手机端LPDDR6量产不能证明服务器端产品已同样完成认证和规模出货，后续仍需跟踪服务器客户资格认证、实际出货与产能。",
+    "key_quote": "",
+    "supporting_quotes": [],
+    "tags": [
+      "AI Chips",
+      "DRAM",
+      "LPDDR6",
+      "CXMT",
+      "Xiaomi",
+      "Capacity Realism",
+      "China"
+    ],
+    "editorial_status": "adopted",
+    "editorial_decision": "accept",
+    "adopted_at": "2026-09-02T03:55:00.057+00:00",
+    "ranking": {
+      "version": "ranking-v2",
+      "reader_boost": 0,
+      "reader_minimum": 3,
+      "editorial_boost": 0,
+      "editor_review_count": 0,
+      "reader_feedback_count": 0
+    }
+  },
+  {
+    "id": "cxmt-dram-profit-revenue-surge-2026",
+    "channel_id": "ai-infrastructure",
+    "storyline_ids": [
+      "ai-chip-layer"
+    ],
+    "event_type": "memory_supply",
+    "event_date": "2026-08-28",
+    "title": "CXMT上半年收入同比增长874%并由亏转盈，中国DRAM供给在全球算力需求与高价格周期中进入盈利扩张",
+    "url": "https://www.reuters.com/world/asia-pacific/chinas-cxmt-posts-first-half-profit-after-revenue-surge-2026-08-28/",
+    "source": "Reuters",
+    "published_at": "2026-08-28T13:38:00Z",
+    "quality_index": 9,
+    "source_tier": "Tier A",
+    "short_summary": "CXMT披露2026年上半年收入1503亿元人民币、同比增长873.64%，净利润776亿元，而2025年全年仍亏损23亿元；公司同时判断DRAM短缺将在2026年下半年持续。相较此前NewsFlow已记录的NAND满产与AI服务器内存涨价，这条信息把供需紧张扩展到中国DRAM厂商的实际收入和利润表现，并显示中国存储供给在出口限制下仍快速扩大商业规模。",
+    "long_summary": "Reuters 8月28日报道，中国DRAM厂商CXMT上半年收入达到1503亿元人民币，同比增长873.64%，净利润776亿元，而2025年为亏损23亿元；公司把改善归因于内存产品价格和销量大幅增长以及全球算力需求，并预计全球DRAM短缺在2026年下半年持续。CXMT还披露已向客户送样LPDDR6，意味着下一代产品仍处于sample阶段而非量产出货。对ai-chip-layer而言，这不是对既有“内存涨价”的简单重复：此前Signals主要覆盖NAND满产和内存成本向AI服务器传导，本次新增的是中国DRAM供应商的实际收入/盈利规模与产品阶段证据。它强化regional-policy-divergence和capacity-realism，同时公司明确警告进一步贸易限制可能扰乱供应链，因此不能把高利润直接外推为无约束的新增有效供给。",
+    "key_quote": "",
+    "supporting_quotes": [],
+    "tags": [
+      "AI Chips",
+      "DRAM",
+      "CXMT",
+      "Memory",
+      "China Semiconductors",
+      "Revenue",
+      "Profitability",
+      "Regional Divergence"
+    ],
+    "editorial_status": "adopted",
+    "editorial_decision": "accept",
+    "adopted_at": "2026-09-02T03:55:04.041+00:00",
+    "ranking": {
+      "version": "ranking-v2",
+      "reader_boost": 0,
+      "reader_minimum": 3,
+      "editorial_boost": 0,
+      "editor_review_count": 0,
+      "reader_feedback_count": 0
+    }
+  },
+  {
     "id": "sk-hynix-indiana-hbm4e-groundbreaking-2026",
     "channel_id": "ai-infrastructure",
     "storyline_ids": [

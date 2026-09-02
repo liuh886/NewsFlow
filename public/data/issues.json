@@ -11,11 +11,14 @@
     "auto_generated": true,
     "selection_mode": "live_editorial_evaluation",
     "edition_version": "1.2",
-    "title": "Issue 18 · 本期编选中",
-    "standfirst": "本期已进入出版周期。重要进展将在完成编辑审阅后陆续进入本期。",
-    "judgment": "本期尚无已录用文章，编辑部持续追踪关键进展。",
-    "cover_signal_id": "",
-    "signal_ids": [],
+    "title": "Google签下Fervo 396MW增强型地热PPA，并保留约600MW扩容选择权",
+    "standfirst": "Fervo与Google签署396MW增强型地热PPA，电力来自Utah的Cape Station；Google另有约600MW扩容选择权，使潜在规模到2030年6月接近1GW。合同把AI相关全天候电力需求推进到已签约阶段，但Cape Station预计2028年才投运，扩容部分也只是选择权，不能计作现有供电能力。 本期持续追踪相关进展，封面与篇目将随重要性更新。",
+    "judgment": "本期刊期仍在开放评估中；所有已录用进展均向读者与编辑开放，封面与最终篇目将在刊期结束时按重要性收敛。",
+    "cover_signal_id": "fervo-google-396mw-geothermal-ppa-2026",
+    "signal_ids": [
+      "fervo-google-396mw-geothermal-ppa-2026",
+      "openai-astra-critical-cyber-threshold-2026"
+    ],
     "storyline_updates": [],
     "what_to_watch": [
       "大型负荷并网",
@@ -33,21 +36,23 @@
       ]
     },
     "methodology": {
-      "candidate_count": 0,
-      "selected_count": 0,
-      "editorial_adoption_count": 0,
-      "evaluation_pool_count": 0,
+      "candidate_count": 2,
+      "selected_count": 2,
+      "editorial_adoption_count": 2,
+      "evaluation_pool_count": 2,
       "cover_story_count": 0,
       "editor_review_count": 0,
       "qualified_reader_feedback_count": 0,
-      "selected_by_channel": {},
+      "selected_by_channel": {
+        "ai-infrastructure": 2
+      },
       "final_issue_max_signals": 24,
       "final_channel_max_signals": 8,
       "finalized": false,
       "fixed_length": false,
       "editorial_view_changed": false
     },
-    "updated_at": "2026-08-31T20:10:38.335Z"
+    "updated_at": "2026-09-02T06:27:26.940Z"
   },
   {
     "id": "frontier-systems-review-2026-17",
@@ -83,7 +88,9 @@
       "broadcom-anthropic-ai-chip-debt-spv-2026",
       "pjm-capacity-shortfall-bilateral-data-center-power-2026",
       "nvidia-sb-energy-equity-openai-ohio-2026",
-      "nvidia-ai-server-memory-price-hike-2026"
+      "nvidia-ai-server-memory-price-hike-2026",
+      "cxmt-dram-profit-revenue-surge-2026",
+      "cxmt-lpddr6-mass-production-xiaomi-2026"
     ],
     "storyline_updates": [],
     "what_to_watch": [
@@ -103,7 +110,7 @@
     },
     "methodology": {
       "candidate_count": 18,
-      "selected_count": 18,
+      "selected_count": 20,
       "editorial_adoption_count": 18,
       "evaluation_pool_count": 18,
       "cover_story_count": 0,
@@ -118,10 +125,10 @@
       "finalized": true,
       "fixed_length": false,
       "editorial_view_changed": true,
-      "post_freeze_amendment_count": 9
+      "post_freeze_amendment_count": 11
     },
     "updated_at": "2026-08-28T12:57:21.809Z",
-    "editorially_revised_at": "2026-08-31T20:10:38.335Z",
+    "editorially_revised_at": "2026-09-02T06:27:26.940Z",
     "revision_note": "主编在下一刊期内补录属于本刊期覆盖窗口的迟到录用稿件；原封面与既有篇目顺序保持不变。"
   },
   {

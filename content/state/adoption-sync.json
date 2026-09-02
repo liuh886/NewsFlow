@@ -11,6 +11,9 @@
     "apple-mac-qwen-china-production-integration-2026",
     "baltic-co2-storage-helsinki-convention-legal-interface-2026",
     "broadcom-anthropic-ai-chip-debt-spv-2026",
+    "cxmt-dram-profit-revenue-surge-2026",
+    "cxmt-lpddr6-mass-production-xiaomi-2026",
+    "fervo-google-396mw-geothermal-ppa-2026",
     "ft-us-data-center-gas-coal-lockin-2026",
     "google-marvell-custom-ai-chip-warrant-2026",
     "intel-high-na-euv-production-economics-2026",
@@ -22,6 +25,7 @@
     "nvidia-sb-energy-equity-openai-ohio-2026",
     "nvidia-wall-street-ai-financing-platform-2026",
     "openai-astra-critical-cyber-deployment-controls-2026",
+    "openai-astra-critical-cyber-threshold-2026",
     "openai-astra-training-pause-security-overhaul-2026",
     "openai-gpt56-sol-api-price-cut-2026",
     "openai-huggingface-agent-infrastructure-escape-timeline-2026",
@@ -41,7 +45,7 @@
     "us-openweight-ai-safety-test-exemption-2026",
     "ymtc-ai-nand-profit-capacity-pricing-2026"
   ],
-  "current_adoption_count": 39,
+  "current_adoption_count": 43,
   "formal_issue_signal_count": 49,
-  "last_synced_at": "2026-08-31T21:10:05.453Z"
+  "last_synced_at": "2026-09-02T06:27:26.763Z"
 }
