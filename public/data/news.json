@@ -78,6 +78,81 @@
     }
   },
   {
+    "id": "crusoe-jane-street-13b-cloud-contract-2026",
+    "channel_id": "ai-infrastructure",
+    "storyline_ids": [
+      "ai-infrastructure-layer"
+    ],
+    "event_type": "supply_agreement",
+    "event_date": "2026-09-03",
+    "title": "Crusoe据报与Jane Street签下约130亿美元五年云合同，非科技企业成为大型AI算力客户",
+    "url": "https://www.reuters.com/technology/crusoe-signs-13-billion-ai-cloud-deal-with-jane-street-bloomberg-news-reports-2026-09-03/",
+    "source": "Reuters",
+    "published_at": "2026-09-03T19:53:00Z",
+    "quality_index": 8,
+    "source_tier": "Tier A",
+    "short_summary": "Reuters转述Bloomberg称，Crusoe与交易公司Jane Street签署约130亿美元、为期五年的云服务合同；同一报道还称Crusoe新融资超过30亿美元、投后估值约300亿美元。若合同按报道成立，这是AI云需求从少数模型公司和hyperscaler进一步扩展到金融机构的大额长期预承诺，但关键合同金额来自匿名消息源且Crusoe当时未能即时置评，因此必须保留未获公司公开确认的限制。",
+    "long_summary": "Reuters 9月3日转述Bloomberg报道，AI数据中心与云公司Crusoe已与Jane Street签署一份约130亿美元的五年云合同，Jane Street因此成为其最高知名度的云客户；报道称该合同也帮助Crusoe吸引本轮融资兴趣。另据同一报道，Crusoe融资超过30亿美元、投后估值约300亿美元。对ai-infrastructure-layer而言，真正的信息增量不是估值，而是一个传统金融机构据报作出多年、百亿美元级云资源承诺，这为demand-utilisation和economics-capital提供潜在新证据。不过该事实源自Bloomberg匿名消息源并由Reuters转述，Crusoe当时未即时确认，因此应把它视为高影响但需继续验证的合同报道，而不是已审计收入或已投运容量。",
+    "key_quote": "",
+    "supporting_quotes": [],
+    "tags": [
+      "AI Infrastructure",
+      "Crusoe",
+      "Jane Street",
+      "Cloud Contract",
+      "Financing",
+      "Demand Utilisation"
+    ],
+    "editorial_status": "adopted",
+    "editorial_decision": "accept",
+    "adopted_at": "2026-09-12T13:22:26.083+00:00",
+    "ranking": {
+      "version": "ranking-v2",
+      "reader_boost": 0,
+      "reader_minimum": 3,
+      "editorial_boost": 0,
+      "editor_review_count": 0,
+      "reader_feedback_count": 0
+    }
+  },
+  {
+    "id": "snowflake-ai-growth-acceleration-2026",
+    "channel_id": "ai-infrastructure",
+    "storyline_ids": [
+      "ai-application-layer"
+    ],
+    "event_type": "application_revenue",
+    "event_date": "2026-09-03",
+    "title": "Snowflake称AI产品贡献约一半增长加速，产品收入同比增37%并上调全年预期",
+    "url": "https://www.reuters.com/business/snowflake-shares-surge-ai-demand-powers-growth-lifts-outlook-2026-09-03/",
+    "source": "Reuters",
+    "published_at": "2026-09-03T09:24:00Z",
+    "quality_index": 8.8,
+    "source_tier": "Tier A",
+    "short_summary": "Snowflake将FY2027产品收入预期从58.4亿美元上调至60.7亿美元，第二季度产品收入同比增长37%；CEO称AI产品约贡献了增长加速的一半。相比只看客户logo或试点，这提供了应用层AI需求正在带动核心云数据平台消费和收入增长的更直接证据，但该“一半”仍是管理层归因，不等于已单独披露的AI收入。",
+    "long_summary": "Reuters 9月3日报道，Snowflake上调FY2027产品收入预期至60.7亿美元，第二季度产品收入同比增长37%。CEO Sridhar Ramaswamy表示，AI产品约贡献了本轮增长加速的一半；Cortex Code账户数超过9,100，季度新增超过2,000，CoWork账户扩至5,800。对ai-application-layer而言，信息增量在于AI不只表现为产品发布或采用名单，而开始由公司管理层明确关联到核心平台消费和收入增长。demand-utilisation与economics-capital两条lens因此得到加强。不过账户数不能直接视为付费活跃或留存，且Snowflake并未把AI收入作为独立审计科目披露，后续仍需观察AI相关消费、留存和利润率。",
+    "key_quote": "",
+    "supporting_quotes": [],
+    "tags": [
+      "AI Applications",
+      "Snowflake",
+      "Enterprise AI",
+      "Application Revenue",
+      "Demand Utilisation"
+    ],
+    "editorial_status": "adopted",
+    "editorial_decision": "accept",
+    "adopted_at": "2026-09-12T13:22:43.288+00:00",
+    "ranking": {
+      "version": "ranking-v2",
+      "reader_boost": 0,
+      "reader_minimum": 3,
+      "editorial_boost": 0,
+      "editor_review_count": 0,
+      "reader_feedback_count": 0
+    }
+  },
+  {
     "id": "openai-astra-critical-cyber-threshold-2026",
     "channel_id": "ai-infrastructure",
     "storyline_ids": [

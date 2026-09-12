@@ -19,7 +19,9 @@
       "malaysia-data-center-power-share-9-3pct-2026",
       "qualcomm-amazon-60b-ai-chip-agreement-2026",
       "fervo-google-396mw-geothermal-ppa-2026",
-      "openai-astra-critical-cyber-threshold-2026"
+      "openai-astra-critical-cyber-threshold-2026",
+      "snowflake-ai-growth-acceleration-2026",
+      "crusoe-jane-street-13b-cloud-contract-2026"
     ],
     "storyline_updates": [],
     "what_to_watch": [
@@ -38,15 +40,15 @@
       ]
     },
     "methodology": {
-      "candidate_count": 4,
-      "selected_count": 4,
-      "editorial_adoption_count": 4,
-      "evaluation_pool_count": 4,
+      "candidate_count": 6,
+      "selected_count": 6,
+      "editorial_adoption_count": 6,
+      "evaluation_pool_count": 6,
       "cover_story_count": 0,
       "editor_review_count": 0,
       "qualified_reader_feedback_count": 0,
       "selected_by_channel": {
-        "ai-infrastructure": 4
+        "ai-infrastructure": 6
       },
       "final_issue_max_signals": 24,
       "final_channel_max_signals": 8,
@@ -54,7 +56,7 @@
       "fixed_length": false,
       "editorial_view_changed": false
     },
-    "updated_at": "2026-09-12T06:32:42.721Z"
+    "updated_at": "2026-09-12T14:24:28.314Z"
   },
   {
     "id": "frontier-systems-review-2026-17",
