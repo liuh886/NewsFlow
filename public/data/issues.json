@@ -11,11 +11,13 @@
     "auto_generated": true,
     "selection_mode": "live_editorial_evaluation",
     "edition_version": "1.2",
-    "title": "Google签下Fervo 396MW增强型地热PPA，并保留约600MW扩容选择权",
-    "standfirst": "Fervo与Google签署396MW增强型地热PPA，电力来自Utah的Cape Station；Google另有约600MW扩容选择权，使潜在规模到2030年6月接近1GW。合同把AI相关全天候电力需求推进到已签约阶段，但Cape Station预计2028年才投运，扩容部分也只是选择权，不能计作现有供电能力。 本期持续追踪相关进展，封面与篇目将随重要性更新。",
+    "title": "马来西亚数据中心用电占比升至9.3%纪录高位，高温把冷却负荷转化为可观察的电力瓶颈",
+    "standfirst": "马来西亚能源委员会称，8月第二周数据中心占全国用电的比例升至9.3%，高于今年约7%的平均水平，高温导致冷却能耗进一步上升；政府同时估计到2032年还需增加9GW燃气容量。与只看数据中心规划负荷相比，本次出现了实际系统用电占比和天气敏感性证据，但9GW是面向未来全国需求的规划缺口，不能视为已经批准或建设的数据中心专属电源。 本期持续追踪相关进展，封面与篇目将随重要性更新。",
     "judgment": "本期刊期仍在开放评估中；所有已录用进展均向读者与编辑开放，封面与最终篇目将在刊期结束时按重要性收敛。",
-    "cover_signal_id": "fervo-google-396mw-geothermal-ppa-2026",
+    "cover_signal_id": "malaysia-data-center-power-share-9-3pct-2026",
     "signal_ids": [
+      "malaysia-data-center-power-share-9-3pct-2026",
+      "qualcomm-amazon-60b-ai-chip-agreement-2026",
       "fervo-google-396mw-geothermal-ppa-2026",
       "openai-astra-critical-cyber-threshold-2026"
     ],
@@ -36,15 +38,15 @@
       ]
     },
     "methodology": {
-      "candidate_count": 2,
-      "selected_count": 2,
-      "editorial_adoption_count": 2,
-      "evaluation_pool_count": 2,
+      "candidate_count": 4,
+      "selected_count": 4,
+      "editorial_adoption_count": 4,
+      "evaluation_pool_count": 4,
       "cover_story_count": 0,
       "editor_review_count": 0,
       "qualified_reader_feedback_count": 0,
       "selected_by_channel": {
-        "ai-infrastructure": 2
+        "ai-infrastructure": 4
       },
       "final_issue_max_signals": 24,
       "final_channel_max_signals": 8,
@@ -52,7 +54,7 @@
       "fixed_length": false,
       "editorial_view_changed": false
     },
-    "updated_at": "2026-09-02T06:27:26.940Z"
+    "updated_at": "2026-09-12T06:32:42.721Z"
   },
   {
     "id": "frontier-systems-review-2026-17",

@@ -1,5 +1,83 @@
 [
   {
+    "id": "qualcomm-amazon-60b-ai-chip-agreement-2026",
+    "channel_id": "ai-infrastructure",
+    "storyline_ids": [
+      "ai-chip-layer"
+    ],
+    "event_type": "chip_supply_agreement",
+    "event_date": "2026-09-08",
+    "title": "Amazon与Qualcomm达成最高600亿美元AI数据中心芯片合作，采购还与约40亿美元股权激励绑定",
+    "url": "https://www.reuters.com/technology/qualcomm-amazon-develop-custom-chips-ai-data-centers-2026-09-08/",
+    "source": "Reuters",
+    "published_at": "2026-09-08T13:15:22Z",
+    "quality_index": 10,
+    "source_tier": "Tier A",
+    "short_summary": "Amazon可在长期合作下采购最高600亿美元的Qualcomm AI数据中心芯片及相关产品；Qualcomm同时授予约40亿美元、随产品采购归属的认股权证。相较普通设计合作，本次新增了可量化的长期采购上限和与采购挂钩的资本激励，显示定制推理芯片市场正在出现更强的客户承诺，但“最高600亿美元”仍是合同上限而非已实现收入。",
+    "long_summary": "Reuters 9月8日报道，Qualcomm与Amazon达成长期AI数据中心合作，Amazon可采购最高600亿美元的芯片和相关产品，并获得约40亿美元、随实际产品采购归属的认股权证。双方将共同开发AI推理定制芯片及最高1.6Tbps的光互连技术。对ai-chip-layer而言，信息增量不是又一个产品路线图，而是大型云客户给出了可量化的长期采购框架，并把股权激励与实际采购绑定，强化demand-utilisation与economics-capital证据。同时capacity-realism要求保留边界：600亿美元是潜在采购上限，不等于已下单、已出货或已确认收入；后续应跟踪量产、交付和Amazon实际采用规模。",
+    "key_quote": "",
+    "supporting_quotes": [],
+    "tags": [
+      "AI Chips",
+      "Qualcomm",
+      "Amazon",
+      "Custom Silicon",
+      "Inference",
+      "Optical Connectivity",
+      "Demand Utilisation"
+    ],
+    "editorial_status": "adopted",
+    "editorial_decision": "accept",
+    "adopted_at": "2026-09-12T04:19:46.353+00:00",
+    "ranking": {
+      "version": "ranking-v2",
+      "reader_boost": 0,
+      "reader_minimum": 3,
+      "editorial_boost": 0,
+      "editor_review_count": 0,
+      "reader_feedback_count": 0
+    }
+  },
+  {
+    "id": "malaysia-data-center-power-share-9-3pct-2026",
+    "channel_id": "ai-infrastructure",
+    "storyline_ids": [
+      "ai-energy-foundation"
+    ],
+    "event_type": "load_forecast",
+    "event_date": "2026-09-08",
+    "title": "马来西亚数据中心用电占比升至9.3%纪录高位，高温把冷却负荷转化为可观察的电力瓶颈",
+    "url": "https://www.reuters.com/world/asia-pacific/malaysian-data-centres-guzzle-more-power-temperatures-soar-2026-09-08/",
+    "source": "Reuters",
+    "published_at": "2026-09-08T06:12:27Z",
+    "quality_index": 10,
+    "source_tier": "Tier A",
+    "short_summary": "马来西亚能源委员会称，8月第二周数据中心占全国用电的比例升至9.3%，高于今年约7%的平均水平，高温导致冷却能耗进一步上升；政府同时估计到2032年还需增加9GW燃气容量。与只看数据中心规划负荷相比，本次出现了实际系统用电占比和天气敏感性证据，但9GW是面向未来全国需求的规划缺口，不能视为已经批准或建设的数据中心专属电源。",
+    "long_summary": "Reuters 9月8日报道，马来西亚能源委员会CEO表示，数据中心在8月第二周的全国用电占比达到9.3%的纪录高位，而今年平均约为7%；高温增加了冷却系统能耗，低水位同时压低水电条件。政府认为在逐步退煤和数据中心扩张背景下，到2032年需要增加9GW燃气发电容量，并表示2026和2027年没有新增燃气容量投运。对ai-energy-foundation而言，这是一条强于排队MW或长期预测的实际运行证据：AI/数据中心负荷正在进入系统用电统计，并且气温通过冷却负荷把瓶颈迁移到电源与系统调度。但31%到2035年和9GW到2032年仍是前瞻判断，必须与当前9.3%实际占比区分。",
+    "key_quote": "",
+    "supporting_quotes": [],
+    "tags": [
+      "AI Energy",
+      "Malaysia",
+      "Data Centers",
+      "Power Demand",
+      "Cooling",
+      "Grid Planning",
+      "Bottleneck Migration"
+    ],
+    "editorial_status": "adopted",
+    "editorial_decision": "accept",
+    "adopted_at": "2026-09-12T04:20:00.937+00:00",
+    "ranking": {
+      "version": "ranking-v2",
+      "reader_boost": 0,
+      "reader_minimum": 3,
+      "editorial_boost": 0,
+      "editor_review_count": 0,
+      "reader_feedback_count": 0
+    }
+  },
+  {
     "id": "openai-astra-critical-cyber-threshold-2026",
     "channel_id": "ai-infrastructure",
     "storyline_ids": [

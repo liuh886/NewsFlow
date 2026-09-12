@@ -17,6 +17,7 @@
     "ft-us-data-center-gas-coal-lockin-2026",
     "google-marvell-custom-ai-chip-warrant-2026",
     "intel-high-na-euv-production-economics-2026",
+    "malaysia-data-center-power-share-9-3pct-2026",
     "nsta-carbon-storage-operational-guidance-2026",
     "nvidia-ai-server-memory-price-hike-2026",
     "nvidia-lancium-stargate-power-investment-2026",
@@ -34,6 +35,7 @@
     "pennsylvania-data-center-grid-executive-order-2026",
     "pjm-capacity-shortfall-bilateral-data-center-power-2026",
     "pjm-data-center-emergency-curtailment-framework-2026",
+    "qualcomm-amazon-60b-ai-chip-agreement-2026",
     "sk-hynix-indiana-hbm4e-groundbreaking-2026",
     "smic-ai-demand-price-utilization-2026",
     "spacex-tesla-terafab-vertical-ai-chip-capacity-2026",
@@ -45,7 +47,7 @@
     "us-openweight-ai-safety-test-exemption-2026",
     "ymtc-ai-nand-profit-capacity-pricing-2026"
   ],
-  "current_adoption_count": 43,
+  "current_adoption_count": 45,
   "formal_issue_signal_count": 51,
-  "last_synced_at": "2026-09-02T11:45:25.201Z"
+  "last_synced_at": "2026-09-12T06:32:42.526Z"
 }
