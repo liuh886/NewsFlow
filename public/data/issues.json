@@ -1,15 +1,65 @@
 [
   {
+    "id": "frontier-systems-review-2026-19",
+    "issue_number": 19,
+    "published_at": "2026-09-15T00:00:00+08:00",
+    "coverage_start": "2026-09-15",
+    "coverage_end": "2026-09-30",
+    "status": "published",
+    "lifecycle": "live",
+    "frozen_at": null,
+    "auto_generated": true,
+    "selection_mode": "live_editorial_evaluation",
+    "edition_version": "1.2",
+    "title": "Issue 19 · 本期编选中",
+    "standfirst": "本期已进入出版周期。重要进展将在完成编辑审阅后陆续进入本期。",
+    "judgment": "本期尚无已录用文章，编辑部持续追踪关键进展。",
+    "cover_signal_id": "",
+    "signal_ids": [],
+    "storyline_updates": [],
+    "what_to_watch": [
+      "大型负荷并网",
+      "发电与储能",
+      "长期购电协议"
+    ],
+    "ranking": {
+      "version": "live-v3",
+      "policy": "all_adopted_visible_until_freeze_then_chief_cover_then_evidence_quality_then_editor_consensus_then_reader_signal_then_recency",
+      "authority_order": [
+        "evidence_gate",
+        "editor_in_chief",
+        "editor_consensus",
+        "reader_consensus"
+      ]
+    },
+    "methodology": {
+      "candidate_count": 0,
+      "selected_count": 0,
+      "editorial_adoption_count": 0,
+      "evaluation_pool_count": 0,
+      "cover_story_count": 0,
+      "editor_review_count": 0,
+      "qualified_reader_feedback_count": 0,
+      "selected_by_channel": {},
+      "final_issue_max_signals": 24,
+      "final_channel_max_signals": 8,
+      "finalized": false,
+      "fixed_length": false,
+      "editorial_view_changed": false
+    },
+    "updated_at": "2026-09-14T19:26:45.652Z"
+  },
+  {
     "id": "frontier-systems-review-2026-18",
     "issue_number": 18,
     "published_at": "2026-09-01T00:00:00+08:00",
     "coverage_start": "2026-09-01",
     "coverage_end": "2026-09-14",
     "status": "published",
-    "lifecycle": "live",
-    "frozen_at": null,
+    "lifecycle": "frozen",
+    "frozen_at": "2026-09-15T00:00:00+08:00",
     "auto_generated": true,
-    "selection_mode": "live_editorial_evaluation",
+    "selection_mode": "final_editorial_ranking",
     "edition_version": "1.2",
     "title": "马来西亚数据中心用电占比升至9.3%纪录高位，高温把冷却负荷转化为可观察的电力瓶颈",
     "standfirst": "马来西亚能源委员会称，8月第二周数据中心占全国用电的比例升至9.3%，高于今年约7%的平均水平，高温导致冷却能耗进一步上升；政府同时估计到2032年还需增加9GW燃气容量。与只看数据中心规划负荷相比，本次出现了实际系统用电占比和天气敏感性证据，但9GW是面向未来全国需求的规划缺口，不能视为已经批准或建设的数据中心专属电源。 本期持续追踪相关进展，封面与篇目将随重要性更新。",
@@ -52,7 +102,7 @@
       },
       "final_issue_max_signals": 24,
       "final_channel_max_signals": 8,
-      "finalized": false,
+      "finalized": true,
       "fixed_length": false,
       "editorial_view_changed": false
     },
