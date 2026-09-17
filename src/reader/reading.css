@@ -34,9 +34,9 @@ body.nf-reading-open { overflow: hidden; }
   position: sticky;
   z-index: 4;
   top: 0;
-  height: 2px;
+  height: 3px;
   overflow: hidden;
-  background: transparent;
+  background: color-mix(in srgb, var(--signal) 18%, transparent);
 }
 
 .nf-reading-progress span {
@@ -375,4 +375,23 @@ body.nf-reading-open { overflow: hidden; }
 @keyframes nf-reading-sheet-in {
   from { opacity: 0; transform: translateX(22px); }
   to { opacity: 1; transform: translateX(0); }
+}
+
+/* Strict-audit polish: CJK-safe reading rhythm and touch-sized share actions. */
+.nf-reading-article h1,
+.nf-reading-section h2 {
+  overflow-wrap: anywhere;
+  text-wrap: balance;
+}
+
+.nf-reading-section > p,
+.nf-reading-standfirst {
+  overflow-wrap: anywhere;
+  text-wrap: pretty;
+}
+
+.nf-reading-back,
+.nf-reading-share,
+.nf-share-actions button {
+  min-height: 44px;
 }

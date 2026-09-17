@@ -1034,3 +1034,17 @@
 .is-latest-hidden {
   display: none;
 }
+
+/* Strict-audit polish: CJK-safe title wrapping and minimum touch targets. */
+.app-shell[data-product-model='magazine-edition'] .lead-title,
+.app-shell[data-product-model='magazine-edition'] .article-card h3,
+.issue-signal-link > span:last-child {
+  overflow-wrap: anywhere;
+  text-wrap: balance;
+}
+
+.app-shell[data-product-model='magazine-edition'] .card-actions button,
+.app-shell[data-product-model='magazine-edition'] .card-actions a {
+  min-width: 44px;
+  min-height: 44px;
+}
