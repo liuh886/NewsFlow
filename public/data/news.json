@@ -1,5 +1,307 @@
 [
   {
+    "id": "us-house-ratepayer-protection-data-center-costs-2026",
+    "channel_id": "ai-infrastructure",
+    "storyline_ids": [
+      "ai-energy-foundation"
+    ],
+    "event_type": "regulatory_decision",
+    "event_date": "2026-09-16",
+    "title": "美国众议院首次通过直接回应数据中心电力成本外溢的法案",
+    "url": "https://www.reuters.com/world/us-house-advances-first-bill-addressing-economic-impacts-data-center-boom-2026-09-16/",
+    "source": "Reuters",
+    "published_at": "2026-09-16T23:00:00Z",
+    "quality_index": 9.8,
+    "source_tier": "Tier A",
+    "short_summary": "美国众议院以417比3通过Ratepayer Protection Act，要求州公用事业监管机构考虑让数据中心等大型用电户承担为其新增需求建设的电力基础设施增量成本。",
+    "long_summary": "这是美国联邦层面首次由众议院推进直接回应数据中心扩张经济影响的立法，显示AI能源约束正在从并网和供给问题进一步迁移到成本分摊与社会接受度。法案只要求州监管机构“考虑”让大型用电户承担相关增量成本，并非直接建立全国统一收费标准，且仍需后续立法程序。",
+    "key_quote": "",
+    "supporting_quotes": [],
+    "tags": [
+      "AI",
+      "data center",
+      "electricity",
+      "ratepayer",
+      "grid cost allocation"
+    ],
+    "editorial_status": "adopted",
+    "editorial_decision": "accept",
+    "adopted_at": "2026-09-18T08:57:02.947+00:00",
+    "ranking": {
+      "version": "ranking-v2",
+      "reader_boost": 0,
+      "reader_minimum": 3,
+      "editorial_boost": 0,
+      "editor_review_count": 0,
+      "reader_feedback_count": 0
+    }
+  },
+  {
+    "id": "openai-misalignment-disclosure-framework-2026",
+    "channel_id": "ai-infrastructure",
+    "storyline_ids": [
+      "ai-model-layer"
+    ],
+    "event_type": "deployment_requirement",
+    "event_date": "2026-09-16",
+    "title": "OpenAI建立模型失配事件定期披露框架，将异常行为纳入持续报告机制",
+    "url": "https://www.reuters.com/technology/openai-releases-framework-track-model-misalignment-2026-09-16/",
+    "source": "Reuters",
+    "published_at": "2026-09-16T22:13:00Z",
+    "quality_index": 9.6,
+    "source_tier": "Tier A",
+    "short_summary": "OpenAI发布模型失配事件跟踪、调查与披露框架，并表示将定期公开异常或未经授权的AI行为，同时发布六份既有案例报告。",
+    "long_summary": "相较此前逐案回应agent异常事件，本次增量是OpenAI把事件发现、内部调查和公开披露转化为持续治理流程，并明确员工可提交潜在事件、由安全团队判断是否公开。这强化了模型层部署成本正在包含持续监测、事故分类和披露机制的判断；但OpenAI同时强调首批六份报告并非全部已知或持续事件的完整清单，不能据此推断失配发生频率。",
+    "key_quote": "",
+    "supporting_quotes": [],
+    "tags": [
+      "OpenAI",
+      "model safety",
+      "misalignment",
+      "disclosure",
+      "governance"
+    ],
+    "editorial_status": "adopted",
+    "editorial_decision": "accept",
+    "adopted_at": "2026-09-18T08:57:08.967+00:00",
+    "ranking": {
+      "version": "ranking-v2",
+      "reader_boost": 0,
+      "reader_minimum": 3,
+      "editorial_boost": 0,
+      "editor_review_count": 0,
+      "reader_feedback_count": 0
+    }
+  },
+  {
+    "id": "anthropic-australia-216gw-inference-data-center-lease-2026",
+    "channel_id": "ai-infrastructure",
+    "storyline_ids": [
+      "ai-infrastructure-layer",
+      "ai-energy-foundation"
+    ],
+    "event_type": "supply_agreement",
+    "event_date": "2026-09-16",
+    "title": "Anthropic签署澳大利亚首份数据中心租约，锁定规划2.16GW推理园区",
+    "url": "https://www.reuters.com/world/asia-pacific/anthropic-signs-first-australia-data-centre-agreement-2026-09-16/",
+    "source": "Reuters",
+    "published_at": "2026-09-16T03:49:00Z",
+    "quality_index": 9.6,
+    "source_tier": "Tier A",
+    "short_summary": "Anthropic签署其在澳大利亚的首份数据中心租约，覆盖布里斯班附近规划总容量2.16GW的园区，计划2027年开始上线，主要用于推理。",
+    "long_summary": "该租约把此前澳大利亚AI基础设施规划推进到具体anchor tenant容量锁定阶段，并明确用途为推理而非训练，提供需求与基础设施之间的合同证据。但2.16GW是园区规划总容量，不是已经投运或已利用的Anthropic算力；项目仍需澳大利亚外国投资审查委员会批准，并计划从2027年开始上线。",
+    "key_quote": "",
+    "supporting_quotes": [],
+    "tags": [
+      "Anthropic",
+      "Australia",
+      "data center",
+      "inference",
+      "capacity"
+    ],
+    "editorial_status": "adopted",
+    "editorial_decision": "accept",
+    "adopted_at": "2026-09-18T08:57:11.235+00:00",
+    "ranking": {
+      "version": "ranking-v2",
+      "reader_boost": 0,
+      "reader_minimum": 3,
+      "editorial_boost": 0,
+      "editor_review_count": 0,
+      "reader_feedback_count": 0
+    }
+  },
+  {
+    "id": "new-york-data-center-community-investment-1m-per-mw-2026",
+    "channel_id": "ai-infrastructure",
+    "storyline_ids": [
+      "ai-energy-foundation",
+      "ai-infrastructure-layer"
+    ],
+    "event_type": "regulatory_decision",
+    "event_date": "2026-09-15",
+    "title": "纽约建议数据中心按每MW至少100万美元投入社区，选址成本开始显式内部化",
+    "url": "https://www.reuters.com/business/retail-consumer/new-york-proposes-1-million-per-megawatt-community-investment-data-centers-2026-09-15/",
+    "source": "Reuters",
+    "published_at": "2026-09-15T23:40:00Z",
+    "quality_index": 9.6,
+    "source_tier": "Tier A",
+    "short_summary": "纽约州长建议地方政府要求新数据中心开发商按公用事业需求每MW至少投入100万美元用于社区利益，显示数据中心扩张的地方社会成本开始进入项目经济性。",
+    "long_summary": "这项建议把数据中心的地方接受度从抽象政治阻力转化为可量化的项目成本：至少100万美元/MW的社区投资意味着大型负荷项目可能面临显著新增前置成本。它与纽约此前大型新数据中心暂停政策以及美国多地电价和社区反弹共同显示瓶颈正从电力供应迁移到许可、成本分担与社会接受度；但目前是州长建议，并非已经统一生效的强制收费标准。",
+    "key_quote": "",
+    "supporting_quotes": [],
+    "tags": [
+      "AI energy",
+      "data centers",
+      "community investment",
+      "permitting economics"
+    ],
+    "editorial_status": "adopted",
+    "editorial_decision": "accept",
+    "adopted_at": "2026-09-18T08:57:14.65+00:00",
+    "ranking": {
+      "version": "ranking-v2",
+      "reader_boost": 0,
+      "reader_minimum": 3,
+      "editorial_boost": 0,
+      "editor_review_count": 0,
+      "reader_feedback_count": 0
+    }
+  },
+  {
+    "id": "texas-data-center-water-permit-enforcement-2026",
+    "channel_id": "ai-infrastructure",
+    "storyline_ids": [
+      "ai-energy-foundation",
+      "ai-infrastructure-layer"
+    ],
+    "event_type": "regulatory_decision",
+    "event_date": "2026-09-14",
+    "title": "Texas将数据中心用水披露与环境许可挂钩，资源约束从电网扩展至水",
+    "url": "https://www.reuters.com/legal/litigation/texas-moves-penalize-data-centers-water-violations-2026-09-14/",
+    "source": "Reuters",
+    "published_at": "2026-09-14T21:26:00Z",
+    "quality_index": 9.4,
+    "source_tier": "Tier A",
+    "short_summary": "Texas州长要求监管机构处罚未披露用水信息的数据中心；未按期完成州水务调查的设施将被拒绝新的或续期环境许可。",
+    "long_summary": "Texas正在重构对快速扩张的数据中心基础设施的监管：在暂停部分新数据中心电网接入并审查电力和用水后，州长要求Texas Water Development Board对未履行用水报告义务的大型用水户实施法律后果。更关键的实施机制是，未按期提交调查的数据中心将无法获得新的或续期环境许可。这把AI基础设施约束从电力并网进一步扩展到水资源披露与许可，属于区域政策与瓶颈迁移的实质变化；它不等于所有Texas数据中心已被停批。",
+    "key_quote": "",
+    "supporting_quotes": [],
+    "tags": [
+      "Texas",
+      "data center",
+      "water",
+      "permitting",
+      "AI infrastructure"
+    ],
+    "editorial_status": "adopted",
+    "editorial_decision": "accept",
+    "adopted_at": "2026-09-18T08:57:38.352+00:00",
+    "ranking": {
+      "version": "ranking-v2",
+      "reader_boost": 0,
+      "reader_minimum": 3,
+      "editorial_boost": 0,
+      "editor_review_count": 0,
+      "reader_feedback_count": 0
+    }
+  },
+  {
+    "id": "enterprise-ai-data-retention-adoption-friction-2026",
+    "channel_id": "ai-infrastructure",
+    "storyline_ids": [
+      "ai-model-layer",
+      "ai-application-layer"
+    ],
+    "event_type": "deployment_requirement",
+    "event_date": "2026-09-14",
+    "title": "Palantir、Nvidia等因数据留存风险限制先进AI模型使用，企业部署约束转向数据边界",
+    "url": "https://www.reuters.com/business/palantir-nvidia-curb-ai-model-use-over-data-fears-information-reports-2026-09-14/",
+    "source": "Reuters",
+    "published_at": "2026-09-14T15:11:00Z",
+    "quality_index": 8.4,
+    "source_tier": "Tier A",
+    "short_summary": "Reuters转述The Information称，Palantir、Nvidia和Booz Allen因知识产权和数据留存担忧限制或可能停止使用先进AI模型。",
+    "long_summary": "企业AI采用出现比模型能力更具体的部署摩擦：Reuters转述The Information报道，Palantir要求Anthropic提供不可撤销的零数据留存保证，Nvidia把Anthropic模型限制在较不敏感任务，Booz Allen则禁止员工将兞商业模型用于专有网络安全工作。该证据来自二手独立报道且相关公司未立即向Reuters确认，因此需要保持归因；但它直接表明数据留存、知识产权与隔离环境可能决定真实企业工作负载能否迁移到前沿模型，属于应用需求与模型部署成本之间的跨层约束。",
+    "key_quote": "",
+    "supporting_quotes": [],
+    "tags": [
+      "enterprise AI",
+      "data retention",
+      "Anthropic",
+      "Palantir",
+      "Nvidia"
+    ],
+    "editorial_status": "adopted",
+    "editorial_decision": "accept",
+    "adopted_at": "2026-09-18T08:57:43.752+00:00",
+    "ranking": {
+      "version": "ranking-v2",
+      "reader_boost": 0,
+      "reader_minimum": 3,
+      "editorial_boost": 0,
+      "editor_review_count": 0,
+      "reader_feedback_count": 0
+    }
+  },
+  {
+    "id": "korea-chip-cluster-power-prepayment-rejected-2026",
+    "channel_id": "ai-infrastructure",
+    "storyline_ids": [
+      "ai-energy-foundation",
+      "ai-chip-layer"
+    ],
+    "event_type": "energy_cost",
+    "event_date": "2026-09-14",
+    "title": "Samsung与SK Hynix拒绝KEPCO约187亿美元电力预付款方案，芯片扩产成本分摊出现摩擦",
+    "url": "https://www.reuters.com/world/asia-pacific/samsung-sk-hynix-reject-kepcos-19-billion-power-prepayment-proposal-document-2026-09-14/",
+    "source": "Reuters",
+    "published_at": "2026-09-14T02:45:00Z",
+    "quality_index": 9.4,
+    "source_tier": "Tier A",
+    "short_summary": "Samsung与SK Hynix拒绝KEPCO提出的25万亿韩元预付款方案，该资金原拟支持规划中的半导体超级集群电力基础设施。",
+    "long_summary": "韩国半导体超级集群的电力基础设施融资出现明确的风险分配摩擦。提交给议员的文件显示，Samsung与SK Hynix拒绝KEPCO要求约25万亿韩元（187亿美元）预付电费以支持新晶圆厂供电基础设施的方案；一名公司人士还将长期半导体需求的不确定性列为疑虑之一。该事件不是芯片需求崩塌证据，而是说明上游电力扩建的巨额前置资本由谁承担，正在成为AI/半导体产能扩张的经济性约束。",
+    "key_quote": "",
+    "supporting_quotes": [],
+    "tags": [
+      "Samsung",
+      "SK Hynix",
+      "KEPCO",
+      "semiconductor",
+      "power infrastructure"
+    ],
+    "editorial_status": "adopted",
+    "editorial_decision": "accept",
+    "adopted_at": "2026-09-18T08:57:49.818+00:00",
+    "ranking": {
+      "version": "ranking-v2",
+      "reader_boost": 0,
+      "reader_minimum": 3,
+      "editorial_boost": 0,
+      "editor_review_count": 0,
+      "reader_feedback_count": 0
+    }
+  },
+  {
+    "id": "anthropic-frontier-pacing-independent-evaluators-2026",
+    "channel_id": "ai-infrastructure",
+    "storyline_ids": [
+      "ai-model-layer"
+    ],
+    "event_type": "deployment_requirement",
+    "event_date": "2026-09-12",
+    "title": "Anthropic提出放慢前沿模型能力推进并引入常驻独立评估者，OpenAI表示将跟进",
+    "url": "https://www.reuters.com/business/anthropic-ceo-urges-ai-companies-slow-model-development-2026-09-12/",
+    "source": "Reuters",
+    "published_at": "2026-09-12T14:23:00Z",
+    "quality_index": 9.2,
+    "source_tier": "Tier A",
+    "short_summary": "Anthropic CEO Dario Amodei提出三步安全框架：放慢前沿模型能力推进、让具有接近员工级访问权限的独立评估者常驻前沿实验室，并推动领先AI公司协调安全标准；OpenAI CEO Sam Altman随后表示赞同，并称OpenAI也会采用独立评估者。相比此前单次失控或越界事件，这把模型安全约束从事故响应推进到持续第三方评估和行业协同治理的部署要求。",
+    "long_summary": "Reuters 9月12日报道，Anthropic CEO Dario Amodei主张降低前沿模型能力提升速度，以换取更多时间完成对齐和安全工作；其三步框架包括在前沿AI公司内部设置具有接近员工级访问权限的独立评估者、由领先实验室协调安全标准与开发节奏，以及国际层面的风险协调。OpenAI CEO Sam Altman公开表示支持独立评估者方案，并称OpenAI会采取类似做法。对ai-model-layer而言，信息增量并非又一次安全警告，而是风险治理开始被具体化为可持续的第三方访问、审计和跨公司协调机制，意味着部署控制本身可能成为模型推进速度、组织流程和监管成本的长期约束。该框架仍主要是企业领导者倡议，并非已生效的统一行业标准或法律要求；后续应跟踪OpenAI/Anthropic是否正式实施常驻评估者、形成可验证标准，以及监管机构是否给予协调所需的制度安排。",
+    "key_quote": "",
+    "supporting_quotes": [],
+    "tags": [
+      "AI Models",
+      "Anthropic",
+      "OpenAI",
+      "Deployment Safety",
+      "Independent Evaluation",
+      "AI Governance",
+      "Bottleneck Migration"
+    ],
+    "editorial_status": "adopted",
+    "editorial_decision": "accept",
+    "adopted_at": "2026-09-18T08:57:55.382+00:00",
+    "ranking": {
+      "version": "ranking-v2",
+      "reader_boost": 0,
+      "reader_minimum": 3,
+      "editorial_boost": 0,
+      "editor_review_count": 0,
+      "reader_feedback_count": 0
+    }
+  },
+  {
     "id": "qualcomm-amazon-60b-ai-chip-agreement-2026",
     "channel_id": "ai-infrastructure",
     "storyline_ids": [
@@ -143,6 +445,45 @@
     "editorial_status": "adopted",
     "editorial_decision": "accept",
     "adopted_at": "2026-09-12T13:22:43.288+00:00",
+    "ranking": {
+      "version": "ranking-v2",
+      "reader_boost": 0,
+      "reader_minimum": 3,
+      "editorial_boost": 0,
+      "editor_review_count": 0,
+      "reader_feedback_count": 0
+    }
+  },
+  {
+    "id": "broadcom-ai-semiconductor-revenue-forecast-2026",
+    "channel_id": "ai-infrastructure",
+    "storyline_ids": [
+      "ai-chip-layer"
+    ],
+    "event_type": "custom_accelerator",
+    "event_date": "2026-09-02",
+    "title": "Broadcom AI半导体季度收入升至167亿美元，并把FY2027 AI芯片收入预期上调至约1150亿美元",
+    "url": "https://www.reuters.com/business/broadcom-sees-strong-ai-chip-demand-boosting-revenue-2026-09-02/",
+    "source": "Reuters",
+    "published_at": "2026-09-02T20:19:00Z",
+    "quality_index": 9.8,
+    "source_tier": "Tier A",
+    "short_summary": "Broadcom披露FY2026第三季度AI半导体收入167亿美元、同比增长221%，并预计第四季度升至217亿美元；Reuters同时报道公司把FY2027 AI芯片收入预期提高到约1150亿美元，并预计FY2028约2300亿美元。与单纯需求指引相比，本次新增了已实现收入、超过300亿美元的近期订单以及跨2028年的客户部署可见度，但GW数字仍是未来部署计划，不能计作已投运容量。",
+    "long_summary": "Broadcom FY2026第三季度AI半导体收入达到167亿美元，同比增长221%，公司预计第四季度为217亿美元。Reuters报道，Broadcom把FY2027 AI芯片收入预期从约1000亿美元上调至约1150亿美元，并预计FY2028约2300亿美元；上一季度AI芯片bookings超过300亿美元。CEO称公司已为更高的FY2027预期锁定足够供应，并对2028年前Anthropic超过10GW、OpenAI超过5GW、Meta约3GW的部署具有可见度。对ai-chip-layer而言，信息增量在于定制加速器与网络芯片需求同时出现已实现收入、订单和多年部署可见度，强化demand-utilisation与capacity-realism；但所有未来收入和GW部署仍属于公司指引/计划，不应描述为已交付或已投运容量。",
+    "key_quote": "",
+    "supporting_quotes": [],
+    "tags": [
+      "AI Chips",
+      "Broadcom",
+      "Custom Accelerators",
+      "AI Networking",
+      "Bookings",
+      "Capacity Realism",
+      "Demand Utilisation"
+    ],
+    "editorial_status": "adopted",
+    "editorial_decision": "accept",
+    "adopted_at": "2026-09-18T08:57:57.803+00:00",
     "ranking": {
       "version": "ranking-v2",
       "reader_boost": 0,

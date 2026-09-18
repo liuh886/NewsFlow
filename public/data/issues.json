@@ -11,11 +11,17 @@
     "auto_generated": true,
     "selection_mode": "live_editorial_evaluation",
     "edition_version": "1.2",
-    "title": "Issue 19 · 本期编选中",
-    "standfirst": "本期已进入出版周期。重要进展将在完成编辑审阅后陆续进入本期。",
-    "judgment": "本期尚无已录用文章，编辑部持续追踪关键进展。",
-    "cover_signal_id": "",
-    "signal_ids": [],
+    "title": "美国众议院首次通过直接回应数据中心电力成本外溢的法案",
+    "standfirst": "美国众议院以417比3通过Ratepayer Protection Act，要求州公用事业监管机构考虑让数据中心等大型用电户承担为其新增需求建设的电力基础设施增量成本。 本期持续追踪相关进展，封面与篇目将随重要性更新。",
+    "judgment": "本期刊期仍在开放评估中；所有已录用进展均向读者与编辑开放，封面与最终篇目将在刊期结束时按重要性收敛。",
+    "cover_signal_id": "us-house-ratepayer-protection-data-center-costs-2026",
+    "signal_ids": [
+      "us-house-ratepayer-protection-data-center-costs-2026",
+      "new-york-data-center-community-investment-1m-per-mw-2026",
+      "anthropic-australia-216gw-inference-data-center-lease-2026",
+      "openai-misalignment-disclosure-framework-2026",
+      "texas-data-center-water-permit-enforcement-2026"
+    ],
     "storyline_updates": [],
     "what_to_watch": [
       "大型负荷并网",
@@ -33,21 +39,23 @@
       ]
     },
     "methodology": {
-      "candidate_count": 0,
-      "selected_count": 0,
-      "editorial_adoption_count": 0,
-      "evaluation_pool_count": 0,
+      "candidate_count": 5,
+      "selected_count": 5,
+      "editorial_adoption_count": 5,
+      "evaluation_pool_count": 5,
       "cover_story_count": 0,
       "editor_review_count": 0,
       "qualified_reader_feedback_count": 0,
-      "selected_by_channel": {},
+      "selected_by_channel": {
+        "ai-infrastructure": 5
+      },
       "final_issue_max_signals": 24,
       "final_channel_max_signals": 8,
       "finalized": false,
       "fixed_length": false,
       "editorial_view_changed": false
     },
-    "updated_at": "2026-09-14T19:26:45.652Z"
+    "updated_at": "2026-09-18T11:53:28.476Z"
   },
   {
     "id": "frontier-systems-review-2026-18",
@@ -71,7 +79,11 @@
       "fervo-google-396mw-geothermal-ppa-2026",
       "openai-astra-critical-cyber-threshold-2026",
       "snowflake-ai-growth-acceleration-2026",
-      "crusoe-jane-street-13b-cloud-contract-2026"
+      "crusoe-jane-street-13b-cloud-contract-2026",
+      "broadcom-ai-semiconductor-revenue-forecast-2026",
+      "korea-chip-cluster-power-prepayment-rejected-2026",
+      "anthropic-frontier-pacing-independent-evaluators-2026",
+      "enterprise-ai-data-retention-adoption-friction-2026"
     ],
     "storyline_updates": [],
     "what_to_watch": [
@@ -91,7 +103,7 @@
     },
     "methodology": {
       "candidate_count": 6,
-      "selected_count": 6,
+      "selected_count": 10,
       "editorial_adoption_count": 6,
       "evaluation_pool_count": 6,
       "cover_story_count": 0,
@@ -104,9 +116,12 @@
       "final_channel_max_signals": 8,
       "finalized": true,
       "fixed_length": false,
-      "editorial_view_changed": false
+      "editorial_view_changed": true,
+      "post_freeze_amendment_count": 4
     },
-    "updated_at": "2026-09-12T14:24:28.314Z"
+    "updated_at": "2026-09-12T14:24:28.314Z",
+    "editorially_revised_at": "2026-09-18T11:53:28.476Z",
+    "revision_note": "主编在下一刊期内补录属于本刊期覆盖窗口的迟到录用稿件；原封面与既有篇目顺序保持不变。"
   },
   {
     "id": "frontier-systems-review-2026-17",
