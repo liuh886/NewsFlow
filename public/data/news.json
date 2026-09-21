@@ -1,5 +1,116 @@
 [
   {
+    "id": "cxmt-fifth-gen-dram-mass-production-2026",
+    "channel_id": "ai-infrastructure",
+    "storyline_ids": [
+      "ai-chip-layer"
+    ],
+    "event_type": "process_node_ramp",
+    "event_date": "2026-09-20",
+    "title": "CXMT第五代DRAM平台进入量产，中国存储制造从技术追赶推进到新一代工艺生产阶段",
+    "url": "https://www.reuters.com/world/asia-pacific/chinas-cxmt-says-new-memory-chip-platform-enters-mass-production-2026-09-20/",
+    "source": "Reuters",
+    "published_at": "2026-09-20T03:54:00Z",
+    "quality_index": 8.6,
+    "source_tier": "Tier A",
+    "short_summary": "CXMT称第五代DRAM技术平台已进入量产，并推出两款已量产的24Gb LPDDR5X产品；公司称新平台相较第四代可将每片晶圆的毛芯片数量提高至少50%。",
+    "long_summary": "这次信息增量不是产品发布，而是中国领先DRAM厂商把第五代工艺平台推进到量产阶段。CXMT称其关键特征间距降至11.95纳米，并通过多重图形化工艺实现；新平台上的两款24Gb LPDDR5X已量产，单颗容量较此前同类产品提高50%。公司同时称，以8Gb芯片为基准，新平台每片晶圆可产生至少多50%的毛芯片数量，但Reuters明确指出该指标是在剔除缺陷品之前计算，不能等同于良率提升。该变化强化了中国在出口管制下扩大本土DRAM供给和制造能力的区域分化趋势，但本次披露针对LPDDR5X而非HBM，因此不能直接推断AI HBM供给约束已经缓解。",
+    "key_quote": "",
+    "supporting_quotes": [],
+    "tags": [
+      "CXMT",
+      "DRAM",
+      "LPDDR5X",
+      "memory",
+      "China semiconductor",
+      "mass production"
+    ],
+    "editorial_status": "adopted",
+    "editorial_decision": "accept",
+    "adopted_at": "2026-09-21T13:20:07.312+00:00",
+    "ranking": {
+      "version": "ranking-v2",
+      "reader_boost": 0,
+      "reader_minimum": 3,
+      "editorial_boost": 0,
+      "editor_review_count": 0,
+      "reader_feedback_count": 0
+    }
+  },
+  {
+    "id": "anthropic-accenture-2b-embedded-evaluation-2026",
+    "channel_id": "ai-infrastructure",
+    "storyline_ids": [
+      "ai-model-layer"
+    ],
+    "event_type": "deployment_requirement",
+    "event_date": "2026-09-18",
+    "title": "Anthropic与Accenture承诺至少20亿美元建设独立模型评估能力，安全治理开始资本化",
+    "url": "https://www.reuters.com/business/anthropic-accenture-invest-2-billion-ai-model-evaluation-safety-concerns-rise-2026-09-18/",
+    "source": "Reuters",
+    "published_at": "2026-09-18T21:02:51Z",
+    "quality_index": 9.6,
+    "source_tier": "Tier A",
+    "short_summary": "Anthropic与Accenture各承诺至少10亿美元、五年合计至少20亿美元，用于前沿AI模型独立评估能力。",
+    "long_summary": "这把此前关于独立评估者的治理倡议推进到有明确资本承诺的执行阶段。Accenture旗下Faculty将开展red-team、alignment和safeguard测试，并支持Anthropic所谓embedded evaluation，即评估者获得接近员工级的内部访问。它仍是企业合作安排，不等于行业统一标准。",
+    "key_quote": "",
+    "supporting_quotes": [],
+    "tags": [
+      "Anthropic",
+      "Accenture",
+      "model evaluation",
+      "AI safety"
+    ],
+    "editorial_status": "adopted",
+    "editorial_decision": "accept",
+    "adopted_at": "2026-09-21T13:20:12.186+00:00",
+    "ranking": {
+      "version": "ranking-v2",
+      "reader_boost": 0,
+      "reader_minimum": 3,
+      "editorial_boost": 0,
+      "editor_review_count": 0,
+      "reader_feedback_count": 0
+    }
+  },
+  {
+    "id": "greensand-eu-first-full-scale-storage-operations-2026",
+    "channel_id": "ccus-energy-transition",
+    "storyline_ids": [
+      "ccus-project-delivery",
+      "ccus-network-economics"
+    ],
+    "event_type": "operations_start",
+    "event_date": "2026-09-18",
+    "title": "Greensand启动欧盟首个全规模CO₂封存运营，首期年能力40万吨",
+    "url": "https://www.reuters.com/business/energy/ineos-says-eus-first-full-scale-carbon-storage-project-start-operating-2026-09-18/",
+    "source": "Reuters",
+    "published_at": "2026-09-18T05:52:19Z",
+    "quality_index": 9.6,
+    "source_tier": "Tier A",
+    "short_summary": "INEOS称丹麦Greensand项目于9月18日启动运营，成为欧盟首个全规模CO₂封存项目；首期年封存能力最高40万吨。",
+    "long_summary": "这属于CCUS从规划/建设向实际运营的明确阶段跃迁。CO₂来自丹麦生物甲烷工厂，经液化、卡车和船运送至北海Nini West枯竭油田，在海床下约1800米注入。项目设计满负荷能力为每年400万至800万吨，但该数奷是扩展设计值，不是当前运行能力。",
+    "key_quote": "",
+    "supporting_quotes": [],
+    "tags": [
+      "Greensand",
+      "Denmark",
+      "CO2 storage",
+      "operations"
+    ],
+    "editorial_status": "adopted",
+    "editorial_decision": "accept",
+    "adopted_at": "2026-09-21T13:20:26.653+00:00",
+    "ranking": {
+      "version": "ranking-v2",
+      "reader_boost": 0,
+      "reader_minimum": 3,
+      "editorial_boost": 0,
+      "editor_review_count": 0,
+      "reader_feedback_count": 0
+    }
+  },
+  {
     "id": "us-house-ratepayer-protection-data-center-costs-2026",
     "channel_id": "ai-infrastructure",
     "storyline_ids": [

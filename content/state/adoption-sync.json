@@ -5,6 +5,7 @@
     "alibaba-qwen-openweight-revenue-sharing-2026",
     "amd-ai-data-center-revenue-rackscale-2026",
     "anthropic-2028-revenue-ipo-economics-2026",
+    "anthropic-accenture-2b-embedded-evaluation-2026",
     "anthropic-australia-216gw-inference-data-center-lease-2026",
     "anthropic-frontier-pacing-independent-evaluators-2026",
     "anthropic-nscale-45b-460mw-compute-lease-2026",
@@ -16,11 +17,13 @@
     "broadcom-anthropic-ai-chip-debt-spv-2026",
     "crusoe-jane-street-13b-cloud-contract-2026",
     "cxmt-dram-profit-revenue-surge-2026",
+    "cxmt-fifth-gen-dram-mass-production-2026",
     "cxmt-lpddr6-mass-production-xiaomi-2026",
     "enterprise-ai-data-retention-adoption-friction-2026",
     "fervo-google-396mw-geothermal-ppa-2026",
     "ft-us-data-center-gas-coal-lockin-2026",
     "google-marvell-custom-ai-chip-warrant-2026",
+    "greensand-eu-first-full-scale-storage-operations-2026",
     "intel-high-na-euv-production-economics-2026",
     "korea-chip-cluster-power-prepayment-rejected-2026",
     "malaysia-data-center-power-share-9-3pct-2026",
@@ -58,7 +61,7 @@
     "us-openweight-ai-safety-test-exemption-2026",
     "ymtc-ai-nand-profit-capacity-pricing-2026"
   ],
-  "current_adoption_count": 56,
+  "current_adoption_count": 59,
   "formal_issue_signal_count": 61,
-  "last_synced_at": "2026-09-18T16:30:59.201Z"
+  "last_synced_at": "2026-09-21T14:20:37.217Z"
 }

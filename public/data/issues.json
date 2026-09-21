@@ -17,10 +17,13 @@
     "cover_signal_id": "us-house-ratepayer-protection-data-center-costs-2026",
     "signal_ids": [
       "us-house-ratepayer-protection-data-center-costs-2026",
+      "greensand-eu-first-full-scale-storage-operations-2026",
+      "anthropic-accenture-2b-embedded-evaluation-2026",
       "new-york-data-center-community-investment-1m-per-mw-2026",
       "anthropic-australia-216gw-inference-data-center-lease-2026",
       "openai-misalignment-disclosure-framework-2026",
-      "texas-data-center-water-permit-enforcement-2026"
+      "texas-data-center-water-permit-enforcement-2026",
+      "cxmt-fifth-gen-dram-mass-production-2026"
     ],
     "storyline_updates": [],
     "what_to_watch": [
@@ -39,15 +42,16 @@
       ]
     },
     "methodology": {
-      "candidate_count": 5,
-      "selected_count": 5,
-      "editorial_adoption_count": 5,
-      "evaluation_pool_count": 5,
+      "candidate_count": 8,
+      "selected_count": 8,
+      "editorial_adoption_count": 8,
+      "evaluation_pool_count": 8,
       "cover_story_count": 0,
       "editor_review_count": 0,
       "qualified_reader_feedback_count": 0,
       "selected_by_channel": {
-        "ai-infrastructure": 5
+        "ai-infrastructure": 7,
+        "ccus-energy-transition": 1
       },
       "final_issue_max_signals": 24,
       "final_channel_max_signals": 8,
@@ -55,7 +59,7 @@
       "fixed_length": false,
       "editorial_view_changed": false
     },
-    "updated_at": "2026-09-18T11:53:28.476Z"
+    "updated_at": "2026-09-21T14:20:37.443Z"
   },
   {
     "id": "frontier-systems-review-2026-18",
