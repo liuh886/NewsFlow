@@ -1,5 +1,82 @@
 [
   {
+    "id": "texas-data-center-state-permit-freeze-grid-audit-2026",
+    "channel_id": "ai-infrastructure",
+    "storyline_ids": [
+      "ai-energy-foundation",
+      "ai-infrastructure-layer"
+    ],
+    "event_type": "regulatory_decision",
+    "event_date": "2026-09-21",
+    "title": "Texas冻结数据中心州级许可直至电网审计完成，AI基础设施约束从并网扩展到全面审批",
+    "url": "https://www.reuters.com/business/energy/texas-gov-abbott-halts-all-state-issued-permits-data-centers-until-grid-audit-is-2026-09-21/",
+    "source": "Reuters",
+    "published_at": "2026-09-21T20:53:01Z",
+    "quality_index": 10,
+    "source_tier": "Tier A",
+    "short_summary": "Texas州长Greg Abbott要求州环境机构停止向数据中心发放新许可，直至ERCOT完成针对数据中心等大型负荷的审计。",
+    "long_summary": "这是Texas对数据中心扩张约束的阶段性升级：此前州政府已冻结新的电网接入并启动审计，本次进一步冻结州级许可，使约束从并网环节扩展到环境和监管审批。Reuters报道，在此前冻结并网时，排队的数据中心及其他大型负荷项目超过470GW，超过Texas峰值负荷五倍；ERCOT正在审查用电、税收激励和用水等因素。该措施并不意味着现有数据中心停运，也不能把470GW队列视为已融资或将实际投运的容量。",
+    "key_quote": "",
+    "supporting_quotes": [],
+    "tags": [
+      "Texas",
+      "data center",
+      "ERCOT",
+      "permitting",
+      "grid audit",
+      "water"
+    ],
+    "editorial_status": "adopted",
+    "editorial_decision": "accept",
+    "adopted_at": "2026-09-22T17:40:54.77+00:00",
+    "ranking": {
+      "version": "ranking-v2",
+      "reader_boost": 0,
+      "reader_minimum": 3,
+      "editorial_boost": 0,
+      "editor_review_count": 0,
+      "reader_feedback_count": 0
+    }
+  },
+  {
+    "id": "china-humanoid-robot-ipo-slowdown-revenue-quality-2026",
+    "channel_id": "ai-infrastructure",
+    "storyline_ids": [
+      "ai-application-layer"
+    ],
+    "event_type": "failure_or_rollback",
+    "event_date": "2026-09-21",
+    "title": "中国收紧人形机器人IPO审核，监管开始追问政府支持收入能否转化为真实商业需求",
+    "url": "https://www.reuters.com/business/finance/china-slows-humanoid-robot-ipo-rush-hype-outruns-reality-2026-09-21/",
+    "source": "Reuters",
+    "published_at": "2026-09-21T03:05:42Z",
+    "quality_index": 9.6,
+    "source_tier": "Tier A",
+    "short_summary": "Reuters报道，中国监管机构正放缓部分人形机器人企业IPO，重点审查高估值以及由地方政府支持项目形成的收入是否代表可持续商业需求。",
+    "long_summary": "这为AI应用层提供了重要反证：监管与投资者开始把机器人演示、政策支持订单和独立客户需求分开评估。Reuters报道，部分机器人数据采集中心和合资项目可由地方政府提供80%至90%的初始投资；一名接近投资者的人士估计，若剔除与数据采集中心相关的收入，一些机器人公司的估值可能下降60%至70%。这并不证明中国人形机器人产业整体缺乏商业需求，也不是正式的IPO禁令；信息增量在于商业化质量、部署量和独立客户订单开始成为资本市场更严格的验证门槛。",
+    "key_quote": "",
+    "supporting_quotes": [],
+    "tags": [
+      "China",
+      "humanoid robots",
+      "embodied AI",
+      "IPO",
+      "commercial demand",
+      "revenue quality"
+    ],
+    "editorial_status": "adopted",
+    "editorial_decision": "accept",
+    "adopted_at": "2026-09-22T17:40:57.792+00:00",
+    "ranking": {
+      "version": "ranking-v2",
+      "reader_boost": 0,
+      "reader_minimum": 3,
+      "editorial_boost": 0,
+      "editor_review_count": 0,
+      "reader_feedback_count": 0
+    }
+  },
+  {
     "id": "cxmt-fifth-gen-dram-mass-production-2026",
     "channel_id": "ai-infrastructure",
     "storyline_ids": [

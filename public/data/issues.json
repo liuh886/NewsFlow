@@ -11,12 +11,14 @@
     "auto_generated": true,
     "selection_mode": "live_editorial_evaluation",
     "edition_version": "1.2",
-    "title": "美国众议院首次通过直接回应数据中心电力成本外溢的法案",
-    "standfirst": "美国众议院以417比3通过Ratepayer Protection Act，要求州公用事业监管机构考虑让数据中心等大型用电户承担为其新增需求建设的电力基础设施增量成本。 本期持续追踪相关进展，封面与篇目将随重要性更新。",
+    "title": "Texas冻结数据中心州级许可直至电网审计完成，AI基础设施约束从并网扩展到全面审批",
+    "standfirst": "Texas州长Greg Abbott要求州环境机构停止向数据中心发放新许可，直至ERCOT完成针对数据中心等大型负荷的审计。 本期持续追踪相关进展，封面与篇目将随重要性更新。",
     "judgment": "本期刊期仍在开放评估中；所有已录用进展均向读者与编辑开放，封面与最终篇目将在刊期结束时按重要性收敛。",
-    "cover_signal_id": "us-house-ratepayer-protection-data-center-costs-2026",
+    "cover_signal_id": "texas-data-center-state-permit-freeze-grid-audit-2026",
     "signal_ids": [
+      "texas-data-center-state-permit-freeze-grid-audit-2026",
       "us-house-ratepayer-protection-data-center-costs-2026",
+      "china-humanoid-robot-ipo-slowdown-revenue-quality-2026",
       "greensand-eu-first-full-scale-storage-operations-2026",
       "anthropic-accenture-2b-embedded-evaluation-2026",
       "new-york-data-center-community-investment-1m-per-mw-2026",
@@ -42,15 +44,15 @@
       ]
     },
     "methodology": {
-      "candidate_count": 8,
-      "selected_count": 8,
-      "editorial_adoption_count": 8,
-      "evaluation_pool_count": 8,
+      "candidate_count": 10,
+      "selected_count": 10,
+      "editorial_adoption_count": 10,
+      "evaluation_pool_count": 10,
       "cover_story_count": 0,
       "editor_review_count": 0,
       "qualified_reader_feedback_count": 0,
       "selected_by_channel": {
-        "ai-infrastructure": 7,
+        "ai-infrastructure": 9,
         "ccus-energy-transition": 1
       },
       "final_issue_max_signals": 24,
@@ -59,7 +61,7 @@
       "fixed_length": false,
       "editorial_view_changed": false
     },
-    "updated_at": "2026-09-21T14:20:37.443Z"
+    "updated_at": "2026-09-22T19:19:56.290Z"
   },
   {
     "id": "frontier-systems-review-2026-18",
