@@ -1,15 +1,65 @@
 [
   {
+    "id": "frontier-systems-review-2026-20",
+    "issue_number": 20,
+    "published_at": "2026-10-01T00:00:00+08:00",
+    "coverage_start": "2026-10-01",
+    "coverage_end": "2026-10-14",
+    "status": "published",
+    "lifecycle": "live",
+    "frozen_at": null,
+    "auto_generated": true,
+    "selection_mode": "live_editorial_evaluation",
+    "edition_version": "1.2",
+    "title": "Issue 20 · 本期编选中",
+    "standfirst": "本期已进入出版周期。重要进展将在完成编辑审阅后陆续进入本期。",
+    "judgment": "本期尚无已录用文章，编辑部持续追踪关键进展。",
+    "cover_signal_id": "",
+    "signal_ids": [],
+    "storyline_updates": [],
+    "what_to_watch": [
+      "大型负荷并网",
+      "发电与储能",
+      "长期购电协议"
+    ],
+    "ranking": {
+      "version": "live-v3",
+      "policy": "all_adopted_visible_until_freeze_then_chief_cover_then_evidence_quality_then_editor_consensus_then_reader_signal_then_recency",
+      "authority_order": [
+        "evidence_gate",
+        "editor_in_chief",
+        "editor_consensus",
+        "reader_consensus"
+      ]
+    },
+    "methodology": {
+      "candidate_count": 0,
+      "selected_count": 0,
+      "editorial_adoption_count": 0,
+      "evaluation_pool_count": 0,
+      "cover_story_count": 0,
+      "editor_review_count": 0,
+      "qualified_reader_feedback_count": 0,
+      "selected_by_channel": {},
+      "final_issue_max_signals": 24,
+      "final_channel_max_signals": 8,
+      "finalized": false,
+      "fixed_length": false,
+      "editorial_view_changed": false
+    },
+    "updated_at": "2026-09-30T19:29:26.016Z"
+  },
+  {
     "id": "frontier-systems-review-2026-19",
     "issue_number": 19,
     "published_at": "2026-09-15T00:00:00+08:00",
     "coverage_start": "2026-09-15",
     "coverage_end": "2026-09-30",
     "status": "published",
-    "lifecycle": "live",
-    "frozen_at": null,
+    "lifecycle": "frozen",
+    "frozen_at": "2026-10-01T00:00:00+08:00",
     "auto_generated": true,
-    "selection_mode": "live_editorial_evaluation",
+    "selection_mode": "final_editorial_ranking",
     "edition_version": "1.2",
     "title": "Texas冻结数据中心州级许可直至电网审计完成，AI基础设施约束从并网扩展到全面审批",
     "standfirst": "Texas州长Greg Abbott要求州环境机构停止向数据中心发放新许可，直至ERCOT完成针对数据中心等大型负荷的审计。 本期持续追踪相关进展，封面与篇目将随重要性更新。",
@@ -52,16 +102,19 @@
       "editor_review_count": 0,
       "qualified_reader_feedback_count": 0,
       "selected_by_channel": {
-        "ai-infrastructure": 9,
+        "ai-infrastructure": 8,
         "ccus-energy-transition": 1
       },
       "final_issue_max_signals": 24,
       "final_channel_max_signals": 8,
-      "finalized": false,
+      "finalized": true,
       "fixed_length": false,
-      "editorial_view_changed": false
+      "editorial_view_changed": true,
+      "post_freeze_amendment_count": 1
     },
-    "updated_at": "2026-09-22T19:19:56.290Z"
+    "updated_at": "2026-09-22T19:19:56.290Z",
+    "editorially_revised_at": "2026-09-30T19:29:26.016Z",
+    "revision_note": "主编在下一刊期内补录属于本刊期覆盖窗口的迟到录用稿件；原封面与既有篇目顺序保持不变。"
   },
   {
     "id": "frontier-systems-review-2026-18",
