@@ -22,7 +22,7 @@ A scheduled agent does **not** need repository shell execution and must not rece
 - GitHub repository contents: read current contracts/configuration;
 - GitHub Issue #110: create the owner-authored transport comment and read the sanitized result;
 - public web discovery: search/open/read current public sources and verify evidence;
-- Base64 utility: encode the exact compact UTF-8 Candidate-pack JSON bytes;
+- SHA-256 utility: compute the exact compact UTF-8 Candidate-pack byte length and checksum;
 - Supabase read-only access: read the oldest queued Green Lane referral before discovery and verify Candidate state after apply.
 
 The scheduled runtime must never write `newsflow_candidates` directly. Candidate persistence belongs only to GitHub Actions → `apply-content.mjs` → GitHub OIDC → `newsflow-candidate-writer`.
@@ -35,7 +35,7 @@ Read main contracts
 → Storyline discovery
 → Evidence verification
 → complete Candidate pack
-→ compact JSON + Base64
+→ compact JSON + byte length + SHA-256
 → Issue #110
 → NEWSFLOW_APPLY_RESULT_V1
 → Supabase read verification
@@ -105,38 +105,48 @@ The generator must build the object defined by `schemas/content-candidate-pack.s
 
 This is an envelope example, not a relaxation of the schema. Source-specific verification fields and all current evaluator rules still apply. The generator must use the repository's current schema and workflow version rather than maintaining a second Candidate definition.
 
-Serialize the complete pack as compact UTF-8 JSON, Base64-encode those exact bytes as one line, and post:
+Serialize the complete pack as compact UTF-8 JSON. Compute the exact UTF-8 byte length and lowercase SHA-256 digest of those exact JSON bytes, then post:
 
 ```text
-NEWSFLOW_CANDIDATE_PACK_V1 <request_id>
-<base64-of-complete-candidate-pack>
+NEWSFLOW_CANDIDATE_PACK_V2 <request_id>
+bytes: <exact-utf8-byte-length>
+sha256: <64-character-lowercase-hex-digest>
+<compact-json-candidate-pack>
 ```
 
-Do not post the old `NEWSFLOW_APPLY_REQUEST_V1`, challenge, encrypted payload, individual Candidate JSON, or NDJSON from the scheduled-agent path. Those are not the scheduled-agent transport contract.
+The JSON payload is plaintext transport data, not Markdown and not an encoded envelope. The scheduled runtime must compute the length and SHA-256 deterministically from the exact bytes it places after the metadata lines. Do not hand-edit the payload after computing the checksum.
+
+Do not post the retired `NEWSFLOW_CANDIDATE_PACK_V1` Base64 envelope, `NEWSFLOW_APPLY_REQUEST_V1`, challenge, encrypted payload, individual Candidate JSON, or NDJSON from the scheduled-agent path. Those are not the scheduled-agent transport contract.
 
 ## Transport diagnostics
 
 `candidate-ingress.mjs` performs only a shallow payload-shape inspection before canonical apply. It does not duplicate the Candidate schema or editorial evaluator.
 
-The sanitized result records `payload_type` as `candidate_pack`, `single_candidate`, `ndjson`, `json_object`, `json_array` or `json_scalar`. Bytes that are neither valid JSON nor valid Candidate NDJSON fail early as:
+The transport verifies byte length and SHA-256 before shallow payload inspection. This separates transport corruption from malformed Candidate content:
 
 ```text
+invalid_transport_metadata
+payload_length_mismatch
+payload_checksum_mismatch
+payload_too_large
 candidate_payload_malformed
 ```
+
+The sanitized result records `payload_type` as `candidate_pack`, `single_candidate`, `ndjson`, `json_object`, `json_array` or `json_scalar`. A checksum-valid body that is neither valid JSON nor valid Candidate NDJSON fails as `candidate_payload_malformed`.
 
 Schema, run, source, evidence and editorial validation remain owned by `apply-content.mjs` / `update-content.mjs` and continue to return their bounded stage-specific errors.
 
 ## Transport
 
-`request_id` is an 8–80 character identifier using letters, digits, `_` or `-`. The decoded payload is capped at 32 KiB.
+`request_id` is an 8–80 character identifier using letters, digits, `_` or `-`. The plaintext JSON payload is capped at 32 KiB.
 
-Base64 is only a transport encoding. It is **not encryption** and must not contain credentials, personal secrets, private editorial notes or other confidential material. Candidate packs for this bridge should contain only public-source research material intended for the private editorial queue. The source comment is deleted after processing, but deletion is cleanup rather than a confidentiality guarantee.
+The Issue comment transport is **not confidential** and must not contain credentials, personal secrets, private editorial notes or other confidential material. Candidate packs for this bridge should contain only public-source research material intended for the private editorial queue. The SHA-256 digest provides integrity checking only; it is not authentication or encryption. Owner-only GitHub authorship remains the ingress authentication boundary. The source comment is deleted after processing, but deletion is cleanup rather than a confidentiality guarantee.
 
-There is no request/challenge handshake, polling loop, RSA keypair, AES envelope, second queue or fallback transport.
+There is no Base64 envelope, request/challenge handshake, polling loop, RSA keypair, AES envelope, second queue or fallback transport.
 
 ## Canonical apply
 
-The Action pipes the decoded payload directly to:
+The Action verifies the transport metadata and pipes the exact JSON payload directly to:
 
 ```bash
 node scripts/apply-content.mjs --stdin --apply
