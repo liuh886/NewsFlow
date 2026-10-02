@@ -11,7 +11,7 @@ const maxPlaintextBytes = Number(process.env.NEWSFLOW_INGRESS_MAX_PLAINTEXT_BYTE
 const repositoryOwner = process.env.GITHUB_REPOSITORY_OWNER?.trim();
 const eventPath = process.env.GITHUB_EVENT_PATH?.trim();
 
-const MARKER = 'NEWSFLOW_CANDIDATE_PACK_V1';
+const MARKER = 'NEWSFLOW_CANDIDATE_PACK_V2';
 const requestIdPattern = /^[A-Za-z0-9_-]{8,80}$/;
 
 const writeResult = async (payload) => {
