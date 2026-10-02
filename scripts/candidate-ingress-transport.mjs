@@ -1,49 +1,48 @@
+import { createHash } from 'node:crypto';
+
 const transportError = (message, code) => Object.assign(new Error(message), { code });
 
-const stripOptionalFence = (text) => {
-  const fenced = text.match(/^```(?:base64)?[ \t]*\r?\n([\s\S]*?)\r?\n```$/i);
-  return fenced ? fenced[1] : text;
+const parseDeclaredBytes = (line) => {
+  const match = String(line ?? '').match(/^bytes: ([1-9][0-9]*)$/);
+  if (!match) throw transportError('Candidate payload byte length metadata is missing or invalid.', 'invalid_transport_metadata');
+  const value = Number(match[1]);
+  if (!Number.isSafeInteger(value)) throw transportError('Candidate payload byte length metadata is invalid.', 'invalid_transport_metadata');
+  return value;
 };
 
-export const normalizeCandidateIngressBase64 = (payloadLines) => {
-  const text = Array.isArray(payloadLines) ? payloadLines.join('\n').trim() : String(payloadLines ?? '').trim();
-  if (!text) throw transportError('Candidate payload is missing.', 'missing_payload');
-
-  const compact = stripOptionalFence(text).replace(/\s+/g, '');
-  if (!compact) throw transportError('Candidate payload is missing.', 'missing_payload');
-
-  if (!/^[A-Za-z0-9+/]*={0,2}$/.test(compact)) {
-    throw transportError('Candidate payload is not valid Base64.', 'candidate_payload_malformed');
-  }
-
-  const unpadded = compact.replace(/=+$/, '');
-  if (unpadded.length % 4 === 1) {
-    throw transportError('Candidate payload has invalid Base64 length.', 'candidate_payload_malformed');
-  }
-
-  return compact;
+const parseDeclaredSha256 = (line) => {
+  const match = String(line ?? '').match(/^sha256: ([a-f0-9]{64})$/i);
+  if (!match) throw transportError('Candidate payload SHA-256 metadata is missing or invalid.', 'invalid_transport_metadata');
+  return match[1].toLowerCase();
 };
 
 export const decodeCandidateIngressPayload = (payloadLines, maxPlaintextBytes) => {
-  const encoded = normalizeCandidateIngressBase64(payloadLines);
-  const maxEncodedBytes = Math.ceil(maxPlaintextBytes * 4 / 3) + 8;
-  if (encoded.length > maxEncodedBytes) {
+  const lines = Array.isArray(payloadLines)
+    ? payloadLines
+    : String(payloadLines ?? '').split(/\r?\n/);
+
+  if (lines.length < 3) {
+    throw transportError('Candidate payload metadata or JSON body is missing.', 'missing_payload');
+  }
+
+  const declaredBytes = parseDeclaredBytes(lines[0]);
+  const declaredSha256 = parseDeclaredSha256(lines[1]);
+  const jsonText = lines.slice(2).join('\n');
+
+  if (!jsonText) throw transportError('Candidate payload is missing.', 'missing_payload');
+
+  const actualBytes = Buffer.byteLength(jsonText, 'utf8');
+  if (actualBytes > maxPlaintextBytes || declaredBytes > maxPlaintextBytes) {
     throw transportError('Candidate payload exceeds the transport limit.', 'payload_too_large');
   }
-
-  const padding = (4 - (encoded.length % 4)) % 4;
-  const padded = `${encoded}${'='.repeat(padding)}`;
-  const plaintext = Buffer.from(padded, 'base64');
-  if (!plaintext.length || plaintext.length > maxPlaintextBytes) {
-    throw transportError('Candidate payload is outside the accepted size range.', 'payload_size_invalid');
+  if (actualBytes !== declaredBytes) {
+    throw transportError('Candidate payload byte length does not match transport metadata.', 'payload_length_mismatch');
   }
 
-  const canonicalInput = encoded.replace(/=+$/, '');
-  const canonicalDecoded = plaintext.toString('base64').replace(/=+$/, '');
-  if (canonicalInput !== canonicalDecoded) {
-    plaintext.fill(0);
-    throw transportError('Candidate payload failed strict Base64 round-trip validation.', 'candidate_payload_malformed');
+  const actualSha256 = createHash('sha256').update(jsonText, 'utf8').digest('hex');
+  if (actualSha256 !== declaredSha256) {
+    throw transportError('Candidate payload SHA-256 does not match transport metadata.', 'payload_checksum_mismatch');
   }
 
-  return plaintext;
+  return Buffer.from(jsonText, 'utf8');
 };
