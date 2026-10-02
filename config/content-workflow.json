@@ -27,7 +27,12 @@
   "exchange_contract": {
     "candidate_pack_schema": "schemas/content-candidate-pack.schema.json",
     "candidate_pack_version": "1.0",
-    "required_actor_fields": ["agent_id", "runtime", "workflow_id", "workflow_version"]
+    "required_actor_fields": [
+      "agent_id",
+      "runtime",
+      "workflow_id",
+      "workflow_version"
+    ]
   },
   "candidate_draft": {
     "path": "content/inbox/*.json",
@@ -39,18 +44,19 @@
     "github_contents_access": "read",
     "github_issue_access": "read_write",
     "public_web_discovery_required": true,
-    "base64_encoding_required": true,
+    "base64_encoding_required": false,
     "supabase_green_lane_access": "read_only",
     "supabase_candidate_verification_access": "read_only",
     "supabase_candidate_write_allowed": false,
-    "submit_via": "agent_apply_ingress"
+    "submit_via": "agent_apply_ingress",
+    "sha256_integrity_required": true
   },
   "agent_apply_ingress": {
-    "transport": "owner_issue_comment_base64",
+    "transport": "owner_issue_comment_json_sha256",
     "issue_number": 110,
     "workflow": ".github/workflows/candidate-ingress.yml",
     "documentation": "docs/candidate-ingress.md",
-    "request_marker": "NEWSFLOW_CANDIDATE_PACK_V1",
+    "request_marker": "NEWSFLOW_CANDIDATE_PACK_V2",
     "result_marker": "NEWSFLOW_APPLY_RESULT_V1",
     "canonical_command": "node scripts/apply-content.mjs --stdin --apply",
     "writer_auth": "github_actions_oidc",
@@ -85,7 +91,9 @@
     "dry_run": "node scripts/update-content.mjs --input=content/inbox/<candidate-pack.json>",
     "apply": "SUPABASE_URL=... SUPABASE_SERVICE_ROLE_KEY=... node scripts/apply-content.mjs --input=content/inbox/<candidate-pack.json> --apply",
     "agent_apply": "owner-only Issue #110 Candidate pack comment; GitHub Actions OIDC authenticates canonical apply to the Supabase Candidate writer",
-    "verify": ["node scripts/check-candidate-ingress.mjs"]
+    "verify": [
+      "node scripts/check-candidate-ingress.mjs"
+    ]
   },
   "terminal_outcomes": [
     "completed_no_material_change",
