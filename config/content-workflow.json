@@ -48,16 +48,24 @@
     "supabase_green_lane_access": "read_only",
     "supabase_candidate_verification_access": "read_only",
     "supabase_candidate_write_allowed": false,
-    "submit_via": "agent_apply_ingress",
-    "sha256_integrity_required": true
+    "submit_via": "supabase_ingress_issue_reference",
+    "sha256_integrity_required": true,
+    "supabase_ingress_transport_access": "insert_only",
+    "supabase_ingress_transport_table": "public.newsflow_candidate_ingress"
   },
   "agent_apply_ingress": {
-    "transport": "owner_issue_comment_json_sha256",
+    "transport": "supabase_ingress_issue_reference",
     "issue_number": 110,
     "workflow": ".github/workflows/candidate-ingress.yml",
     "documentation": "docs/candidate-ingress.md",
-    "request_marker": "NEWSFLOW_CANDIDATE_PACK_V2",
+    "request_marker": "NEWSFLOW_CANDIDATE_PACK_REF_V1",
     "result_marker": "NEWSFLOW_APPLY_RESULT_V1",
+    "ingress_store": "supabase:public.newsflow_candidate_ingress",
+    "ingress_store_write": "scheduled_agent_insert_only",
+    "ingress_reader_auth": "github_actions_oidc",
+    "ingress_reader_audience": "newsflow-supabase-candidate-ingress-reader",
+    "ingress_reader_url": "https://blgwlycfcwvsupmqyqwn.supabase.co/functions/v1/newsflow-candidate-ingress-reader",
+    "ingress_reader_source": "supabase/functions/newsflow-candidate-ingress-reader/index.ts",
     "canonical_command": "node scripts/apply-content.mjs --stdin --apply",
     "writer_auth": "github_actions_oidc",
     "writer_audience": "newsflow-supabase-candidate-writer",
@@ -65,9 +73,10 @@
     "writer_source": "supabase/functions/newsflow-candidate-writer/index.ts",
     "github_long_lived_database_secret": false,
     "plaintext_git_tracked": false,
-    "direct_sql_fallback_allowed": false,
+    "direct_candidate_sql_fallback_allowed": false,
     "transport_comment_deleted_after_processing": true,
-    "max_plaintext_bytes": 32768
+    "max_plaintext_bytes": 32768,
+    "ingress_ttl_hours": 24
   },
   "private_candidate_store": "supabase:public.newsflow_candidates",
   "private_editorial_referral_store": "supabase:public.newsflow_editorial_referrals",
@@ -90,7 +99,7 @@
     "x_discovery": "X_BEARER_TOKEN=... npm run content:x",
     "dry_run": "node scripts/update-content.mjs --input=content/inbox/<candidate-pack.json>",
     "apply": "SUPABASE_URL=... SUPABASE_SERVICE_ROLE_KEY=... node scripts/apply-content.mjs --input=content/inbox/<candidate-pack.json> --apply",
-    "agent_apply": "owner-only Issue #110 Candidate pack comment; GitHub Actions OIDC authenticates canonical apply to the Supabase Candidate writer",
+    "agent_apply": "insert exact compact Candidate-pack JSON once into public.newsflow_candidate_ingress, then post one owner-only Issue #110 reference; GitHub Actions OIDC claims the transient payload and canonical apply persists reviewable Candidates through the existing OIDC writer",
     "verify": [
       "node scripts/check-candidate-ingress.mjs"
     ]

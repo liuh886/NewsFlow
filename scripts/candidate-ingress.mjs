@@ -2,7 +2,7 @@ import { mkdir, readFile, writeFile } from 'node:fs/promises';
 import { dirname, relative, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { spawnSync } from 'node:child_process';
-import { decodeCandidateIngressPayload } from './candidate-ingress-transport.mjs';
+import { parseCandidateIngressReference, validateCandidateIngressPayload } from './candidate-ingress-transport.mjs';
 
 const root = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 const resultPath = resolve(root, process.env.NEWSFLOW_INGRESS_RESULT_PATH || 'artifacts/candidate-ingress-result.json');
@@ -10,9 +10,12 @@ const expectedIssue = Number(process.env.NEWSFLOW_INGRESS_ISSUE || '110');
 const maxPlaintextBytes = Number(process.env.NEWSFLOW_INGRESS_MAX_PLAINTEXT_BYTES || String(32 * 1024));
 const repositoryOwner = process.env.GITHUB_REPOSITORY_OWNER?.trim();
 const eventPath = process.env.GITHUB_EVENT_PATH?.trim();
+const readerUrl = process.env.NEWSFLOW_CANDIDATE_INGRESS_READER_URL?.trim();
+const readerAudience = process.env.NEWSFLOW_CANDIDATE_INGRESS_READER_AUDIENCE?.trim() || 'newsflow-supabase-candidate-ingress-reader';
 
-const MARKER = 'NEWSFLOW_CANDIDATE_PACK_V2';
+const MARKER = 'NEWSFLOW_CANDIDATE_PACK_REF_V1';
 const requestIdPattern = /^[A-Za-z0-9_-]{8,80}$/;
+const boundedCodePattern = /^[a-z0-9_]{1,80}$/;
 
 const writeResult = async (payload) => {
   await mkdir(dirname(resultPath), { recursive: true });
@@ -21,7 +24,7 @@ const writeResult = async (payload) => {
 
 const inspectPayload = (plaintext) => {
   const text = plaintext.toString('utf8').trim();
-  if (!text) throw Object.assign(new Error('Decoded Candidate payload is empty.'), { code: 'candidate_payload_malformed' });
+  if (!text) throw Object.assign(new Error('Candidate payload is empty.'), { code: 'candidate_payload_malformed' });
 
   try {
     const parsed = JSON.parse(text);
@@ -39,9 +42,9 @@ const inspectPayload = (plaintext) => {
         return 'ndjson';
       }
     } catch {
-      // Fall through to the bounded transport error below.
+      // Fall through to the bounded payload error below.
     }
-    throw Object.assign(new Error('Decoded Candidate payload is neither JSON nor Candidate NDJSON.'), { code: 'candidate_payload_malformed' });
+    throw Object.assign(new Error('Candidate payload is neither JSON nor Candidate NDJSON.'), { code: 'candidate_payload_malformed' });
   }
 };
 
@@ -69,9 +72,69 @@ const classifyApplyFailure = (result) => {
   return signatures.find(([signature]) => output.includes(signature))?.[1] || 'canonical_apply_failed';
 };
 
+let readerOidcToken = null;
+const requestReaderOidcToken = async () => {
+  const requestUrl = process.env.ACTIONS_ID_TOKEN_REQUEST_URL?.trim();
+  const requestToken = process.env.ACTIONS_ID_TOKEN_REQUEST_TOKEN?.trim();
+  if (!requestUrl || !requestToken) {
+    throw Object.assign(new Error('GitHub Actions OIDC runtime is unavailable for ingress reader.'), { code: 'ingress_oidc_runtime_unavailable' });
+  }
+  const url = new URL(requestUrl);
+  url.searchParams.set('audience', readerAudience);
+  const response = await fetch(url, {
+    headers: { Authorization: `Bearer ${requestToken}`, Accept: 'application/json' },
+    signal: AbortSignal.timeout(15000)
+  });
+  if (!response.ok) {
+    throw Object.assign(new Error(`Ingress OIDC token request failed with ${response.status}.`), { code: 'ingress_oidc_token_failed' });
+  }
+  const body = await response.json();
+  if (typeof body?.value !== 'string' || !body.value) {
+    throw Object.assign(new Error('Ingress OIDC token response is invalid.'), { code: 'ingress_oidc_token_invalid' });
+  }
+  return body.value;
+};
+
+const callIngressReader = async (action, requestId, reference, extra = {}) => {
+  if (!readerUrl) {
+    throw Object.assign(new Error('Supabase Candidate ingress reader URL is unavailable.'), { code: 'ingress_reader_unavailable' });
+  }
+  if (!readerOidcToken) readerOidcToken = await requestReaderOidcToken();
+
+  const response = await fetch(readerUrl, {
+    method: 'POST',
+    headers: {
+      Authorization: `Bearer ${readerOidcToken}`,
+      'Content-Type': 'application/json',
+      Accept: 'application/json'
+    },
+    body: JSON.stringify({
+      action,
+      request_id: requestId,
+      bytes: reference.payloadBytes,
+      sha256: reference.payloadSha256,
+      ...extra
+    }),
+    signal: AbortSignal.timeout(20000)
+  });
+
+  let body = null;
+  try { body = await response.json(); } catch {}
+  if (!response.ok || body?.ok !== true) {
+    const remoteCode = String(body?.error || '');
+    const errorCode = boundedCodePattern.test(remoteCode) ? remoteCode : 'ingress_reader_failed';
+    throw Object.assign(new Error(`Supabase Candidate ingress reader rejected ${action}.`), { code: errorCode });
+  }
+  return body;
+};
+
 let requestId = null;
 let requestCommentId = null;
 let payloadType = null;
+let reference = null;
+let claimed = false;
+let transportFinalize = null;
+let transportFinalizeError = null;
 
 try {
   if (!repositoryOwner || !eventPath) {
@@ -83,7 +146,7 @@ try {
   const issueNumber = Number(event.issue?.number || 0);
   const commentAuthor = String(event.comment?.user?.login || '');
   const requestBody = String(event.comment?.body || '').trim();
-  const [header, ...payloadLines] = requestBody.split(/\r?\n/);
+  const [header, ...referenceLines] = requestBody.split(/\r?\n/);
   const requestMatch = header?.match(new RegExp(`^${MARKER} ([A-Za-z0-9_-]{8,80})$`));
 
   if (issueNumber !== expectedIssue || commentAuthor !== repositoryOwner || !requestMatch) {
@@ -95,7 +158,12 @@ try {
     throw Object.assign(new Error('Request id is invalid.'), { code: 'invalid_request_id' });
   }
 
-  const plaintext = decodeCandidateIngressPayload(payloadLines, maxPlaintextBytes);
+  reference = parseCandidateIngressReference(referenceLines, maxPlaintextBytes);
+  const claim = await callIngressReader('claim', requestId, reference);
+  claimed = true;
+  const plaintext = validateCandidateIngressPayload(claim.payload_text, reference, maxPlaintextBytes);
+  claim.payload_text = '';
+
   let apply;
   try {
     payloadType = inspectPayload(plaintext);
@@ -113,7 +181,14 @@ try {
   }
 
   if (apply.status !== 0) {
-    throw Object.assign(new Error('Canonical Candidate apply rejected or failed.'), { code: classifyApplyFailure(apply) });
+    const applyCode = classifyApplyFailure(apply);
+    try {
+      await callIngressReader('fail', requestId, reference, { error_code: applyCode });
+      claimed = false;
+    } catch (finalizeError) {
+      console.error(`Candidate ingress failure finalization also failed: ${String(finalizeError?.code || 'ingress_finalize_failed')}`);
+    }
+    throw Object.assign(new Error('Canonical Candidate apply rejected or failed.'), { code: applyCode });
   }
 
   const summaryMatch = String(apply.stdout || '').match(/Content scan applied: (\d+)\/(\d+) item\(s\) submitted to the private Supabase editorial queue; no Reader publication changed\. Public audit: (.+)\s*$/m);
@@ -129,6 +204,16 @@ try {
     throw Object.assign(new Error('Canonical apply returned an unsafe audit path.'), { code: 'unsafe_audit_path' });
   }
 
+  try {
+    await callIngressReader('complete', requestId, reference);
+    claimed = false;
+    transportFinalize = 'success';
+  } catch (finalizeError) {
+    transportFinalize = 'failure';
+    transportFinalizeError = String(finalizeError?.code || 'ingress_finalize_failed');
+    console.error(`Candidate ingress completion finalization failed: ${transportFinalizeError}`);
+  }
+
   await writeResult({
     schema_version: '1.0',
     status: 'applied',
@@ -137,18 +222,26 @@ try {
     payload_type: payloadType,
     candidate_count: candidateCount,
     reviewable_count: reviewableCount,
-    audit_path: auditPath
+    audit_path: auditPath,
+    transport_finalize: transportFinalize,
+    transport_finalize_error: transportFinalizeError
   });
   console.log(`Candidate ingress applied ${reviewableCount}/${candidateCount}; audit=${auditPath}`);
 } catch (error) {
   const errorCode = String(error?.code || 'ingress_failed');
+  if (claimed && requestId && reference) {
+    try {
+      await callIngressReader('fail', requestId, reference, { error_code: boundedCodePattern.test(errorCode) ? errorCode : 'ingress_failed' });
+      claimed = false;
+    } catch {}
+  }
   await writeResult({
     schema_version: '1.0',
     status: 'failed',
     request_id: requestId,
     request_comment_id: requestCommentId,
     payload_type: payloadType,
-    error_code: errorCode
+    error_code: boundedCodePattern.test(errorCode) ? errorCode : 'ingress_failed'
   }).catch(() => {});
   console.error(`Candidate ingress failed: ${errorCode}`);
   process.exit(1);
