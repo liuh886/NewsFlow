@@ -19,11 +19,13 @@ jobs:
     if: >-
       github.event.issue.number == 110 &&
       github.event.comment.user.login == github.repository_owner &&
-      startsWith(github.event.comment.body, 'NEWSFLOW_CANDIDATE_PACK_V2 ')
+      startsWith(github.event.comment.body, 'NEWSFLOW_CANDIDATE_PACK_REF_V1 ')
     runs-on: ubuntu-24.04
     timeout-minutes: 4
     env:
       GH_TOKEN: ${{ github.token }}
+      NEWSFLOW_CANDIDATE_INGRESS_READER_URL: https://blgwlycfcwvsupmqyqwn.supabase.co/functions/v1/newsflow-candidate-ingress-reader
+      NEWSFLOW_CANDIDATE_INGRESS_READER_AUDIENCE: newsflow-supabase-candidate-ingress-reader
       NEWSFLOW_CANDIDATE_WRITER_URL: https://blgwlycfcwvsupmqyqwn.supabase.co/functions/v1/newsflow-candidate-writer
       NEWSFLOW_CANDIDATE_WRITER_AUDIENCE: newsflow-supabase-candidate-writer
       NEWSFLOW_INGRESS_ISSUE: '110'
@@ -74,6 +76,8 @@ jobs:
             candidate_count: result.candidate_count,
             reviewable_count: result.reviewable_count,
             audit_path: result.audit_path,
+            transport_finalize: result.transport_finalize,
+            transport_finalize_error: result.transport_finalize_error,
             error_code: result.error_code
           })) {
             fs.appendFileSync(process.env.GITHUB_OUTPUT, `${key}=${safe(value)}\n`);
