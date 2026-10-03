@@ -22,7 +22,10 @@ const base64UrlToBytes = (value: string) => {
 };
 
 const decodeJsonPart = (value: string) => JSON.parse(new TextDecoder().decode(base64UrlToBytes(value)));
-const audienceMatches = (aud: unknown) => Array.isArray(aud) ? aud.includes(EXPECTED_AUDIENCE) : aud === EXPECTED_AUDIENCE;
+
+const audienceMatches = (aud: unknown) => Array.isArray(aud)
+  ? aud.includes(EXPECTED_AUDIENCE)
+  : aud === EXPECTED_AUDIENCE;
 
 const verifyGitHubOidc = async (token: string) => {
   const parts = token.split('.');
@@ -38,9 +41,17 @@ const verifyGitHubOidc = async (token: string) => {
   const jwk = Array.isArray(jwks?.keys) ? jwks.keys.find((key: Record<string, unknown>) => key.kid === header.kid && key.kty === 'RSA') : null;
   if (!jwk) throw new Error('oidc_key');
 
-  const key = await crypto.subtle.importKey('jwk', jwk, { name: 'RSASSA-PKCS1-v1_5', hash: 'SHA-256' }, false, ['verify']);
+  const key = await crypto.subtle.importKey(
+    'jwk',
+    jwk,
+    { name: 'RSASSA-PKCS1-v1_5', hash: 'SHA-256' },
+    false,
+    ['verify']
+  );
   const verified = await crypto.subtle.verify(
-    'RSASSA-PKCS1-v1_5', key, base64UrlToBytes(encodedSignature),
+    'RSASSA-PKCS1-v1_5',
+    key,
+    base64UrlToBytes(encodedSignature),
     new TextEncoder().encode(`${encodedHeader}.${encodedPayload}`)
   );
   if (!verified) throw new Error('oidc_signature');
@@ -53,7 +64,7 @@ const verifyGitHubOidc = async (token: string) => {
   if (payload?.iss !== EXPECTED_ISSUER || !audienceMatches(payload?.aud)) throw new Error('oidc_issuer_audience');
   if (payload?.repository !== EXPECTED_REPOSITORY || String(payload?.repository_id || '') !== EXPECTED_REPOSITORY_ID) throw new Error('oidc_repository');
   if (String(payload?.actor_id || '') !== EXPECTED_ACTOR_ID) throw new Error('oidc_actor');
-  if (payload?.event_name !== 'issue_comment' || payload?.ref !== 'refs/heads/main') throw new Error('oidc_event_ref');
+  if (payload?.event_name !== 'push' || payload?.ref !== 'refs/heads/main') throw new Error('oidc_event_ref');
   if (payload?.workflow_ref !== EXPECTED_WORKFLOW_REF) throw new Error('oidc_workflow_ref');
   return payload;
 };
@@ -92,10 +103,16 @@ Deno.serve(async (req: Request) => {
     await verifyGitHubOidc(authorization.slice('Bearer '.length).trim());
 
     let body: Record<string, unknown>;
-    try { body = await req.json(); } catch { return json(400, { ok: false, error: 'invalid_json' }); }
+    try {
+      body = await req.json();
+    } catch {
+      return json(400, { ok: false, error: 'invalid_json' });
+    }
     if (!body || Object.keys(body).some((key) => key !== 'rows')) return json(400, { ok: false, error: 'invalid_envelope' });
     let rows: Record<string, unknown>[];
-    try { rows = validateRows(body.rows); } catch (error) {
+    try {
+      rows = validateRows(body.rows);
+    } catch (error) {
       return json(400, { ok: false, error: String((error as Error)?.message || 'invalid_rows') });
     }
 
@@ -119,6 +136,7 @@ Deno.serve(async (req: Request) => {
     return json(200, { ok: true, row_count: rows.length });
   } catch (error) {
     const code = String((error as Error)?.message || 'unauthorized');
-    return json(401, { ok: false, error: code.startsWith('oidc_') ? code : 'unauthorized' });
+    const safeCode = code.startsWith('oidc_') ? code : 'unauthorized';
+    return json(401, { ok: false, error: safeCode });
   }
 });
