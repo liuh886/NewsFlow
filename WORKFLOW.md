@@ -12,7 +12,7 @@ The stages are deliberately separate:
 
 1. automated/manual research discovers questions, arguments and verifiable evidence, with Editor Green Lane referrals receiving first-pass discovery priority;
 2. deterministic preflight decides whether an item is fit to become a **private Candidate**;
-3. reviewable Candidates are written directly to private Supabase;
+3. reviewable Candidates are persisted to private Supabase only through canonical apply; scheduled agents may stage exact transport bytes in the transient Supabase ingress table, but that staging is not Candidate persistence;
 4. Editors produce advisory five-state scores and may revise them repeatedly, including after the chief has made a publication decision;
 5. the Editor-in-Chief produces the final five-state publication decision;
 6. chief **封面文章 / 录用** creates a sanitized public adoption projection in Supabase;
@@ -30,7 +30,7 @@ A content-pipeline `accepted` result means only **passed preflight for editorial
 4. Supabase `newsflow_editorial_referrals` is the private Editor Green Lane queue; it prioritizes discovery but never grants publication authority.
 5. the JSON Schema defines the transient Candidate exchange format.
 6. `scripts/update-content.mjs` is the deterministic, read-only evaluator.
-7. `scripts/apply-content.mjs --apply` writes reviewable Candidates directly to Supabase and records a sanitized audit; it cannot publish.
+7. `scripts/apply-content.mjs --apply` is the only Candidate persistence command: trusted server runtimes may use server-side Supabase credentials, while scheduled ingress uses GitHub Actions OIDC → `newsflow-candidate-writer`; both record the same sanitized audit and cannot publish.
 8. Supabase `newsflow_candidates` is the durable private Candidate authority.
 9. Supabase `newsflow_editorial_reviews` stores normalized Editor/Chief five-state records.
 10. only the active owner / Editor-in-Chief review can create `newsflow_editorial_adoptions`.
@@ -191,9 +191,11 @@ Possible preflight states:
 
 The evaluator is read-only. `scripts/update-content.mjs --apply` is retired and intentionally errors.
 
-### 7. Persist reviewable Candidates directly to Supabase
+### 7. Persist reviewable Candidates through canonical apply
 
-Use server-side credentials only for writing private Candidate state:
+`apply-content.mjs` is the only Candidate persistence command.
+
+A trusted server-side runtime may supply Supabase service-role credentials directly:
 
 ```bash
 SUPABASE_URL=... \
@@ -201,26 +203,40 @@ SUPABASE_SERVICE_ROLE_KEY=... \
 npm run content:update -- --input=content/inbox/<candidate-pack>.json --apply
 ```
 
+A scheduled agent does not receive those credentials and does not execute the repository command itself. Instead it follows the machine-readable `scheduled_runtime` contract:
+
+1. serialize one complete Candidate pack as compact UTF-8 JSON;
+2. compute exact byte length and lowercase SHA-256;
+3. insert those exact bytes once into `public.newsflow_candidate_ingress` using its explicitly permitted **insert-only transport access**;
+4. post one small `NEWSFLOW_CANDIDATE_PACK_REF_V1` reference on Issue #110 containing only request id, bytes and SHA-256;
+5. GitHub Actions uses short-lived OIDC to claim the transient payload through `newsflow-candidate-ingress-reader`;
+6. the Action feeds the exact verified bytes to `node scripts/apply-content.mjs --stdin --apply`;
+7. canonical apply uses the existing GitHub OIDC `newsflow-candidate-writer` to persist reviewable Candidates.
+
+The transient ingress table is transport only. It is not an editorial Candidate store, retry queue, publication queue or alternate writer. Scheduled agents remain forbidden from direct SQL writes to `newsflow_candidates`.
+
 `apply-content.mjs`:
 
 - re-runs deterministic evaluation;
-- writes accepted/reviewable Candidate payloads directly to private `newsflow_candidates`;
+- writes accepted/reviewable Candidate payloads to private `newsflow_candidates` through the authorized persistence path for the runtime;
 - never writes `public/data/news.json`;
 - emits only sanitized run metadata/counts to the public audit surface;
 - preserves `run.collection_observations` inside that sanitized run audit when supplied;
 - preserves Candidate `discovery_origin` in the private Candidate payload when supplied;
-- leaves the transient Candidate pack outside durable Git history.
+- leaves transient Candidate-pack bytes outside durable Git history.
 
 A zero-Candidate run may still be applied when it carries useful collection observations; it records the scan without creating a manuscript or changing Reader state.
 
 If a newly persisted Candidate URL matches a queued Green Lane referral, the database marks that referral `ingested` and links its `candidate_id` automatically.
 
-After application:
+After trusted-shell application:
 
 ```bash
 npm run check
 npm run build
 ```
+
+Scheduled ingress deliberately does not run the full frontend build; its GitHub workflow performs only canonical Candidate apply plus sanitized audit handling.
 
 There is **no repository → Supabase Candidate sync workflow**. Do not recreate one.
 
@@ -314,7 +330,7 @@ The browser and publication worker never carry a GitHub token or Supabase servic
 
 ### 14. Clean transient input
 
-After the Candidate pack has been evaluated/persisted, remove the transient local file unless it is still needed for the active run. Candidate durability belongs to Supabase; public Git history is not an editorial manuscript archive.
+After the Candidate pack has been evaluated/persisted, remove any transient local file unless it is still needed for the active run. Scheduled ingress rows are separately bounded by their short expiry/consumption lifecycle. Candidate durability belongs to `newsflow_candidates`; neither public Git history nor the ingress transport table is an editorial manuscript archive.
 
 ## Handoff
 
