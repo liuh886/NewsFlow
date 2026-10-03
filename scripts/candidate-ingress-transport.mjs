@@ -11,38 +11,45 @@ const parseDeclaredBytes = (line) => {
 };
 
 const parseDeclaredSha256 = (line) => {
-  const match = String(line ?? '').match(/^sha256: ([a-f0-9]{64})$/i);
+  const match = String(line ?? '').match(/^sha256: ([a-f0-9]{64})$/);
   if (!match) throw transportError('Candidate payload SHA-256 metadata is missing or invalid.', 'invalid_transport_metadata');
-  return match[1].toLowerCase();
+  return match[1];
 };
 
-export const decodeCandidateIngressPayload = (payloadLines, maxPlaintextBytes) => {
+export const parseCandidateIngressReference = (payloadLines, maxPlaintextBytes) => {
   const lines = Array.isArray(payloadLines)
     ? payloadLines
     : String(payloadLines ?? '').split(/\r?\n/);
 
-  if (lines.length < 3) {
-    throw transportError('Candidate payload metadata or JSON body is missing.', 'missing_payload');
+  if (lines.length !== 2) {
+    throw transportError('Candidate ingress reference must contain exactly byte length and SHA-256 metadata.', 'invalid_transport_metadata');
   }
 
-  const declaredBytes = parseDeclaredBytes(lines[0]);
-  const declaredSha256 = parseDeclaredSha256(lines[1]);
-  const jsonText = lines.slice(2).join('\n');
-
-  if (!jsonText) throw transportError('Candidate payload is missing.', 'missing_payload');
-
-  const actualBytes = Buffer.byteLength(jsonText, 'utf8');
-  if (actualBytes > maxPlaintextBytes || declaredBytes > maxPlaintextBytes) {
+  const payloadBytes = parseDeclaredBytes(lines[0]);
+  const payloadSha256 = parseDeclaredSha256(lines[1]);
+  if (payloadBytes > maxPlaintextBytes) {
     throw transportError('Candidate payload exceeds the transport limit.', 'payload_too_large');
   }
-  if (actualBytes !== declaredBytes) {
-    throw transportError('Candidate payload byte length does not match transport metadata.', 'payload_length_mismatch');
+
+  return { payloadBytes, payloadSha256 };
+};
+
+export const validateCandidateIngressPayload = (payloadText, reference, maxPlaintextBytes) => {
+  const text = String(payloadText ?? '');
+  if (!text) throw transportError('Candidate ingress payload is empty.', 'missing_payload');
+
+  const actualBytes = Buffer.byteLength(text, 'utf8');
+  if (actualBytes > maxPlaintextBytes || reference.payloadBytes > maxPlaintextBytes) {
+    throw transportError('Candidate payload exceeds the transport limit.', 'payload_too_large');
+  }
+  if (actualBytes !== reference.payloadBytes) {
+    throw transportError('Candidate payload byte length does not match the ingress reference.', 'payload_length_mismatch');
   }
 
-  const actualSha256 = createHash('sha256').update(jsonText, 'utf8').digest('hex');
-  if (actualSha256 !== declaredSha256) {
-    throw transportError('Candidate payload SHA-256 does not match transport metadata.', 'payload_checksum_mismatch');
+  const actualSha256 = createHash('sha256').update(text, 'utf8').digest('hex');
+  if (actualSha256 !== reference.payloadSha256) {
+    throw transportError('Candidate payload SHA-256 does not match the ingress reference.', 'payload_checksum_mismatch');
   }
 
-  return Buffer.from(jsonText, 'utf8');
+  return Buffer.from(text, 'utf8');
 };
