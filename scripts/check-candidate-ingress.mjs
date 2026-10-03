@@ -3,7 +3,7 @@ import { readFile } from 'node:fs/promises';
 import { spawnSync } from 'node:child_process';
 import { dirname, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { decodeCandidateIngressPayload } from './candidate-ingress-transport.mjs';
+import { parseCandidateIngressReference, validateCandidateIngressPayload } from './candidate-ingress-transport.mjs';
 
 const root = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 const read = (path) => readFile(resolve(root, path), 'utf8');
@@ -12,6 +12,8 @@ const ingressScript = 'scripts/candidate-ingress.mjs';
 const transportScript = 'scripts/candidate-ingress-transport.mjs';
 const applyScript = 'scripts/apply-content.mjs';
 const writerScript = 'supabase/functions/newsflow-candidate-writer/index.ts';
+const readerScript = 'supabase/functions/newsflow-candidate-ingress-reader/index.ts';
+const migrationScript = 'supabase/migrations/20261003045252_newsflow_candidate_ingress_transport.sql';
 const ingressWorkflow = '.github/workflows/candidate-ingress.yml';
 
 for (const scriptPath of [ingressScript, transportScript, applyScript]) {
@@ -19,43 +21,45 @@ for (const scriptPath of [ingressScript, transportScript, applyScript]) {
   if (syntax.status !== 0) throw new Error(`${scriptPath} syntax failed:\n${syntax.stderr}`);
 }
 
-const [script, transport, apply, writer, workflow, config, publication, docs] = await Promise.all([
-  read(ingressScript), read(transportScript), read(applyScript), read(writerScript), read(ingressWorkflow),
-  read('config/content-workflow.json'), read('.github/workflows/publication-sync.yml'), read('docs/candidate-ingress.md')
+const [script, transport, apply, writer, reader, migration, workflow, config, publication, docs] = await Promise.all([
+  read(ingressScript), read(transportScript), read(applyScript), read(writerScript), read(readerScript),
+  read(migrationScript), read(ingressWorkflow), read('config/content-workflow.json'),
+  read('.github/workflows/publication-sync.yml'), read('docs/candidate-ingress.md')
 ]);
 
 for (const required of [
-  'NEWSFLOW_CANDIDATE_PACK_V2',
+  'NEWSFLOW_CANDIDATE_PACK_REF_V1',
   "'scripts/apply-content.mjs'", "'--stdin', '--apply'",
   'maxPlaintextBytes', 'inspectPayload', 'candidate_payload_malformed',
-  'decodeCandidateIngressPayload',
+  'parseCandidateIngressReference', 'validateCandidateIngressPayload',
+  'NEWSFLOW_CANDIDATE_INGRESS_READER_URL', 'newsflow-supabase-candidate-ingress-reader',
+  "callIngressReader('claim'", "callIngressReader('complete'", "callIngressReader('fail'",
   "return 'candidate_pack'", "return 'single_candidate'", "return 'ndjson'",
   'classifyApplyFailure', 'candidate_schema_invalid', 'candidate_pack_invalid', 'candidate_input_invalid',
   'source_registry_invalid', 'evaluator_result_invalid', 'candidate_snapshot_missing',
   'oidc_runtime_unavailable', 'oidc_token_failed', 'oidc_writer_failed',
   'candidate_writer_unavailable', 'duplicate_scan_audit', 'apply_process_failed'
 ]) if (!script.includes(required)) throw new Error(`Candidate ingress script missing contract: ${required}`);
+
 for (const forbidden of [
   'NEWSFLOW_CANDIDATE_PACK_V1',
+  "const MARKER = 'NEWSFLOW_CANDIDATE_PACK_V2'",
   'generateKeyPairSync', 'privateDecrypt', 'createDecipheriv',
   'NEWSFLOW_APPLY_CHALLENGE_V1', 'NEWSFLOW_APPLY_PAYLOAD_V1',
   'setTimeout(', 'payload_timeout', "from('newsflow_candidates')", 'SUPABASE_SERVICE_ROLE_KEY'
 ]) if (script.includes(forbidden)) throw new Error(`Candidate ingress contains retired transport/persistence logic: ${forbidden}`);
 
 for (const required of [
-  "createHash('sha256')", 'Buffer.byteLength', 'decodeCandidateIngressPayload',
-  'invalid_transport_metadata', 'payload_length_mismatch', 'payload_checksum_mismatch',
-  'payload_too_large', "Buffer.from(jsonText, 'utf8')"
-]) if (!transport.includes(required)) throw new Error(`Candidate ingress transport missing integrity contract: ${required}`);
-for (const forbidden of [
-  'normalizeCandidateIngressBase64', "toString('base64')", 'replace(/\\s+/g'
-]) if (transport.includes(forbidden)) throw new Error(`Candidate ingress transport still contains retired Base64 logic: ${forbidden}`);
+  "createHash('sha256')", 'Buffer.byteLength', 'parseCandidateIngressReference',
+  'validateCandidateIngressPayload', 'invalid_transport_metadata',
+  'payload_length_mismatch', 'payload_checksum_mismatch', 'payload_too_large',
+  "Buffer.from(text, 'utf8')"
+]) if (!transport.includes(required)) throw new Error(`Candidate ingress transport missing reference/integrity contract: ${required}`);
 
 const sha256 = (text) => createHash('sha256').update(text, 'utf8').digest('hex');
-const transportLines = (payload, { bytes = Buffer.byteLength(payload, 'utf8'), digest = sha256(payload) } = {}) => [
-  `bytes: ${bytes}`,
-  `sha256: ${digest}`,
-  payload
+const referenceLines = (payload) => [
+  `bytes: ${Buffer.byteLength(payload, 'utf8')}`,
+  `sha256: ${sha256(payload)}`
 ];
 
 const fixtures = [
@@ -73,32 +77,30 @@ const fixtures = [
 ];
 
 for (const fixture of fixtures) {
-  const decoded = decodeCandidateIngressPayload(transportLines(fixture), 32 * 1024);
-  if (decoded.toString('utf8') !== fixture) throw new Error('Candidate ingress transport changed JSON payload bytes.');
+  const reference = parseCandidateIngressReference(referenceLines(fixture), 32 * 1024);
+  const decoded = validateCandidateIngressPayload(fixture, reference, 32 * 1024);
+  if (decoded.toString('utf8') !== fixture) throw new Error('Candidate ingress changed Supabase payload bytes.');
   decoded.fill(0);
 }
 const largeFixtureBytes = Buffer.byteLength(fixtures[2], 'utf8');
 if (largeFixtureBytes < 24 * 1024 || largeFixtureBytes >= 32 * 1024) {
-  throw new Error(`Large transport fixture must exercise the production-size range; got ${largeFixtureBytes} bytes.`);
+  throw new Error(`Large ingress fixture must exercise the production-size range; got ${largeFixtureBytes} bytes.`);
 }
 
-const expectTransportError = (lines, expectedCode, maxBytes = 32 * 1024) => {
-  let errorCode = null;
-  try {
-    decodeCandidateIngressPayload(lines, maxBytes);
-  } catch (error) {
-    errorCode = error?.code;
-  }
-  if (errorCode !== expectedCode) {
-    throw new Error(`Candidate ingress transport expected ${expectedCode}; got ${String(errorCode)}.`);
-  }
+const expectError = (fn, expectedCode) => {
+  let actual = null;
+  try { fn(); } catch (error) { actual = error?.code; }
+  if (actual !== expectedCode) throw new Error(`Expected ${expectedCode}; got ${String(actual)}.`);
 };
 
-expectTransportError(['bytes: 1', 'sha256: bad', '{}'], 'invalid_transport_metadata');
-expectTransportError(transportLines(fixtures[0], { bytes: Buffer.byteLength(fixtures[0], 'utf8') + 1 }), 'payload_length_mismatch');
-expectTransportError(transportLines(fixtures[0], { digest: '0'.repeat(64) }), 'payload_checksum_mismatch');
-const oversized = JSON.stringify({ payload: 'x'.repeat(33 * 1024) });
-expectTransportError(transportLines(oversized), 'payload_too_large');
+expectError(() => parseCandidateIngressReference(['bytes: 1', 'sha256: bad'], 32 * 1024), 'invalid_transport_metadata');
+expectError(() => parseCandidateIngressReference(['bytes: 40000', `sha256: ${'0'.repeat(64)}`], 32 * 1024), 'payload_too_large');
+{
+  const fixture = fixtures[0];
+  const reference = parseCandidateIngressReference(referenceLines(fixture), 32 * 1024);
+  expectError(() => validateCandidateIngressPayload(fixture + ' ', reference, 32 * 1024), 'payload_length_mismatch');
+  expectError(() => validateCandidateIngressPayload(fixture, { ...reference, payloadSha256: '0'.repeat(64) }, 32 * 1024), 'payload_checksum_mismatch');
+}
 
 for (const required of [
   'ACTIONS_ID_TOKEN_REQUEST_URL', 'ACTIONS_ID_TOKEN_REQUEST_TOKEN',
@@ -117,18 +119,42 @@ for (const required of [
 ]) if (!writer.includes(required)) throw new Error(`Candidate writer missing OIDC/private-store contract: ${required}`);
 
 for (const required of [
+  'newsflow-supabase-candidate-ingress-reader',
+  "'liuh886/NewsFlow'", "'1321418658'", "'7567311'",
+  "'liuh886/NewsFlow/.github/workflows/candidate-ingress.yml@refs/heads/main'",
+  "payload?.event_name !== 'issue_comment'", "payload?.ref !== 'refs/heads/main'",
+  "Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')",
+  'newsflow_candidate_ingress?', "action === 'claim'", "action === 'complete' || action === 'fail'",
+  'ingress_reference_mismatch', 'ingress_expired', 'ingress_already_claimed', 'ingress_integrity_failed'
+]) if (!reader.includes(required)) throw new Error(`Candidate ingress reader missing OIDC/claim contract: ${required}`);
+
+for (const required of [
+  'create table public.newsflow_candidate_ingress',
+  'payload_bytes = octet_length(payload_text)',
+  "encode(extensions.digest(payload_text, 'sha256'), 'hex')",
+  "status in ('pending', 'claimed', 'consumed', 'failed')",
+  'enable row level security',
+  'revoke all on table public.newsflow_candidate_ingress from anon, authenticated, service_role',
+  'grant select, update, delete on table public.newsflow_candidate_ingress to service_role'
+]) if (!migration.includes(required)) throw new Error(`Candidate ingress migration missing security/integrity contract: ${required}`);
+
+for (const required of [
   'issue_comment:', 'github.event.issue.number == 110',
   'github.event.comment.user.login == github.repository_owner',
-  "startsWith(github.event.comment.body, 'NEWSFLOW_CANDIDATE_PACK_V2 ')",
+  "startsWith(github.event.comment.body, 'NEWSFLOW_CANDIDATE_PACK_REF_V1 ')",
   'contents: write', 'issues: write', 'id-token: write',
+  'NEWSFLOW_CANDIDATE_INGRESS_READER_URL', 'NEWSFLOW_CANDIDATE_INGRESS_READER_AUDIENCE',
   'NEWSFLOW_CANDIDATE_WRITER_URL', 'node scripts/candidate-ingress.mjs',
-  'payload_type: result.payload_type', 'payload_type: ${payload_type}',
+  'payload_type: result.payload_type', 'transport_finalize: result.transport_finalize',
   'content/runs/*.json', 'npm run content:status'
 ]) if (!workflow.includes(required)) throw new Error(`Candidate ingress workflow missing contract: ${required}`);
+
 for (const forbidden of [
+  "startsWith(github.event.comment.body, 'NEWSFLOW_CANDIDATE_PACK_V2 ')",
   'NEWSFLOW_CANDIDATE_PACK_V1',
   'NEWSFLOW_INGRESS_TIMEOUT_MS', 'NEWSFLOW_APPLY_CHALLENGE_V1', 'NEWSFLOW_APPLY_PAYLOAD_V1',
-  'npm run check', 'npm run build', 'workflow_dispatch:', 'repository_dispatch:', 'secrets.SUPABASE_SERVICE_ROLE_KEY'
+  'npm run check', 'npm run build', 'workflow_dispatch:', 'repository_dispatch:',
+  'secrets.SUPABASE_SERVICE_ROLE_KEY'
 ]) if (workflow.includes(forbidden)) throw new Error(`Candidate ingress workflow contains retired complexity: ${forbidden}`);
 
 const workflowConfig = JSON.parse(config);
@@ -139,22 +165,40 @@ if (!scheduled || scheduled.repository_shell_required !== false || scheduled.git
 if (scheduled.public_web_discovery_required !== true || scheduled.base64_encoding_required !== false || scheduled.sha256_integrity_required !== true) {
   throw new Error('Scheduled runtime must provide public-web discovery and deterministic JSON SHA-256 integrity metadata.');
 }
-if (scheduled.supabase_green_lane_access !== 'read_only' || scheduled.supabase_candidate_verification_access !== 'read_only' || scheduled.supabase_candidate_write_allowed !== false) {
-  throw new Error('Scheduled runtime must keep Supabase access read-only and never write Candidates directly.');
+if (
+  scheduled.supabase_green_lane_access !== 'read_only'
+  || scheduled.supabase_candidate_verification_access !== 'read_only'
+  || scheduled.supabase_candidate_write_allowed !== false
+  || scheduled.supabase_ingress_transport_access !== 'insert_only'
+  || scheduled.supabase_ingress_transport_table !== 'public.newsflow_candidate_ingress'
+) {
+  throw new Error('Scheduled runtime may insert only into the transient Supabase ingress table and must never write Candidates directly.');
 }
-if (scheduled.submit_via !== 'agent_apply_ingress') throw new Error('Scheduled runtime must submit through the canonical agent apply ingress.');
+if (scheduled.submit_via !== 'supabase_ingress_issue_reference') throw new Error('Scheduled runtime must submit via Supabase ingress + Issue reference.');
 
 const ingress = workflowConfig.agent_apply_ingress;
-if (!ingress || ingress.transport !== 'owner_issue_comment_json_sha256' || ingress.issue_number !== 110 || ingress.request_marker !== 'NEWSFLOW_CANDIDATE_PACK_V2') {
-  throw new Error('Content workflow must declare the owner-only JSON + SHA-256 Candidate ingress.');
+if (
+  !ingress
+  || ingress.transport !== 'supabase_ingress_issue_reference'
+  || ingress.issue_number !== 110
+  || ingress.request_marker !== 'NEWSFLOW_CANDIDATE_PACK_REF_V1'
+  || ingress.ingress_store !== 'supabase:public.newsflow_candidate_ingress'
+  || ingress.ingress_store_write !== 'scheduled_agent_insert_only'
+  || ingress.ingress_reader_auth !== 'github_actions_oidc'
+) {
+  throw new Error('Content workflow must declare the Supabase transient ingress + owner-only Issue reference transport.');
 }
 if (ingress.canonical_command !== 'node scripts/apply-content.mjs --stdin --apply') throw new Error('Ingress must call canonical apply.');
-if (ingress.writer_auth !== 'github_actions_oidc' || ingress.direct_sql_fallback_allowed !== false || ingress.plaintext_git_tracked !== false) {
-  throw new Error('Ingress must keep GitHub OIDC and forbid direct SQL/plaintext Git storage.');
+if (ingress.writer_auth !== 'github_actions_oidc' || ingress.direct_candidate_sql_fallback_allowed !== false || ingress.plaintext_git_tracked !== false) {
+  throw new Error('Ingress must keep GitHub OIDC and forbid direct Candidate SQL/plaintext Git storage.');
 }
-for (const required of ['NEWSFLOW_CANDIDATE_PACK_V2', 'bytes:', 'sha256:', 'payload_length_mismatch', 'payload_checksum_mismatch']) {
-  if (!docs.includes(required)) throw new Error(`Candidate ingress docs missing V2 transport contract: ${required}`);
-}
+
+for (const required of [
+  'public.newsflow_candidate_ingress', 'insert-only transport access',
+  'NEWSFLOW_CANDIDATE_PACK_REF_V1', 'newsflow-supabase-candidate-ingress-reader',
+  'pending → claimed → consumed', 'public.newsflow_candidates', 'GitHub Actions OIDC'
+]) if (!docs.includes(required)) throw new Error(`Candidate ingress docs missing Supabase reference transport contract: ${required}`);
+
 if (publication.includes('SUPABASE_SERVICE_ROLE_KEY')) throw new Error('Publication sync must remain isolated from Candidate credentials.');
 
-console.log('Candidate ingress contract: OK (plain compact JSON + byte length + SHA-256 integrity + scheduled runtime boundary + one-shot transport + canonical apply + GitHub OIDC writer).');
+console.log('Candidate ingress contract: OK (Supabase transient payload + owner-only Issue reference + GitHub OIDC reader + canonical apply + GitHub OIDC Candidate writer).');
