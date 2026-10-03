@@ -41,25 +41,25 @@
   },
   "scheduled_runtime": {
     "repository_shell_required": false,
-    "github_contents_access": "read",
-    "github_issue_access": "read_write",
+    "github_contents_access": "read_write_control_file",
+    "github_issue_access": "none",
     "public_web_discovery_required": true,
     "base64_encoding_required": false,
     "supabase_green_lane_access": "read_only",
     "supabase_candidate_verification_access": "read_only",
     "supabase_candidate_write_allowed": false,
-    "submit_via": "supabase_ingress_issue_reference",
+    "submit_via": "supabase_ingress_git_control_file",
     "sha256_integrity_required": true,
     "supabase_ingress_transport_access": "insert_only",
-    "supabase_ingress_transport_table": "public.newsflow_candidate_ingress"
+    "supabase_ingress_transport_table": "public.newsflow_candidate_ingress",
+    "github_control_file": "content/state/candidate-ingress-trigger.json"
   },
   "agent_apply_ingress": {
-    "transport": "supabase_ingress_issue_reference",
-    "issue_number": 110,
+    "transport": "supabase_ingress_git_control_file",
+    "trigger_file": "content/state/candidate-ingress-trigger.json",
     "workflow": ".github/workflows/candidate-ingress.yml",
     "documentation": "docs/candidate-ingress.md",
-    "request_marker": "NEWSFLOW_CANDIDATE_PACK_REF_V1",
-    "result_marker": "NEWSFLOW_APPLY_RESULT_V1",
+    "result_store": "supabase:public.newsflow_candidate_ingress",
     "ingress_store": "supabase:public.newsflow_candidate_ingress",
     "ingress_store_write": "scheduled_agent_insert_only",
     "ingress_reader_auth": "github_actions_oidc",
@@ -72,9 +72,9 @@
     "writer_url": "https://blgwlycfcwvsupmqyqwn.supabase.co/functions/v1/newsflow-candidate-writer",
     "writer_source": "supabase/functions/newsflow-candidate-writer/index.ts",
     "github_long_lived_database_secret": false,
-    "plaintext_git_tracked": false,
+    "candidate_payload_git_tracked": false,
+    "control_reference_git_tracked": true,
     "direct_candidate_sql_fallback_allowed": false,
-    "transport_comment_deleted_after_processing": true,
     "max_plaintext_bytes": 32768,
     "ingress_ttl_hours": 24
   },
@@ -99,7 +99,7 @@
     "x_discovery": "X_BEARER_TOKEN=... npm run content:x",
     "dry_run": "node scripts/update-content.mjs --input=content/inbox/<candidate-pack.json>",
     "apply": "SUPABASE_URL=... SUPABASE_SERVICE_ROLE_KEY=... node scripts/apply-content.mjs --input=content/inbox/<candidate-pack.json> --apply",
-    "agent_apply": "insert exact compact Candidate-pack JSON once into public.newsflow_candidate_ingress, then post one owner-only Issue #110 reference; GitHub Actions OIDC claims the transient payload and canonical apply persists reviewable Candidates through the existing OIDC writer",
+    "agent_apply": "insert exact compact Candidate-pack JSON once into public.newsflow_candidate_ingress, then update only content/state/candidate-ingress-trigger.json on main with request_id/bytes/sha256; the path-scoped push workflow claims the payload through GitHub Actions OIDC and canonical apply persists reviewable Candidates through the existing OIDC writer",
     "verify": [
       "node scripts/check-candidate-ingress.mjs"
     ]
