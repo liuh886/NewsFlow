@@ -2,19 +2,17 @@ import { mkdir, readFile, writeFile } from 'node:fs/promises';
 import { dirname, relative, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { spawnSync } from 'node:child_process';
-import { parseCandidateIngressReference, validateCandidateIngressPayload } from './candidate-ingress-transport.mjs';
+import { validateCandidateIngressPayload } from './candidate-ingress-transport.mjs';
 
 const root = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 const resultPath = resolve(root, process.env.NEWSFLOW_INGRESS_RESULT_PATH || 'artifacts/candidate-ingress-result.json');
-const expectedIssue = Number(process.env.NEWSFLOW_INGRESS_ISSUE || '110');
+const triggerPath = resolve(root, process.env.NEWSFLOW_INGRESS_TRIGGER_PATH || 'content/state/candidate-ingress-trigger.json');
 const maxPlaintextBytes = Number(process.env.NEWSFLOW_INGRESS_MAX_PLAINTEXT_BYTES || String(32 * 1024));
-const repositoryOwner = process.env.GITHUB_REPOSITORY_OWNER?.trim();
-const eventPath = process.env.GITHUB_EVENT_PATH?.trim();
 const readerUrl = process.env.NEWSFLOW_CANDIDATE_INGRESS_READER_URL?.trim();
 const readerAudience = process.env.NEWSFLOW_CANDIDATE_INGRESS_READER_AUDIENCE?.trim() || 'newsflow-supabase-candidate-ingress-reader';
 
-const MARKER = 'NEWSFLOW_CANDIDATE_PACK_REF_V1';
 const requestIdPattern = /^[A-Za-z0-9_-]{8,80}$/;
+const shaPattern = /^[a-f0-9]{64}$/;
 const boundedCodePattern = /^[a-z0-9_]{1,80}$/;
 
 const writeResult = async (payload) => {
@@ -41,9 +39,7 @@ const inspectPayload = (plaintext) => {
       if (rows.length && rows.every((row) => row && typeof row === 'object' && !Array.isArray(row) && typeof row.id === 'string' && row.id.trim())) {
         return 'ndjson';
       }
-    } catch {
-      // Fall through to the bounded payload error below.
-    }
+    } catch {}
     throw Object.assign(new Error('Candidate payload is neither JSON nor Candidate NDJSON.'), { code: 'candidate_payload_malformed' });
   }
 };
@@ -129,7 +125,6 @@ const callIngressReader = async (action, requestId, reference, extra = {}) => {
 };
 
 let requestId = null;
-let requestCommentId = null;
 let payloadType = null;
 let reference = null;
 let claimed = false;
@@ -137,28 +132,21 @@ let transportFinalize = null;
 let transportFinalizeError = null;
 
 try {
-  if (!repositoryOwner || !eventPath) {
-    throw Object.assign(new Error('GitHub runtime metadata is missing.'), { code: 'missing_github_runtime' });
+  const trigger = JSON.parse(await readFile(triggerPath, 'utf8'));
+  if (trigger?.active !== true) {
+    await writeResult({ schema_version: '1.0', status: 'idle', request_id: null });
+    console.log('Candidate ingress trigger is inactive.');
+    process.exit(0);
   }
 
-  const event = JSON.parse(await readFile(eventPath, 'utf8'));
-  requestCommentId = Number(event.comment?.id || 0) || null;
-  const issueNumber = Number(event.issue?.number || 0);
-  const commentAuthor = String(event.comment?.user?.login || '');
-  const requestBody = String(event.comment?.body || '').trim();
-  const [header, ...referenceLines] = requestBody.split(/\r?\n/);
-  const requestMatch = header?.match(new RegExp(`^${MARKER} ([A-Za-z0-9_-]{8,80})$`));
-
-  if (issueNumber !== expectedIssue || commentAuthor !== repositoryOwner || !requestMatch) {
-    throw Object.assign(new Error('Ingress request did not match the owner-only endpoint contract.'), { code: 'invalid_request' });
+  requestId = String(trigger.request_id || '');
+  const payloadBytes = Number(trigger.payload_bytes || 0);
+  const payloadSha256 = String(trigger.payload_sha256 || '');
+  if (!requestIdPattern.test(requestId) || !Number.isSafeInteger(payloadBytes) || payloadBytes < 1 || payloadBytes > maxPlaintextBytes || !shaPattern.test(payloadSha256)) {
+    throw Object.assign(new Error('Candidate ingress control file is invalid.'), { code: 'invalid_transport_metadata' });
   }
+  reference = { payloadBytes, payloadSha256 };
 
-  requestId = requestMatch[1];
-  if (!requestIdPattern.test(requestId)) {
-    throw Object.assign(new Error('Request id is invalid.'), { code: 'invalid_request_id' });
-  }
-
-  reference = parseCandidateIngressReference(referenceLines, maxPlaintextBytes);
   const claim = await callIngressReader('claim', requestId, reference);
   claimed = true;
   const plaintext = validateCandidateIngressPayload(claim.payload_text, reference, maxPlaintextBytes);
@@ -168,7 +156,6 @@ try {
   try {
     payloadType = inspectPayload(plaintext);
     console.log(`Candidate ingress payload type: ${payloadType}`);
-
     apply = spawnSync(process.execPath, [resolve(root, 'scripts/apply-content.mjs'), '--stdin', '--apply'], {
       cwd: root,
       env: process.env,
@@ -205,7 +192,12 @@ try {
   }
 
   try {
-    await callIngressReader('complete', requestId, reference);
+    await callIngressReader('complete', requestId, reference, {
+      payload_type: payloadType,
+      candidate_count: candidateCount,
+      reviewable_count: reviewableCount,
+      audit_path: auditPath
+    });
     claimed = false;
     transportFinalize = 'success';
   } catch (finalizeError) {
@@ -218,7 +210,6 @@ try {
     schema_version: '1.0',
     status: 'applied',
     request_id: requestId,
-    request_comment_id: requestCommentId,
     payload_type: payloadType,
     candidate_count: candidateCount,
     reviewable_count: reviewableCount,
@@ -239,7 +230,6 @@ try {
     schema_version: '1.0',
     status: 'failed',
     request_id: requestId,
-    request_comment_id: requestCommentId,
     payload_type: payloadType,
     error_code: boundedCodePattern.test(errorCode) ? errorCode : 'ingress_failed'
   }).catch(() => {});

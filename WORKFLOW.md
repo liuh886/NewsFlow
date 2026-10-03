@@ -208,12 +208,12 @@ A scheduled agent does not receive those credentials and does not execute the re
 1. serialize one complete Candidate pack as compact UTF-8 JSON;
 2. compute exact byte length and lowercase SHA-256;
 3. insert those exact bytes once into `public.newsflow_candidate_ingress` using its explicitly permitted **insert-only transport access**;
-4. post one small `NEWSFLOW_CANDIDATE_PACK_REF_V1` reference on Issue #110 containing only request id, bytes and SHA-256;
-5. GitHub Actions uses short-lived OIDC to claim the transient payload through `newsflow-candidate-ingress-reader`;
+4. update only `content/state/candidate-ingress-trigger.json` on `main` with `active=true`, request id, bytes, SHA-256 and creation time; no Candidate body is committed;
+5. the path-scoped `push@main` Candidate-ingress workflow uses short-lived OIDC to claim the transient payload through `newsflow-candidate-ingress-reader`;
 6. the Action feeds the exact verified bytes to `node scripts/apply-content.mjs --stdin --apply`;
 7. canonical apply uses the existing GitHub OIDC `newsflow-candidate-writer` to persist reviewable Candidates.
 
-The transient ingress table is transport only. It is not an editorial Candidate store, retry queue, publication queue or alternate writer. Scheduled agents remain forbidden from direct SQL writes to `newsflow_candidates`.
+The transient ingress table is transport only. The Git control file is trigger metadata only. Neither is an editorial Candidate store, retry queue, publication queue or alternate writer. Scheduled agents remain forbidden from direct SQL writes to `newsflow_candidates` and may write no repository path other than the declared control file during scheduled submission.
 
 `apply-content.mjs`:
 
@@ -330,7 +330,7 @@ The browser and publication worker never carry a GitHub token or Supabase servic
 
 ### 14. Clean transient input
 
-After the Candidate pack has been evaluated/persisted, remove any transient local file unless it is still needed for the active run. Scheduled ingress rows are separately bounded by their short expiry/consumption lifecycle. Candidate durability belongs to `newsflow_candidates`; neither public Git history nor the ingress transport table is an editorial manuscript archive.
+After the Candidate pack has been evaluated/persisted, remove any transient local file unless it is still needed for the active run. Scheduled ingress rows are separately bounded by their short expiry/consumption lifecycle. The small Git control reference may remain as the last trigger state and is overwritten by the next run. Candidate durability belongs to `newsflow_candidates`; neither Git control metadata nor the ingress transport table is an editorial manuscript archive.
 
 ## Handoff
 

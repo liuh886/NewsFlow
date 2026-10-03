@@ -1,12 +1,13 @@
 name: Candidate ingress
 
 on:
-  issue_comment:
-    types: [created]
+  push:
+    branches: [main]
+    paths:
+      - content/state/candidate-ingress-trigger.json
 
 permissions:
   contents: write
-  issues: write
   id-token: write
 
 concurrency:
@@ -16,19 +17,14 @@ concurrency:
 jobs:
   apply:
     name: Apply private Candidate pack
-    if: >-
-      github.event.issue.number == 110 &&
-      github.event.comment.user.login == github.repository_owner &&
-      startsWith(github.event.comment.body, 'NEWSFLOW_CANDIDATE_PACK_REF_V1 ')
     runs-on: ubuntu-24.04
     timeout-minutes: 4
     env:
-      GH_TOKEN: ${{ github.token }}
       NEWSFLOW_CANDIDATE_INGRESS_READER_URL: https://blgwlycfcwvsupmqyqwn.supabase.co/functions/v1/newsflow-candidate-ingress-reader
       NEWSFLOW_CANDIDATE_INGRESS_READER_AUDIENCE: newsflow-supabase-candidate-ingress-reader
       NEWSFLOW_CANDIDATE_WRITER_URL: https://blgwlycfcwvsupmqyqwn.supabase.co/functions/v1/newsflow-candidate-writer
       NEWSFLOW_CANDIDATE_WRITER_AUDIENCE: newsflow-supabase-candidate-writer
-      NEWSFLOW_INGRESS_ISSUE: '110'
+      NEWSFLOW_INGRESS_TRIGGER_PATH: content/state/candidate-ingress-trigger.json
       NEWSFLOW_INGRESS_RESULT_PATH: artifacts/candidate-ingress-result.json
 
     steps:
@@ -61,17 +57,11 @@ jobs:
           const path = 'artifacts/candidate-ingress-result.json';
           const result = fs.existsSync(path)
             ? JSON.parse(fs.readFileSync(path, 'utf8'))
-            : {
-                status: 'failed',
-                request_id: null,
-                request_comment_id: Number(process.env.REQUEST_COMMENT_ID || 0) || null,
-                error_code: 'missing_result'
-              };
+            : { status: 'failed', request_id: null, error_code: 'missing_result' };
           const safe = (value) => String(value ?? '').replace(/[\r\n]/g, '');
           for (const [key, value] of Object.entries({
             status: result.status,
             request_id: result.request_id,
-            request_comment_id: result.request_comment_id,
             payload_type: result.payload_type,
             candidate_count: result.candidate_count,
             reviewable_count: result.reviewable_count,
@@ -83,8 +73,6 @@ jobs:
             fs.appendFileSync(process.env.GITHUB_OUTPUT, `${key}=${safe(value)}\n`);
           }
           NODE
-        env:
-          REQUEST_COMMENT_ID: ${{ github.event.comment.id }}
 
       - name: Publish sanitized audit metadata
         id: audit
@@ -111,36 +99,3 @@ jobs:
             sleep $((attempt * 2))
           done
           exit 1
-
-      - name: Report sanitized outcome
-        if: always()
-        continue-on-error: true
-        shell: bash
-        run: |
-          request_id="${{ steps.result.outputs.request_id }}"
-          if [[ -z "$request_id" ]]; then request_id="unknown"; fi
-          payload_type="${{ steps.result.outputs.payload_type }}"
-          if [[ -z "$payload_type" ]]; then payload_type="unknown"; fi
-          if [[ "${{ steps.ingress.outcome }}" == "success" && "${{ steps.result.outputs.status }}" == "applied" ]]; then
-            body=$(printf '%s\n%s\n%s\n%s\n%s\n%s' \
-              "NEWSFLOW_APPLY_RESULT_V1 ${request_id}" \
-              "status: applied" \
-              "payload_type: ${payload_type}" \
-              "candidate_count: ${{ steps.result.outputs.candidate_count }}" \
-              "reviewable_count: ${{ steps.result.outputs.reviewable_count }}" \
-              "audit_commit: ${{ steps.audit.outcome }}")
-          else
-            code="${{ steps.result.outputs.error_code }}"
-            if [[ -z "$code" ]]; then code="workflow_failed"; fi
-            body=$(printf '%s\n%s\n%s\n%s' \
-              "NEWSFLOW_APPLY_RESULT_V1 ${request_id}" \
-              "status: failed" \
-              "payload_type: ${payload_type}" \
-              "error_code: ${code}")
-          fi
-          gh api "repos/${GITHUB_REPOSITORY}/issues/110/comments" -f body="$body" >/dev/null
-
-      - name: Remove transport comment
-        if: always()
-        continue-on-error: true
-        run: gh api -X DELETE "repos/${GITHUB_REPOSITORY}/issues/comments/${{ github.event.comment.id }}" >/dev/null 2>&1

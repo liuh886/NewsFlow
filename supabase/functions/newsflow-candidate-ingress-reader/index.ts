@@ -55,7 +55,7 @@ const verifyGitHubOidc = async (token: string) => {
   if (payload?.iss !== EXPECTED_ISSUER || !audienceMatches(payload?.aud)) throw new Error('oidc_issuer_audience');
   if (payload?.repository !== EXPECTED_REPOSITORY || String(payload?.repository_id || '') !== EXPECTED_REPOSITORY_ID) throw new Error('oidc_repository');
   if (String(payload?.actor_id || '') !== EXPECTED_ACTOR_ID) throw new Error('oidc_actor');
-  if (payload?.event_name !== 'issue_comment' || payload?.ref !== 'refs/heads/main') throw new Error('oidc_event_ref');
+  if (payload?.event_name !== 'push' || payload?.ref !== 'refs/heads/main') throw new Error('oidc_event_ref');
   if (payload?.workflow_ref !== EXPECTED_WORKFLOW_REF) throw new Error('oidc_workflow_ref');
 };
 
@@ -185,9 +185,33 @@ Deno.serve(async (req: Request) => {
         `payload_sha256=eq.${expectedSha}`,
         `payload_bytes=eq.${expectedBytes}`
       ].join('&');
+      const payloadType = action === 'complete' ? String(body?.payload_type || '') : null;
+      const candidateCount = action === 'complete' ? Number(body?.candidate_count) : null;
+      const reviewableCount = action === 'complete' ? Number(body?.reviewable_count) : null;
+      const auditPath = action === 'complete' ? String(body?.audit_path || '') : null;
+      if (action === 'complete') {
+        if (!['candidate_pack','single_candidate','ndjson','json_object','json_array','json_scalar'].includes(payloadType)) {
+          return json(400, { ok: false, error: 'invalid_result_metadata' });
+        }
+        if (!Number.isInteger(candidateCount) || candidateCount < 0 || !Number.isInteger(reviewableCount) || reviewableCount < 0) {
+          return json(400, { ok: false, error: 'invalid_result_metadata' });
+        }
+        if (!/^content\/runs\/[A-Za-z0-9._-]+\.json$/.test(auditPath)) {
+          return json(400, { ok: false, error: 'invalid_result_metadata' });
+        }
+      }
       const update = action === 'complete'
-        ? { status: 'consumed', consumed_at: nowIso, error_code: null }
-        : { status: 'failed', failed_at: nowIso, error_code: errorCode };
+        ? {
+            status: 'consumed',
+            consumed_at: nowIso,
+            result_at: nowIso,
+            error_code: null,
+            payload_type: payloadType,
+            candidate_count: candidateCount,
+            reviewable_count: reviewableCount,
+            audit_path: auditPath
+          }
+        : { status: 'failed', failed_at: nowIso, result_at: nowIso, error_code: errorCode };
       const rows = await patchRows(query, update, 'request_id,status');
       if (!Array.isArray(rows) || rows.length !== 1) return json(409, { ok: false, error: 'ingress_finalize_failed' });
       return json(200, { ok: true, request_id: requestId, status: rows[0].status });
